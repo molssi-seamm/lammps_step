@@ -6,7 +6,7 @@
 import pytest
 
 
-from lammps_step import lammps_step
+from lammps_step import lammps_step  # nopep8
 
 
 @pytest.fixture

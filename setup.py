@@ -44,9 +44,6 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
@@ -55,4 +52,16 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     setup_requires=setup_requirements,
+    entry_points={
+        'molssi.workflow.tk': [
+            'LAMMPS = lammps_step:LAMMPSStep',
+        ],
+        'molssi.workflow.lammps.tk': [
+            'Initialization = lammps_step:InitializationStep',
+            'Energy = lammps_step:EnergyStep',
+            'Minimization = lammps_step:MinimizationStep',
+            'Velocities = lammps_step:VelocitiesStep',
+            'NVE = lammps_step:NVEStep',
+        ],
+    }
 )

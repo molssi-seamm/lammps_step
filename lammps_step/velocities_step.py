@@ -1,18 +1,16 @@
 # -*- coding: utf-8 -*-
-"""Helper class needed for the stevedore integration. Needs to provide
-a description() method that returns a dict containing a description of
-this node, and a factory() method for creating the graphical and non-graphical
-nodes."""
+
+"""Main module."""
 
 import lammps_step
 
 
-class LAMMPSStep(object):
+class VelocitiesStep(object):
     my_description = {
         'description':
-        'An interface for the LAMMPS molecular dynamics code',
-        'group': 'Simulations',
-        'name': 'LAMMPS'
+        'Set the velocities in preparation for MD',
+        'group': 'Calculations',
+        'name': 'Velocities'
     }
 
     def __init__(self, workflow=None, gui=None):
@@ -25,11 +23,11 @@ class LAMMPSStep(object):
     def description(self):
         """Return a description of what this extension does
         """
-        return LAMMPSStep.my_description
+        return VelocitiesStep.my_description
 
     def factory(self, graphical=False, workflow=None, canvas=None, **kwargs):
         """Return the node object or graphical node object"""
         if graphical:
-            return lammps_step.TkLAMMPS(canvas=canvas, **kwargs)
+            return lammps_step.TkVelocities(canvas=canvas, **kwargs)
         else:
-            return lammps_step.LAMMPS(workflow=workflow, **kwargs)
+            return lammps_step.Velocities(workflow=workflow, **kwargs)
