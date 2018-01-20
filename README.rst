@@ -29,7 +29,7 @@ Contributing
 ------------
 
 This project uses the `git branching model`_ outlined by Vincent
-Driessen.  Development is handled by branching feature brnaches from
+Driessen.  Development is handled by branching feature branches from
 the 'develop' branch:
 
 Feature branches 
