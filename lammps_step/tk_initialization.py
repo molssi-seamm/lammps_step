@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """The graphical part of a LAMMPS Initialization step"""
 
-import chemflowchart
+import molssi_workflow
 import lammps_step
 import tkinter as tk
 import tkinter.ttk as ttk
 
 
-class TkInitialization(chemflowchart.TkNode):
+class TkInitialization(molssi_workflow.TkNode):
     def __init__(self, node=None, canvas=None, x=None, y=None, w=None, h=None):
         '''Initialize a node
 
@@ -41,7 +41,7 @@ class TkInitialization(chemflowchart.TkNode):
 
         row = 0
         if self.node.structure is None:
-            if isinstance(self.node.previous(), chemflowchart.StartNode):
+            if isinstance(self.node.previous(), molssi_workflow.StartNode):
                 self.node.structure = 'initial'
             else:
                 self.node.structure = 'current'

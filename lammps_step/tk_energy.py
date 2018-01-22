@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """The graphical part of a LAMMPS Energy step"""
 
-import chemflowchart
+import molssi_workflow
 import lammps_step
 import Pmw
 import tkinter as tk
 import tkinter.ttk as ttk
 
 
-class TkEnergy(chemflowchart.TkNode):
+class TkEnergy(molssi_workflow.TkNode):
     def __init__(self, node=None, canvas=None, x=None, y=None, w=None, h=None):
         '''Initialize a node
 
@@ -45,7 +45,7 @@ class TkEnergy(chemflowchart.TkNode):
 
         # which structure? may need to set default first...
         if self.node.structure is None:
-            if isinstance(self.node.previous(), chemflowchart.StartNode):
+            if isinstance(self.node.previous(), molssi_workflow.StartNode):
                 self.node.structure = 'initial'
             else:
                 self.node.structure = 'current'

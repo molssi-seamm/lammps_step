@@ -7,15 +7,15 @@ ToDo:
     * Gaussian or normal distributions...
 """
 
-import chemflowchart
-from chemflowchart import units, Q_, data  # nopep8
+import molssi_workflow
+from molssi_workflow import units, Q_, data  # nopep8
 import logging
 import random
 
 logger = logging.getLogger(__name__)
 
 
-class Velocities(chemflowchart.Node):
+class Velocities(molssi_workflow.Node):
     structures = {
         'current': '',
         'initial': '',

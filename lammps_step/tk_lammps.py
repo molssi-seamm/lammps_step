@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """The graphical part of a LAMMPS step"""
 
-import chemflowchart
+import molssi_workflow
 import lammps_step
 import tkinter as tk
 import tkinter.ttk as ttk
 
 
-class TkLAMMPS(chemflowchart.TkNode):
+class TkLAMMPS(molssi_workflow.TkNode):
     """The node_class is the class of the 'real' node that this
     class is the Tk graphics partner for
     """
@@ -37,7 +37,7 @@ class TkLAMMPS(chemflowchart.TkNode):
         frame = ttk.Frame(self.dialog)
         frame.pack(side='top', fill=tk.BOTH, expand=1)
 
-        self.flowchart = chemflowchart.ChemFlowchart(
+        self.flowchart = molssi_workflow.Flowchart(
             master=frame,
             main=False,
             workflow=self.node.lammps_workflow)

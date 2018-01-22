@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """The graphical part of a LAMMPS velocities step"""
 
-import chemflowchart
+import molssi_workflow
 import molssi_util.molssi_widgets as mw
 import Pmw
 import tkinter as tk
 import tkinter.ttk as ttk
 
 
-class TkVelocities(chemflowchart.TkNode):
+class TkVelocities(molssi_workflow.TkNode):
     def __init__(self, node=None, canvas=None, x=None, y=None, w=None, h=None):
         '''Initialize a node
 

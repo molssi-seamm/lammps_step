@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """A node or step for LAMMPS in a workflow"""
 
-import chemflowchart
-import chemflowchart.data as data
+import molssi_workflow
+import molssi_workflow.data as data
 import lammps_step
 import logging
 import math
@@ -36,7 +36,7 @@ def cosine(degrees):
     return math.cos(math.radians(degrees))
 
 
-class LAMMPS(chemflowchart.Node):
+class LAMMPS(molssi_workflow.Node):
     def __init__(self,
                  workflow=None,
                  extension_namespace='molssi.workflow.lammps.tk',
@@ -48,7 +48,7 @@ class LAMMPS(chemflowchart.Node):
         '''
         logger.debug('Creating LAMMPS {}'.format(self))
 
-        self.lammps_workflow = chemflowchart.Workflow(
+        self.lammps_workflow = molssi_workflow.Workflow(
             name='LAMMPS', extension_namespace=extension_namespace)
         self._data = {}
 
@@ -85,7 +85,7 @@ class LAMMPS(chemflowchart.Node):
         files['structure.dat'] = '\n'.join(self.structure_data(eex))
         logger.log(0, 'structure.dat:\n' + files['structure.dat'])
 
-        local = chemflowchart.ExecLocal()
+        local = molssi_workflow.ExecLocal()
         result = local.run(
             cmd=['lammps_omp', '-sf', 'omp', '-in', 'molssi.dat'],  # nopep8
             files=files,

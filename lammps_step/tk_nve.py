@@ -80,8 +80,6 @@ class TkNVE(lammps_step.TkEnergy):
         sampling.set(self.node.sampling)
         self.tmp['sampling'] = sampling
 
-        pprint.pprint(self.tmp)
-
         timestep_method.bind("<<ComboboxSelected>>", self.reset_dialog)
         sampling_method.bind("<<ComboboxSelected>>", self.reset_dialog)
 
