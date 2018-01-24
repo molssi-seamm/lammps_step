@@ -2,7 +2,6 @@
 """The graphical part of a LAMMPS Energy step"""
 
 import molssi_workflow
-import lammps_step
 import Pmw
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -14,9 +13,6 @@ class TkEnergy(molssi_workflow.TkNode):
 
         Keyword arguments:
         '''
-
-        self.dialog = None
-        self.tmp = {}
 
         super().__init__(node=node, canvas=canvas, x=x, y=y, w=w, h=h)
 
@@ -40,28 +36,15 @@ class TkEnergy(molssi_workflow.TkNode):
             command=self.handle_dialog)
         self.dialog.withdraw()
 
-        self.tmp = {}
-        frame = self.dialog.interior()
+        frame = ttk.Frame(self.dialog.interior())
+        frame.pack(expand=tk.YES, fill=tk.BOTH)
+        self._widget['frame'] = frame
 
-        # which structure? may need to set default first...
-        if self.node.structure is None:
-            if isinstance(self.node.previous(), molssi_workflow.StartNode):
-                self.node.structure = 'initial'
-            else:
-                self.node.structure = 'current'
-
-        structure_label = ttk.Label(frame, text='Structure:')
-        structure = ttk.Combobox(
+        self._widget['message'] = ttk.Label(
             frame,
-            state='readonly',
-            values=list(lammps_step.Energy.structures))
-        structure.set(self.node.structure)
-        self.tmp['structure'] = structure
-
-        structure_label.grid(row=0, column=0, columnspan=2, sticky=tk.E)
-        structure.grid(row=0, column=2, sticky=tk.W)
-
-        frame.grid_columnconfigure(0, minsize=30)
+            text='The LAMMPS energy step has no parameters\n'
+            'All relevant parameters are set in the initialization step.'
+        )
 
     def edit(self):
         """Present a dialog for editing the input for the LAMMPS energy
@@ -74,10 +57,16 @@ class TkEnergy(molssi_workflow.TkNode):
         self.dialog.activate(geometry='centerscreenfirst')
 
     def reset_dialog(self, widget=None):
-        pass
+        w = self._widget
+
+        frame = w['frame']
+        for slave in frame.grid_slaves():
+            slave.grid_forget()
+
+        w['message'].grid()
 
     def handle_dialog(self, result):
-        if result == 'Cancel':
+        if result is None or result == 'Cancel':
             self.dialog.deactivate(result)
             return
 
@@ -92,5 +81,4 @@ class TkEnergy(molssi_workflow.TkNode):
 
         self.dialog.deactivate(result)
 
-        self.node.structure = self.tmp['structure'].get()
-        self.tmp = None
+        self.node.structure = self._widget['structure'].get()

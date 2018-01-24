@@ -62,6 +62,7 @@ setup(
             'Minimization = lammps_step:MinimizationStep',
             'Velocities = lammps_step:VelocitiesStep',
             'NVE = lammps_step:NVEStep',
+            'NVT = lammps_step:NVTStep',
         ],
     }
 )

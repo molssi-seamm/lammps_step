@@ -2,7 +2,7 @@
 """A node or step for LAMMPS in a workflow"""
 
 import molssi_workflow
-import molssi_workflow.data as data
+from molssi_workflow import units, Q_, units_class, data  # nopep8
 import lammps_step
 import logging
 import math
@@ -31,6 +31,43 @@ improper_style = {
     'wilson_out_of_plane': 'class2',
 }
 
+lammps_units = {
+    'real': {
+        '[mass]': 'g/mol',
+        '[distance]': 'Å',
+        '[time]': 'fs',
+        '[length] ** 2 * [mass] / [substance] / [time] ** 2': 'kcal/mol',
+        '[length] ** 2 * [mass] / [time] ** 2': 'kcal/mol',
+        '[length] / [time]': 'Å/fs',
+        '[length] * [mass] / [substance] / [time] ** 2': 'kcal/mol/Å',
+        '[length] * [mass] / [time] ** 2': 'kcal/mol/Å',
+        '[temperature]': 'K',
+        '[mass] / [length] / [time] ** 2': 'bar',
+        '[mass] / [length] / [time]': 'poise',
+        '[current] * [time]': 'e',
+        '[current] * [length] * [time]': 'e*Å',
+        '[length] * [mass] / [current] / [time] ** 3': 'V/Å',
+        '[mass] / [length] ** 3': 'g/mL'
+    },
+    'metal': {
+        '[mass]': 'g/mol',
+        '[distance]': 'Å',
+        '[time]': 'ps',
+        '[length] ** 2 * [mass] / [substance] / [time] ** 2': 'eV',
+        '[length] ** 2 * [mass] / [time] ** 2': 'eV',
+        '[length] / [time]': 'Å/ps',
+        '[length] * [mass] / [substance] / [time] ** 2': 'eV/Å',
+        '[length] * [mass] / [time] ** 2': 'eV/Å',
+        '[temperature]': 'K',
+        '[mass] / [length] / [time] ** 2': 'atm',
+        '[mass] / [length] / [time]': 'poise',
+        '[current] * [time]': 'e',
+        '[current] * [length] * [time]': 'e*Å',
+        '[length] * [mass] / [current] / [time] ** 3': 'V/Å',
+        '[mass] / [length] ** 3': 'g/mL'
+    }
+}
+
 
 def cosine(degrees):
     return math.cos(math.radians(degrees))
@@ -49,7 +86,9 @@ class LAMMPS(molssi_workflow.Node):
         logger.debug('Creating LAMMPS {}'.format(self))
 
         self.lammps_workflow = molssi_workflow.Workflow(
-            name='LAMMPS', extension_namespace=extension_namespace)
+            parent=self, name='LAMMPS',
+            extension_namespace=extension_namespace)
+        self.lammps_units = 'real'
         self._data = {}
 
         super().__init__(
@@ -564,3 +603,15 @@ class LAMMPS(molssi_workflow.Node):
 
         lines.append('')
         return lines
+
+    def to_lammps_units(self, value):
+        dimensionality = str(value.dimensionality)
+        print('self.lammps_units = {}'.format(self.lammps_units))
+        print('dimensionality = {}'.format(dimensionality))
+        return value.to(lammps_units[self.lammps_units][dimensionality])
+
+    def magnitude_in_lammps_units(self, value):
+        if isinstance(value, units_class):
+            return self.to_lammps_units(value).magnitude
+        else:
+            return value
