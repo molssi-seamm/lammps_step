@@ -26,13 +26,13 @@ class NVE(lammps_step.Energy):
 
         self.description = 'NVE dynamics step in LAMMPS'
 
-        self.sampling_method = 'give a value'
+        self.sampling_method = 'is'
         self.sampling_variable = ''
-        self.sampling = Q_('20 fs')
+        self.sampling = Q_(20, 'fs')
         self.timestep_method = 'normal'
         self.timestep_variable = ''
-        self.timestep = Q_('1 fs')
-        self.time = Q_('100 ps')
+        self.timestep = Q_(1, 'fs')
+        self.time = Q_(100, 'ps')
 
     def get_input(self):
         """Get the input for an NVE dynamics run in LAMMPS"""
