@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """A single-point initialization in LAMMPS"""
 
-import chemflowchart
+import molssi_workflow
 import forcefield
 import lammps_step
 import logging
@@ -36,7 +36,7 @@ thermo_variables = [
 ]
 
 
-class Initialization(chemflowchart.Node):
+class Initialization(molssi_workflow.Node):
     structures = {
         'current': '',
         'initial': '',
@@ -78,12 +78,12 @@ class Initialization(chemflowchart.Node):
     def get_input(self):
         """Get the input for the initialization of LAMMPS"""
 
-        structure = chemflowchart.data.structure
+        structure = molssi_workflow.data.structure
         logger.debug('Structure in LAMMPS initialization:\n' +
                      pprint.pformat(structure))
 
         # Atom-type if necessary
-        ff = chemflowchart.data.forcefield
+        ff = molssi_workflow.data.forcefield
         ff_name = ff.current_forcefield
         atoms = structure['atoms']
         n_atoms = len(atoms['elements'])

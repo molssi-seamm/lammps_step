@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Minimization step in LAMMPS"""
 
-from chemflowchart import units, Q_, data  # nopep8
+from molssi_workflow import units, Q_, data  # nopep8
 import lammps_step
 import logging
 
@@ -27,17 +27,17 @@ class Minimization(lammps_step.Energy):
         self.description = 'Minimization step in LAMMPS'
 
         self.convergence = 'normal'
-        self.etol_method = 'not used'
+        self.etol_method = 'is'
         self.etol = 1.0e-06
         self.etol_variable = ''
-        self.ftol_method = 'normal'
-        self.ftol = Q_('0.1 kcal/mol/Å')
+        self.ftol_method = 'is'
+        self.ftol = Q_(0.1, 'kcal/mol/Å')
         self.ftol_variable = ''
-        self.maxiters_method = 'normal'
+        self.maxiters_method = 'is'
         self.maxiters = 10000
         self.maxiters_variable = ''
-        self.maxevals_method = 'normal'
-        self.maxevals = 10000
+        self.maxevals_method = 'is'
+        self.maxevals = 30000
         self.maxevals_variable = ''
 
     def get_input(self):
@@ -74,14 +74,14 @@ class Minimization(lammps_step.Energy):
             maxevals = 2 * maxiters
         elif 'energy' in self.convergence:
             # energy tolerance
-            if self.etol_method == 'as given':
+            if self.etol_method == 'is':
                 etol = self.etol
             else:
                 raise RuntimeError(
                     'Variable handling not implemented for etol')
         elif 'forces' in self.convergence:
             # force tolerance
-            if self.ftol_method == 'as given':
+            if self.ftol_method == 'is':
                 ftol = self.ftol.to('kcal/mol/Å').magnitude
             else:
                 raise RuntimeError(
@@ -94,7 +94,7 @@ class Minimization(lammps_step.Energy):
         if maxiters is None:
             if self.maxiters_method == 'default':
                 maxiters = 3 * nDOF
-            elif self.maxiters_method == 'as given':
+            elif self.maxiters_method == 'is':
                 maxiters = self.maxiters
             else:
                 raise RuntimeError(
@@ -104,7 +104,7 @@ class Minimization(lammps_step.Energy):
         if maxevals is None:
             if self.maxevals_method == 'default':
                 maxevals = 3 * nDOF
-            elif self.maxevals_method == 'as given':
+            elif self.maxevals_method == 'is':
                 maxevals = self.maxevals
             else:
                 raise RuntimeError(

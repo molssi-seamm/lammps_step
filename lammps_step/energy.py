@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """A single-point energy in LAMMPS"""
 
-import chemflowchart
+import molssi_workflow
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class Energy(chemflowchart.Node):
+class Energy(molssi_workflow.Node):
     structures = {
         'current': '',
         'initial': '',
