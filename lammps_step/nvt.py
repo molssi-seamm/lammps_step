@@ -169,7 +169,6 @@ class NVT(lammps_step.NVE):
 
     def __init__(self,
                  workflow=None,
-                 gui_object=None,
                  title='NVT dynamics',
                  extension=None):
         """Initialize the node"""
@@ -179,7 +178,6 @@ class NVT(lammps_step.NVE):
         super().__init__(
             workflow=workflow,
             title=title,
-            gui_object=gui_object,
             extension=extension)
 
         self.description = 'NVT dynamics step in LAMMPS'

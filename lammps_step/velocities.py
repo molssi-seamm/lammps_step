@@ -22,13 +22,13 @@ class Velocities(molssi_workflow.Node):
         'other': '',
     }
 
-    def __init__(self, workflow=None, gui_object=None, title='Velocities',
+    def __init__(self, workflow=None, title='Velocities',
                  extension=None):
         """Initialize the node"""
 
         logger.debug('Creating Velocities {}'.format(self))
 
-        super().__init__(workflow=workflow, title=title, gui_object=gui_object,
+        super().__init__(workflow=workflow, title=title,
                          extension=extension)
 
         self.description = 'Set the initial velocities on the atoms'

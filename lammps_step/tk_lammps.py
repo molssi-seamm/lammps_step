@@ -15,13 +15,17 @@ class TkLAMMPS(molssi_workflow.TkNode):
 
     node_class = lammps_step.LAMMPS
 
-    def __init__(self, node=None, canvas=None, x=None, y=None, w=None, h=None):
+    def __init__(self, tk_workflow=None, node=None,
+                 namespace='org.molssi.workflow.lammps.tk',
+                 canvas=None, x=None, y=None, w=None, h=None):
         '''Initialize a node
 
         Keyword arguments:
         '''
+        self.namespace = namespace
 
-        super().__init__(node=node, canvas=canvas, x=x, y=y, w=w, h=h)
+        super().__init__(tk_workflow=tk_workflow, node=node,
+                         canvas=canvas, x=x, y=y, w=w, h=h)
 
         self.create_dialog()
 
@@ -50,14 +54,12 @@ class TkLAMMPS(molssi_workflow.TkNode):
         frame.pack(expand=tk.YES, fill=tk.BOTH)
         self._widget['frame'] = frame
 
-        self.flowchart = molssi_workflow.Flowchart(
+        self.lammps_tk_workflow = molssi_workflow.TkWorkflow(
             master=frame,
-            parent=self.node,
-            main=False,
-            workflow=self.node.lammps_workflow)
-        self.node.lammps_workflow.gui_object = self.flowchart
-
-        self.flowchart.draw()
+            workflow=self.node.lammps_workflow,
+            namespace=self.namespace
+        )
+        self.lammps_tk_workflow.draw()
 
     def right_click(self, event):
         """Probably need to add our dialog...
@@ -92,3 +94,21 @@ class TkLAMMPS(molssi_workflow.TkNode):
                 "Don't recognize dialog result '{}'".format(result))
 
         self.dialog.deactivate(result)
+
+    def update_workflow(self, tk_workflow=None, workflow=None):
+        """Update the nongraphical workflow. Only used in nodes that contain
+        workflows"""
+
+        super().update_workflow(
+            workflow=self.node.lammps_workflow,
+            tk_workflow=self.lammps_tk_workflow
+        )
+
+    def from_workflow(self, tk_workflow=None, workflow=None):
+        """Recreate the graphics from the non-graphical workflow.
+        Only used in nodes that contain workflow"""
+
+        super().from_workflow(
+            workflow=self.node.lammps_workflow,
+            tk_workflow=self.lammps_tk_workflow
+        )

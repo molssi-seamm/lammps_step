@@ -25,9 +25,10 @@ class VelocitiesStep(object):
         """
         return VelocitiesStep.my_description
 
-    def factory(self, graphical=False, workflow=None, canvas=None, **kwargs):
-        """Return the node object or graphical node object"""
-        if graphical:
-            return lammps_step.TkVelocities(canvas=canvas, **kwargs)
-        else:
-            return lammps_step.Velocities(workflow=workflow, **kwargs)
+    def create_node(self, workflow=None, **kwargs):
+        """Return the new node object"""
+        return lammps_step.Velocities(workflow=workflow, **kwargs)
+
+    def create_tk_node(self, canvas=None, **kwargs):
+        """Return the graphical Tk node object"""
+        return lammps_step.TkVelocities(canvas=canvas, **kwargs)

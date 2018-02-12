@@ -76,7 +76,7 @@ def cosine(degrees):
 class LAMMPS(molssi_workflow.Node):
     def __init__(self,
                  workflow=None,
-                 extension_namespace='molssi.workflow.lammps.tk',
+                 namespace='org.molssi.workflow.lammps',
                  gui_object=None,
                  extension=None):
         '''Setup the main LAMMPS step
@@ -87,14 +87,13 @@ class LAMMPS(molssi_workflow.Node):
 
         self.lammps_workflow = molssi_workflow.Workflow(
             parent=self, name='LAMMPS',
-            extension_namespace=extension_namespace)
+            namespace=namespace)
         self.lammps_units = 'real'
         self._data = {}
 
         super().__init__(
             workflow=workflow,
             title='LAMMPS',
-            gui_object=gui_object,
             extension=extension)
 
     def run(self):

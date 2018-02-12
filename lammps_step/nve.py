@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 class NVE(lammps_step.Energy):
     def __init__(self,
                  workflow=None,
-                 gui_object=None,
                  title='NVE dynamics',
                  extension=None):
         """Initialize the node"""
@@ -21,7 +20,6 @@ class NVE(lammps_step.Energy):
         super().__init__(
             workflow=workflow,
             title=title,
-            gui_object=gui_object,
             extension=extension)
 
         self.description = 'NVE dynamics step in LAMMPS'

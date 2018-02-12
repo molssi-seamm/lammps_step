@@ -10,13 +10,15 @@ import tkinter.ttk as ttk
 
 
 class TkNVT(lammps_step.TkNVE):
-    def __init__(self, node=None, canvas=None, x=None, y=None, w=None, h=None):
+    def __init__(self, tk_workflow=None, node=None, canvas=None,
+                 x=None, y=None, w=None, h=None):
         '''Initialize a node
 
         Keyword arguments:
         '''
 
-        super().__init__(node=node, canvas=canvas, x=x, y=y, w=w, h=h)
+        super().__init__(tk_workflow=tk_workflow, node=node,
+                         canvas=canvas, x=x, y=y, w=w, h=h)
 
     def create_dialog(self):
         """Create the dialog!"""
@@ -70,14 +72,14 @@ class TkNVT(lammps_step.TkNVE):
         w['Tcontrol_method_label'] = Tcontrol_method_label
 
         methods = lammps_step.NVT.methods
-        l = 0
+        width = 0
         for method in list(methods):
-            l = len(method) if len(method) > l else l
-        l += 3
+            width = len(method) if len(method) > width else width
+        width += 3
         Tcontrol_method = ttk.Combobox(
             tc_frame, state='readonly',
             values=list(methods),
-            justify=tk.LEFT, width=l
+            justify=tk.LEFT, width=width
         )
         Tcontrol_method.set(self.node.Tcontrol_method)
         w['Tcontrol_method'] = Tcontrol_method

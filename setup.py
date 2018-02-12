@@ -12,7 +12,8 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    # TODO: put package requirements here
+    # 'rdkit',
+    'packaging',
 ]
 
 setup_requirements = [
@@ -53,10 +54,21 @@ setup(
     tests_require=test_requirements,
     setup_requires=setup_requirements,
     entry_points={
-        'molssi.workflow.tk': [
+        'org.molssi.workflow': [
             'LAMMPS = lammps_step:LAMMPSStep',
         ],
-        'molssi.workflow.lammps.tk': [
+        'org.molssi.workflow.tk': [
+            'LAMMPS = lammps_step:LAMMPSStep',
+        ],
+        'org.molssi.workflow.lammps': [
+            'Initialization = lammps_step:InitializationStep',
+            'Energy = lammps_step:EnergyStep',
+            'Minimization = lammps_step:MinimizationStep',
+            'Velocities = lammps_step:VelocitiesStep',
+            'NVE = lammps_step:NVEStep',
+            'NVT = lammps_step:NVTStep',
+        ],
+        'org.molssi.workflow.lammps.tk': [
             'Initialization = lammps_step:InitializationStep',
             'Energy = lammps_step:EnergyStep',
             'Minimization = lammps_step:MinimizationStep',

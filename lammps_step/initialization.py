@@ -45,7 +45,6 @@ class Initialization(molssi_workflow.Node):
 
     def __init__(self,
                  workflow=None,
-                 gui_object=None,
                  title='Initialization',
                  extension=None):
         """Initialize the node"""
@@ -55,7 +54,6 @@ class Initialization(molssi_workflow.Node):
         super().__init__(
             workflow=workflow,
             title=title,
-            gui_object=gui_object,
             extension=extension)
 
         self.description = 'Initialization of a LAMMPS calculation'
