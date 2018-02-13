@@ -77,7 +77,6 @@ class LAMMPS(molssi_workflow.Node):
     def __init__(self,
                  workflow=None,
                  namespace='org.molssi.workflow.lammps',
-                 gui_object=None,
                  extension=None):
         '''Setup the main LAMMPS step
 
