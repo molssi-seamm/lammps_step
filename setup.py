@@ -61,20 +61,22 @@ setup(
             'LAMMPS = lammps_step:LAMMPSStep',
         ],
         'org.molssi.workflow.lammps': [
-            'Initialization = lammps_step:InitializationStep',
+            'Custom = lammps_step:CustomStep',
             'Energy = lammps_step:EnergyStep',
+            'Initialization = lammps_step:InitializationStep',
             'Minimization = lammps_step:MinimizationStep',
-            'Velocities = lammps_step:VelocitiesStep',
             'NVE = lammps_step:NVEStep',
             'NVT = lammps_step:NVTStep',
+            'Velocities = lammps_step:VelocitiesStep',
         ],
         'org.molssi.workflow.lammps.tk': [
-            'Initialization = lammps_step:InitializationStep',
+            'Custom = lammps_step:CustomStep',
             'Energy = lammps_step:EnergyStep',
+            'Initialization = lammps_step:InitializationStep',
             'Minimization = lammps_step:MinimizationStep',
-            'Velocities = lammps_step:VelocitiesStep',
             'NVE = lammps_step:NVEStep',
             'NVT = lammps_step:NVTStep',
+            'Velocities = lammps_step:VelocitiesStep',
         ],
     }
 )

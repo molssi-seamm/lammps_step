@@ -18,6 +18,10 @@ from lammps_step.lammps import LAMMPS  # nopep8
 from lammps_step.lammps_step import LAMMPSStep  # nopep8
 from lammps_step.tk_lammps import TkLAMMPS  # nopep8
 
+from lammps_step.custom import Custom  # nopep8
+from lammps_step.custom_step import CustomStep  # nopep8
+from lammps_step.tk_custom import TkCustom  # nopep8
+
 from lammps_step.initialization import Initialization  # nopep8
 from lammps_step.initialization_step import InitializationStep  # nopep8
 from lammps_step.tk_initialization import TkInitialization  # nopep8
