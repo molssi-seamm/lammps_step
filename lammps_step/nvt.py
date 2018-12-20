@@ -230,6 +230,7 @@ class NVT(lammps_step.NVE):
         thermo_properties = ('time temp press etotal ke pe ebond '
                              'eangle edihed eimp evdwl etail ecoul elong')
         properties = 'v_time v_temp v_press v_etotal v_ke v_pe v_emol v_epair'
+        titles = 'tstep t T P Etot Eke Epe Emol Epair'
 
         T0 = self.get_value('T0')
         T1 = self.get_value('T1')
@@ -238,6 +239,7 @@ class NVT(lammps_step.NVE):
         lines.append('')
         lines.append('#     NVT dynamics')
         lines.append('')
+        lines.append('reset_timestep      0')
         lines.append('timestep            {}'.format(timestep))
         lines.append('thermo_style        custom {}'.format(thermo_properties))
         lines.append('thermo              {}'.format(int(nsteps/100)))
@@ -312,19 +314,20 @@ class NVT(lammps_step.NVE):
             raise RuntimeError("Don't recognize temperature control " +
                                "'{}'".format(self.Tcontrol_method))
 
-        # summary output written 100 times during run so we can see progress
+        # summary output written 10 times during run so we can see progress
         nevery = 10
-        nfreq = int(nsteps / 100)
+        nfreq = int(nsteps / 10)
         nrepeat = int(nfreq / nevery)
         nfreq = nevery * nrepeat
         nfixes += 1
         lines.append(
             'fix                 {} '.format(nfixes) +
             'all ave/time ' +
-            '{} {} {} {} file nve_summary.txt'.format(
-                nevery, nrepeat, nfreq, properties)
+            "{} {} {} {} off 2 title2 '{}' file summary_nvt_{}.txt".format(
+                nevery, nrepeat, nfreq, properties, titles,
+                '_'.join(str(e) for e in self._id))
         )
-        # instantaneous output written every 10 steps for averaging
+        # instantaneous output written for averaging
         if self.sampling_method != 'none':
             sampling = self.sampling.to('fs').magnitude
             nevery = round(sampling / timestep)
@@ -335,8 +338,10 @@ class NVT(lammps_step.NVE):
             lines.append(
                 'fix                 {} '.format(nfixes) +
                 'all ave/time ' +
-                '{} {} {} {} file nve.txt'.format(
-                    nevery, nrepeat, nfreq, properties)
+                "{} {} {} {} off 2 title2 '{}' file trajectory_nvt_{}.txt"
+                .format(
+                    nevery, nrepeat, nfreq, properties, titles,
+                    '_'.join(str(e) for e in self._id))
             )
 
         lines.append('run                 {}'.format(nsteps))
