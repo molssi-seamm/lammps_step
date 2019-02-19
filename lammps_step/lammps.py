@@ -150,7 +150,6 @@ class LAMMPS(molssi_workflow.Node):
 
         # Get the structure file from the eex
         files['structure.dat'] = '\n'.join(self.structure_data(eex))
-        # logger.log(0, 'structure.dat:\n' + files['structure.dat'])
         logger.info('structure.dat:\n' + files['structure.dat'])
 
         os.makedirs(self.directory, exist_ok=True)
