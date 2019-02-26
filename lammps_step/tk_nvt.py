@@ -11,7 +11,7 @@ import tkinter.ttk as ttk
 
 class TkNVT(lammps_step.TkNVE):
     def __init__(self, tk_workflow=None, node=None, canvas=None,
-                 x=None, y=None, w=None, h=None):
+                 x=None, y=None, w=200, h=50):
         '''Initialize a node
 
         Keyword arguments:

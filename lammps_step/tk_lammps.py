@@ -17,7 +17,7 @@ class TkLAMMPS(molssi_workflow.TkNode):
 
     def __init__(self, tk_workflow=None, node=None,
                  namespace='org.molssi.workflow.lammps.tk',
-                 canvas=None, x=None, y=None, w=None, h=None):
+                 canvas=None, x=None, y=None, w=200, h=50):
         '''Initialize a node
 
         Keyword arguments:
