@@ -106,11 +106,12 @@ class LAMMPS(molssi_workflow.Node):
 
         return self.next()
 
-    def describe(self):
-        """Run a LAMMPS simulation
+    def describe(self, indent='', json_dict=None):
+        """Write out information about what this node will do
+        If json_dict is passed in, add information to that dictionary
+        so that it can be written out by the controller as appropriate.
         """
-
-        super().describe()
+        super().describe(indent, json_dict)
 
         self.lammps_workflow.root_directory = self.workflow.root_directory
 
@@ -118,7 +119,7 @@ class LAMMPS(molssi_workflow.Node):
         node = self.lammps_workflow.get_node('1').next()
 
         while node is not None:
-            node.describe()
+            node.describe(indent, json_dict)
             node = node.next()
 
         return self.next()
