@@ -64,21 +64,21 @@ class Velocities(molssi_workflow.Node):
                                   else 'no'
             remove_rotations = 'yes' if self.remove_angular_momentum else 'no'
         else:
+            
             raise RuntimeError(
                 'momentum method does not support variables yet')
 
         if 'random' in self.method:
             if self.temperature_method == 'is':
                 T = self.temperature.to('K').magnitude
-                if self.seed_method == 'random':
-                    seed = int(random.random() * 2**31)
-                elif self.seed_method == 'is':
-                    seed = self.seed
-                else:
-                    raise RuntimeError('seed does not support variables yet')
             else:
-                raise RuntimeError(
-                    'temperature does not support variables yet')
+                T = self.get_value(self.temperature_variable)
+            if self.seed_method == 'random':
+                seed = int(random.random() * 2**31)
+            elif self.seed_method == 'is':
+                seed = self.seed
+            else:
+                seed = self.get_value(self.seed_variable)
             lines.append('velocity            '
                          'all create {} {} mom {} rot {}'.format(
                              T, seed, remove_translations, remove_rotations))
@@ -86,8 +86,7 @@ class Velocities(molssi_workflow.Node):
             if self.temperature_method == 'is':
                 T = self.temperature.to('K').magnitude
             else:
-                raise RuntimeError(
-                    'temperature does not support variables yet')
+                T = self.get_value(self.temperature_variable)
             lines.append('velocity            '
                          'all scale {} mom {} rot {}'.format(
                              T, remove_translations, remove_rotations))
