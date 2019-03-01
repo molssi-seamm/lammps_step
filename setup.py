@@ -12,9 +12,15 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    # 'rdkit',
-    'packaging',
+    'Pmw',
+    'forcefield',
+    'logging',
+    'molssi_util',
+    'molssi_workflow',
+    'pprint',
 ]
+# 'math',
+# 'random',
 
 setup_requirements = [
     'pytest-runner',
