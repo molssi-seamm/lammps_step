@@ -14,11 +14,11 @@ kspace_methods = {
     'automatic': '',
     'none': 'none',
     'Ewald summation': 'ewald {accuracy}',
-    'Particle-particle particle-mesh (PPPM)': 'pppm {accuracy}',
+    'PPPM: Particle-particle particle-mesh': 'pppm {accuracy}',
     'PPPM for few charged atoms': 'pppm/cg {accuracy} {smallq}',
     'PPPM staggered mesh': 'pppm/stagger {accuracy}',
     'PPPM plus dispersion term': 'pppm/disp {accuracy}',
-    'Multilevel summation method (MSM)': 'msm {accuracy}',
+    'MSM: Multilevel summation method': 'msm {accuracy}',
     'MSM for few charged atoms': 'msm/cg {accuracy} {smallq}'
 }
 
@@ -37,12 +37,6 @@ thermo_variables = [
 
 
 class Initialization(molssi_workflow.Node):
-    structures = {
-        'current': '',
-        'initial': '',
-        'other': '',
-    }
-
     def __init__(self,
                  workflow=None,
                  title='Initialization',
@@ -58,13 +52,12 @@ class Initialization(molssi_workflow.Node):
 
         self.description = 'Initialization of a LAMMPS calculation'
 
-        self.structure = None
         self.cutoff = 10.0
         self.kspace_method = 'automatic'
         self.kspace_accuracy = 1.0e-05
         self.kspace_smallq = 1.0e-05
         self.charged_atom_fraction_cutoff = 0.1
-        self.ewald_atom_cutoff = 3000
+        self.ewald_atom_cutoff = 1000
         self.use_tail_correction = True
         self.shift_nonbond = False
 
@@ -168,7 +161,8 @@ class Initialization(molssi_workflow.Node):
                     pair_style = pair_style_base + '/coul/long'
                     if n_atoms < self.ewald_atom_cutoff:
                         kspace_style = 'ewald {}'.format(self.kspace_accuracy)
-                    elif fraction_charged_atoms < self.charged_atom_fraction_cutoff:  # nopep8
+                    elif fraction_charged_atoms < \
+                            self.charged_atom_fraction_cutoff:
                         kspace_style = 'pppm/cg {} {}'.format(
                             self.kspace_accuracy,
                             self.charged_atom_fraction_cutoff)
@@ -185,8 +179,8 @@ class Initialization(molssi_workflow.Node):
                 if n_charged_atoms == 0:
                     pair_style = pair_style_base
                 elif fraction_charged_atoms < \
-                    self.charged_atom_fraction_cutoff \
-                    and pair_style_base in msm_pair_styles:  # nopep8
+                    self.charged_atom_fraction_cutoff and \
+                        pair_style_base in msm_pair_styles:
                     pair_style = pair_style_base + '/coul/msm'
                 else:
                     pair_style = pair_style_base + '/coul/cut'
@@ -199,7 +193,8 @@ class Initialization(molssi_workflow.Node):
                 kspace_style = ''
                 if n_charged_atoms == 0 or self.kspace_style == 'none':
                     pair_style = pair_style_base
-                elif fraction_charged_atoms < self.charged_atom_fraction_cutoff:  # nopep8
+                elif fraction_charged_atoms < \
+                        self.charged_atom_fraction_cutoff:
                     pair_style = pair_style_base + '/coul/long'
                     kspace_style = kspace_methods[self.kspace_method].\
                         format(accuracy=self.accuracy,
