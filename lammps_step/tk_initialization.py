@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """The graphical part of a LAMMPS Initialization step"""
 
+import lammps_step
 import molssi_workflow
 import Pmw
 import tkinter as tk
@@ -14,6 +15,7 @@ class TkInitialization(molssi_workflow.TkNode):
 
         Keyword arguments:
         '''
+
         super().__init__(tk_workflow=tk_workflow, node=node,
                          canvas=canvas, x=x, y=y, w=w, h=h)
 
@@ -37,77 +39,93 @@ class TkInitialization(molssi_workflow.TkNode):
             command=self.handle_dialog)
         self.dialog.withdraw()
 
-        frame = ttk.Frame(self.dialog.interior())
-        frame.pack(expand=tk.YES, fill=tk.BOTH)
-        self._widget['frame'] = frame
+        self['hull'] = ttk.Frame(self.dialog.interior())
+        self['hull'].pack(expand=tk.YES, fill=tk.BOTH)
 
-        row = 0
-        if self.node.structure is None:
-            if isinstance(self.node.previous(), molssi_workflow.StartNode):
-                self.node.structure = 'initial'
-            else:
-                self.node.structure = 'current'
+        # Frame for options for all systems
 
-        # structure_label = ttk.Label(frame, text='Structure:')
-        # structure = ttk.Combobox(
-        #     frame,
-        #     state='readonly',
-        #     values=list(lammps_step.Initialization.structures))
-        # structure.set(self.node.structure)
-        # self._widget['structure'] = structure
-
-        # structure_label.grid(row=row, column=0, columnspan=2, sticky=tk.E)
-        # structure.grid(row=row, column=2, sticky=tk.W)
-        # row += 1
+        frame = self['frame'] = ttk.LabelFrame(
+            self['hull'], text='For all systems', relief=tk.SUNKEN,
+            borderwidth=5, labelanchor=tk.N
+        )
 
         # Cutoff
-        cutoff_label = ttk.Label(frame, text='Cutoff:')
-        cutoff = ttk.Entry(frame, width=15)
-        cutoff.insert(0, self.node.cutoff)
-        self._widget['cutoff'] = cutoff
-
-        cutoff_label.grid(row=row, column=0, columnspan=2, sticky=tk.E)
-        cutoff.grid(row=row, column=2, sticky=tk.W)
-        row += 1
+        self['cutoff_label'] = ttk.Label(frame, text='Cutoff:')
+        self['cutoff'] = ttk.Entry(frame, width=15)
+        self['cutoff'].insert(0, self.node.cutoff)
 
         # Shift nonbond
-        self._widget['shift_nonbond_var'] = tk.IntVar()
-        shift_nonbond_label = ttk.Label(frame, text='Shift to 0 at cutoff:')
-        shift_nonbond = ttk.Checkbutton(
-            frame, variable=self._widget['shift_nonbond_var'])
-        if self.node.shift_nonbond:
-            self._widget['shift_nonbond_var'].set(1)
-        else:
-            self._widget['shift_nonbond_var'].set(0)
-        self._widget['shift_nonbond'] = shift_nonbond
+        self.tk_var['shift_nonbond'] = tk.IntVar()
+        self.tk_var['shift_nonbond'].set(self.node.shift_nonbond)
+        self['shift_nonbond_label'] = ttk.Label(
+            frame, text='Shift to 0 at cutoff:'
+        )
+        self['shift_nonbond'] = ttk.Checkbutton(
+            frame, variable=self.tk_var['shift_nonbond']
+        )
 
-        shift_nonbond_label.grid(
-            row=row, column=0, columnspan=2, sticky=tk.E)
-        shift_nonbond.grid(row=row, column=2, sticky=tk.W)
-        row += 1
+        # Frame for the periodic system options, i.e. kspace, etc.
+
+        pframe = self['pframe'] = ttk.LabelFrame(
+            self['hull'], text='For periodic systems', relief=tk.SUNKEN,
+            borderwidth=5, labelanchor=tk.N
+        )
 
         # Tail correction
-        self._widget['tail_correction_var'] = tk.IntVar()
-        tail_correction_label = ttk.Label(
-            frame, text='Correct for long range tail (periodic):')
-        tail_correction = ttk.Checkbutton(
-            frame, variable=self._widget['tail_correction_var'])
-        if self.node.use_tail_correction:
-            self._widget['tail_correction_var'].set(1)
-        else:
-            self._widget['tail_correction_var'].set(0)
-        self._widget['tail_correction'] = tail_correction
+        self.tk_var['tail_correction'] = tk.IntVar()
+        self.tk_var['tail_correction'].set(self.node.use_tail_correction)
+        self['tail_correction_label'] = ttk.Label(
+            pframe, text='Correct for long range tail (periodic):'
+        )
+        self['tail_correction'] = ttk.Checkbutton(
+            pframe, variable=self.tk_var['tail_correction']
+        )
 
-        tail_correction_label.grid(
-            row=row, column=0, columnspan=2, sticky=tk.E)
-        tail_correction.grid(row=row, column=2, sticky=tk.W)
+        # k-space methods
+        self['kspace_method_label'] = ttk.Label(
+            pframe, text="Long range method:"
+        )
+        self['kspace_method'] = ttk.Combobox(
+            pframe, width=30,
+            values=list(lammps_step.initialization.kspace_methods)
+        )
+        self['kspace_method'].bind(
+            "<<ComboboxSelected>>", self.kspace_method_cb
+        )
+        self['kspace_method'].set(self.node.kspace_method)
+
+        # accuracy
+        self['accuracy_label'] = ttk.Label(
+            pframe, text='Accuracy:'
+        )
+        self['accuracy'] = ttk.Entry(pframe, width=15)
+        self['accuracy'].insert(0, self.node.kspace_accuracy)
+
+        # small charge cuttoff
+        self['smallq_label'] = ttk.Label(
+            pframe, text='Small charge cutoff:'
+        )
+        self['smallq'] = ttk.Entry(pframe, width=15)
+        self['smallq'].insert(0, self.node.kspace_smallq)
+
+        # Grid in the static part of the dialog
+
+        row = 0
+
+        self['cutoff_label'].grid(row=row, column=0, sticky=tk.E)
+        self['cutoff'].grid(row=row, column=1, sticky=tk.W)
         row += 1
 
-        subframe = ttk.Frame(frame)
-        self._widget['subframe'] = subframe
-        subframe.grid(row=row, column=1, columnspan=5)
+        self['shift_nonbond_label'].grid(row=row, column=0, sticky=tk.E)
+        self['shift_nonbond'].grid(row=row, column=1, sticky=tk.W)
+        row += 1
 
-        frame.grid_columnconfigure(0, minsize=30)
+        self['frame'].grid(
+            row=0, column=0, sticky=tk.EW, pady=10
+        )
+        self['pframe'].grid(
+            row=1, column=0, sticky=tk.EW, pady=10
+        )
 
     def handle_dialog(self, result):
         if result is None or result == 'Cancel':
@@ -125,22 +143,52 @@ class TkInitialization(molssi_workflow.TkNode):
 
         self.dialog.deactivate(result)
 
-        w = self._widget
-        self.node.structure = w['structure'].get()
-        self.node.cutoff = w['cutoff'].get()
-        self.node.shift_nonbond = w['shift_nonbond_var'].get()
+        self.node.cutoff = self['cutoff'].get()
+        self.node.shift_nonbond = self.tk_var['shift_nonbond'].get()
         self.node.use_tail_correction = \
-            w['tail_correction_var'].get()
+            self.tk_var['tail_correction'].get()
+        self.node.kspace_method = self['kspace_method'].get()
+        self.node.kspace_accuracy = self['accuracy'].get()
+        self.node.kspace_smallq = self['smallq'].get()
 
     def edit(self):
-        """Present a dialog for editing the input for the LAMMPS energy
-        calculation"""
+        """Present a dialog for editing the input for the LAMMPS initialization
+        """
 
         if self.dialog is None:
             self.create_dialog()
-            self.reset_dialog()
+            self.kspace_method_cb()
 
         self.dialog.activate(geometry='centerscreenfirst')
 
-    def reset_dialog(self, widget=None):
-        pass
+    def kspace_method_cb(self, event=None):
+        """Grid the widgets into the dialog, depending on the current values
+        of key variables. This provides a dyamic presentation to the user.
+        """
+
+        # Remove any widgets previously packed
+        for slave in self['pframe'].grid_slaves():
+            slave.grid_forget()
+
+        row = 0
+        self['kspace_method_label'].grid(row=row, column=0, sticky=tk.E)
+        self['kspace_method'].grid(row=row, column=1, sticky=tk.W)
+        row += 1
+
+        method = self['kspace_method'].get()
+        if method != 'none':
+            self['accuracy_label'].grid(row=row, column=0, sticky=tk.E)
+            self['accuracy'].grid(row=row, column=1, sticky=tk.W)
+            row += 1
+
+            if 'few charged' in method or method[0] == '$':
+                self['smallq_label'].grid(row=row, column=0, sticky=tk.E)
+                self['smallq'].grid(row=row, column=1, sticky=tk.W)
+                row += 1
+            
+        if method[0] == '$' or 'dispersion' not in method:
+            self['tail_correction_label'].grid(
+                row=row, column=0, sticky=tk.E)
+            self['tail_correction'].grid(row=row, column=1, sticky=tk.W)
+            row += 1
+
