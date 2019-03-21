@@ -62,9 +62,8 @@ class TkNVE(lammps_step.TkEnergy):
         for slave in frame.grid_slaves():
             slave.grid_forget()
 
-        row = 0
-        self['trj_frame'].grid(row=row, column=0)
-        return row
+        self['trj_frame'].grid(row=0, column=0)
+        return 1
 
     def handle_dialog(self, result):
         if result is None or result == 'Cancel':
