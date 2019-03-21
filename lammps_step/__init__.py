@@ -39,9 +39,16 @@ from lammps_step.velocities_step import VelocitiesStep  # nopep8
 from lammps_step.tk_velocities import TkVelocities  # nopep8
 
 from lammps_step.nve import NVE  # nopep8
+from lammps_step.nve_parameters import NVE_Parameters  # nopep8
 from lammps_step.nve_step import NVEStep  # nopep8
 from lammps_step.tk_nve import TkNVE  # nopep8
 
 from lammps_step.nvt import NVT  # nopep8
+from lammps_step.nvt_parameters import NVT_Parameters  # nopep8
 from lammps_step.nvt_step import NVTStep  # nopep8
 from lammps_step.tk_nvt import TkNVT  # nopep8
+
+from lammps_step.npt import NPT  # nopep8
+from lammps_step.npt_parameters import NPT_Parameters  # nopep8
+from lammps_step.npt_step import NPTStep  # nopep8
+from lammps_step.tk_npt import TkNPT  # nopep8
