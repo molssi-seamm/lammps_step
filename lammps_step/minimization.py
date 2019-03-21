@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Minimization step in LAMMPS"""
 
-from molssi_workflow import units, Q_, data  # nopep8
+from molssi_workflow import ureg, Q_, data  # nopep8
 import lammps_step
 import logging
 
