@@ -31,8 +31,6 @@ class TkVelocities(molssi_workflow.TkNode):
     def create_dialog(self):
         """Create the dialog!"""
 
-        w = self._widget
-
         self.dialog = Pmw.Dialog(
             self.toplevel,
             buttons=('OK', 'Help', 'Cancel'),
@@ -44,82 +42,82 @@ class TkVelocities(molssi_workflow.TkNode):
 
         frame = ttk.Frame(self.dialog.interior())
         frame.pack(expand=tk.YES, fill=tk.BOTH)
-        w['frame'] = frame
+        self['frame'] = frame
 
         # how to set the velocities
         method_label = ttk.Label(frame, text='Set the velocities')
-        w['method_label'] = method_label
+        self['method_label'] = method_label
         method = ttk.Combobox(
             frame,
             state='readonly',
             values=['using a random distribution', 'by scaling them']
         )
         method.set(self.node.method)
-        w['method'] = method
+        self['method'] = method
 
         # the temperature
         temperature_method_label = ttk.Label(frame, text='Temperature')
-        w['temperature_method_label'] = temperature_method_label
+        self['temperature_method_label'] = temperature_method_label
         temperature_method = ttk.Combobox(
             frame, width=10,
             state='readonly',
             values=['is', 'from variable']
         )
         temperature_method.set(self.node.temperature_method)
-        w['temperature_method'] = temperature_method
+        self['temperature_method'] = temperature_method
         temperature = mw.UnitEntry(frame, width=10)
         temperature.set(self.node.temperature)
-        w['temperature'] = temperature
+        self['temperature'] = temperature
         temperature_variable = ttk.Entry(frame, width=15)
         temperature_variable.insert(0, self.node.temperature_variable)
-        w['temperature_variable'] = temperature_variable
+        self['temperature_variable'] = temperature_variable
 
         # the random seed
         seed_method_label = ttk.Label(frame, text='Random seed')
-        w['seed_method_label'] = seed_method_label
+        self['seed_method_label'] = seed_method_label
         seed_method = ttk.Combobox(
             frame, width=10,
             state='readonly',
             values=['random', 'is', 'from variable']
         )
         seed_method.set(self.node.seed_method)
-        w['seed_method'] = seed_method
+        self['seed_method'] = seed_method
         seed = ttk.Entry(frame, width=10)
         seed.insert(0, self.node.seed)
-        w['seed'] = seed
+        self['seed'] = seed
         seed_variable = ttk.Entry(frame, width=15)
         seed_variable.insert(0, self.node.seed_variable)
-        w['seed_variable'] = seed_variable
+        self['seed_variable'] = seed_variable
 
         # zero translational momentum
-        w['remove_translations_value'] = tk.IntVar()
+        self.tk_var['remove_translations'] = tk.IntVar()
         if self.node.remove_linear_momentum:
-            w['remove_translations_value'].set(1)
+            self.tk_var['remove_translations'].set(1)
         else:
-            w['remove_translations_value'].set(0)
+            self.tk_var['remove_translations'].set(0)
         remove_translations = ttk.Checkbutton(
             frame,
-            variable=w['remove_translations_value'],
+            variable=self.tk_var['remove_translations'],
             text='remove any translational momentum'
         )
-        w['remove_translations'] = remove_translations
+        self['remove_translations'] = remove_translations
 
         # zero rotational momentum
-        w['remove_rotations_value'] = tk.IntVar()
+        self.tk_var['remove_rotations'] = tk.IntVar()
         if self.node.remove_linear_momentum:
-            w['remove_rotations_value'].set(1)
+            self.tk_var['remove_rotations'].set(1)
         else:
-            w['remove_rotations_value'].set(0)
+            self.tk_var['remove_rotations'].set(0)
         remove_rotations = ttk.Checkbutton(
             frame,
-            variable=w['remove_rotations_value'],
+            variable=self.tk_var['remove_rotations'],
             text='remove any rotational momentum'
         )
-        w['remove_rotations'] = remove_rotations
+        self['remove_rotations'] = remove_rotations
 
-        w['method'].bind("<<ComboboxSelected>>", self.reset_dialog)
-        w['temperature_method'].bind("<<ComboboxSelected>>", self.reset_dialog)
-        w['seed_method'].bind("<<ComboboxSelected>>", self.reset_dialog)
+        self['method'].bind("<<ComboboxSelected>>", self.reset_dialog)
+        self['temperature_method'].bind("<<ComboboxSelected>>", self.reset_dialog)
+        self['seed_method'].bind("<<ComboboxSelected>>", self.reset_dialog)
 
     def edit(self):
         """Present a dialog for editing the input for the LAMMPS velocities"""
@@ -132,43 +130,42 @@ class TkVelocities(molssi_workflow.TkNode):
 
     def reset_dialog(self, widget=None):
         """Lay out the widgets given the current state"""
-        w = self._widget
-        method = w['method'].get()
-        temperature_method = w['temperature_method'].get()
-        seed_method = w['seed_method'].get()
+        method = self['method'].get()
+        temperature_method = self['temperature_method'].get()
+        seed_method = self['seed_method'].get()
 
-        frame = w['frame']
+        frame = self['frame']
         for slave in frame.grid_slaves():
             slave.grid_forget()
 
         row = 0
-        w['method_label'].grid(row=row, column=0, sticky=tk.E)
-        w['method'].grid(row=row, column=1, columnspan=2, sticky=tk.W)
+        self['method_label'].grid(row=row, column=0, sticky=tk.E)
+        self['method'].grid(row=row, column=1, columnspan=2, sticky=tk.W)
 
         if 'random' in method or 'scaling' in method:
             row += 1
-            w['temperature_method_label'].grid(row=row, column=0, sticky=tk.E)
-            w['temperature_method'].grid(row=row, column=1, sticky=tk.EW)
+            self['temperature_method_label'].grid(row=row, column=0, sticky=tk.E)
+            self['temperature_method'].grid(row=row, column=1, sticky=tk.EW)
             if temperature_method == 'is':
-                w['temperature'].grid(row=row, column=2, sticky=tk.W)
+                self['temperature'].grid(row=row, column=2, sticky=tk.W)
             else:
-                w['temperature_variable'].grid(row=row, column=2, sticky=tk.W)
+                self['temperature_variable'].grid(row=row, column=2, sticky=tk.W)
 
         if 'random' in method:
             row += 1
-            w['seed_method_label'].grid(row=row, column=0, sticky=tk.E)
-            w['seed_method'].grid(row=row, column=1, sticky=tk.EW)
+            self['seed_method_label'].grid(row=row, column=0, sticky=tk.E)
+            self['seed_method'].grid(row=row, column=1, sticky=tk.EW)
             if seed_method == 'is':
-                w['seed'].grid(row=row, column=2, sticky=tk.W)
+                self['seed'].grid(row=row, column=2, sticky=tk.W)
             elif 'variable' in seed_method:
-                w['seed_variable'].grid(row=row, column=2, sticky=tk.W)
+                self['seed_variable'].grid(row=row, column=2, sticky=tk.W)
 
         if 'random' in method or 'scaling' in method:
             row += 1
-            w['remove_translations'].grid(row=row, column=1, columnspan=2,
+            self['remove_translations'].grid(row=row, column=1, columnspan=2,
                                           sticky=tk.W)
             row += 1
-            w['remove_rotations'].grid(row=row, column=1, columnspan=2,
+            self['remove_rotations'].grid(row=row, column=1, columnspan=2,
                                        sticky=tk.W)
 
     def handle_dialog(self, result):
@@ -187,10 +184,9 @@ class TkVelocities(molssi_workflow.TkNode):
 
         self.dialog.deactivate(result)
 
-        w = self._widget
-        method = w['method'].get()
-        temperature_method = w['temperature_method'].get()
-        seed_method = w['seed_method'].get()
+        method = self['method'].get()
+        temperature_method = self['temperature_method'].get()
+        seed_method = self['seed_method'].get()
 
         self.node.method = method
         if 'random' in method or 'scaling' in method:
@@ -199,7 +195,7 @@ class TkVelocities(molssi_workflow.TkNode):
                 self.node.temperature['temperature'].get()
             else:
                 self.node.temperature_variable = \
-                    w['temperature_variable'].get()
+                    self['temperature_variable'].get()
 
         if 'random' in method:
             self.node.seed_method = seed_method
@@ -207,10 +203,10 @@ class TkVelocities(molssi_workflow.TkNode):
                 self.node.seed['seed'].get()
             else:
                 self.node.seed_variable = \
-                    w['seed_variable'].get()
+                    self['seed_variable'].get()
 
         if 'random' in method or 'scaling' in method:
             self.node.remove_linear_momentum = \
-                (w['remove_translations_value'] == 1)
+                (self.tk_var['remove_translations'] == 1)
             self.node.remove_angular_momentum = \
-                (w['remove_rotations_value'] == 1)
+                (self.tk_var['remove_rotations'] == 1)
