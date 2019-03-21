@@ -18,6 +18,8 @@ requirements = [
     'molssi_util',
     'molssi_workflow',
     'pprint',
+    'statistics',
+    'statsmodels',
 ]
 # 'math',
 # 'random',
@@ -73,6 +75,7 @@ setup(
             'Minimization = lammps_step:MinimizationStep',
             'NVE = lammps_step:NVEStep',
             'NVT = lammps_step:NVTStep',
+            'NPT = lammps_step:NPTStep',
             'Velocities = lammps_step:VelocitiesStep',
         ],
         'org.molssi.workflow.lammps.tk': [
@@ -82,6 +85,7 @@ setup(
             'Minimization = lammps_step:MinimizationStep',
             'NVE = lammps_step:NVEStep',
             'NVT = lammps_step:NVTStep',
+            'NPT = lammps_step:NPTStep',
             'Velocities = lammps_step:VelocitiesStep',
         ],
     }
