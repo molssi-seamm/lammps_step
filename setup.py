@@ -18,6 +18,7 @@ requirements = [
     'molssi_util',
     'molssi_workflow',
     'pprint',
+    'scipy',
     'statistics',
     'statsmodels',
 ]
