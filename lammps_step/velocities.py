@@ -43,7 +43,7 @@ class Velocities(molssi_workflow.Node):
         self.seed = 53
         self.seed_variable = ''
         self.temperature_method = 'is'
-        self.temperature = Q_(25, ureg.degC)
+        self.temperature = Q_(298.15, ureg.K)
         self.temperature_variable = ''
         self.momentum_method = 'default'
         self.remove_linear_momentum = True
