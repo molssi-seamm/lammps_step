@@ -1,25 +1,29 @@
 # -*- coding: utf-8 -*-
 """A single-point initialization in LAMMPS"""
 
-import molssi_workflow
 import forcefield
 import lammps_step
 import logging
+import molssi_workflow
+import molssi_util.printing as printing
+from molssi_util.printing import FormattedText as __
 import molssi_util.smiles
 import pprint
 
 logger = logging.getLogger(__name__)
+job = printing.getPrinter()
+printer = printing.getPrinter('lammps')
 
 kspace_methods = {
     'automatic': '',
     'none': 'none',
-    'Ewald summation': 'ewald {accuracy}',
-    'PPPM: Particle-particle particle-mesh': 'pppm {accuracy}',
-    'PPPM for few charged atoms': 'pppm/cg {accuracy} {smallq}',
-    'PPPM staggered mesh': 'pppm/stagger {accuracy}',
-    'PPPM plus dispersion term': 'pppm/disp {accuracy}',
-    'MSM: Multilevel summation method': 'msm {accuracy}',
-    'MSM for few charged atoms': 'msm/cg {accuracy} {smallq}'
+    'Ewald summation method': 'ewald {accuracy:.2E}',
+    'PPPM (Particle-particle particle-mesh) method': 'pppm {accuracy:.2E}',
+    'PPPM method for few charged atoms': 'pppm/cg {accuracy:.2E} {smallq}',
+    'PPPM method with a staggered mesh': 'pppm/stagger {accuracy:.2E}',
+    'PPPM method inclduing dispersion terms': 'pppm/disp {accuracy:.2E}',
+    'MSM (Multilevel summation method)': 'msm {accuracy:.2E}',
+    'MSM method for few charged atoms': 'msm/cg {accuracy:.2E} {smallq}'
 }
 
 msm_pair_styles = ['born', 'buck', '', 'lj/charmm', 'lj/cut']
@@ -58,6 +62,7 @@ class Initialization(molssi_workflow.Node):
         self.kspace_smallq = 1.0e-05
         self.charged_atom_fraction_cutoff = 0.1
         self.ewald_atom_cutoff = 1000
+        self.msm_atom_cutoff = 5000
         self.use_tail_correction = True
         self.shift_nonbond = False
 
@@ -66,9 +71,44 @@ class Initialization(molssi_workflow.Node):
         """The list of avilable methods"""
         return list(kspace_methods)
 
+    def describe(self, indent='', json_dict=None):
+        """Write out information about what this node will do
+        If json_dict is passed in, add information to that dictionary
+        so that it can be written out by the controller as appropriate.
+        """
+
+        next_node = super().describe(indent, json_dict)
+
+        string = 'Initialize the calculation with a cutoff of {cutoff} Å'
+        if self.shift_nonbond:
+            string += ', shifting the nonbond energies to 0 at the cutoff'
+        string += '. If the system is periodic'
+        if self.kspace_method[0] == '$':
+            string += " use the variable '{method}' to determine whether "
+            string += "and how to accelerate the k-space summations."
+        elif self.kspace_method == 'none':
+            string += ' no k-space acceleration method will be used.'
+        elif self.kspace_method == 'automatic':
+            string += ' the best k-space acceleration method for the '
+            string += ' molecular system will be chosen.'
+        else:
+            string += ' the {method} for k-space acceleration will be used.'
+
+        if self.kspace_method != 'none':
+            string += ' The accuracy goal is {accuracy:.2E}.'
+
+        job.job(__(string, indent=self.indent+'    ',
+                   cutoff=self.cutoff, method=self.kspace_method,
+                   accuracy=float(self.kspace_accuracy)))
+
+        return next_node
+
     def get_input(self):
         """Get the input for the initialization of LAMMPS"""
 
+        self.description = []
+        self.description.append(__(self.header, indent=self.indent))
+        
         structure = molssi_workflow.data.structure
         logger.debug('Structure in LAMMPS initialization:\n' +
                      pprint.pformat(structure))
@@ -99,7 +139,7 @@ class Initialization(molssi_workflow.Node):
         charges = atoms['charges'][ff_name]
         n_charged_atoms = 0
         for charge in charges:
-            if abs(charge) > self.kspace_smallq:
+            if abs(charge) > float(self.kspace_smallq):
                 n_charged_atoms += 1
         fraction_charged_atoms = n_charged_atoms / n_atoms
 
@@ -113,10 +153,12 @@ class Initialization(molssi_workflow.Node):
         if periodicity == 0:
             lines.append('boundary            s s s')
             tail_correction = 'no'
+            string = 'Setup for a molecular (non-periodic) system.'
         elif periodicity == 3:
             lines.append('boundary            p p p')
             tail_correction = 'yes' if self.use_tail_correction and \
                               not self.shift_nonbond else 'no'
+            string = 'Setup for a periodic (crystalline or fluid) system.'
         else:
             raise RuntimeError('The LAMMPS step can only handle 0-'
                                ' or 3-D periodicity at the moment!')
@@ -157,37 +199,105 @@ class Initialization(molssi_workflow.Node):
                 kspace_style = ''
                 if n_charged_atoms == 0:
                     pair_style = pair_style_base
+                    string += (
+                        ' The nonbonded interactions will be evaluated using '
+                        'a cutoff of {cutoff} Å. Since there are no charges '
+                        'on the atoms, no long-range coulomb method will be '
+                        'used.'
+                    )
                 else:
+                    string += (
+                        ' The nonbonded interactions will be evaluated using '
+                        'a cutoff of {cutoff} Å, with the long-range terms '
+                    )
                     pair_style = pair_style_base + '/coul/long'
                     if n_atoms < self.ewald_atom_cutoff:
                         kspace_style = 'ewald {}'.format(self.kspace_accuracy)
+                        string += ('using the Ewald summation method with '
+                                   'an accuracy of {accuracy:.2E}.')
                     elif fraction_charged_atoms < \
                             self.charged_atom_fraction_cutoff:
                         kspace_style = 'pppm/cg {} {}'.format(
                             self.kspace_accuracy,
-                            self.charged_atom_fraction_cutoff)
+                            self.charged_atom_fraction_cutoff
+                        )
+                        string += ('using the PPPM method optimized for few '
+                                   'atoms with charges, with '
+                                   'an accuracy of {accuracy:.2E}.')
                     else:
                         kspace_style = 'pppm {}'.format(self.kspace_accuracy)
+                        string += ('using the PPPM method with '
+                                   'an accuracy of {accuracy:.2E}.')
                 lines.append('pair_style          {} {}'.format(
                     pair_style, self.cutoff))
                 lines.append(
                     'pair_modify         mix ' + mixing +
                     ' tail {} shift {}'.format(tail_correction, shift))
+                if shift:
+                    string += (' The van der Waals terms will be shifted '
+                               'to zero energy at the cutoff distance.')
+                if tail_correction:
+                    string += (' A long-range correction for the '
+                               'van der Waals terms will be added.')
                 if kspace_style != '':
                     lines.append('kspace_style        ' + kspace_style)
             else:
+                kspace_style = ''
                 if n_charged_atoms == 0:
                     pair_style = pair_style_base
-                elif fraction_charged_atoms < \
-                    self.charged_atom_fraction_cutoff and \
-                        pair_style_base in msm_pair_styles:
+                    string += (
+                        ' The nonbonded interactions will be evaluated using '
+                        'a simple cutoff of {cutoff} Å. Since there are no '
+                        'charges on the atoms, no long-range coulomb method '
+                        'will be used.'
+                    )
+                elif (n_atoms > self.msm_atom_cutoff and
+                      pair_style_base in msm_pair_styles):
                     pair_style = pair_style_base + '/coul/msm'
+                    string += (
+                        'The nonbonded interactions will be handled with '
+                        ' a cutoff of {cutoff} Å.'
+                    )
+                    if fraction_charged_atoms < \
+                       self.charged_atom_fraction_cutoff:
+                        kspace_style = 'msm/cg {accuracy:.2E} {smallq:.2E}'
+                        string += (
+                            ' The MSM method will be used to handle '
+                            'the longer range coulombic interactions, using '
+                            'the approach tuned for systems with few charges.'
+                            'The accuracy goal is {accuracy:.2E}.'
+                        )
+                    else:
+                        kspace_style = 'msm {accuracy:.2E}'
+                        string += (
+                            ' The MSM method will be used to handle '
+                            'the longer range coulombic interactions.'
+                            'The accuracy goal is {accuracy:.2E}.'
+                        )
                 else:
                     pair_style = pair_style_base + '/coul/cut'
+                    string += (
+                        'The nonbonded interactions will be handled with '
+                        ' a simple cutoff of {cutoff} Å.'
+                    )
+                if shift:
+                    string += (' The van der Waals terms will be shifted '
+                               'to zero energy at the cutoff distance.')
                 lines.append('pair_style          {} {}'.format(
                     pair_style, self.cutoff))
                 lines.append('pair_modify         mix ' + mixing +
                              ' shift {}'.format(shift))
+                if kspace_style != '':
+                    lines.append(
+                        'kspace_style        ' +
+                        kspace_style.format(accuracy=self.accuracy,
+                                            smallq=self.kspace_smallq)
+                    )
+            self.description.append(
+                __(string, indent=self.indent+'    ',
+                   accuracy=float(self.kspace_accuracy),
+                   smallq=float(self.kspace_smallq), cutoff=self.cutoff)
+            )
         else:
             if periodicity == 3:
                 kspace_style = ''
