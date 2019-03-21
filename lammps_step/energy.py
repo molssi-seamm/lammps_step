@@ -8,11 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class Energy(molssi_workflow.Node):
-    structures = {
-        'current': '',
-        'initial': '',
-        'other': '',
-    }
+    """Handle a singlepoint energy calculation in LAMMPS"""
 
     def __init__(self, workflow=None, title='Energy',
                  extension=None):
@@ -24,8 +20,6 @@ class Energy(molssi_workflow.Node):
                          extension=extension)
 
         self.description = 'A single point energy calculation'
-
-        self.structure = None
 
     def get_input(self):
         """Get the input for an energy calculation for LAMMPS"""
