@@ -34,19 +34,20 @@ class TkEnergy(molssi_workflow.TkNode):
             buttons=('OK', 'Help', 'Cancel'),
             defaultbutton='OK',
             master=self.toplevel,
-            title='Edit Energy step',
+            title='Edit Energy parameters',
             command=self.handle_dialog)
         self.dialog.withdraw()
 
         frame = ttk.Frame(self.dialog.interior())
         frame.pack(expand=tk.YES, fill=tk.BOTH)
-        self._widget['frame'] = frame
+        self['frame'] = frame
 
-        self._widget['message'] = ttk.Label(
+        self['message'] = ttk.Label(
             frame,
             text='The LAMMPS energy step has no parameters\n'
             'All relevant parameters are set in the initialization step.'
         )
+        self['message'].grid()
 
     def edit(self):
         """Present a dialog for editing the input for the LAMMPS energy
@@ -59,13 +60,11 @@ class TkEnergy(molssi_workflow.TkNode):
         self.dialog.activate(geometry='centerscreenfirst')
 
     def reset_dialog(self, widget=None):
-        w = self._widget
+        """Layout the dialog according to the current control
+        parameters. For the energy, there are no parameters, so
+        do nothing."""
 
-        frame = w['frame']
-        for slave in frame.grid_slaves():
-            slave.grid_forget()
-
-        w['message'].grid()
+        pass
 
     def handle_dialog(self, result):
         if result is None or result == 'Cancel':
@@ -82,5 +81,3 @@ class TkEnergy(molssi_workflow.TkNode):
                 "Don't recognize dialog result '{}'".format(result))
 
         self.dialog.deactivate(result)
-
-        self.node.structure = self._widget['structure'].get()
