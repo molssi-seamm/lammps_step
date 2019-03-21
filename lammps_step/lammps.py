@@ -1,16 +1,27 @@
 # -*- coding: utf-8 -*-
 """A node or step for LAMMPS in a workflow"""
 
-import molssi_workflow
-from molssi_workflow import units, Q_, units_class, data  # nopep8
+import glob
 import lammps_step
 import logging
 import math
+import molssi_workflow
+from molssi_workflow import ureg, Q_, units_class, data  # nopep8
+import molssi_util.printing as printing
+from molssi_util.printing import FormattedText as __
 import os
 import os.path
+import pandas
 import pprint
+import statistics
+import statsmodels.tsa.stattools as stattools
+import statsmodels.stats.stattools
+import statsmodels.api
+import statsmodels.tools
 
 logger = logging.getLogger(__name__)
+job = printing.getPrinter()
+printer = printing.getPrinter('lammps')
 
 bond_style = {
     'quadratic_bond': 'harmonic',
@@ -111,7 +122,8 @@ class LAMMPS(molssi_workflow.Node):
         If json_dict is passed in, add information to that dictionary
         so that it can be written out by the controller as appropriate.
         """
-        super().describe(indent, json_dict)
+
+        next_node = super().describe(indent, json_dict)
 
         self.lammps_workflow.root_directory = self.workflow.root_directory
 
@@ -119,10 +131,10 @@ class LAMMPS(molssi_workflow.Node):
         node = self.lammps_workflow.get_node('1').next()
 
         while node is not None:
-            node.describe(indent, json_dict)
+            node.describe(indent+'    ', json_dict)
             node = node.next()
 
-        return self.next()
+        return next_node
 
     def run(self):
         """Run a LAMMPS simulation
@@ -131,6 +143,8 @@ class LAMMPS(molssi_workflow.Node):
         if data.structure is None:
             logger.error('LAMMPS run(): there is no structure!')
             raise RuntimeError('LAMMPS run(): there is no structure!')
+
+        next_node = super().run(printer)
 
         self.lammps_workflow.root_directory = self.workflow.root_directory
 
@@ -188,7 +202,10 @@ class LAMMPS(molssi_workflow.Node):
                 else:
                     fd.write(result[filename]['exception'])
 
-        return super().run()
+        # Analyze the results
+        self.analyze()
+
+        return next_node
 
     def structure_data(self, eex, triclinic=False):
         """Create the LAMMPS structure file from the energy expression"""
@@ -665,3 +682,59 @@ class LAMMPS(molssi_workflow.Node):
             return self.to_lammps_units(value).magnitude
         else:
             return value
+
+    def analyze(self, indent='', **kwargs):
+        """Analyze the output of the calculation
+        """
+        # Get the first real node
+        node = self.lammps_workflow.get_node('1').next()
+
+        while node is not None:
+            for value in node.description:
+                printer.important(value)
+                printer.important(' ')
+
+            # Find any trajectory files
+            id = '_'.join(str(e) for e in node._id)
+
+            filenames = glob.glob(
+                os.path.join(self.directory, '*trajectory*' + id + '.txt')
+            )
+
+            for filename in filenames:
+                self.analyze_trajectory(filename)
+            
+            node = node.next()
+
+        return
+
+    def analyze_trajectory(self, filename):
+        """Read a trajectory file and do the statistical analysis
+        """
+
+        # Process the trajectory data
+        with open(filename, 'r') as fd:
+            data = pandas.read_csv(
+                fd, sep=' ', header=0, comment='#', index_col=1,
+            )
+
+        logger.debug('Columns: {}'.format(data.columns))
+        logger.debug('  Types:\n{}'.format(data.dtypes))
+
+        printer.normal('       Analysis of ' +
+                       os.path.basename(filename) + '\n')
+        
+        for column in data.columns[1:]:
+            x0 = statsmodels.tools.add_constant(data.index)
+            y0 = data[column]
+            model = statsmodels.api.OLS(y0, x0)
+            fit = model.fit()
+
+            printer.normal(__(
+                '{column:>20s} = {value:9.3f} ± {stderr:.3f}',
+                column=column, value=fit.params['const'],
+                stderr=fit.bse['const'], indent=7*' ',
+                wrap=False, dedent=False
+            ))
+
+
