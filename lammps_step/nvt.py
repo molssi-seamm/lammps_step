@@ -1,14 +1,21 @@
 # -*- coding: utf-8 -*-
 """NVT (canonical) dynamics in LAMMPS"""
 
-from molssi_workflow import units, Q_, units_class, data  # nopep8
 import lammps_step
 import logging
+import molssi_workflow
+from molssi_workflow import ureg, Q_, data, units_class  # nopep8
+import molssi_util.printing as printing
+from molssi_util.printing import FormattedText as __
+import random
 
 logger = logging.getLogger(__name__)
+job = printing.getPrinter()
+printer = printing.getPrinter('lammps')
 
 
 class NVT(lammps_step.NVE):
+
     methods = {
         'Nose-Hoover': {
             'documentation': 'http://lammps.sandia.gov/doc/fix_nvt.html',
@@ -167,10 +174,12 @@ class NVT(lammps_step.NVE):
         },
     }
 
-    def __init__(self,
-                 workflow=None,
-                 title='NVT dynamics',
-                 extension=None):
+    def __init__(
+            self,
+            workflow=None,
+            title='NVT dynamics',
+            extension=None
+    ):
         """Initialize the node"""
 
         logger.debug('Creating NVT {}'.format(self))
@@ -180,51 +189,127 @@ class NVT(lammps_step.NVE):
             title=title,
             extension=extension)
 
+        logger.debug('NVT after super init, {}'.format(self))
+
         self.description = 'NVT dynamics step in LAMMPS'
 
-        self.Tcontrol_method = list(lammps_step.NVT.methods)[0]
-        self.T0_method = 'is'
-        self.T0 = Q_(25, units.degC)
-        self.T0_variable = 'T0'
-        self.T1_method = 'is'
-        self.T1 = self.T0
-        self.T1_variable = 'T1'
-        self.Tdamp_method = 'is'
-        self.Tdamp = Q_(100, 'fs')
-        self.Tdamp_variable = 'Tdamp'
-        self.Tchain_method = 'is'
-        self.Tchain = 3
-        self.Tchain_variable = 'Tchain'
-        self.Tloop_method = 'is'
-        self.Tloop = 1
-        self.Tloop_variable = 'Tloop'
-        self.drag_method = 'is'
-        self.drag = 0.0
-        self.drag_variable = 'drag'
-        self.seed_method = 'random'
-        self.seed = 53
-        self.seed_variable = 'seed'
-        self.frequency_method = 'is'
-        self.frequency = Q_(100, 'fs')
-        self.frequency_variable = 'frequency'
-        self.window_method = 'is'
-        self.window = Q_(20, units.delta_degC)
-        self.window_variable = 'window'
-        self.fraction_method = 'is'
-        self.fraction = 1.0
-        self.fraction_variable = 'fraction'
+        logger.debug("NVT.init() creating NVT_Parameters object")
+
+        self.parameters = lammps_step.NVT_Parameters()
+
+        logger.debug("NVT.init() completed")
+
+    def description_text(self, P):
+        """Create the text description of what this step will do.
+        The dictionary of control values is passed in as P so that
+        the code can test values, etc.
+        """
+
+        # What will we do?
+        
+        if P['T0'] == P['T1']:
+            text = "{time} of canonical (NVT) dynamics at {T0} "
+        else:
+            text = ("{time} of canonical (NVT) dynamics starting "
+                    " at {T0}, going to {T1}, ")
+        if P['thermostat'] == 'Nose-Hoover':
+            text += "using a Nose-Hoover thermostat."
+            if P['Tchain'] != '3':
+                if P['Tloop'] != '1':
+                    text += (" The thermostat will use a chain of {Tchain} "
+                             "thermostats with {Tloop} subcycles and a ")
+                else:
+                    text += (" The thermostat will use a chain of {Tchain} "
+                             "thermostats and a ")
+            elif P['Tloop'] != '1':
+                text += " The thermostat will use {Tloop} subcycles and a "
+            else:
+                text += " The thermostat will use a "
+            text += "drag factor of {drag}."
+        elif P['thermostat'] == 'Berendsen':
+            text += ("using a Berendsen thermostat with a damping time "
+                     "of {Tdamp}")
+        elif 'csvr' in P['thermostat']:
+            text += ("using a canonical sampling thermostat using velocity "
+                     "rescaling (CSVR) with a damping time of {Tdamp} and "
+                     "a {random_seed}.")
+        elif 'csld' in P['thermostat']:
+            text += ("using a canonical sampling thermostat using Langevin "
+                     "dynamics (CSLD) with a damping time of {Tdamp} and "
+                     "a {random_seed}.")
+        elif P['thermostat'] == 'velocity rescaling':
+            text += ("using velocity rescaling every {frequency} with a "
+                     "temperature window of {window}.")
+            if P['fraction'] != 1.0:
+                text += (" The velocities will only be scaled a fraction "
+                         "({fraction}) of the amount needed to fully correct "
+                         "the temperature.")
+        elif P['thermostat'] == 'Langevin':
+            text += ("using a Langevin thermostat with a damping time "
+                     "of {Tdamp} and a {random_seed}")
+        else:
+            text += ("using the thermostat given by {thermostat}")
+
+        return text
+
+    def describe(self, indent='', json_dict=None):
+        """Write out information about what this node will do
+        If json_dict is passed in, add information to that dictionary
+        so that it can be written out by the controller as appropriate.
+        """
+
+        # Can't call super() because it will print too much
+        self.visited = True
+        job.job('\n' + self.indent + self.header)
+        next_node = self.next()
+
+        # Local copies of variables in a dictionary
+
+        P = self.parameters.values_to_dict()
+        text = self.description_text(P)
+        job.job(__(text, indent=self.indent+'    ', **P))
+
+        return next_node
 
     def get_input(self):
         """Get the input for an NVT dynamics run in LAMMPS"""
 
-        lines = []
+        self.description = []
+        self.description.append(__(self.header, indent=3*' '))
 
-        if self.timestep == 'automatic':
+        P = self.parameters.current_values_to_dict(
+            context=molssi_workflow.workflow_variables._data
+        )
+
+        # Fix variables with special cases
+
+        # These need to be based on masses...
+        if P['timestep'] == 'normal':
             timestep = 1.0
+            P['timestep'] = Q_(timestep, ureg.fs)
+        elif P['timestep'] == 'accurate but slow':
+            timestep = 0.5
+            P['timestep'] = Q_(timestep, ureg.fs)
+        elif P['timestep'] == 'coarse but fast':
+            timestep = 2.0
+            P['timestep'] = Q_(timestep, ureg.fs)
         else:
-            timestep = self.timestep.to('fs').magnitude
+            timestep = P['timestep'].value.to('fs').magnitude
 
-        time = self.time.to('fs').magnitude
+        if P['seed'] == 'random':
+            P['seed'] = int(random.random() * 2**31)
+            
+        # Have to fix formatting for printing...
+        PP = dict(P)
+        for key in PP:
+            if isinstance(PP[key], units_class):
+                PP[key] = '{:~P}'.format(PP[key])
+
+        self.description.append(
+            __(self.description_text(PP), **PP, indent=7*' ')
+        )
+
+        time = P['time'].to('fs').magnitude
         nsteps = round(time / timestep)
 
         thermo_properties = ('time temp press etotal ke pe ebond '
@@ -232,10 +317,11 @@ class NVT(lammps_step.NVE):
         properties = 'v_time v_temp v_press v_etotal v_ke v_pe v_emol v_epair'
         titles = 'tstep t T P Etot Eke Epe Emol Epair'
 
-        T0 = self.get_value('T0')
-        T1 = self.get_value('T1')
-        Tdamp = self.get_value('Tdamp')
+        T0 = P['T0'].to('K').magnitude
+        T1 = P['T1'].to('K').magnitude
+        Tdamp = P['Tdamp'].to('fs').magnitude
 
+        lines = []
         lines.append('')
         lines.append('#     NVT dynamics')
         lines.append('')
@@ -245,10 +331,10 @@ class NVT(lammps_step.NVE):
         lines.append('thermo              {}'.format(int(nsteps/100)))
 
         nfixes = 0
-        if self.Tcontrol_method == 'Nose-Hoover':
-            Tchain = self.get_value('Tchain')
-            Tloop = self.get_value('Tloop')
-            drag = self.get_value('drag')
+        if P['thermostat'] == 'Nose-Hoover':
+            Tchain = P['Tchain']
+            Tloop = P['Tloop']
+            drag = P['drag']
             nfixes += 1
             lines.append('fix                 {} all nvt '.format(nfixes) +
                          'temp {} {} {} '.format(T0, T1, Tdamp) +
@@ -256,7 +342,7 @@ class NVT(lammps_step.NVE):
                          'tloop {} '.format(Tloop) +
                          'drag {}'.format(drag)
                          )
-        elif self.Tcontrol_method == 'Berendsen':
+        elif P['thermostat'] == 'Berendsen':
             nfixes += 1
             lines.append('fix                 {} '.format(nfixes) +
                          'all temp/berendsen ' +
@@ -265,8 +351,8 @@ class NVT(lammps_step.NVE):
             nfixes += 1
             lines.append('fix                 {} '.format(nfixes) +
                          'all nve')
-        elif 'csvr' in self.Tcontrol_method:
-            seed = self.get_value('seed')
+        elif 'csvr' in P['thermostat']:
+            seed = P['seed']
             nfixes += 1
             lines.append('fix                 {} '.format(nfixes) +
                          'all temp/csvr ' +
@@ -275,8 +361,8 @@ class NVT(lammps_step.NVE):
             nfixes += 1
             lines.append('fix                 {} '.format(nfixes) +
                          'all nve')
-        elif 'csld' in self.Tcontrol_method:
-            seed = self.get_value('seed')
+        elif 'csld' in P['thermostat']:
+            seed = P['seed']
             nfixes += 1
             lines.append('fix                 {} '.format(nfixes) +
                          'all temp/csld ' +
@@ -285,11 +371,11 @@ class NVT(lammps_step.NVE):
             nfixes += 1
             lines.append('fix                 {} '.format(nfixes) +
                          'all nve')
-        elif self.Tcontrol_method == 'velocity rescaling':
-            frequency = self.get_value('frequency')
+        elif P['thermostat'] == 'velocity rescaling':
+            frequency = P['frequency']
             nevery = round(nsteps / (frequency / timestep))
-            window = self.get_value('window')
-            fraction = self.get_value('fraction')
+            window = P['window'].to('K').magnitude
+            fraction = P['fraction']
             nfixes += 1
             lines.append(
                 'fix                 {} '.format(nfixes) +
@@ -299,12 +385,12 @@ class NVT(lammps_step.NVE):
             nfixes += 1
             lines.append('fix                 {} '.format(nfixes) +
                          'all nve')
-        elif self.Tcontrol_method == 'Langevin':
-            seed = self.get_value('seed')
+        elif P['thermostat'] == 'Langevin':
+            seed = P['seed']
             nfixes += 1
             lines.append(
                 'fix                 {} '.format(nfixes) +
-                'all temp/langevin ' +
+                'all langevin ' +
                 '{} {} {} {} '.format(T0, T1, Tdamp, seed)
             )
             nfixes += 1
@@ -312,7 +398,7 @@ class NVT(lammps_step.NVE):
                          'all nve')
         else:
             raise RuntimeError("Don't recognize temperature control " +
-                               "'{}'".format(self.Tcontrol_method))
+                               "'{}'".format(P['thermostat']))
 
         # summary output written 10 times during run so we can see progress
         nevery = 10
@@ -328,8 +414,13 @@ class NVT(lammps_step.NVE):
                 '_'.join(str(e) for e in self._id))
         )
         # instantaneous output written for averaging
-        if self.sampling_method != 'none':
-            sampling = self.sampling.to('fs').magnitude
+        if P['sampling'] == 'none':
+            self.decription.append(__(
+                "The run will be {nsteps:n} steps of dynamics.",
+                nsteps=nsteps, indent=7*' '
+            ))
+        else:
+            sampling = P['sampling'].to('fs').magnitude
             nevery = round(sampling / timestep)
             nfreq = int(nsteps / nevery)
             nrepeat = 1
@@ -343,6 +434,11 @@ class NVT(lammps_step.NVE):
                     nevery, nrepeat, nfreq, properties, titles,
                     '_'.join(str(e) for e in self._id))
             )
+            self.description.append(__(
+                ("The run will be {nsteps:,d} steps of dynamics "
+                 "sampled every {nevery:n} steps."),
+                nsteps=nsteps, nevery=nevery, indent=7*' '
+            ))
 
         lines.append('run                 {}'.format(nsteps))
         lines.append('')
@@ -350,23 +446,3 @@ class NVT(lammps_step.NVE):
             lines.append('unfix               {}'.format(fix))
 
         return lines
-
-    def get_value(self, name):
-        methodvar = name + '_method'
-        if methodvar in self.__dict__:
-            method = self.__dict__[methodvar]
-        else:
-            method = 'unknown'
-
-        if method == 'is':
-            result = self.__dict__[name]
-        elif method == 'from variable':
-            raise RuntimeError(
-                'Variables not implemented yet! {}'.format(name)
-            )
-        else:
-            raise RuntimeError(
-                "Can't handle method '{}'!".format(method)
-            )
-
-        return self.parent.magnitude_in_lammps_units(result)

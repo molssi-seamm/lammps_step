@@ -1,11 +1,17 @@
 # -*- coding: utf-8 -*-
 """NVE (microcanonical) dynamics in LAMMPS"""
 
-from molssi_workflow import units, Q_, data  # nopep8
 import lammps_step
 import logging
+import molssi_workflow
+from molssi_workflow import ureg, Q_, units_class, data  # nopep8
+import molssi_util.printing as printing
+from molssi_util.printing import FormattedText as __
+import pprint
 
 logger = logging.getLogger(__name__)
+job = printing.getPrinter()
+printer = printing.getPrinter('lammps')
 
 
 class NVE(lammps_step.Energy):
@@ -24,25 +30,62 @@ class NVE(lammps_step.Energy):
 
         self.description = 'NVE dynamics step in LAMMPS'
 
-        self.sampling_method = 'is'
-        self.sampling_variable = ''
-        self.sampling = Q_(20, 'fs')
-        self.timestep_method = 'normal'
-        self.timestep_variable = ''
-        self.timestep = Q_(1, 'fs')
-        self.time = Q_(100, 'ps')
+        logger.debug("NVE.init() creating NVE_Parameters object")
+
+        self.parameters = lammps_step.NVE_Parameters()
+
+    def description_text(self):
+        """Create the text description of what this step will do.
+        """
+
+        text = ("{time} of microcanonical (NVE) dynamics using a "
+                "timestep of {timestep}. The trajectory will be "
+                "sampled every {sampling}.")
+
+        return text
+
+    def describe(self, indent='', json_dict=None):
+        """Print the initial description of this step. Parameters
+        will be left as variables and expressions at this point
+        because there is no context in which to evaluate them."""
+
+        # Can't call super() because it will print too much
+        self.visited = True
+        job.job('\n' + self.indent + self.header)
+        next_node = self.next()
+
+        P = self.parameters.values_to_dict()
+        job.job(__(self.description_text(), **P, indent=self.indent + '    '))
+
+        return next_node
 
     def get_input(self):
         """Get the input for an NVE dynamics run in LAMMPS"""
 
-        lines = []
+        self.description = []
+        self.description.append(__(self.header, indent=3*' '))
 
-        if self.timestep == 'automatic':
+        P = self.parameters.current_values_to_dict(
+            context=molssi_workflow.workflow_variables._data
+        )
+
+        if P['timestep'] == 'normal':
             timestep = 1.0
+            P['timestep'] = Q_(timestep, ureg.fs)
         else:
-            timestep = self.timestep.to('fs').magnitude
+            timestep = P['timestep'].to('fs').magnitude
 
-        time = self.time.to('fs').magnitude
+        # Have to fix formatting for printing...
+        PP = dict(P)
+        for key in PP:
+            if isinstance(PP[key], units_class):
+                PP[key] = '{:~P}'.format(PP[key])
+
+        self.description.append(
+            __(self.description_text(), **PP, indent=7*' ')
+        )
+
+        time = P['time'].to('fs').magnitude
         nsteps = round(time / timestep)
 
         thermo_properties = ('time temp press etotal ke pe ebond '
@@ -50,6 +93,7 @@ class NVE(lammps_step.Energy):
         properties = 'v_time v_temp v_press v_etotal v_ke v_pe v_emol v_epair'
         titles = 'tstep t T P Etot Eke Epe Emol Epair'
 
+        lines = []
         nfixes = 0
         lines.append('')
         lines.append('#     NVE dynamics')
@@ -72,8 +116,13 @@ class NVE(lammps_step.Energy):
                          nevery, nrepeat, nfreq, properties,
                          '_'.join(str(e) for e in self._id)))
         # instantaneous output written for averaging
-        if self.sampling_method != 'none':
-            sampling = self.sampling.to('fs').magnitude
+        if P['sampling'] == 'none':
+            self.decription.append(__(
+                "The run will be {nsteps:n} steps of dynamics.",
+                nsteps=nsteps, indent=7*' '
+            ))
+        else:
+            sampling = P['sampling'].to('fs').magnitude
             nevery = round(sampling / timestep)
             nfreq = int(nsteps / nevery)
             nrepeat = 1
@@ -87,6 +136,11 @@ class NVE(lammps_step.Energy):
                     nevery, nrepeat, nfreq, properties, titles,
                     '_'.join(str(e) for e in self._id))
             )
+            self.description.append(__(
+                ("The run will be {nsteps:,d} steps of dynamics "
+                 "sampled every {nevery:n} steps."),
+                nsteps=nsteps, nevery=nevery, indent=7*' '
+            ))
                          
         lines.append('run                 {}'.format(nsteps))
         lines.append('')

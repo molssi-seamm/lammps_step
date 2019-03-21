@@ -22,99 +22,49 @@ class TkNVE(lammps_step.TkEnergy):
     def create_dialog(self):
         """Create the dialog!"""
 
+        # Let parent classes do their thing.
         super().create_dialog()
 
-        self.dialog.configure(title='Edit NVE dynamics step')
-        frame = self._widget['frame']
+        self.dialog.configure(title='Edit NVE dynamics parameters')
 
-        # Simulation time...
-        time_label = ttk.Label(frame, text='Simulation time:')
-        self._widget['time_label'] = time_label
+        # Shortcut for parameters
+        P = self.node.parameters
 
-        time = mw.UnitEntry(frame, width=15)
-        time.set(self.node.time)
-        self._widget['time'] = time
-
-        # Timestep: automatic, a variable or a value...
-        timestep_label = ttk.Label(frame, text='Timestep:')
-        self._widget['timestep_label'] = timestep_label
-
-        timestep_method = ttk.Combobox(
-            frame, state='readonly',
-            values=['normal',
-                    'accurate but slow',
-                    'coarse but fast',
-                    'from variable',
-                    'is'
-                    ],
-            justify=tk.LEFT, width=15
+        # Frame to isolate widgets
+        self['trj_frame'] = ttk.LabelFrame(
+            self['frame'], borderwidth=4, relief='sunken',
+            text='Trajectory', labelanchor='n', padding=10
         )
-        timestep_method.set(self.node.timestep_method)
-        self._widget['timestep_method'] = timestep_method
 
-        timestep_variable = ttk.Entry(frame, width=15)
-        timestep_variable.insert(0, self.node.timestep_variable)
-        self._widget['timestep_variable'] = timestep_variable
+        self['time'] = P['time'].widget(self['trj_frame'])
+        self['timestep'] = P['timestep'].widget(self['trj_frame'])
+        self['sampling'] = P['sampling'].widget(self['trj_frame'])
 
-        timestep = mw.UnitEntry(frame, width=15)
-        timestep.set(self.node.timestep)
-        self._widget['timestep'] = timestep
+        row = 0
 
-        # Sampling: automatic, a variable or a value...
-        sampling_label = ttk.Label(frame, text='Sampling frequency:')
-        self._widget['sampling_label'] = sampling_label
+        self['time'].grid(row=row, column=0, sticky=tk.W)
+        row += 1
+        self['timestep'].grid(row=row, column=0, sticky=tk.W)
+        row += 1
+        self['sampling'].grid(row=row, column=0, sticky=tk.W)
+        row += 1
 
-        sampling_method = ttk.Combobox(
-            frame, state='readonly',
-            values=['none',
-                    'from variable',
-                    'is'
-                    ],
-            justify=tk.LEFT, width=15
+        mw.align_labels(
+            (self['time'],
+             self['timestep'],
+             self['sampling'])
         )
-        sampling_method.set(self.node.sampling_method)
-        self._widget['sampling_method'] = sampling_method
-
-        sampling_variable = ttk.Entry(frame, width=15)
-        sampling_variable.insert(0, self.node.sampling_variable)
-        self._widget['sampling_variable'] = sampling_variable
-
-        sampling = mw.UnitEntry(frame, width=15)
-        sampling.set(self.node.sampling)
-        self._widget['sampling'] = sampling
-
-        timestep_method.bind("<<ComboboxSelected>>", self.reset_dialog)
-        sampling_method.bind("<<ComboboxSelected>>", self.reset_dialog)
 
     def reset_dialog(self, widget=None):
         """Layout the widgets as needed for the current state"""
-        w = self._widget
-        timestep_method = w['timestep_method'].get()
-        sampling_method = w['sampling_method'].get()
 
-        frame = self._widget['frame']
+        frame = self['frame']
         for slave in frame.grid_slaves():
             slave.grid_forget()
 
         row = 0
-        w['time_label'].grid(row=row, column=0, sticky=tk.E)
-        w['time'].grid(row=row, column=1, columnspan=2, sticky=tk.W)
-
-        row += 1
-        w['timestep_label'].grid(row=row, column=0, sticky=tk.E)
-        w['timestep_method'].grid(row=row, column=1, sticky=tk.W)
-        if timestep_method == 'from variable':
-            w['timestep_variable'].grid(row=row, column=2, sticky=tk.W)
-        elif timestep_method == 'is':
-            w['timestep'].grid(row=row, column=2, sticky=tk.W)
-
-        row += 1
-        w['sampling_label'].grid(row=row, column=0, sticky=tk.E)
-        w['sampling_method'].grid(row=row, column=1, sticky=tk.W)
-        if sampling_method == 'from variable':
-            w['sampling_variable'].grid(row=row, column=2, sticky=tk.W)
-        elif sampling_method == 'is':
-            w['sampling'].grid(row=row, column=2, sticky=tk.W)
+        self['trj_frame'].grid(row=row, column=0)
+        return row
 
     def handle_dialog(self, result):
         if result is None or result == 'Cancel':
@@ -132,20 +82,24 @@ class TkNVE(lammps_step.TkEnergy):
 
         self.dialog.deactivate(result)
 
-        w = self._widget
-        timestep_method = w['timestep_method'].get()
-        sampling_method = w['sampling_method'].get()
+        # Shortcut for parameters
+        P = self.node.parameters
 
-        self.node.time = w['time'].get()
+        value, units = self['time'].get()
+        P['time'].value = value
+        P['time'].units = units
 
-        self.node.timestep_method = timestep_method
-        if timestep_method == 'from variable':
-            self.node.timestep_variable = w['timestep_variable'].get()
-        elif timestep_method == 'is':
-            self.node.timestep = w['timestep'].get()
+        tmp = self['timestep'].get()
+        if tmp in P['timestep'].enumeration:
+            P['timestep'].value = tmp
+        else:
+            P['timestep'].value = tmp[0]
+            P['timestep'].units = tmp[1]
 
-        self.node.sampling_method = sampling_method
-        if sampling_method == 'from variable':
-            self.node.sampling_method = w['sampling_variable'].get()
-        elif sampling_method == 'is':
-            self.node.sampling = w['sampling'].get()
+        tmp = self['sampling'].get()
+        if tmp in P['sampling'].enumeration:
+            P['sampling'].value = tmp
+        else:
+            P['sampling'].value = tmp[0]
+            P['sampling'].units = tmp[1]
+
