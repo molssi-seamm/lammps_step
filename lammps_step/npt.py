@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """NPT (canonical) dynamics in LAMMPS"""
 
+from distutils.util import strtobool
 import lammps_step
 import logging
 import molssi_workflow
@@ -400,7 +401,7 @@ class NPT(lammps_step.NVT):
         'fix npt' or 'fix berendsen' in LAMMPS
         """
         system_type = P['system type']
-        Panneal = bool(P['Panneal'])
+        Panneal = bool(strtobool(P['Panneal']))
         if system_type == 'fluid':
             use_stress = 'isotropic pressure'
             couple = 'x, y and z'
