@@ -12,10 +12,10 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'distutils',
     'Pmw',
     'forcefield',
     'logging',
+    'matplotlib',
     'molssi_util',
     'molssi_workflow',
     'pprint',
