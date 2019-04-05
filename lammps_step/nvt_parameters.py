@@ -143,15 +143,11 @@ class NVT_Parameters(lammps_step.NVE_Parameters):
         },
     }
 
-    def __init__(self, data=parameters):
+    def __init__(self, defaults={}, data=None):
         """Initialize the instance, by default from the default
         parameters given in the class"""
 
-        logger.debug('NVT_Parameters.__init__')
-
-        super().__init__()
-
-        logger.debug("Initializing NVT_Parameters object:")
-        logger.debug("\n{}\n".format(pprint.pformat(data)))
-
-        self.update(data)
+        super().__init__(
+            defaults={**NVT_Parameters.parameters, **defaults},
+            data=data
+        )
