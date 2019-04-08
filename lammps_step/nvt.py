@@ -372,7 +372,7 @@ class NVT(lammps_step.NVE):
             lines.append('fix                 {} '.format(nfixes) +
                          'all nve')
         elif P['thermostat'] == 'velocity rescaling':
-            frequency = P['frequency']
+            frequency = P['frequency'].to('fs').magnitude
             nevery = round(nsteps / (frequency / timestep))
             window = P['window'].to('K').magnitude
             fraction = P['fraction']
@@ -415,7 +415,7 @@ class NVT(lammps_step.NVE):
         )
         # instantaneous output written for averaging
         if P['sampling'] == 'none':
-            self.decription.append(__(
+            self.description.append(__(
                 "The run will be {nsteps:n} steps of dynamics.",
                 nsteps=nsteps, indent=7*' '
             ))
