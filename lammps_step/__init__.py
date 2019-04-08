@@ -35,6 +35,7 @@ from lammps_step.minimization_step import MinimizationStep  # nopep8
 from lammps_step.tk_minimization import TkMinimization  # nopep8
 
 from lammps_step.velocities import Velocities  # nopep8
+from lammps_step.velocities_parameters import VelocitiesParameters  # nopep8
 from lammps_step.velocities_step import VelocitiesStep  # nopep8
 from lammps_step.tk_velocities import TkVelocities  # nopep8
 

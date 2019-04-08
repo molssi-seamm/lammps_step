@@ -7,6 +7,7 @@ ToDo:
     * Gaussian or normal distributions...
 """
 
+import lammps_step
 import logging
 import molssi_workflow
 from molssi_workflow import ureg, Q_, data, units_class  # nopep8
@@ -21,11 +22,6 @@ printer = printing.getPrinter('lammps')
 
 
 class Velocities(molssi_workflow.Node):
-    structures = {
-        'current': '',
-        'initial': '',
-        'other': '',
-    }
 
     def __init__(self, workflow=None, title='Velocities',
                  extension=None):
@@ -37,131 +33,104 @@ class Velocities(molssi_workflow.Node):
                          extension=extension)
 
         self.description = 'Set the initial velocities on the atoms'
+        self.parameters = lammps_step.VelocitiesParameters()
 
-        self.method = 'using a random distribution'
-        self.seed_method = 'random'
-        self.seed = 53
-        self.seed_variable = ''
-        self.temperature_method = 'is'
-        self.temperature = Q_(298.15, ureg.K)
-        self.temperature_variable = ''
-        self.momentum_method = 'default'
-        self.remove_linear_momentum = True
-        self.remove_angular_momentum = False
-
-    def describe(self, indent='', json_dict=None):
-        """Write out information about what this node will do
-        If json_dict is passed in, add information to that dictionary
-        so that it can be written out by the controller as appropriate.
+    def description_text(self, P):
+        """Prepare information about what this node will do
         """
+        text = ('Set the velocities to give a temperature {T} '
+                'by {method}.')
 
-        next_node = super().describe(indent, json_dict)
-
-        values = {}
-        if isinstance(self.temperature, units_class):
-            values['temperature'] = '{:~P}'.format(self.temperature)
+        if P['remove_momentum'][0] == '$':
+            text += (' Whether to remove translational or rotational '
+                     'momentum will be determined at runtime by '
+                     "'{remove_momentum}'")
         else:
-            values['temperature'] = self.temperature
-        values['method'] = self.method
+            text += ' LAMMPS will {remove_momentum}.'
 
-        string = dedent("""\
-        Set the temperature of the system to {temperature} by setting the
-        velocities {method}.""")
-        if self.momentum_method == 'default':
-            string += dedent("""
-            By default, the linear momentum will be projected out for
-            periodic systems, and both linear and angular momentum for
-            molecular (non-periodic) systems.""")
-        else:
-            if self.remove_linear_momentum:
-                if self.remove_angular_momentum:
-                    string += (" Any linear or rotational momentum "
-                               "will be removed.")
-                string += " Any linear momentum will be removed."
-            elif self.remove_angular_momentum:
-                string += " Any angular momentum will be removed."
+        if P['method'] != 'scaling current velocities':
+            if P['seed'] == 'random':
+                text += (' The random number generator will be initialized '
+                         'randomly.')
+            else:
+                text += (' The random number generator will be initialized '
+                         "with the seed '{seed}'.")
 
-        job.job(__(string, indent=self.indent+'    ', **values))
-
-        return next_node
+        return text
 
     def get_input(self):
         """Get the input for setting the velocities in LAMMPS"""
+        self._long_header = ''
+        self._long_header += str(__(self.header, indent=3*' '))
+        self._long_header += '\n'
 
-        self.description = []
-        self.description.append(__(self.header, indent=self.indent))
+        P = self.parameters.current_values_to_dict(
+            context=molssi_workflow.workflow_variables._data
+        )
+        # Fix variables that need attention
+        if 'default' in P['remove_momentum']:
+            if data.structure['periodicity'] == 3:
+                P['remove_momentum'] = (
+                    "remove translational but not rotational momentum"
+                )
+            else:
+                P['remove_momentum'] = (
+                    "remove both translational and rotational momentum"
+            )
+        if P['seed'] == 'random':
+            P['seed'] = int(random.random() * 2**31)
 
-        values = {}
-        values['method'] = self.get_value(self.method)
+        # Have to fix formatting for printing...
+        PP = dict(P)
+        for key in PP:
+            if isinstance(PP[key], units_class):
+                PP[key] = '{:~P}'.format(PP[key])
 
-        string = dedent("""\
-        Set the temperature of the system to {T} by setting the
-        velocities {method}.""")
+        self._long_header += str(
+            __(self.description_text(PP), **PP, indent=7*' ')
+        )
+        self.description = [self._long_header]
 
-        if 'random' in self.method:
-            if self.seed_method == 'random':
-                seed = int(random.random() * 2**31)
-                string += dedent("""
-                The random number seed was picked randomly and is {seed}.""")
-            elif self.seed_method == 'is':
-                seed = self.get_value(self.seed)
-                string += " The random number seed was set to {seed}."
-            values['seed'] = seed
-
+        # Get the input lines
         lines = []
-
         lines.append('')
         lines.append('#     velocities')
         lines.append('')
-        if self.momentum_method == 'default':
-            if data.structure['periodicity'] == 3:
-                remove_translations = 'yes'
-                remove_rotations = 'no'
-                string += dedent("""
-                By default, the linear momentum will be projected out for
-                this periodic systems.""")
-            else:
-                remove_translations = 'yes'
-                remove_rotations = 'yes'
-                string += dedent("""
-                By default, both linear and angular momentum will be
-                projected out for this molecular (non-periodic) system.""")
-        elif(self.momentum_method) == 'is':
-            remove_translations = 'yes' if self.remove_linear_momentum \
-                                  else 'no'
-            remove_rotations = 'yes' if self.remove_angular_momentum else 'no'
-            if remove_translations == 'yes':
-                if self.remove_rotataions == 'yes':
-                    string += (" Any linear or rotational momentum "
-                               "will be removed.")
-                string += " Any linear momentum will be removed."
-            elif remove_rotations == 'yes':
-                string += " Any angular momentum will be removed."
+
+        if P['remove_momentum'] == ("remove translational but not "
+                                    "rotational momentum"):
+            remove_translations = 'yes'
+            remove_rotations = 'no'
+        elif P['remove_momentum'] == ("remove rotational but not "
+                                      "translational momentum"):
+            remove_translations = 'no'
+            remove_rotations = 'yes'
+        elif P['remove_momentum'] == ("remove both translational and "
+                                      "rotational momentum"):
+            remove_translations = 'yes'
+            remove_rotations = 'yes'
+        elif P['remove_momentum'] == ("remove neither translational nor "
+                                      "rotational momentum"):
+            remove_translations = 'no'
+            remove_rotations = 'no'
+        else:
+            raise RuntimeError("Don't recognize 'remove_momentum' of '{}'"
+                               .format(P['remove_momentum']))
+
+        T = P['T'].to('K').magnitude
+
+        if 'random' in P['method']:
+            lines.append(
+                'velocity            all create {} {} mom {} rot {}'
+                .format(T, P['seed'], remove_translations, remove_rotations)
+            )
+        elif 'scaling' in P['method']:
+            lines.append(
+                'velocity            all scale {} mom {} rot {}'
+                .format(T, remove_translations, remove_rotations)
+            )
         else:
             raise RuntimeError(
-                'momentum method does not support variables yet')
-
-        T = self.get_value(self.temperature)
-        if isinstance(self.temperature, units_class):
-            values['T'] = '{:~P}'.format(T)
-            T = T.to('K').magnitude
-        else:
-            values['T'] = '{} K'.format(T)
-
-        if 'random' in self.method:
-            lines.append('velocity            '
-                         'all create {} {} mom {} rot {}'.format(
-                             T, seed, remove_translations, remove_rotations))
-        elif 'scaling' in self.method:
-            lines.append('velocity            '
-                         'all scale {} mom {} rot {}'.format(
-                             T, remove_translations, remove_rotations))
-        else:
-            raise RuntimeError(
-                "Velocity method '{}' not supported yet".format(self.method))
-
-        self.description.append(
-            __(string, indent=self.indent+'    ', **values)
-        )
+                "Velocity method '{}' not supported yet".format(P['method']))
 
         return lines
