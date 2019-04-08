@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """NPT (canonical) dynamics in LAMMPS"""
 
-from distutils.util import strtobool
 import lammps_step
 import logging
 import molssi_workflow
@@ -216,7 +215,7 @@ class NPT(lammps_step.NVT):
             timestep = 2.0
             P['timestep'] = Q_(timestep, ureg.fs)
         else:
-            timestep = P['timestep'].value.to('fs').magnitude
+            timestep = P['timestep'].to('fs').magnitude
 
         if P['seed'] == 'random':
             P['seed'] = int(random.random() * 2**31)
@@ -237,8 +236,8 @@ class NPT(lammps_step.NVT):
         thermo_properties = ('time temp press etotal ke pe ebond '
                              'eangle edihed eimp evdwl etail ecoul elong')
         properties = ('v_time v_temp v_press v_density v_cella v_cellb '
-                      'v_cellc v_etotal v_ke v_pe v_emol v_epair')
-        titles = 'tstep t T P density a b c Etot Eke Epe Emol Epair'
+                      'v_cellc v_etotal v_ke v_pe v_epair')
+        titles = 'tstep t T P density a b c Etot Eke Epe Epair'
 
         T0 = P['T0'].to('K').magnitude
         T1 = P['T1'].to('K').magnitude
@@ -401,7 +400,7 @@ class NPT(lammps_step.NVT):
         'fix npt' or 'fix berendsen' in LAMMPS
         """
         system_type = P['system type']
-        Panneal = bool(strtobool(P['Panneal']))
+        Panneal = P['Panneal']
         if system_type == 'fluid':
             use_stress = 'isotropic pressure'
             couple = 'x, y and z'

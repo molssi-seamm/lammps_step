@@ -314,8 +314,8 @@ class NVT(lammps_step.NVE):
 
         thermo_properties = ('time temp press etotal ke pe ebond '
                              'eangle edihed eimp evdwl etail ecoul elong')
-        properties = 'v_time v_temp v_press v_etotal v_ke v_pe v_emol v_epair'
-        titles = 'tstep t T P Etot Eke Epe Emol Epair'
+        properties = 'v_time v_temp v_press v_etotal v_ke v_pe v_epair'
+        titles = 'tstep t T P Etot Eke Epe Epair'
 
         T0 = P['T0'].to('K').magnitude
         T1 = P['T1'].to('K').magnitude
