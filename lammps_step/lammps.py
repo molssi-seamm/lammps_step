@@ -187,11 +187,11 @@ class LAMMPS(molssi_workflow.Node):
             node = node.next()
 
         files = {'molssi.dat': '\n'.join(input_data)}
-        logger.info('molssi.dat:\n' + files['molssi.dat'])
+        logger.debug('molssi.dat:\n' + files['molssi.dat'])
 
         # Get the structure file from the eex
         files['structure.dat'] = '\n'.join(self.structure_data(eex))
-        logger.info('structure.dat:\n' + files['structure.dat'])
+        logger.debug('structure.dat:\n' + files['structure.dat'])
 
         os.makedirs(self.directory, exist_ok=True)
         for filename in files:
@@ -708,132 +708,6 @@ class LAMMPS(molssi_workflow.Node):
             return self.to_lammps_units(value).magnitude
         else:
             return value
-
-    def analyze(self, indent='', **kwargs):
-        """Analyze the output of the calculation
-        """
-        # Get the first real node
-        node = self.lammps_workflow.get_node('1').next()
-
-        while node is not None:
-            for value in node.description:
-                printer.important(value)
-                printer.important(' ')
-
-            # Find any trajectory files
-            id = '_'.join(str(e) for e in node._id)
-
-            filenames = glob.glob(
-                os.path.join(self.directory, '*trajectory*' + id + '.txt')
-            )
-
-            for filename in filenames:
-                self.analyze_trajectory(filename)
-            
-            node = node.next()
-
-        return
-
-    def analyze_trajectory_old(self, filename, sampling_rate=20):
-        """Read a trajectory file and do the statistical analysis
-        """
-
-        # Process the trajectory data
-        with open(filename, 'r') as fd:
-            data = pandas.read_csv(
-                fd, sep=' ', header=0, comment='#', index_col=1,
-            )
-
-        logger.debug('Columns: {}'.format(data.columns))
-        logger.debug('  Types:\n{}'.format(data.dtypes))
-
-        printer.normal('       Analysis of ' +
-                       os.path.basename(filename) + '\n')
-        
-        summary_file = os.path.splitext(filename)[0] + '.summary'
-        with open(summary_file, 'w') as fd:
-            X = data.index
-            for column in data.columns[1:]:
-                Y = data[column]
-                # Find the autocorrelation time...
-                confint = None
-                nlags = int(len(data) / 2)
-                if nlags > self.maxlags:
-                    nlags = self.maxlags
-                lags = X[0:nlags+1]
-                acf_y, confint = stattools.acf(
-                    Y,
-                    nlags=nlags,
-                    alpha=0.05,
-                    fft=False,
-                    unbiased=False
-                )
-                # Find the last lag that is > 0
-                
-                print(column)
-                print(acf_y)
-                print(confint)
-                print()
-
-                # And get the statistics...
-                x0 = statsmodels.tools.add_constant(data.index)
-                y0 = data[column]
-                model = statsmodels.api.OLS(y0, x0)
-                fit = model.fit()
-
-                fd.write('Summary of statistics for {}\n'.format(column))
-                fd.write('{}\n\n'.format(fit.summary()))
-
-                printer.normal(__(
-                    '{column:>20s} = {value:9.3f} ± {stderr:.3f}',
-                    column=column, value=fit.params['const'],
-                    stderr=fit.bse['const'], indent=7*' ',
-                    wrap=False, dedent=False
-                ))
-
-                result = statsmodels.tsa.stattools.adfuller(y0)
-                print(
-                    '\n\t   '
-                    'Testing Convergence with Augmented Dickey-Fuller method',
-                    file=fd
-                )
-                print('\tADF Statistic: %f' % result[0], file=fd)
-                print('\tp-value: %f' % result[1], file=fd)
-                print('\tCritical Values:', file=fd)
-                for key, value in result[4].items():
-                    print('\t\t%2s: %.3f' % (key, value), file=fd)
-                print('\n\n\n', file=fd)
-                
-        # Create graphs of the property
-
-        pdf_file = os.path.splitext(filename)[0] + '.pdf'
-        with PdfPages(pdf_file) as pdf:
-            for column in data.columns[1:]:
-                figure = pyplot.figure(figsize=(7, 9.5))
-                figure.subplots_adjust(hspace=0.4, wspace=0.4)
-                figure.suptitle('Analysis of ' + column)
-                ax1 = figure.add_subplot(
-                    211, title='Trajectory', xlabel='time (fs)',
-                    ylabel=LAMMPS.display_units[column]
-                )
-                ax1.plot(data.index, data[column])
-
-                ax2 = figure.add_subplot(212)
-                plot_acf(
-                    data[column], ax=ax2, lags=250, use_vlines=False,
-                    linestyle='-', marker=""
-                )
-
-                pdf.savefig(figure)
-                pyplot.close()
-
-            d = pdf.infodict()
-            d['Title'] = 'LAMMPS Trajectory Analysis'
-            d['Author'] = 'MolSSI Framework'
-            d['Subject'] = 'Analysis of LAMMPS trajectories'
-            d['Keywords'] = 'LAMMPS dynamics'
-            d['CreationDate'] = datetime.datetime.today()
-            d['ModDate'] = datetime.datetime.today()
 
     def analyze(self, indent='', **kwargs):
         """Analyze the output of the calculation
