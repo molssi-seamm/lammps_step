@@ -55,6 +55,8 @@ class TkNVE(lammps_step.TkEnergy):
              self['sampling'])
         )
 
+        self.setup_results('nve')
+
     def reset_dialog(self, widget=None):
         """Layout the widgets as needed for the current state"""
 

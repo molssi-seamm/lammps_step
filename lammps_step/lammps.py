@@ -728,7 +728,8 @@ class LAMMPS(molssi_workflow.Node):
             )
 
             for filename in filenames:
-                self.analyze_trajectory(filename)
+                data = self.analyze_trajectory(filename)
+                node.analyze(data)
             
             node = node.next()
 
@@ -738,6 +739,8 @@ class LAMMPS(molssi_workflow.Node):
         """Read a trajectory file and do the statistical analysis
         """
         import molssi_util.md_statistics as md_statistics
+
+        data = {}
 
         # Process the trajectory data
         with open(filename, 'r') as fd:
@@ -765,6 +768,9 @@ class LAMMPS(molssi_workflow.Node):
                 )
                 correlation[column] = result
 
+                for key, value in result.items():
+                    data['{},{}'.format(column, key)] = value
+
                 # And get the statistics accounting for the correlation
                 n_step = int(round(result['inefficiency']))
 
@@ -773,14 +779,19 @@ class LAMMPS(molssi_workflow.Node):
                 model = statsmodels.api.OLS(y0, x0)
                 fit = model.fit()
 
+                data[column] = fit.params['const']
+                data['{},stderr'.format(column)] = fit.bse['const']
+
                 fd.write('Summary of statistics for {} n_step = {}\n'
                          .format(column, n_step))
                 fd.write('{}\n\n'.format(fit.summary()))
 
                 printer.normal(__(
-                    '{column:>20s} = {value:9.3f} ± {stderr:6.3f}',
+                    '{column:>20s} = {value:9.3f} ± {stderr:6.3f}'
+                    '{tau:6.1f} {inefficiency:6.1f}',
                     column=column, value=fit.params['const'],
                     stderr=fit.bse['const'],
+                    **result,
                     indent=7*' ',
                     wrap=False, dedent=False
                 ))
@@ -839,3 +850,5 @@ class LAMMPS(molssi_workflow.Node):
             d['Keywords'] = 'LAMMPS dynamics'
             d['CreationDate'] = datetime.datetime.today()
             d['ModDate'] = datetime.datetime.today()
+
+        return data

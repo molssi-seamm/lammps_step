@@ -27,6 +27,7 @@ from lammps_step.initialization_step import InitializationStep  # nopep8
 from lammps_step.tk_initialization import TkInitialization  # nopep8
 
 from lammps_step.energy import Energy  # nopep8
+from lammps_step.energy_parameters import EnergyParameters  # nopep8
 from lammps_step.energy_step import EnergyStep  # nopep8
 from lammps_step.tk_energy import TkEnergy  # nopep8
 
@@ -53,3 +54,149 @@ from lammps_step.npt import NPT  # nopep8
 from lammps_step.npt_parameters import NPT_Parameters  # nopep8
 from lammps_step.npt_step import NPTStep  # nopep8
 from lammps_step.tk_npt import TkNPT  # nopep8
+
+properties = {
+    "T": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "temperature",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "K"
+    },
+    "T,stderr": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "stderr of temperature",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "K"
+    },
+    "T,tau": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "autocorrelation time of temperature",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "fs"
+    },
+    "T,inefficiency": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "statistical inefficiency of temperature sampling",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": ""
+    },
+    "P": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "pressure",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "atm"
+    },
+    "density": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "temperature",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "g/ml"
+    },
+    "a": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "cell parameter 'a'",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "Å"
+    },
+    "b": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "cell parameter 'b'",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "Å"
+    },
+    "c": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "cell parameter 'c'",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "Å"
+    },
+    "Etot": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "total energy",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "kcal/mol"
+    },
+    "Eke": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "kinetic energy",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "kcal/mol"
+    },
+    "Epe": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "potential energy",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "kcal/mol"
+    },
+    "Epair": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "nonbonded (vdW & electrostatic) energy",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "kcal/mol"
+    },
+}

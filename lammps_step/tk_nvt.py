@@ -52,6 +52,8 @@ class TkNVT(lammps_step.TkNVE):
             "<<ComboboxSelected>>", self.reset_temperature_frame
         )
 
+        self.setup_results('nvt')
+
     def reset_temperature_frame(self, widget=None):
         """Layout the widgets in the temperature frame
         as needed for the current state"""

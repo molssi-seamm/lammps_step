@@ -92,6 +92,8 @@ class TkNPT(lammps_step.TkNVT):
                 "<<ComboboxSelected>>", self.reset_stress_frame
             )
 
+        self.setup_results('npt')
+            
     def reset_pressure_frame(self, widget=None):
         """Layout the widgets for the pressure/stress control
         as needed for the current state"""
@@ -707,4 +709,5 @@ class TkNPT(lammps_step.TkNVT):
         # and just get all of ours. This may be overkill, but it
         # is easy. We'll sort out what it all means later!
         for key in lammps_step.NPT_Parameters.parameters:
-            P[key].set_from_widget()
+            if key not in ('results', 'create table'):
+                P[key].set_from_widget()

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Control parameters for NVE (microcanonical) dynamics"""
 
+import lammps_step
 import logging
 import molssi_workflow
 import pprint
@@ -8,7 +9,7 @@ import pprint
 logger = logging.getLogger(__name__)
 
 
-class NVE_Parameters(molssi_workflow.Parameters):
+class NVE_Parameters(lammps_step.EnergyParameters):
     """The control parameters for NVE dynamics in LAMMPS"""
 
     parameters = {
