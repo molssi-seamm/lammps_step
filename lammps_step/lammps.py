@@ -729,7 +729,7 @@ class LAMMPS(molssi_workflow.Node):
 
             for filename in filenames:
                 data = self.analyze_trajectory(filename)
-                node.analyze(data)
+                node.analyze(data=data)
             
             node = node.next()
 
@@ -740,7 +740,7 @@ class LAMMPS(molssi_workflow.Node):
         """
         import molssi_util.md_statistics as md_statistics
 
-        data = {}
+        results = {}
 
         # Process the trajectory data
         with open(filename, 'r') as fd:
@@ -769,7 +769,8 @@ class LAMMPS(molssi_workflow.Node):
                 correlation[column] = result
 
                 for key, value in result.items():
-                    data['{},{}'.format(column, key)] = value
+                    if 'acf' not in key and 'confidence' not in key:
+                        results['{},{}'.format(column, key)] = value
 
                 # And get the statistics accounting for the correlation
                 n_step = int(round(result['inefficiency']))
@@ -779,8 +780,8 @@ class LAMMPS(molssi_workflow.Node):
                 model = statsmodels.api.OLS(y0, x0)
                 fit = model.fit()
 
-                data[column] = fit.params['const']
-                data['{},stderr'.format(column)] = fit.bse['const']
+                results[column] = fit.params['const']
+                results['{},stderr'.format(column)] = fit.bse['const']
 
                 fd.write('Summary of statistics for {} n_step = {}\n'
                          .format(column, n_step))
@@ -851,4 +852,4 @@ class LAMMPS(molssi_workflow.Node):
             d['CreationDate'] = datetime.datetime.today()
             d['ModDate'] = datetime.datetime.today()
 
-        return data
+        return results

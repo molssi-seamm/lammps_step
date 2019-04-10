@@ -111,16 +111,82 @@ properties = {
         "type": "float",
         "units": "atm"
     },
+    "P,stderr": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "stderr of pressure",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "K"
+    },
+    "P,tau": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "autocorrelation time of pressure",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "fs"
+    },
+    "P,inefficiency": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "statistical inefficiency of pressure sampling",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": ""
+    },
     "density": {
         "calculation": [
             "nve",
             "nvt",
             "npt",
         ],
-        "description": "temperature",
+        "description": "pressure",
         "dimensionality": "scalar",
         "type": "float",
         "units": "g/ml"
+    },
+    "density,stderr": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "stderr of density",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "K"
+    },
+    "density,tau": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "autocorrelation time of density",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "fs"
+    },
+    "density,inefficiency": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "statistical inefficiency of density sampling",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": ""
     },
     "a": {
         "calculation": [
@@ -155,6 +221,39 @@ properties = {
         "type": "float",
         "units": "Å"
     },
+    "a,stderr": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "stderr of cell 'a'",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "K"
+    },
+    "a,tau": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "autocorrelation time of cell 'a'",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "fs"
+    },
+    "a,inefficiency": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "statistical inefficiency of cell 'a' sampling",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": ""
+    },
     "Etot": {
         "calculation": [
             "nve",
@@ -165,6 +264,39 @@ properties = {
         "dimensionality": "scalar",
         "type": "float",
         "units": "kcal/mol"
+    },
+    "Etot,stderr": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "stderr of total energy",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "K"
+    },
+    "Etot,tau": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "autocorrelation time of total energy",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "fs"
+    },
+    "Etot,inefficiency": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "statistical inefficiency of total energy sampling",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": ""
     },
     "Eke": {
         "calculation": [
@@ -177,6 +309,39 @@ properties = {
         "type": "float",
         "units": "kcal/mol"
     },
+    "Eke,stderr": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "stderr of kinetic energy",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "K"
+    },
+    "Eke,tau": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "autocorrelation time of kinetic energy",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "fs"
+    },
+    "Eke,inefficiency": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "statistical inefficiency of kinetic energy sampling",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": ""
+    },
     "Epe": {
         "calculation": [
             "nve",
@@ -188,6 +353,39 @@ properties = {
         "type": "float",
         "units": "kcal/mol"
     },
+    "Epe,stderr": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "stderr of potential energy",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "K"
+    },
+    "Epe,tau": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "autocorrelation time of potential energy",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "fs"
+    },
+    "Epe,inefficiency": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "statistical inefficiency of potential energy sampling",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": ""
+    },
     "Epair": {
         "calculation": [
             "nve",
@@ -198,5 +396,38 @@ properties = {
         "dimensionality": "scalar",
         "type": "float",
         "units": "kcal/mol"
+    },
+    "Epair,stderr": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "stderr of nonbond energy",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "K"
+    },
+    "Epair,tau": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "autocorrelation time of nonbond energy",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "fs"
+    },
+    "Epair,inefficiency": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "statistical inefficiency of nonbond energy sampling",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": ""
     },
 }

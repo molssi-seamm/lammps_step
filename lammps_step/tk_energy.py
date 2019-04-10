@@ -17,6 +17,8 @@ class TkEnergy(molssi_workflow.TkNode):
         Keyword arguments:
         '''
 
+        self.results_widgets = []
+
         super().__init__(tk_workflow=tk_workflow, node=node,
                          canvas=canvas, x=x, y=y, w=w, h=h)
 
@@ -221,7 +223,7 @@ class TkEnergy(molssi_workflow.TkNode):
 
         results = P['results'].value = {}
         for key, w_check, w_variable, w_table, w_column \
-            in self.results_widgets:
+                in self.results_widgets:
 
             if self.tk_var[key].get():
                 tmp = results[key] = dict()

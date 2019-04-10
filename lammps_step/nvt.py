@@ -294,7 +294,7 @@ class NVT(lammps_step.NVE):
             timestep = 2.0
             P['timestep'] = Q_(timestep, ureg.fs)
         else:
-            timestep = P['timestep'].value.to('fs').magnitude
+            timestep = P['timestep'].to('fs').magnitude
 
         if P['seed'] == 'random':
             P['seed'] = int(random.random() * 2**31)

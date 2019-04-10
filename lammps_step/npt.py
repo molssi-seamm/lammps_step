@@ -7,6 +7,7 @@ import molssi_workflow
 from molssi_workflow import ureg, Q_, data, units_class  # nopep8
 import molssi_util.printing as printing
 from molssi_util.printing import FormattedText as __
+import pprint
 import random
 
 logger = logging.getLogger(__name__)
@@ -530,3 +531,20 @@ class NPT(lammps_step.NVT):
             ptext = ptext.format(**Tmp)
 
         return ptext
+
+    def analyze(self, indent='', data={}):
+        """Parse the output and generating the text output and store the
+        data in variables for other stages to access
+        """
+
+        # printer.normal(self._long_header)
+
+        # Put any requested results into variables or tables
+        self.store_results(
+            data=data,
+            properties=lammps_step.properties,
+            results=self.parameters['results'].value,
+            create_tables=self.parameters['create tables'].get()
+        )
+
+        # printer.normal('\n')

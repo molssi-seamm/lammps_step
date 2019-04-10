@@ -83,6 +83,9 @@ class TkNVE(lammps_step.TkEnergy):
 
         self.dialog.deactivate(result)
 
+        # Let base classes reap their parameters
+        super().handle_dialog(result)
+
         # Shortcut for parameters
         P = self.node.parameters
 
