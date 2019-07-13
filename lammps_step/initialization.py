@@ -4,7 +4,7 @@
 import forcefield
 import lammps_step
 import logging
-import molssi_workflow
+import seamm
 import molssi_util.printing as printing
 from molssi_util.printing import FormattedText as __
 import molssi_util.smiles
@@ -40,9 +40,9 @@ thermo_variables = [
 ]
 
 
-class Initialization(molssi_workflow.Node):
+class Initialization(seamm.Node):
     def __init__(self,
-                 workflow=None,
+                 flowchart=None,
                  title='Initialization',
                  extension=None):
         """Initialize the node"""
@@ -50,7 +50,7 @@ class Initialization(molssi_workflow.Node):
         logger.debug('Creating Initialization {}'.format(self))
 
         super().__init__(
-            workflow=workflow,
+            flowchart=flowchart,
             title=title,
             extension=extension)
 
@@ -109,12 +109,12 @@ class Initialization(molssi_workflow.Node):
         self.description = []
         self.description.append(__(self.header, indent=self.indent))
         
-        structure = molssi_workflow.data.structure
+        structure = seamm.data.structure
         logger.debug('Structure in LAMMPS initialization:\n' +
                      pprint.pformat(structure))
 
         # Atom-type if necessary
-        ff = molssi_workflow.data.forcefield
+        ff = seamm.data.forcefield
         ff_name = ff.current_forcefield
         atoms = structure['atoms']
         n_atoms = len(atoms['elements'])

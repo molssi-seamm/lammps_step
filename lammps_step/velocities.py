@@ -9,8 +9,8 @@ ToDo:
 
 import lammps_step
 import logging
-import molssi_workflow
-from molssi_workflow import ureg, Q_, data, units_class  # nopep8
+import seamm
+from seamm import ureg, Q_, data, units_class  # nopep8
 import molssi_util.printing as printing
 from molssi_util.printing import FormattedText as __
 import random
@@ -21,15 +21,15 @@ job = printing.getPrinter()
 printer = printing.getPrinter('lammps')
 
 
-class Velocities(molssi_workflow.Node):
+class Velocities(seamm.Node):
 
-    def __init__(self, workflow=None, title='Velocities',
+    def __init__(self, flowchart=None, title='Velocities',
                  extension=None):
         """Initialize the node"""
 
         logger.debug('Creating Velocities {}'.format(self))
 
-        super().__init__(workflow=workflow, title=title,
+        super().__init__(flowchart=flowchart, title=title,
                          extension=extension)
 
         self.description = 'Set the initial velocities on the atoms'
@@ -65,7 +65,7 @@ class Velocities(molssi_workflow.Node):
         self._long_header += '\n'
 
         P = self.parameters.current_values_to_dict(
-            context=molssi_workflow.workflow_variables._data
+            context=seamm.flowchart_variables._data
         )
         # Fix variables that need attention
         if 'default' in P['remove_momentum']:

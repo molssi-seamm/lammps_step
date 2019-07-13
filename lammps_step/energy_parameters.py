@@ -2,13 +2,13 @@
 """Control parameters for a single-point energy (SPE) in LAMMPS"""
 
 import logging
-import molssi_workflow
+import seamm
 import pprint
 
 logger = logging.getLogger(__name__)
 
 
-class EnergyParameters(molssi_workflow.Parameters):
+class EnergyParameters(seamm.Parameters):
     """The control parameters for Energy dynamics in LAMMPS"""
 
     parameters = {

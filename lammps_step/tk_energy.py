@@ -2,15 +2,15 @@
 """The graphical part of a LAMMPS Energy step"""
 
 import lammps_step
-import molssi_widgets as mw
-import molssi_workflow
+import seamm_widgets as sw
+import seamm
 import Pmw
 import tkinter as tk
 import tkinter.ttk as ttk
 
 
-class TkEnergy(molssi_workflow.TkNode):
-    def __init__(self, tk_workflow=None, node=None, canvas=None,
+class TkEnergy(seamm.TkNode):
+    def __init__(self, tk_flowchart=None, node=None, canvas=None,
                  x=None, y=None, w=200, h=50):
         '''Initialize a node
 
@@ -19,7 +19,7 @@ class TkEnergy(molssi_workflow.TkNode):
 
         self.results_widgets = []
 
-        super().__init__(tk_workflow=tk_workflow, node=node,
+        super().__init__(tk_flowchart=tk_flowchart, node=node,
                          canvas=canvas, x=x, y=y, w=w, h=h)
 
     def right_click(self, event):
@@ -75,7 +75,7 @@ class TkEnergy(molssi_workflow.TkNode):
         )
         self['create tables'].grid(row=0, column=0, sticky=tk.W)
 
-        self['results'] = mw.ScrolledColumns(
+        self['results'] = sw.ScrolledColumns(
             rframe,
             columns=[
                 'Result',

@@ -3,8 +3,8 @@
 
 import lammps_step
 import logging
-import molssi_workflow
-from molssi_workflow import ureg, Q_, data, units_class  # nopep8
+import seamm
+from seamm import ureg, Q_, data, units_class  # nopep8
 import molssi_util.printing as printing
 from molssi_util.printing import FormattedText as __
 import pprint
@@ -96,7 +96,7 @@ class NPT(lammps_step.NVT):
 
     def __init__(
             self,
-            workflow=None,
+            flowchart=None,
             title='NPT dynamics',
             extension=None
     ):
@@ -105,7 +105,7 @@ class NPT(lammps_step.NVT):
         logger.debug('Creating NPT {}'.format(self))
 
         super().__init__(
-            workflow=workflow,
+            flowchart=flowchart,
             title=title,
             extension=extension)
 
@@ -200,7 +200,7 @@ class NPT(lammps_step.NVT):
         self.description.append(__(self.header, indent=3*' '))
 
         P = self.parameters.current_values_to_dict(
-            context=molssi_workflow.workflow_variables._data
+            context=seamm.flowchart_variables._data
         )
 
         # Fix variables with special cases

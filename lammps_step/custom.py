@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 """A custom script for LAMMPS"""
 
-import molssi_workflow
+import seamm
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class Custom(molssi_workflow.Node):
-    def __init__(self, workflow=None, title='Custom',
+class Custom(seamm.Node):
+    def __init__(self, flowchart=None, title='Custom',
                  extension=None):
         """Initialize the node"""
 
         logger.debug('Creating Custom step {}'.format(self))
 
-        super().__init__(workflow=workflow, title=title,
+        super().__init__(flowchart=flowchart, title=title,
                          extension=extension)
 
         self.description = 'A custom script for LAMMPS'

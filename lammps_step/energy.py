@@ -2,22 +2,22 @@
 """A single-point energy in LAMMPS"""
 
 import lammps_step
-import molssi_workflow
+import seamm
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class Energy(molssi_workflow.Node):
+class Energy(seamm.Node):
     """Handle a singlepoint energy calculation in LAMMPS"""
 
-    def __init__(self, workflow=None, title='Energy',
+    def __init__(self, flowchart=None, title='Energy',
                  extension=None):
         """Initialize the node"""
 
         logger.debug('Creating Energy {}'.format(self))
 
-        super().__init__(workflow=workflow, title=title,
+        super().__init__(flowchart=flowchart, title=title,
                          extension=extension)
 
         self.description = 'A single point energy calculation'

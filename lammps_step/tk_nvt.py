@@ -3,8 +3,7 @@
 
 import lammps_step
 import logging
-from molssi_workflow import ureg, Q_, units_class  # nopep8
-import molssi_util.molssi_widgets as mw
+import seamm_widgets as sw
 import pprint  # nopep8
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -14,14 +13,14 @@ logger = logging.getLogger(__name__)
 
 
 class TkNVT(lammps_step.TkNVE):
-    def __init__(self, tk_workflow=None, node=None, canvas=None,
+    def __init__(self, tk_flowchart=None, node=None, canvas=None,
                  x=None, y=None, w=200, h=50):
         '''Initialize a node
 
         Keyword arguments:
         '''
 
-        super().__init__(tk_workflow=tk_workflow, node=node,
+        super().__init__(tk_flowchart=tk_flowchart, node=node,
                          canvas=canvas, x=x, y=y, w=w, h=h)
 
     def create_dialog(self):
@@ -79,7 +78,7 @@ class TkNVT(lammps_step.TkNVE):
                                 sticky=tk.W)
         row += 1
 
-        mw.align_labels(
+        sw.align_labels(
             (self['T0'],
              self['T1'],
              self['thermostat'])
@@ -100,7 +99,7 @@ class TkNVT(lammps_step.TkNVE):
             self['Tloop'].grid(row=row, column=1, sticky=tk.W)
             row += 1
 
-            mw.align_labels(
+            sw.align_labels(
                 (self['Tdamp'],
                  self['Tchain'],
                  self['Tloop'],
@@ -121,7 +120,7 @@ class TkNVT(lammps_step.TkNVE):
             self['fraction'].grid(row=row, column=1, sticky=tk.W)
             row += 1
 
-            mw.align_labels(
+            sw.align_labels(
                 (self['frequency'],
                  self['window'],
                  self['fraction'])
@@ -129,7 +128,7 @@ class TkNVT(lammps_step.TkNVE):
         elif thermostat == 'Langevin':
             self['seed'].grid(row=row, column=1, sticky=tk.W)
             row += 1
-            mw.align_labels(
+            sw.align_labels(
                 (self['Tdamp'],
                  self['seed'])
             )

@@ -3,7 +3,6 @@
 
 import lammps_step
 import logging
-import molssi_workflow
 import pprint
 
 logger = logging.getLogger(__name__)
