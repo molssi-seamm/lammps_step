@@ -5,8 +5,8 @@ import lammps_step
 import logging
 import seamm
 from seamm import ureg, Q_, units_class, data  # nopep8
-import molssi_util.printing as printing
-from molssi_util.printing import FormattedText as __
+import seamm_util.printing as printing
+from seamm_util.printing import FormattedText as __
 import pprint
 
 logger = logging.getLogger(__name__)

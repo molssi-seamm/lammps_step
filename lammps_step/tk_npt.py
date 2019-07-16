@@ -9,14 +9,14 @@ import tkinter.ttk as ttk
 
 
 class TkNPT(lammps_step.TkNVT):
-    def __init__(self, tk_workflow=None, node=None, canvas=None,
+    def __init__(self, tk_flowchart=None, node=None, canvas=None,
                  x=None, y=None, w=200, h=50):
         '''Initialize a node
 
         Keyword arguments:
         '''
 
-        super().__init__(tk_workflow=tk_workflow, node=node,
+        super().__init__(tk_flowchart=tk_flowchart, node=node,
                          canvas=canvas, x=x, y=y, w=w, h=h)
 
     def create_dialog(self):

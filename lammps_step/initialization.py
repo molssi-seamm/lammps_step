@@ -5,9 +5,9 @@ import forcefield
 import lammps_step
 import logging
 import seamm
-import molssi_util.printing as printing
-from molssi_util.printing import FormattedText as __
-import molssi_util.smiles
+import seamm_util.printing as printing
+from seamm_util.printing import FormattedText as __
+import seamm_util.smiles
 import pprint
 
 logger = logging.getLogger(__name__)
@@ -121,7 +121,7 @@ class Initialization(seamm.Node):
         if 'atom_types' in atoms and ff_name in atoms['atom_types']:
             atom_types = atoms['atom_types'][ff_name]
         else:
-            smiles = molssi_util.smiles.from_molssi(structure)
+            smiles = seamm_util.smiles.from_molssi(structure)
             logger.debug('Atom typing -- smiles = ' + smiles)
             ff_assigner = forcefield.FFAssigner(ff)
             atom_types = ff_assigner.assign(smiles, add_hydrogens=False)

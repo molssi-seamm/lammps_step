@@ -16,7 +16,7 @@ class TkLAMMPS(seamm.TkNode):
     node_class = lammps_step.LAMMPS
 
     def __init__(self, tk_flowchart=None, node=None,
-                 namespace='org.molssi.flowchart.lammps.tk',
+                 namespace='org.molssi.seamm.lammps.tk',
                  canvas=None, x=None, y=None, w=200, h=50):
         '''Initialize a node
 

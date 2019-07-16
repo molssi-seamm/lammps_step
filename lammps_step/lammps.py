@@ -13,8 +13,8 @@ import logging
 import math
 import seamm
 from seamm import ureg, Q_, units_class, data  # nopep8
-import molssi_util.printing as printing
-from molssi_util.printing import FormattedText as __
+import seamm_util.printing as printing
+from seamm_util.printing import FormattedText as __
 import numpy
 import os
 import os.path
@@ -738,7 +738,7 @@ class LAMMPS(seamm.Node):
     def analyze_trajectory(self, filename, sampling_rate=20):
         """Read a trajectory file and do the statistical analysis
         """
-        import molssi_util.md_statistics as md_statistics
+        import seamm_util.md_statistics as md_statistics
 
         results = {}
 

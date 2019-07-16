@@ -16,7 +16,7 @@ requirements = [
     'forcefield',
     'logging',
     'matplotlib',
-    'molssi_util',
+    'seamm_util',
     'seamm',
     'pprint',
     'scipy',
