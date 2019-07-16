@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Minimization step in LAMMPS"""
 
-from molssi_workflow import ureg, Q_, data  # nopep8
+from seamm import ureg, Q_, data  # nopep8
 import lammps_step
 import logging
 
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class Minimization(lammps_step.Energy):
     def __init__(self,
-                 workflow=None,
+                 flowchart=None,
                  title='Minimization',
                  extension=None):
         """Initialize the node"""
@@ -18,7 +18,7 @@ class Minimization(lammps_step.Energy):
         logger.debug('Creating Minimization {}'.format(self))
 
         super().__init__(
-            workflow=workflow,
+            flowchart=flowchart,
             title=title,
             extension=extension)
 

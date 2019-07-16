@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 """The graphical part of a LAMMPS Custom step"""
 
-import molssi_workflow
+import seamm
 import Pmw
 import tkinter as tk
 import tkinter.ttk as ttk
 
 
-class TkCustom(molssi_workflow.TkNode):
-    def __init__(self, tk_workflow=None, node=None, canvas=None,
+class TkCustom(seamm.TkNode):
+    def __init__(self, tk_flowchart=None, node=None, canvas=None,
                  x=None, y=None, w=200, h=50):
         '''Initialize a node
 
         Keyword arguments:
         '''
 
-        super().__init__(tk_workflow=tk_workflow, node=node,
+        super().__init__(tk_flowchart=tk_flowchart, node=node,
                          canvas=canvas, x=x, y=y, w=w, h=h)
 
     def right_click(self, event):

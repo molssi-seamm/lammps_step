@@ -3,10 +3,10 @@
 
 import lammps_step
 import logging
-import molssi_workflow
-from molssi_workflow import ureg, Q_, units_class, data  # nopep8
-import molssi_util.printing as printing
-from molssi_util.printing import FormattedText as __
+import seamm
+from seamm import ureg, Q_, units_class, data  # nopep8
+import seamm_util.printing as printing
+from seamm_util.printing import FormattedText as __
 import pprint
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ printer = printing.getPrinter('lammps')
 
 class NVE(lammps_step.Energy):
     def __init__(self,
-                 workflow=None,
+                 flowchart=None,
                  title='NVE dynamics',
                  extension=None):
         """Initialize the node"""
@@ -24,7 +24,7 @@ class NVE(lammps_step.Energy):
         logger.debug('Creating NVE {}'.format(self))
 
         super().__init__(
-            workflow=workflow,
+            flowchart=flowchart,
             title=title,
             extension=extension)
 
@@ -66,7 +66,7 @@ class NVE(lammps_step.Energy):
         self.description.append(__(self.header, indent=3*' '))
 
         P = self.parameters.current_values_to_dict(
-            context=molssi_workflow.workflow_variables._data
+            context=seamm.flowchart_variables._data
         )
 
         if P['timestep'] == 'normal':

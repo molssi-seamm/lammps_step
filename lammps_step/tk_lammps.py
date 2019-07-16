@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 """The graphical part of a LAMMPS step"""
 
-import molssi_workflow
+import seamm
 import lammps_step
 import Pmw
 import tkinter as tk
 import tkinter.ttk as ttk
 
 
-class TkLAMMPS(molssi_workflow.TkNode):
+class TkLAMMPS(seamm.TkNode):
     """The node_class is the class of the 'real' node that this
     class is the Tk graphics partner for
     """
 
     node_class = lammps_step.LAMMPS
 
-    def __init__(self, tk_workflow=None, node=None,
-                 namespace='org.molssi.workflow.lammps.tk',
+    def __init__(self, tk_flowchart=None, node=None,
+                 namespace='org.molssi.seamm.lammps.tk',
                  canvas=None, x=None, y=None, w=200, h=50):
         '''Initialize a node
 
@@ -24,7 +24,7 @@ class TkLAMMPS(molssi_workflow.TkNode):
         '''
         self.namespace = namespace
 
-        super().__init__(tk_workflow=tk_workflow, node=node,
+        super().__init__(tk_flowchart=tk_flowchart, node=node,
                          canvas=canvas, x=x, y=y, w=w, h=h)
 
         self.create_dialog()
@@ -54,12 +54,12 @@ class TkLAMMPS(molssi_workflow.TkNode):
         frame.pack(expand=tk.YES, fill=tk.BOTH)
         self._widget['frame'] = frame
 
-        self.lammps_tk_workflow = molssi_workflow.TkWorkflow(
+        self.lammps_tk_flowchart = seamm.TkFlowchart(
             master=frame,
-            workflow=self.node.lammps_workflow,
+            flowchart=self.node.lammps_flowchart,
             namespace=self.namespace
         )
-        self.lammps_tk_workflow.draw()
+        self.lammps_tk_flowchart.draw()
 
     def right_click(self, event):
         """Probably need to add our dialog...
@@ -95,20 +95,20 @@ class TkLAMMPS(molssi_workflow.TkNode):
 
         self.dialog.deactivate(result)
 
-    def update_workflow(self, tk_workflow=None, workflow=None):
-        """Update the nongraphical workflow. Only used in nodes that contain
-        workflows"""
+    def update_flowchart(self, tk_flowchart=None, flowchart=None):
+        """Update the nongraphical flowchart. Only used in nodes that contain
+        flowcharts"""
 
-        super().update_workflow(
-            workflow=self.node.lammps_workflow,
-            tk_workflow=self.lammps_tk_workflow
+        super().update_flowchart(
+            flowchart=self.node.lammps_flowchart,
+            tk_flowchart=self.lammps_tk_flowchart
         )
 
-    def from_workflow(self, tk_workflow=None, workflow=None):
-        """Recreate the graphics from the non-graphical workflow.
-        Only used in nodes that contain workflow"""
+    def from_flowchart(self, tk_flowchart=None, flowchart=None):
+        """Recreate the graphics from the non-graphical flowchart.
+        Only used in nodes that contain flowchart"""
 
-        super().from_workflow(
-            workflow=self.node.lammps_workflow,
-            tk_workflow=self.lammps_tk_workflow
+        super().from_flowchart(
+            flowchart=self.node.lammps_flowchart,
+            tk_flowchart=self.lammps_tk_flowchart
         )

@@ -16,8 +16,8 @@ requirements = [
     'forcefield',
     'logging',
     'matplotlib',
-    'molssi_util',
-    'molssi_workflow',
+    'seamm_util',
+    'seamm',
     'pprint',
     'scipy',
     'statistics',
@@ -27,7 +27,7 @@ requirements = [
 # 'random',
 
 setup_requirements = [
-    'pytest-runner',
+    # 'pytest-runner',
     # TODO(paulsaxe): put setup requirements (distutils extensions, etc.) here
 ]
 
@@ -39,11 +39,11 @@ test_requirements = [
 setup(
     name='lammps_step',
     version='0.1.0',
-    description="The LAMMPS step for a MolSSI workflow",
+    description="The LAMMPS step for a SEAMM flowchart",
     long_description=readme + '\n\n' + history,
     author="Paul Saxe",
     author_email='psaxe@molssi.org',
-    url='https://github.com/paulsaxe/lammps_step',
+    url='https://github.com/molssi-seamm/lammps_step',
     packages=find_packages(include=['lammps_step']),
     include_package_data=True,
     install_requires=requirements,
@@ -64,13 +64,13 @@ setup(
     tests_require=test_requirements,
     setup_requires=setup_requirements,
     entry_points={
-        'org.molssi.workflow': [
+        'org.molssi.seamm': [
             'LAMMPS = lammps_step:LAMMPSStep',
         ],
-        'org.molssi.workflow.tk': [
+        'org.molssi.seamm.tk': [
             'LAMMPS = lammps_step:LAMMPSStep',
         ],
-        'org.molssi.workflow.lammps': [
+        'org.molssi.seamm.lammps': [
             'Custom = lammps_step:CustomStep',
             'Energy = lammps_step:EnergyStep',
             'Initialization = lammps_step:InitializationStep',
@@ -80,7 +80,7 @@ setup(
             'NPT = lammps_step:NPTStep',
             'Velocities = lammps_step:VelocitiesStep',
         ],
-        'org.molssi.workflow.lammps.tk': [
+        'org.molssi.seamm.lammps.tk': [
             'Custom = lammps_step:CustomStep',
             'Energy = lammps_step:EnergyStep',
             'Initialization = lammps_step:InitializationStep',

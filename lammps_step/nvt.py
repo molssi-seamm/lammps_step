@@ -3,10 +3,10 @@
 
 import lammps_step
 import logging
-import molssi_workflow
-from molssi_workflow import ureg, Q_, data, units_class  # nopep8
-import molssi_util.printing as printing
-from molssi_util.printing import FormattedText as __
+import seamm
+from seamm import ureg, Q_, data, units_class  # nopep8
+import seamm_util.printing as printing
+from seamm_util.printing import FormattedText as __
 import random
 
 logger = logging.getLogger(__name__)
@@ -176,7 +176,7 @@ class NVT(lammps_step.NVE):
 
     def __init__(
             self,
-            workflow=None,
+            flowchart=None,
             title='NVT dynamics',
             extension=None
     ):
@@ -185,7 +185,7 @@ class NVT(lammps_step.NVE):
         logger.debug('Creating NVT {}'.format(self))
 
         super().__init__(
-            workflow=workflow,
+            flowchart=flowchart,
             title=title,
             extension=extension)
 
@@ -278,7 +278,7 @@ class NVT(lammps_step.NVE):
         self.description.append(__(self.header, indent=3*' '))
 
         P = self.parameters.current_values_to_dict(
-            context=molssi_workflow.workflow_variables._data
+            context=seamm.flowchart_variables._data
         )
 
         # Fix variables with special cases

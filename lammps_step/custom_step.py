@@ -8,15 +8,16 @@ import lammps_step
 class CustomStep(object):
     my_description = {
         'description':
-        'A custom step for LAMMPS, where the user types in LAMMPS commmands directly',  # nopep8
+        ('A custom step for LAMMPS, where the user types in LAMMPS commmands '
+         'directly'),
         'group': 'Customize',
         'name': 'Custom'
     }
 
-    def __init__(self, workflow=None, gui=None):
+    def __init__(self, flowchart=None, gui=None):
         """Initialize this helper class, which is used by
         the application via stevedore to get information about
-        and create node objects for the workflow
+        and create node objects for the flowchart
         """
         pass
 
@@ -25,9 +26,9 @@ class CustomStep(object):
         """
         return CustomStep.my_description
 
-    def create_node(self, workflow=None, **kwargs):
+    def create_node(self, flowchart=None, **kwargs):
         """Return the new node object"""
-        return lammps_step.Custom(workflow=workflow, **kwargs)
+        return lammps_step.Custom(flowchart=flowchart, **kwargs)
 
     def create_tk_node(self, canvas=None, **kwargs):
         """Return the graphical Tk node object"""

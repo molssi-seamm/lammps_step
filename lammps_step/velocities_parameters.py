@@ -3,12 +3,12 @@
 
 import lammps_step
 import logging
-import molssi_workflow
+import seamm
 
 logger = logging.getLogger(__name__)
 
 
-class VelocitiesParameters(molssi_workflow.Parameters):
+class VelocitiesParameters(seamm.Parameters):
     """The control parameters for NVT dynamics in LAMMPS"""
 
     parameters = {

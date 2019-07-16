@@ -2,22 +2,21 @@
 """The graphical part of a LAMMPS Energy step"""
 
 import lammps_step
-from molssi_workflow import ureg, Q_, units_class  # nopep8
-import molssi_util.molssi_widgets as mw
+import seamm_widgets as sw
 import pprint  # nopep8
 import tkinter as tk
 import tkinter.ttk as ttk
 
 
 class TkNPT(lammps_step.TkNVT):
-    def __init__(self, tk_workflow=None, node=None, canvas=None,
+    def __init__(self, tk_flowchart=None, node=None, canvas=None,
                  x=None, y=None, w=200, h=50):
         '''Initialize a node
 
         Keyword arguments:
         '''
 
-        super().__init__(tk_workflow=tk_workflow, node=node,
+        super().__init__(tk_flowchart=tk_flowchart, node=node,
                          canvas=canvas, x=x, y=y, w=w, h=h)
 
     def create_dialog(self):
@@ -120,7 +119,7 @@ class TkNPT(lammps_step.TkNVT):
         row += 1
 
         if system_type == 'fluid':
-            mw.align_labels(
+            sw.align_labels(
                 (self['system type'],
                  self['barostat'],
                  self['Panneal'])
@@ -132,7 +131,7 @@ class TkNPT(lammps_step.TkNVT):
             self['couple'].grid(row=row, column=0, sticky=tk.W)
             row += 1
 
-            mw.align_labels(
+            sw.align_labels(
                 (self['system type'],
                  self['barostat'],
                  self['Panneal'],
@@ -147,7 +146,7 @@ class TkNPT(lammps_step.TkNVT):
             self['nreset'].grid(row=row, column=0, sticky=tk.W)
             row += 1
             self['mtk'].grid(row=row, column=0, sticky=tk.W)
-            mw.align_labels((self['nreset'], self['mtk']))
+            sw.align_labels((self['nreset'], self['mtk']))
         else:
             self['modulus'].grid(row=row, column=0, sticky=tk.W)
 
@@ -661,7 +660,7 @@ class TkNPT(lammps_step.TkNVT):
                 self['Pdamp'].grid(row=row, column=0, sticky=tk.W)
                 widgets.append(self['Pdamp'])
                 row += 1
-            mw.align_labels(widgets)
+            sw.align_labels(widgets)
 
     def reset_dialog(self, widget=None):
         """Layout the widgets as needed for the current state"""

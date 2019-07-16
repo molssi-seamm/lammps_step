@@ -4,10 +4,10 @@
 import forcefield
 import lammps_step
 import logging
-import molssi_workflow
-import molssi_util.printing as printing
-from molssi_util.printing import FormattedText as __
-import molssi_util.smiles
+import seamm
+import seamm_util.printing as printing
+from seamm_util.printing import FormattedText as __
+import seamm_util.smiles
 import pprint
 
 logger = logging.getLogger(__name__)
@@ -40,9 +40,9 @@ thermo_variables = [
 ]
 
 
-class Initialization(molssi_workflow.Node):
+class Initialization(seamm.Node):
     def __init__(self,
-                 workflow=None,
+                 flowchart=None,
                  title='Initialization',
                  extension=None):
         """Initialize the node"""
@@ -50,7 +50,7 @@ class Initialization(molssi_workflow.Node):
         logger.debug('Creating Initialization {}'.format(self))
 
         super().__init__(
-            workflow=workflow,
+            flowchart=flowchart,
             title=title,
             extension=extension)
 
@@ -109,19 +109,19 @@ class Initialization(molssi_workflow.Node):
         self.description = []
         self.description.append(__(self.header, indent=self.indent))
         
-        structure = molssi_workflow.data.structure
+        structure = seamm.data.structure
         logger.debug('Structure in LAMMPS initialization:\n' +
                      pprint.pformat(structure))
 
         # Atom-type if necessary
-        ff = molssi_workflow.data.forcefield
+        ff = seamm.data.forcefield
         ff_name = ff.current_forcefield
         atoms = structure['atoms']
         n_atoms = len(atoms['elements'])
         if 'atom_types' in atoms and ff_name in atoms['atom_types']:
             atom_types = atoms['atom_types'][ff_name]
         else:
-            smiles = molssi_util.smiles.from_molssi(structure)
+            smiles = seamm_util.smiles.from_molssi(structure)
             logger.debug('Atom typing -- smiles = ' + smiles)
             ff_assigner = forcefield.FFAssigner(ff)
             atom_types = ff_assigner.assign(smiles, add_hydrogens=False)
