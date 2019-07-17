@@ -121,7 +121,7 @@ class Initialization(seamm.Node):
         if 'atom_types' in atoms and ff_name in atoms['atom_types']:
             atom_types = atoms['atom_types'][ff_name]
         else:
-            smiles = seamm_util.smiles.from_molssi(structure)
+            smiles = seamm_util.smiles.from_seamm(structure)
             logger.debug('Atom typing -- smiles = ' + smiles)
             ff_assigner = forcefield.FFAssigner(ff)
             atom_types = ff_assigner.assign(smiles, add_hydrogens=False)
