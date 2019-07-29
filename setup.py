@@ -24,7 +24,6 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'Pmw',
-    'logging',
     'matplotlib',
     'seamm_util',
     'seamm',
