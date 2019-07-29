@@ -17,6 +17,9 @@ LAMMPS step
      :target: https://pyup.io/repos/github/molssi-seamm/lammps_step/
      :alt: Updates
 
+.. image:: https://codecov.io/gh/molssi-seamm/lammps_step/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/molssi-seamm/lammps_step
+
 
 The LAMMPS step for a SEAMM flowchart
 
