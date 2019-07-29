@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Control parameters for NVT (canonical) dynamics"""
 
-import lammps_step
 import logging
 import seamm
 
@@ -25,7 +24,6 @@ class VelocitiesParameters(seamm.Parameters):
                           "and hence the temperature.")
         },
         "T": {
-            "value": 298.15,
             "default": 298.15,
             "kind": "float",
             "default_units": "K",
@@ -34,10 +32,8 @@ class VelocitiesParameters(seamm.Parameters):
             "help_text": "The temperature corresponding to the velocities."
         },
         "seed": {
-            "value": "random",
             "default": "random",
             "kind": "integer",
-            "units": None,
             "default_units": None,
             "format_string": "",
             "enumeration": ("random",),

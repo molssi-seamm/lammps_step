@@ -5,8 +5,7 @@
 
 import pytest
 
-
-from lammps_step import lammps_step  # nopep8
+import lammps_step  # noqa: F401
 
 
 @pytest.fixture

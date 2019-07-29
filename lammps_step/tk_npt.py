@@ -1,23 +1,39 @@
 # -*- coding: utf-8 -*-
+
 """The graphical part of a LAMMPS Energy step"""
 
 import lammps_step
 import seamm_widgets as sw
-import pprint  # nopep8
 import tkinter as tk
 import tkinter.ttk as ttk
 
 
 class TkNPT(lammps_step.TkNVT):
-    def __init__(self, tk_flowchart=None, node=None, canvas=None,
-                 x=None, y=None, w=200, h=50):
+
+    def __init__(
+        self,
+        tk_flowchart=None,
+        node=None,
+        canvas=None,
+        x=None,
+        y=None,
+        w=200,
+        h=50
+    ):
         '''Initialize a node
 
         Keyword arguments:
         '''
 
-        super().__init__(tk_flowchart=tk_flowchart, node=node,
-                         canvas=canvas, x=x, y=y, w=w, h=h)
+        super().__init__(
+            tk_flowchart=tk_flowchart,
+            node=node,
+            canvas=canvas,
+            x=x,
+            y=y,
+            w=w,
+            h=h
+        )
 
     def create_dialog(self):
         """Create the dialog!
@@ -50,19 +66,27 @@ class TkNPT(lammps_step.TkNVT):
 
         # Pressure/stress controls -- create frame for them
         p_frame = self['pressure_frame'] = ttk.LabelFrame(
-            self['frame'], borderwidth=4, relief='sunken',
-            text='Pressure', labelanchor='n', padding=10)
+            self['frame'],
+            borderwidth=4,
+            relief='sunken',
+            text='Pressure',
+            labelanchor='n',
+            padding=10
+        )
 
         # Create the widgets
-        for key in ('system type', 'barostat', 'Panneal', 'use_stress',
-                    'couple', 'nreset', 'mtk', 'modulus'):
+        for key in (
+            'system type', 'barostat', 'Panneal', 'use_stress', 'couple',
+            'nreset', 'mtk', 'modulus'
+        ):
             self[key] = P[key].widget(p_frame)
 
         # The stress/pressure section is quite complicated due to
         # couplings, etc. so put in its own subsection
         s_frame = self['stress_frame'] = ttk.Frame(
-            p_frame, borderwidth=4, relief='sunken')
-        
+            p_frame, borderwidth=4, relief='sunken'
+        )
+
         # The last widgets
         for key in lammps_step.NPT_Parameters.parameters:
             if key not in self:
@@ -72,8 +96,10 @@ class TkNPT(lammps_step.TkNVT):
                     self[key] = P[key].widget(s_frame)
 
         # and labels for the directions, couplings, etc.
-        for text in ('XX', 'YY', 'ZZ', 'XY', 'XZ', 'YZ',
-                     'XX+YY', 'XX+ZZ', 'YY+ZZ', 'XX+YY+ZZ'):
+        for text in (
+            'XX', 'YY', 'ZZ', 'XY', 'XZ', 'YZ', 'XX+YY', 'XX+ZZ', 'YY+ZZ',
+            'XX+YY+ZZ'
+        ):
             self[text] = ttk.Label(s_frame, text=text)
 
         self['stress'] = ttk.Label(s_frame, text="Stress:")
@@ -92,7 +118,7 @@ class TkNPT(lammps_step.TkNVT):
             )
 
         self.setup_results('npt')
-            
+
     def reset_pressure_frame(self, widget=None):
         """Layout the widgets for the pressure/stress control
         as needed for the current state"""
@@ -120,9 +146,7 @@ class TkNPT(lammps_step.TkNVT):
 
         if system_type == 'fluid':
             sw.align_labels(
-                (self['system type'],
-                 self['barostat'],
-                 self['Panneal'])
+                (self['system type'], self['barostat'], self['Panneal'])
             )
         else:
             self['use_stress'].grid(row=row, column=0, sticky=tk.W)
@@ -132,11 +156,10 @@ class TkNPT(lammps_step.TkNVT):
             row += 1
 
             sw.align_labels(
-                (self['system type'],
-                 self['barostat'],
-                 self['Panneal'],
-                 self['use_stress'],
-                 self['couple'])
+                (
+                    self['system type'], self['barostat'], self['Panneal'],
+                    self['use_stress'], self['couple']
+                )
             )
 
         self['stress_frame'].grid(row=row, column=0, sticky=tk.W)
@@ -194,7 +217,7 @@ class TkNPT(lammps_step.TkNVT):
         if use_stress != 'isotropic pressure':
             # Annealing and stresses
             if couple == 'x, y and z':
-                    # all stresses
+                # all stresses
                 self['XX+YY+ZZ'].grid(row=row, column=1)
                 if not keep_orthorhombic:
                     self['XY'].grid(row=row, column=2)
@@ -205,8 +228,9 @@ class TkNPT(lammps_step.TkNVT):
 
                 self['initial stress'].grid(row=row, column=0, sticky=tk.E)
                 if keep_orthorhombic:
-                    self['Sxx,initial'].grid(row=row, column=1, columnspan=3,
-                                             sticky=tk.W)
+                    self['Sxx,initial'].grid(
+                        row=row, column=1, columnspan=3, sticky=tk.W
+                    )
                     self['Sxx,initial'].show('entry', 'units')
                     frame.columnconfigure(1, weight=1, uniform='b')
                     frame.columnconfigure(2, weight=1, uniform='b')
@@ -216,8 +240,9 @@ class TkNPT(lammps_step.TkNVT):
 
                     self['Sxy,initial'].grid(row=row, column=2)
                     self['Sxz,initial'].grid(row=row, column=3)
-                    self['Syz,initial'].grid(row=row, column=4, columnspan=3,
-                                             sticky=tk.W)
+                    self['Syz,initial'].grid(
+                        row=row, column=4, columnspan=3, sticky=tk.W
+                    )
 
                     self['Sxy,initial'].show('entry')
                     self['Sxz,initial'].show('entry')
@@ -230,12 +255,13 @@ class TkNPT(lammps_step.TkNVT):
                     frame.columnconfigure(5, weight=1, uniform='b')
                     frame.columnconfigure(6, weight=1, uniform='b')
                 row += 1
-                    
+
                 if Panneal != 'no':
                     self['final stress'].grid(row=row, column=0, sticky=tk.E)
                     if keep_orthorhombic:
-                        self['Sxx,final'].grid(row=row, column=1, columnspan=3,
-                                               sticky=tk.W)
+                        self['Sxx,final'].grid(
+                            row=row, column=1, columnspan=3, sticky=tk.W
+                        )
                         self['Sxx,final'].show('entry', 'units')
                     else:
                         self['Sxx,final'].grid(row=row, column=1)
@@ -243,8 +269,9 @@ class TkNPT(lammps_step.TkNVT):
 
                         self['Sxy,final'].grid(row=row, column=2)
                         self['Sxz,final'].grid(row=row, column=3)
-                        self['Syz,final'].grid(row=row, column=4, columnspan=3,
-                                               sticky=tk.W)
+                        self['Syz,final'].grid(
+                            row=row, column=4, columnspan=3, sticky=tk.W
+                        )
 
                         self['Sxy,final'].show('entry')
                         self['Sxz,final'].show('entry')
@@ -255,8 +282,9 @@ class TkNPT(lammps_step.TkNVT):
                 if barostat == 'Nose-Hoover':
                     self['damping'].grid(row=row, column=0, sticky=tk.E)
                     if keep_orthorhombic:
-                        self['Sxx damp'].grid(row=row, column=1, columnspan=3,
-                                              sticky=tk.W)
+                        self['Sxx damp'].grid(
+                            row=row, column=1, columnspan=3, sticky=tk.W
+                        )
                         self['Sxx damp'].show('entry', 'units')
                     else:
                         self['Sxx damp'].grid(row=row, column=1)
@@ -264,8 +292,9 @@ class TkNPT(lammps_step.TkNVT):
 
                         self['Sxy damp'].grid(row=row, column=2)
                         self['Sxz damp'].grid(row=row, column=3)
-                        self['Syz damp'].grid(row=row, column=4, columnspan=3,
-                                              sticky=tk.W)
+                        self['Syz damp'].grid(
+                            row=row, column=4, columnspan=3, sticky=tk.W
+                        )
 
                         self['Sxy damp'].show('entry')
                         self['Sxz damp'].show('entry')
@@ -289,8 +318,9 @@ class TkNPT(lammps_step.TkNVT):
 
                 self['Sxx,initial'].show('entry')
                 if keep_orthorhombic:
-                    self['Szz,initial'].grid(row=row, column=2, columnspan=3,
-                                             sticky=tk.W)
+                    self['Szz,initial'].grid(
+                        row=row, column=2, columnspan=3, sticky=tk.W
+                    )
                     self['Szz,initial'].show('entry', 'units')
                     frame.columnconfigure(1, weight=1, uniform='c')
                     frame.columnconfigure(2, weight=1, uniform='c')
@@ -300,8 +330,9 @@ class TkNPT(lammps_step.TkNVT):
 
                     self['Sxy,initial'].grid(row=row, column=3)
                     self['Sxz,initial'].grid(row=row, column=4)
-                    self['Syz,initial'].grid(row=row, column=5, columnspan=3,
-                                             sticky=tk.W)
+                    self['Syz,initial'].grid(
+                        row=row, column=5, columnspan=3, sticky=tk.W
+                    )
 
                     self['Sxy,initial'].show('entry')
                     self['Sxz,initial'].show('entry')
@@ -321,8 +352,9 @@ class TkNPT(lammps_step.TkNVT):
 
                     self['Sxx,final'].show('entry')
                     if keep_orthorhombic:
-                        self['Szz,final'].grid(row=row, column=2, columnspan=3,
-                                               sticky=tk.W)
+                        self['Szz,final'].grid(
+                            row=row, column=2, columnspan=3, sticky=tk.W
+                        )
                         self['Szz,final'].show('entry', 'units')
                     else:
                         self['Szz,final'].grid(row=row, column=2)
@@ -330,8 +362,9 @@ class TkNPT(lammps_step.TkNVT):
 
                         self['Sxy,final'].grid(row=row, column=3)
                         self['Sxz,final'].grid(row=row, column=4)
-                        self['Syz,final'].grid(row=row, column=5, columnspan=3,
-                                               sticky=tk.W)
+                        self['Syz,final'].grid(
+                            row=row, column=5, columnspan=3, sticky=tk.W
+                        )
 
                         self['Sxy,final'].show('entry')
                         self['Sxz,final'].show('entry')
@@ -345,17 +378,19 @@ class TkNPT(lammps_step.TkNVT):
 
                     self['Sxx damp'].show('entry')
                     if keep_orthorhombic:
-                        self['Szz damp'].grid(row=row, column=2, columnspan=3,
-                                              sticky=tk.W)
+                        self['Szz damp'].grid(
+                            row=row, column=2, columnspan=3, sticky=tk.W
+                        )
                         self['Szz damp'].show('entry', 'units')
                     else:
                         self['Szz damp'].grid(row=row, column=2)
                         self['Szz damp'].show('entry')
-                        
+
                         self['Sxy damp'].grid(row=row, column=3)
                         self['Sxz damp'].grid(row=row, column=4)
-                        self['Syz damp'].grid(row=row, column=5, columnspan=3,
-                                              sticky=tk.W)
+                        self['Syz damp'].grid(
+                            row=row, column=5, columnspan=3, sticky=tk.W
+                        )
 
                         self['Sxy damp'].show('entry')
                         self['Sxz damp'].show('entry')
@@ -379,8 +414,9 @@ class TkNPT(lammps_step.TkNVT):
 
                 self['Sxx,initial'].show('entry')
                 if keep_orthorhombic:
-                    self['Syy,initial'].grid(row=row, column=2, columnspan=3,
-                                             sticky=tk.W)
+                    self['Syy,initial'].grid(
+                        row=row, column=2, columnspan=3, sticky=tk.W
+                    )
                     self['Syy,initial'].show('entry', 'units')
                     frame.columnconfigure(1, weight=1, uniform='d')
                     frame.columnconfigure(2, weight=1, uniform='d')
@@ -391,8 +427,9 @@ class TkNPT(lammps_step.TkNVT):
 
                     self['Sxy,initial'].grid(row=row, column=3)
                     self['Sxz,initial'].grid(row=row, column=4)
-                    self['Syz,initial'].grid(row=row, column=5, columnspan=3,
-                                             sticky=tk.W)
+                    self['Syz,initial'].grid(
+                        row=row, column=5, columnspan=3, sticky=tk.W
+                    )
 
                     self['Sxy,initial'].show('entry')
                     self['Sxz,initial'].show('entry')
@@ -412,8 +449,9 @@ class TkNPT(lammps_step.TkNVT):
 
                     self['Sxx,final'].show('entry')
                     if keep_orthorhombic:
-                        self['Syy,final'].grid(row=row, column=2, columnspan=3,
-                                               sticky=tk.W)
+                        self['Syy,final'].grid(
+                            row=row, column=2, columnspan=3, sticky=tk.W
+                        )
                         self['Syy,final'].show('entry', 'units')
                     else:
                         self['Syy,final'].grid(row=row, column=2)
@@ -421,8 +459,9 @@ class TkNPT(lammps_step.TkNVT):
 
                         self['Sxy,final'].grid(row=row, column=3)
                         self['Sxz,final'].grid(row=row, column=4)
-                        self['Syz,final'].grid(row=row, column=5, columnspan=3,
-                                               sticky=tk.W)
+                        self['Syz,final'].grid(
+                            row=row, column=5, columnspan=3, sticky=tk.W
+                        )
 
                         self['Sxy,final'].show('entry')
                         self['Sxz,final'].show('entry')
@@ -435,8 +474,9 @@ class TkNPT(lammps_step.TkNVT):
 
                     self['Sxx damp'].show('entry')
                     if keep_orthorhombic:
-                        self['Syy damp'].grid(row=row, column=2, columnspan=3,
-                                              sticky=tk.W)
+                        self['Syy damp'].grid(
+                            row=row, column=2, columnspan=3, sticky=tk.W
+                        )
                         self['Syy damp'].show('entry', 'units')
                     else:
                         self['Syy damp'].grid(row=row, column=2)
@@ -468,8 +508,9 @@ class TkNPT(lammps_step.TkNVT):
 
                 self['Sxx,initial'].show('entry')
                 if keep_orthorhombic:
-                    self['Syy,initial'].grid(row=row, column=2, columnspan=3,
-                                             sticky=tk.W)
+                    self['Syy,initial'].grid(
+                        row=row, column=2, columnspan=3, sticky=tk.W
+                    )
                     self['Syy,initial'].show('entry', 'units')
                     frame.columnconfigure(1, weight=1, uniform='e')
                     frame.columnconfigure(2, weight=1, uniform='e')
@@ -500,8 +541,9 @@ class TkNPT(lammps_step.TkNVT):
 
                     self['Sxx,final'].show('entry')
                     if keep_orthorhombic:
-                        self['Syy,final'].grid(row=row, column=2, columnspan=3,
-                                               sticky=tk.W)
+                        self['Syy,final'].grid(
+                            row=row, column=2, columnspan=3, sticky=tk.W
+                        )
                         self['Syy,final'].show('entry', 'units')
                     else:
                         self['Syy,final'].grid(row=row, column=2)
@@ -509,8 +551,9 @@ class TkNPT(lammps_step.TkNVT):
 
                         self['Sxy,final'].grid(row=row, column=3)
                         self['Sxz,final'].grid(row=row, column=4)
-                        self['Syz,final'].grid(row=row, column=5, columnspan=3,
-                                               sticky=tk.W)
+                        self['Syz,final'].grid(
+                            row=row, column=5, columnspan=3, sticky=tk.W
+                        )
 
                         self['Sxy,final'].show('entry')
                         self['Sxz,final'].show('entry')
@@ -524,8 +567,9 @@ class TkNPT(lammps_step.TkNVT):
 
                     self['Sxx damp'].show('entry')
                     if keep_orthorhombic:
-                        self['Syy damp'].grid(row=row, column=2, columnspan=3,
-                                              sticky=tk.W)
+                        self['Syy damp'].grid(
+                            row=row, column=2, columnspan=3, sticky=tk.W
+                        )
                         self['Syy damp'].show('entry', 'units')
                     else:
                         self['Syy damp'].grid(row=row, column=2)
@@ -533,14 +577,15 @@ class TkNPT(lammps_step.TkNVT):
 
                         self['Sxy damp'].grid(row=row, column=3)
                         self['Sxz damp'].grid(row=row, column=4)
-                        self['Syz damp'].grid(row=row, column=5, columnspan=3,
-                                              sticky=tk.W)
+                        self['Syz damp'].grid(
+                            row=row, column=5, columnspan=3, sticky=tk.W
+                        )
 
                         self['Sxy damp'].show('entry')
                         self['Sxz damp'].show('entry')
                         self['Syz damp'].show('entry', 'units')
             else:
-            # if couple == 'none':
+                # if couple == 'none':
                 # all stresses
                 self['XX'].grid(row=row, column=1)
                 self['YY'].grid(row=row, column=2)
@@ -562,8 +607,9 @@ class TkNPT(lammps_step.TkNVT):
                 self['Sxx,initial'].show('entry')
                 self['Syy,initial'].show('entry')
                 if keep_orthorhombic:
-                    self['Szz,initial'].grid(row=row, column=3, columnspan=3,
-                                             sticky=tk.W)
+                    self['Szz,initial'].grid(
+                        row=row, column=3, columnspan=3, sticky=tk.W
+                    )
                     self['Szz,initial'].show('entry', 'units')
                     frame.columnconfigure(1, weight=1, uniform='a')
                     frame.columnconfigure(2, weight=1, uniform='a')
@@ -575,8 +621,9 @@ class TkNPT(lammps_step.TkNVT):
 
                     self['Sxy,initial'].grid(row=row, column=4)
                     self['Sxz,initial'].grid(row=row, column=5)
-                    self['Syz,initial'].grid(row=row, column=6, columnspan=3,
-                                             sticky=tk.W)
+                    self['Syz,initial'].grid(
+                        row=row, column=6, columnspan=3, sticky=tk.W
+                    )
 
                     self['Sxy,initial'].show('entry')
                     self['Sxz,initial'].show('entry')
@@ -600,8 +647,9 @@ class TkNPT(lammps_step.TkNVT):
                     self['Syy,final'].show('entry')
 
                     if keep_orthorhombic:
-                        self['Szz,final'].grid(row=row, column=3, columnspan=3,
-                                               sticky=tk.W)
+                        self['Szz,final'].grid(
+                            row=row, column=3, columnspan=3, sticky=tk.W
+                        )
                         self['Szz,final'].show('entry', 'units')
                     else:
                         self['Szz,final'].grid(row=row, column=3)
@@ -609,8 +657,9 @@ class TkNPT(lammps_step.TkNVT):
 
                         self['Sxy,final'].grid(row=row, column=4)
                         self['Sxz,final'].grid(row=row, column=5)
-                        self['Syz,final'].grid(row=row, column=6, columnspan=3,
-                                               sticky=tk.W)
+                        self['Syz,final'].grid(
+                            row=row, column=6, columnspan=3, sticky=tk.W
+                        )
 
                         self['Sxy,final'].show('entry')
                         self['Sxz,final'].show('entry')
@@ -626,8 +675,9 @@ class TkNPT(lammps_step.TkNVT):
                     self['Sxx damp'].show('entry')
                     self['Syy damp'].show('entry')
                     if keep_orthorhombic:
-                        self['Szz damp'].grid(row=row, column=3, columnspan=3,
-                                              sticky=tk.W)
+                        self['Szz damp'].grid(
+                            row=row, column=3, columnspan=3, sticky=tk.W
+                        )
                         self['Szz damp'].show('entry', 'units')
                     else:
                         self['Szz damp'].grid(row=row, column=3)
@@ -635,8 +685,9 @@ class TkNPT(lammps_step.TkNVT):
 
                         self['Sxy damp'].grid(row=row, column=4)
                         self['Sxz damp'].grid(row=row, column=5)
-                        self['Syz damp'].grid(row=row, column=6, columnspan=3,
-                                              sticky=tk.W)
+                        self['Syz damp'].grid(
+                            row=row, column=6, columnspan=3, sticky=tk.W
+                        )
 
                         self['Sxy damp'].show('entry')
                         self['Sxz damp'].show('entry')
@@ -670,13 +721,15 @@ class TkNPT(lammps_step.TkNVT):
             slave.grid_forget()
 
         self['trj_frame'].grid(row=0, column=0, columnspan=2)
-        
-        self['temperature_frame'].grid(row=1, column=0,
-                                       sticky=tk.N, padx=10, pady=10)
+
+        self['temperature_frame'].grid(
+            row=1, column=0, sticky=tk.N, padx=10, pady=10
+        )
         self.reset_temperature_frame()
 
-        self['pressure_frame'].grid(row=1, column=1,
-                                    sticky=tk.N, padx=10, pady=10)
+        self['pressure_frame'].grid(
+            row=1, column=1, sticky=tk.N, padx=10, pady=10
+        )
         self.reset_pressure_frame()
 
         return 2
@@ -697,7 +750,8 @@ class TkNPT(lammps_step.TkNVT):
         if result != "OK":
             self.dialog.deactivate(result)
             raise RuntimeError(
-                "Don't recognize dialog result '{}'".format(result))
+                "Don't recognize dialog result '{}'".format(result)
+            )
 
         # Let base classes reap their parameters
         super().handle_dialog(result)

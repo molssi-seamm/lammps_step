@@ -8,8 +8,10 @@ import lammps_step
 class CustomStep(object):
     my_description = {
         'description':
-        ('A custom step for LAMMPS, where the user types in LAMMPS commmands '
-         'directly'),
+            (
+                'A custom step for LAMMPS, where the user types in LAMMPS '
+                'commmands directly'
+            ),
         'group': 'Customize',
         'name': 'Custom'
     }

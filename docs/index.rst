@@ -1,5 +1,5 @@
-Welcome to LAMMPS step's documentation!
-======================================
+Welcome to the documentation for a LAMMPS step in a SEAMM Flowchart
+===================================================================
 
 Contents:
 

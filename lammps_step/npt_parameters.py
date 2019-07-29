@@ -3,7 +3,6 @@
 
 import lammps_step
 import logging
-import pprint
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +12,6 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
 
     parameters = {
         "system type": {
-            "value": 'fluid',
             "default": 'fluid',
             "kind": "string",
             "format_string": "s",
@@ -28,7 +26,6 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
                           "small shear stresses.")
         },
         "barostat": {
-            "value": 'Nose-Hoover',
             "default": 'Nose-Hoover',
             "kind": "string",
             "format_string": "s",
@@ -41,7 +38,6 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
                           "pressure")
         },
         "Panneal": {
-            "value": "no",
             "default": "no",
             "kind": "boolean",
             "format_string": "s",
@@ -54,7 +50,6 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
                           "during the run, i.e. anneal the system.")
         },
         "use_stress": {
-            "value": "isotropic pressure",
             "default": "isotropic pressure",
             "kind": "enumeration",
             "enumeration": (
@@ -68,7 +63,6 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
                           "for each different direction.")
         },
         "couple": {
-            "value": "x, y and z",
             "default": "x, y and z",
             "kind": "enumeration",
             "enumeration": (
@@ -85,10 +79,8 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
                           "proportions in these directions.")
         },
         "Pinitial": {
-            "value": 1.0,
             "default": 1.0,
             "kind": "float",
-            "units": "atm",
             "default_units": "atm",
             "format_string": ".2f",
             "enumeration": tuple(),
@@ -96,10 +88,8 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": ("The initial pressure.")
         },
         "Pfinal": {
-            "value": 1.0,
             "default": 1.0,
             "kind": "float",
-            "units": "atm",
             "default_units": "atm",
             "format_string": ".2f",
             "enumeration": tuple(),
@@ -107,10 +97,8 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": ("The final pressure.")
         },
         "Pdamp": {
-            "value": 1000.0,
             "default": 1000.0,
             "kind": "float",
-            "units": "fs",
             "default_units": "fs",
             "format_string": ".1f",
             "description": "Damping time:",
@@ -119,130 +107,104 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
                           "works well.")
         },
         "Sxx,initial": {
-            "value": 1.0,
             "default": 1.0,
             "kind": "float",
-            "units": "atm",
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Sxx initial:",
             "help_text": "The initial components of the stress tensor."
         },
         "Syy,initial": {
-            "value": 1.0,
             "default": 1.0,
             "kind": "float",
-            "units": "atm",
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Syy initial:",
             "help_text": "The initial components of the stress tensor."
         },
         "Szz,initial": {
-            "value": 1.0,
             "default": 1.0,
             "kind": "float",
-            "units": "atm",
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Szz initial:",
             "help_text": "The initial components of the stress tensor."
         },
         "Sxy,initial": {
-            "value": 0.0,
             "default": 0.0,
             "kind": "float",
-            "units": "atm",
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Sxy initial:",
             "help_text": "The initial components of the stress tensor."
         },
         "Sxz,initial": {
-            "value": 0.0,
             "default": 0.0,
             "kind": "float",
-            "units": "atm",
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Sxz initial:",
             "help_text": "The initial components of the stress tensor."
         },
         "Syz,initial": {
-            "value": 0.0,
             "default": 0.0,
             "kind": "float",
-            "units": "atm",
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Syz initial:",
             "help_text": "The initial components of the stress tensor."
         },
         "Sxx,final": {
-            "value": 1.0,
             "default": 1.0,
             "kind": "float",
-            "units": "atm",
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Sxx final:",
             "help_text": "The final components of the stress tensor."
         },
         "Syy,final": {
-            "value": 1.0,
             "default": 1.0,
             "kind": "float",
-            "units": "atm",
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Syy final:",
             "help_text": "The final components of the stress tensor."
         },
         "Szz,final": {
-            "value": 1.0,
             "default": 1.0,
             "kind": "float",
-            "units": "atm",
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Szz final:",
             "help_text": "The final components of the stress tensor."
         },
         "Sxy,final": {
-            "value": 0.0,
             "default": 0.0,
             "kind": "float",
-            "units": "atm",
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Sxy final:",
             "help_text": "The final components of the stress tensor."
         },
         "Sxz,final": {
-            "value": 0.0,
             "default": 0.0,
             "kind": "float",
-            "units": "atm",
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Sxz final:",
             "help_text": "The final components of the stress tensor."
         },
         "Syz,final": {
-            "value": 0.0,
             "default": 0.0,
             "kind": "float",
-            "units": "atm",
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Syz final:",
             "help_text": "The final components of the stress tensor."
         },
         "Sxx damp": {
-            "value": 1000.0,
             "default": 1000.0,
             "kind": "float",
-            "units": "fs",
             "default_units": "fs",
             "format_string": ".1f",
             "description": "Sxx damping time:",
@@ -251,10 +213,8 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
                           "works well.")
         },
         "Syy damp": {
-            "value": 1000.0,
             "default": 1000.0,
             "kind": "float",
-            "units": "fs",
             "default_units": "fs",
             "format_string": ".1f",
             "description": "Syy damping time:",
@@ -263,10 +223,8 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
                           "works well.")
         },
         "Szz damp": {
-            "value": 1000.0,
             "default": 1000.0,
             "kind": "float",
-            "units": "fs",
             "default_units": "fs",
             "format_string": ".1f",
             "description": "Szz damping time:",
@@ -275,10 +233,8 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
                           "works well.")
         },
         "Sxy damp": {
-            "value": 1000.0,
             "default": 1000.0,
             "kind": "float",
-            "units": "fs",
             "default_units": "fs",
             "format_string": ".1f",
             "description": "Sxy damping time:",
@@ -287,10 +243,8 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
                           "works well.")
         },
         "Sxz damp": {
-            "value": 1000.0,
             "default": 1000.0,
             "kind": "float",
-            "units": "fs",
             "default_units": "fs",
             "format_string": ".1f",
             "description": "Sxz damping time:",
@@ -299,10 +253,8 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
                           "works well.")
         },
         "Syz damp": {
-            "value": 1000.0,
             "default": 1000.0,
             "kind": "float",
-            "units": "fs",
             "default_units": "fs",
             "format_string": ".1f",
             "description": "Syz damping time:",
@@ -311,10 +263,8 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
                           "works well.")
         },
         "nreset": {
-            "value": "never",
             "default": "never",
             "kind": "integer",
-            "units": None,
             "default_units": None,
             "format_string": "d",
             "enumeration": ("never",),
@@ -323,7 +273,6 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
                           "the reference cell for the strain energy.")
         },
         "mtk": {
-            "value": "yes",
             "default": "yes",
             "kind": "boolean",
             "format_string": "s",
@@ -342,10 +291,8 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
                           "the difference is negligible.")
         },
         "modulus": {
-            "value": 50.0,
             "default": 50.0,
             "kind": "float",
-            "units": "GPa",
             "default_units": "GPa",
             "format_string": ".2f",
             "enumeration": tuple(),
