@@ -12,7 +12,8 @@ import lammps_step
 import logging
 import math
 import seamm
-from seamm import ureg, Q_, units_class, data  # nopep8
+from seamm import data
+from seamm_util import ureg, Q_, units_class  # noqa: F401
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
 import numpy

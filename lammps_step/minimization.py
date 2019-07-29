@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """Minimization step in LAMMPS"""
 
-from seamm import ureg, Q_, data  # nopep8
+from seamm import data
+from seamm_util import ureg, Q_, units_class  # noqa: F401
 import lammps_step
 import logging
 

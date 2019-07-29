@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """A single-point initialization in LAMMPS"""
 
-import forcefield
+import seamm_ff_util
 import lammps_step
 import logging
 import seamm
@@ -123,7 +123,7 @@ class Initialization(seamm.Node):
         else:
             smiles = seamm_util.smiles.from_seamm(structure)
             logger.debug('Atom typing -- smiles = ' + smiles)
-            ff_assigner = forcefield.FFAssigner(ff)
+            ff_assigner = seamm_ff_util.FFAssigner(ff)
             atom_types = ff_assigner.assign(smiles, add_hydrogens=False)
             logger.info('Atom types: ' + ', '.join(atom_types))
             if 'atom_types' not in atoms:

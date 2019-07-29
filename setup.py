@@ -13,13 +13,13 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'Pmw',
-    'forcefield',
     'logging',
     'matplotlib',
     'seamm_util',
     'seamm',
     'pprint',
     'scipy',
+    'seamm_ff_util',
     'statistics',
     'statsmodels',
 ]
