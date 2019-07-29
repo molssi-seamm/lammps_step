@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
-"""A node or step for LAMMPS in a flowchart"""
 
-import matplotlib
-matplotlib.use('pdf')
-import matplotlib.pyplot as pyplot
-from matplotlib.backends.backend_pdf import PdfPages
+"""A node or step for LAMMPS in a flowchart"""
 
 import datetime
 import glob
@@ -16,18 +12,19 @@ from seamm import data
 from seamm_util import ureg, Q_, units_class  # noqa: F401
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
-import numpy
 import os
 import os.path
 import pandas
 import pprint
-import statistics
-import statsmodels.tsa.stattools as stattools
 import statsmodels.stats.stattools
 import statsmodels.api
 import statsmodels.tools
 from statsmodels.graphics.tsaplots import plot_acf
-from statsmodels.graphics.tsaplots import plot_pacf
+
+import matplotlib
+matplotlib.use('pdf')
+import matplotlib.pyplot as pyplot  # noqa: E402
+from matplotlib.backends.backend_pdf import PdfPages  # noqa: E402
 
 logger = logging.getLogger(__name__)
 job = printing.getPrinter()
@@ -55,40 +52,42 @@ improper_style = {
 }
 
 lammps_units = {
-    'real': {
-        '[mass]': 'g/mol',
-        '[distance]': 'Å',
-        '[time]': 'fs',
-        '[length] ** 2 * [mass] / [substance] / [time] ** 2': 'kcal/mol',
-        '[length] ** 2 * [mass] / [time] ** 2': 'kcal/mol',
-        '[length] / [time]': 'Å/fs',
-        '[length] * [mass] / [substance] / [time] ** 2': 'kcal/mol/Å',
-        '[length] * [mass] / [time] ** 2': 'kcal/mol/Å',
-        '[temperature]': 'K',
-        '[mass] / [length] / [time] ** 2': 'bar',
-        '[mass] / [length] / [time]': 'poise',
-        '[current] * [time]': 'e',
-        '[current] * [length] * [time]': 'e*Å',
-        '[length] * [mass] / [current] / [time] ** 3': 'V/Å',
-        '[mass] / [length] ** 3': 'g/mL'
-    },
-    'metal': {
-        '[mass]': 'g/mol',
-        '[distance]': 'Å',
-        '[time]': 'ps',
-        '[length] ** 2 * [mass] / [substance] / [time] ** 2': 'eV',
-        '[length] ** 2 * [mass] / [time] ** 2': 'eV',
-        '[length] / [time]': 'Å/ps',
-        '[length] * [mass] / [substance] / [time] ** 2': 'eV/Å',
-        '[length] * [mass] / [time] ** 2': 'eV/Å',
-        '[temperature]': 'K',
-        '[mass] / [length] / [time] ** 2': 'atm',
-        '[mass] / [length] / [time]': 'poise',
-        '[current] * [time]': 'e',
-        '[current] * [length] * [time]': 'e*Å',
-        '[length] * [mass] / [current] / [time] ** 3': 'V/Å',
-        '[mass] / [length] ** 3': 'g/mL'
-    }
+    'real':
+        {
+            '[mass]': 'g/mol',
+            '[distance]': 'Å',
+            '[time]': 'fs',
+            '[length] ** 2 * [mass] / [substance] / [time] ** 2': 'kcal/mol',
+            '[length] ** 2 * [mass] / [time] ** 2': 'kcal/mol',
+            '[length] / [time]': 'Å/fs',
+            '[length] * [mass] / [substance] / [time] ** 2': 'kcal/mol/Å',
+            '[length] * [mass] / [time] ** 2': 'kcal/mol/Å',
+            '[temperature]': 'K',
+            '[mass] / [length] / [time] ** 2': 'bar',
+            '[mass] / [length] / [time]': 'poise',
+            '[current] * [time]': 'e',
+            '[current] * [length] * [time]': 'e*Å',
+            '[length] * [mass] / [current] / [time] ** 3': 'V/Å',
+            '[mass] / [length] ** 3': 'g/mL'
+        },
+    'metal':
+        {
+            '[mass]': 'g/mol',
+            '[distance]': 'Å',
+            '[time]': 'ps',
+            '[length] ** 2 * [mass] / [substance] / [time] ** 2': 'eV',
+            '[length] ** 2 * [mass] / [time] ** 2': 'eV',
+            '[length] / [time]': 'Å/ps',
+            '[length] * [mass] / [substance] / [time] ** 2': 'eV/Å',
+            '[length] * [mass] / [time] ** 2': 'eV/Å',
+            '[temperature]': 'K',
+            '[mass] / [length] / [time] ** 2': 'atm',
+            '[mass] / [length] / [time]': 'poise',
+            '[current] * [time]': 'e',
+            '[current] * [length] * [time]': 'e*Å',
+            '[length] * [mass] / [current] / [time] ** 3': 'V/Å',
+            '[mass] / [length] ** 3': 'g/mL'
+        }
 }
 
 
@@ -112,10 +111,12 @@ class LAMMPS(seamm.Node):
         "Epair": "kcal/mol",
     }
 
-    def __init__(self,
-                 flowchart=None,
-                 namespace='org.molssi.seamm.lammps',
-                 extension=None):
+    def __init__(
+        self,
+        flowchart=None,
+        namespace='org.molssi.seamm.lammps',
+        extension=None
+    ):
         '''Setup the main LAMMPS step
 
         Keyword arguments:
@@ -123,17 +124,16 @@ class LAMMPS(seamm.Node):
         logger.debug('Creating LAMMPS {}'.format(self))
 
         self.lammps_flowchart = seamm.Flowchart(
-            parent=self, name='LAMMPS',
-            namespace=namespace)
+            parent=self, name='LAMMPS', namespace=namespace
+        )
         self.lammps_units = 'real'
         self._data = {}
 
         self.maxlags = 100
 
         super().__init__(
-            flowchart=flowchart,
-            title='LAMMPS',
-            extension=extension)
+            flowchart=flowchart, title='LAMMPS', extension=extension
+        )
 
     def set_id(self, node_id):
         """Set the id for node to a given tuple"""
@@ -158,7 +158,7 @@ class LAMMPS(seamm.Node):
         node = self.lammps_flowchart.get_node('1').next()
 
         while node is not None:
-            node.describe(indent+'    ', json_dict)
+            node.describe(indent + '    ', json_dict)
             node = node.next()
 
         return next_node
@@ -204,7 +204,8 @@ class LAMMPS(seamm.Node):
         result = local.run(
             cmd=['lammps_omp', '-sf', 'omp', '-in', 'molssi.dat'],  # nopep8
             files=files,
-            return_files=return_files)
+            return_files=return_files
+        )
 
         if result is None:
             logger.error('There was an error running LAMMPS')
@@ -218,8 +219,9 @@ class LAMMPS(seamm.Node):
 
         if result['stderr'] != '':
             logger.warning('stderr:\n' + result['stderr'])
-            with open(os.path.join(self.directory, 'stderr.txt'),
-                      mode='w') as fd:
+            with open(
+                os.path.join(self.directory, 'stderr.txt'), mode='w'
+            ) as fd:
                 fd.write(result['stderr'])
 
         for filename in result['files']:
@@ -238,7 +240,8 @@ class LAMMPS(seamm.Node):
         """Create the LAMMPS structure file from the energy expression"""
         lines = []
         lines.append(
-            'Structure file for LAMMPS generated by a MolSSI flowchart')
+            'Structure file for LAMMPS generated by a MolSSI flowchart'
+        )
         lines.append('{:10d} atoms'.format(eex['n_atoms']))
         lines.append('{:10d} atom types'.format(eex['n_atom_types']))
         if eex['n_bonds'] > 0:
@@ -249,8 +252,9 @@ class LAMMPS(seamm.Node):
             lines.append('{:10d} angle types'.format(eex['n_angle_types']))
         if eex['n_torsions'] > 0:
             lines.append('{:10d} dihedrals'.format(eex['n_torsions']))
-            lines.append('{:10d} dihedral types'.format(
-                eex['n_torsion_types']))
+            lines.append(
+                '{:10d} dihedral types'.format(eex['n_torsion_types'])
+            )
         if eex['n_oops'] > 0:
             lines.append('{:10d} impropers'.format(eex['n_oops']))
             lines.append('{:10d} improper types'.format(eex['n_oop_types']))
@@ -306,18 +310,22 @@ class LAMMPS(seamm.Node):
         lines.append('Atoms')
         lines.append('')
 
-        for i, xyz_index, q in zip(range(1, eex['n_atoms'] + 1), eex['atoms'],
-                                   eex['charges']):
+        for i, xyz_index, q in zip(
+            range(1, eex['n_atoms'] + 1), eex['atoms'], eex['charges']
+        ):
             x, y, z, index = xyz_index
             lines.append(
                 '{:6d} {:6d} {:6d} {:6.3f} {:12.7f} {:12.7f} {:12.7f}'.format(
-                    i, 1, index, q, x, y, z))
+                    i, 1, index, q, x, y, z
+                )
+            )
         lines.append('')
 
         lines.append('Masses')
         lines.append('')
-        for i, parameters in zip(range(1, eex['n_atom_types'] + 1),
-                                 eex['masses']):
+        for i, parameters in zip(
+            range(1, eex['n_atom_types'] + 1), eex['masses']
+        ):
             mass, itype = parameters
             lines.append('{:6d} {} # {}'.format(i, mass, itype))
 
@@ -325,12 +333,16 @@ class LAMMPS(seamm.Node):
         lines.append('')
         lines.append('Pair Coeffs')
         lines.append('')
-        for i, parameters in zip(range(1, eex['n_atom_types'] + 1),
-                                 eex['nonbond parameters']):
+        for i, parameters in zip(
+            range(1, eex['n_atom_types'] + 1), eex['nonbond parameters']
+        ):
             form, values, types, parameters_type, real_types = \
                 parameters
-            lines.append('{:6d} {} {} # {} --> {}'.format(
-                i, values['eps'], values['r'], types[0], real_types[0]))
+            lines.append(
+                '{:6d} {} {} # {} --> {}'.format(
+                    i, values['eps'], values['r'], types[0], real_types[0]
+                )
+            )
 
         # bonds
         if eex['n_bonds'] > 0:
@@ -338,28 +350,38 @@ class LAMMPS(seamm.Node):
             lines.append('Bonds')
             lines.append('')
             for counter, tmp in zip(
-                    range(1, eex['n_bonds'] + 1), eex['bonds']):
+                range(1, eex['n_bonds'] + 1), eex['bonds']
+            ):
                 i, j, index = tmp
-                lines.append('{:6d} {:6d} {:6d} {:6d}'.format(
-                    counter, index, i, j))
+                lines.append(
+                    '{:6d} {:6d} {:6d} {:6d}'.format(counter, index, i, j)
+                )
 
             lines.append('')
             lines.append('Bond Coeffs')
             lines.append('')
             for counter, parameters in zip(
-                    range(1, eex['n_bond_types'] + 1), eex['bond parameters']):
+                range(1, eex['n_bond_types'] + 1), eex['bond parameters']
+            ):
                 form, values, types, parameters_type, real_types = \
                     parameters
                 if form == 'quadratic_bond':
-                    lines.append('{:6d} harmonic {} {}'.format(
-                        counter, values['K2'],
-                        values['R0']) + ' # {}-{} --> {}-{}'.format(
-                            types[0], types[1], real_types[0], real_types[1]))
+                    lines.append(
+                        '{:6d} harmonic {} {}'
+                        .format(counter, values['K2'], values['R0']) +
+                        ' # {}-{} --> {}-{}'.format(
+                            types[0], types[1], real_types[0], real_types[1]
+                        )
+                    )
                 elif form == 'quartic_bond':
-                    lines.append('{:6d} class2 {} {} {} {}'.format(
-                        counter, values['R0'], values['K2'], values['K3'],
-                        values['K4']) + ' # {}-{} --> {}-{}'.format(
-                            types[0], types[1], real_types[0], real_types[1]))
+                    lines.append(
+                        '{:6d} class2 {} {} {} {}'.format(
+                            counter, values['R0'], values['K2'], values['K3'],
+                            values['K4']
+                        ) + ' # {}-{} --> {}-{}'.format(
+                            types[0], types[1], real_types[0], real_types[1]
+                        )
+                    )
 
         # angles
         if eex['n_angles'] > 0:
@@ -367,77 +389,102 @@ class LAMMPS(seamm.Node):
             lines.append('Angles')
             lines.append('')
             for counter, tmp in zip(
-                    range(1, eex['n_angles'] + 1), eex['angles']):
+                range(1, eex['n_angles'] + 1), eex['angles']
+            ):
                 i, j, k, index = tmp
-                lines.append('{:6d} {:6d} {:6d} {:6d} {:6d}'.format(
-                    counter, index, i, j, k))
+                lines.append(
+                    '{:6d} {:6d} {:6d} {:6d} {:6d}'.format(
+                        counter, index, i, j, k
+                    )
+                )
 
             lines.append('')
             lines.append('Angle Coeffs')
             lines.append('')
             for counter, parameters in zip(
-                    range(1, eex['n_angle_types'] + 1), eex['angle parameters']):
+                range(1, eex['n_angle_types'] + 1), eex['angle parameters']
+            ):
                 form, values, types, parameters_type, real_types = \
                     parameters
                 if form == 'quadratic_angle':
-                    lines.append('{:6d} harmonic {} {}'.format(
-                        counter, values['K2'],
-                        values['Theta0']) + ' # {}-{}-{} --> {}-{}-{}'.format(
-                            types[0], types[1], types[2],
-                            real_types[0], real_types[1], real_types[2]))
+                    lines.append(
+                        '{:6d} harmonic {} {}'
+                        .format(counter, values['K2'], values['Theta0']) +
+                        ' # {}-{}-{} --> {}-{}-{}'.format(
+                            types[0], types[1], types[2], real_types[0],
+                            real_types[1], real_types[2]
+                        )
+                    )
                 elif form == 'quartic_angle':
-                    lines.append('{:6d} class2 {} {} {} {}'.format(
-                        counter, values['Theta0'], values['K2'], values['K3'],
-                        values['K4']) + ' # {}-{}-{} --> {}-{}-{}'.format(
-                            types[0], types[1], types[2],
-                            real_types[0], real_types[1], real_types[2]))
+                    lines.append(
+                        '{:6d} class2 {} {} {} {}'.format(
+                            counter, values['Theta0'], values['K2'],
+                            values['K3'], values['K4']
+                        ) + ' # {}-{}-{} --> {}-{}-{}'.format(
+                            types[0], types[1], types[2], real_types[0],
+                            real_types[1], real_types[2]
+                        )
+                    )
 
             # bond-bond coefficients, which must match angles in order & number
             lines.append('')
             lines.append('BondBond Coeffs')
             lines.append('')
             for counter, parameters, angles in zip(
-                    range(1, eex['n_bond-bond_types'] + 1),
-                    eex['bond-bond parameters'],
-                    eex['angle parameters']):
+                range(1, eex['n_bond-bond_types'] + 1),
+                eex['bond-bond parameters'], eex['angle parameters']
+            ):
                 form, values, types, parameters_type, real_types = \
                     parameters
                 angle_form = angles[0]
                 if angle_form == 'quartic_angle':
-                    lines.append('{:6d} class2 {} {} {}'.format(
-                        counter, values['K'], values['R10'], values['R20'])
-                                 + ' # {}-{}-{} --> {}-{}-{}'.format(
-                                     types[0], types[1], types[2],
-                                     real_types[0], real_types[1], real_types[2]))
+                    lines.append(
+                        '{:6d} class2 {} {} {}'.format(
+                            counter, values['K'], values['R10'], values['R20']
+                        ) + ' # {}-{}-{} --> {}-{}-{}'.format(
+                            types[0], types[1], types[2], real_types[0],
+                            real_types[1], real_types[2]
+                        )
+                    )
                 else:
-                    lines.append('{:6d} skip'.format(counter)
-                                 + ' # {}-{}-{} --> {}-{}-{}'.format(
-                                     types[0], types[1], types[2],
-                                     real_types[0], real_types[1], real_types[2]))
+                    lines.append(
+                        '{:6d} skip'.format(counter) +
+                        ' # {}-{}-{} --> {}-{}-{}'.format(
+                            types[0], types[1], types[2], real_types[0],
+                            real_types[1], real_types[2]
+                        )
+                    )
 
-            # bond-angles coefficients, which must match angles in order & number
+            # bond-angles coefficients, which must match angles in order &
+            # number
             lines.append('')
             lines.append('BondAngle Coeffs')
             lines.append('')
             for counter, parameters, angles in zip(
-                    range(1, eex['n_bond-angle_types'] + 1),
-                    eex['bond-angle parameters'],
-                    eex['angle parameters']):
+                range(1, eex['n_bond-angle_types'] + 1),
+                eex['bond-angle parameters'], eex['angle parameters']
+            ):
                 form, values, types, parameters_type, real_types = \
                     parameters
                 angle_form = angles[0]
                 if angle_form == 'quartic_angle':
-                    lines.append('{:6d} class2 {} {} {} {}'.format(
-                        counter, values['K12'], values['K23'],
-                        values['R10'], values['R20'])
-                                 + ' # {}-{}-{} --> {}-{}-{}'.format(
-                                     types[0], types[1], types[2],
-                                     real_types[0], real_types[1], real_types[2]))
+                    lines.append(
+                        '{:6d} class2 {} {} {} {}'.format(
+                            counter, values['K12'], values['K23'],
+                            values['R10'], values['R20']
+                        ) + ' # {}-{}-{} --> {}-{}-{}'.format(
+                            types[0], types[1], types[2], real_types[0],
+                            real_types[1], real_types[2]
+                        )
+                    )
                 else:
-                    lines.append('{:6d} skip'.format(counter)
-                                 + ' # {}-{}-{} --> {}-{}-{}'.format(
-                                     types[0], types[1], types[2],
-                                 real_types[0], real_types[1], real_types[2]))
+                    lines.append(
+                        '{:6d} skip'.format(counter) +
+                        ' # {}-{}-{} --> {}-{}-{}'.format(
+                            types[0], types[1], types[2], real_types[0],
+                            real_types[1], real_types[2]
+                        )
+                    )
 
         # torsions
         if eex['n_torsions'] > 0:
@@ -445,17 +492,21 @@ class LAMMPS(seamm.Node):
             lines.append('Dihedrals')
             lines.append('')
             for counter, tmp in zip(
-                    range(1, eex['n_torsions'] + 1), eex['torsions']):
+                range(1, eex['n_torsions'] + 1), eex['torsions']
+            ):
                 i, j, k, l, index = tmp
-                lines.append('{:6d} {:6d} {:6d} {:6d} {:6d} {:6d}'.format(
-                    counter, index, i, j, k, l))
+                lines.append(
+                    '{:6d} {:6d} {:6d} {:6d} {:6d} {:6d}'.format(
+                        counter, index, i, j, k, l
+                    )
+                )
 
             lines.append('')
             lines.append('Dihedral Coeffs')
             lines.append('')
             for counter, parameters in zip(
-                    range(1, eex['n_torsion_types'] + 1),
-                    eex['torsion parameters']):
+                range(1, eex['n_torsion_types'] + 1), eex['torsion parameters']
+            ):
                 form, values, types, parameters_type, real_types = \
                     parameters
                 if form == 'torsion_1':
@@ -484,23 +535,29 @@ class LAMMPS(seamm.Node):
                         d = '+1'
                     else:
                         raise RuntimeError(
-                            'LAMMPS cannot handle Phi0 = {}'.format(Phi0))
+                            'LAMMPS cannot handle Phi0 = {}'.format(Phi0)
+                        )
 
-                    lines.append('{:6d} harmonic {} {} {}'.format(
-                        counter, KPhi, d, n) +
+                    lines.append(
+                        '{:6d} harmonic {} {} {}'.format(counter, KPhi, d, n) +
                         ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
                             types[0], types[1], types[2], types[3],
                             real_types[0], real_types[1], real_types[2],
-                            real_types[3]))
+                            real_types[3]
+                        )
+                    )
                 elif form == 'torsion_3':
-                    lines.append('{:6d} class2 {} {} {} {} {} {}'.format(
-                        counter, values['V1'], values['Phi0_1'],
-                        values['V2'], values['Phi0_2'],
-                        values['V3'], values['Phi0_3']) +
-                        ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
+                    lines.append(
+                        '{:6d} class2 {} {} {} {} {} {}'.format(
+                            counter, values['V1'], values['Phi0_1'],
+                            values['V2'], values['Phi0_2'], values['V3'],
+                            values['Phi0_3']
+                        ) + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
                             types[0], types[1], types[2], types[3],
                             real_types[0], real_types[1], real_types[2],
-                            real_types[3]))
+                            real_types[3]
+                        )
+                    )
 
             # middle bond-torsion_3 coefficients, which must match torsions
             # in order & number
@@ -508,26 +565,33 @@ class LAMMPS(seamm.Node):
             lines.append('MiddleBondTorsion Coeffs')
             lines.append('')
             for counter, parameters, torsions in zip(
-                    range(1, eex['n_middle_bond-torsion_3_types'] + 1),
-                    eex['middle_bond-torsion_3 parameters'],
-                    eex['torsion parameters']):
+                range(1, eex['n_middle_bond-torsion_3_types'] + 1),
+                eex['middle_bond-torsion_3 parameters'],
+                eex['torsion parameters']
+            ):
                 form, values, types, parameters_type, real_types = \
                     parameters
                 torsion_form = torsions[0]
                 if torsion_form == 'torsion_3':
-                    lines.append('{:6d} class2 {} {} {} {}'.format(
-                        counter, values['V1'], values['V2'],
-                        values['V3'], values['R0'])
-                                 + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
-                                     types[0], types[1], types[2], types[3],
-                                     real_types[0], real_types[1],
-                                     real_types[2], real_types[3]))
+                    lines.append(
+                        '{:6d} class2 {} {} {} {}'.format(
+                            counter, values['V1'], values['V2'], values['V3'],
+                            values['R0']
+                        ) + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
+                            types[0], types[1], types[2], types[3],
+                            real_types[0], real_types[1], real_types[2],
+                            real_types[3]
+                        )
+                    )
                 else:
-                    lines.append('{:6d} skip'.format(counter)
-                                 + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
-                                     types[0], types[1], types[2], types[3],
-                                     real_types[0], real_types[1],
-                                     real_types[2], real_types[3]))
+                    lines.append(
+                        '{:6d} skip'.format(counter) +
+                        ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
+                            types[0], types[1], types[2], types[3],
+                            real_types[0], real_types[1], real_types[2],
+                            real_types[3]
+                        )
+                    )
 
             # end bond-torsion_3 coefficients, which must match torsions
             # in order & number
@@ -535,30 +599,33 @@ class LAMMPS(seamm.Node):
             lines.append('EndBondTorsion Coeffs')
             lines.append('')
             for counter, parameters, torsions in zip(
-                    range(1, eex['n_end_bond-torsion_3_types'] + 1),
-                    eex['end_bond-torsion_3 parameters'],
-                    eex['torsion parameters']):
+                range(1, eex['n_end_bond-torsion_3_types'] + 1),
+                eex['end_bond-torsion_3 parameters'], eex['torsion parameters']
+            ):
                 form, values, types, parameters_type, real_types = \
                     parameters
                 torsion_form = torsions[0]
                 if torsion_form == 'torsion_3':
                     lines.append(
                         '{:6d} class2 {} {} {} {} {} {} {} {}'.format(
-                            counter,
-                            values['V1_L'], values['V2_L'], values['V3_L'],
-                            values['V1_R'], values['V2_R'], values['V3_R'],
-                            values['R0_L'], values['R0_R'])
-                        + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
+                            counter, values['V1_L'], values['V2_L'],
+                            values['V3_L'], values['V1_R'], values['V2_R'],
+                            values['V3_R'], values['R0_L'], values['R0_R']
+                        ) + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
                             types[0], types[1], types[2], types[3],
-                            real_types[0], real_types[1],
-                            real_types[2], real_types[3]))
+                            real_types[0], real_types[1], real_types[2],
+                            real_types[3]
+                        )
+                    )
                 else:
                     lines.append(
-                        '{:6d} skip'.format(counter)
-                        + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
+                        '{:6d} skip'.format(counter) +
+                        ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
                             types[0], types[1], types[2], types[3],
-                            real_types[0], real_types[1],
-                            real_types[2], real_types[3]))
+                            real_types[0], real_types[1], real_types[2],
+                            real_types[3]
+                        )
+                    )
 
             # angle-torsion_3 coefficients, which must match torsions
             # in order & number
@@ -566,30 +633,34 @@ class LAMMPS(seamm.Node):
             lines.append('AngleTorsion Coeffs')
             lines.append('')
             for counter, parameters, torsions in zip(
-                    range(1, eex['n_angle-torsion_3_types'] + 1),
-                    eex['angle-torsion_3 parameters'],
-                    eex['torsion parameters']):
+                range(1, eex['n_angle-torsion_3_types'] + 1),
+                eex['angle-torsion_3 parameters'], eex['torsion parameters']
+            ):
                 form, values, types, parameters_type, real_types = \
                     parameters
                 torsion_form = torsions[0]
                 if torsion_form == 'torsion_3':
                     lines.append(
                         '{:6d} class2 {} {} {} {} {} {} {} {}'.format(
-                            counter,
-                            values['V1_L'], values['V2_L'], values['V3_L'],
-                            values['V1_R'], values['V2_R'], values['V3_R'],
-                            values['Theta0_L'], values['Theta0_R'])
-                        + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
+                            counter, values['V1_L'], values['V2_L'],
+                            values['V3_L'], values['V1_R'], values['V2_R'],
+                            values['V3_R'], values['Theta0_L'],
+                            values['Theta0_R']
+                        ) + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
                             types[0], types[1], types[2], types[3],
-                            real_types[0], real_types[1],
-                            real_types[2], real_types[3]))
+                            real_types[0], real_types[1], real_types[2],
+                            real_types[3]
+                        )
+                    )
                 else:
                     lines.append(
-                        '{:6d} skip'.format(counter)
-                        + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
+                        '{:6d} skip'.format(counter) +
+                        ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
                             types[0], types[1], types[2], types[3],
-                            real_types[0], real_types[1],
-                            real_types[2], real_types[3]))
+                            real_types[0], real_types[1], real_types[2],
+                            real_types[3]
+                        )
+                    )
 
             # angle-angle-torsion_1 coefficients, which must match torsions
             # in order & number
@@ -597,29 +668,33 @@ class LAMMPS(seamm.Node):
             lines.append('AngleAngleTorsion Coeffs')
             lines.append('')
             for counter, parameters, torsions in zip(
-                    range(1, eex['n_angle-angle-torsion_1_types'] + 1),
-                    eex['angle-angle-torsion_1 parameters'],
-                    eex['torsion parameters']):
+                range(1, eex['n_angle-angle-torsion_1_types'] + 1),
+                eex['angle-angle-torsion_1 parameters'],
+                eex['torsion parameters']
+            ):
                 form, values, types, parameters_type, real_types = \
                     parameters
                 torsion_form = torsions[0]
                 if torsion_form == 'torsion_3':
                     lines.append(
                         '{:6d} class2 {} {} {}'.format(
-                            counter,
-                            values['K'],
-                            values['Theta0_L'], values['Theta0_R'])
-                        + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
+                            counter, values['K'], values['Theta0_L'],
+                            values['Theta0_R']
+                        ) + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
                             types[0], types[1], types[2], types[3],
-                            real_types[0], real_types[1],
-                            real_types[2], real_types[3]))
+                            real_types[0], real_types[1], real_types[2],
+                            real_types[3]
+                        )
+                    )
                 else:
                     lines.append(
-                        '{:6d} skip'.format(counter)
-                        + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
+                        '{:6d} skip'.format(counter) +
+                        ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
                             types[0], types[1], types[2], types[3],
-                            real_types[0], real_types[1],
-                            real_types[2], real_types[3]))
+                            real_types[0], real_types[1], real_types[2],
+                            real_types[3]
+                        )
+                    )
 
             # bond-bond_1_3 coefficients, which must match torsions
             # in order & number
@@ -627,75 +702,80 @@ class LAMMPS(seamm.Node):
             lines.append('BondBond13 Coeffs')
             lines.append('')
             for counter, parameters, torsions in zip(
-                    range(1, eex['n_bond-bond_1_3_types'] + 1),
-                    eex['bond-bond_1_3 parameters'],
-                    eex['torsion parameters']):
+                range(1, eex['n_bond-bond_1_3_types'] + 1),
+                eex['bond-bond_1_3 parameters'], eex['torsion parameters']
+            ):
                 form, values, types, parameters_type, real_types = \
                     parameters
                 torsion_form = torsions[0]
                 if torsion_form == 'torsion_3':
                     lines.append(
                         '{:6d} class2 {} {} {}'.format(
-                            counter,
-                            values['K'],
-                            values['R10'], values['R30'])
-                        + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
+                            counter, values['K'], values['R10'], values['R30']
+                        ) + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
                             types[0], types[1], types[2], types[3],
-                            real_types[0], real_types[1],
-                            real_types[2], real_types[3]))
+                            real_types[0], real_types[1], real_types[2],
+                            real_types[3]
+                        )
+                    )
                 else:
                     lines.append(
-                        '{:6d} skip'.format(counter)
-                        + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
+                        '{:6d} skip'.format(counter) +
+                        ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
                             types[0], types[1], types[2], types[3],
-                            real_types[0], real_types[1],
-                            real_types[2], real_types[3]))
+                            real_types[0], real_types[1], real_types[2],
+                            real_types[3]
+                        )
+                    )
 
         # out-of-planes
         if eex['n_oops'] > 0:
             lines.append('')
             lines.append('Impropers')
             lines.append('')
-            for counter, tmp in zip(
-                    range(1, eex['n_oops'] + 1), eex['oops']):
+            for counter, tmp in zip(range(1, eex['n_oops'] + 1), eex['oops']):
                 i, j, k, l, index = tmp
-                lines.append('{:6d} {:6d} {:6d} {:6d} {:6d} {:6d}'.format(
-                    counter, index, i, j, k, l))
+                lines.append(
+                    '{:6d} {:6d} {:6d} {:6d} {:6d} {:6d}'.format(
+                        counter, index, i, j, k, l
+                    )
+                )
 
             lines.append('')
             lines.append('Improper Coeffs')
             lines.append('')
             for counter, parameters in zip(
-                    range(1, eex['n_oop_types'] + 1),
-                    eex['oop parameters']):
+                range(1, eex['n_oop_types'] + 1), eex['oop parameters']
+            ):
                 form, values, types, parameters_type, real_types = \
                     parameters
                 lines.append(
-                    '{:6d} {} {}'.format(
-                        counter, values['K'], values['Chi0']) +
-                    ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
-                        types[0], types[1], types[2], types[3],
-                        real_types[0], real_types[1], real_types[2],
-                        real_types[3]))
+                    '{:6d} {} {}'.format(counter, values['K'], values['Chi0'])
+                    + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
+                        types[0], types[1], types[2], types[3], real_types[0],
+                        real_types[1], real_types[2], real_types[3]
+                    )
+                )
 
             # angle-angle
             lines.append('')
             lines.append('AngleAngle Coeffs')
             lines.append('')
             for counter, parameters in zip(
-                    range(1, eex['n_angle-angle_types'] + 1),
-                    eex['angle-angle parameters']):
+                range(1, eex['n_angle-angle_types'] + 1),
+                eex['angle-angle parameters']
+            ):
                 form, values, types, parameters_type, real_types = \
                     parameters
                 lines.append(
                     '{:6d} {} {} {} {} {} {}'.format(
                         counter, values['K1'], values['K2'], values['K3'],
                         values['Theta10'], values['Theta20'], values['Theta30']
-                    ) +
-                    ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
-                        types[0], types[1], types[2], types[3],
-                        real_types[0], real_types[1], real_types[2],
-                        real_types[3]))
+                    ) + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
+                        types[0], types[1], types[2], types[3], real_types[0],
+                        real_types[1], real_types[2], real_types[3]
+                    )
+                )
 
         lines.append('')
         return lines
@@ -731,7 +811,7 @@ class LAMMPS(seamm.Node):
             for filename in filenames:
                 data = self.analyze_trajectory(filename)
                 node.analyze(data=data)
-            
+
             node = node.next()
 
         return
@@ -746,15 +826,20 @@ class LAMMPS(seamm.Node):
         # Process the trajectory data
         with open(filename, 'r') as fd:
             data = pandas.read_csv(
-                fd, sep=' ', header=0, comment='#', index_col=1,
+                fd,
+                sep=' ',
+                header=0,
+                comment='#',
+                index_col=1,
             )
 
         logger.debug('Columns: {}'.format(data.columns))
         logger.debug('  Types:\n{}'.format(data.dtypes))
 
-        printer.normal('       Analysis of ' +
-                       os.path.basename(filename) + '\n')
-        
+        printer.normal(
+            '       Analysis of ' + os.path.basename(filename) + '\n'
+        )
+
         correlation = {}
         summary_file = os.path.splitext(filename)[0] + '.summary'
         with open(summary_file, 'w') as fd:
@@ -784,25 +869,32 @@ class LAMMPS(seamm.Node):
                 results[column] = fit.params['const']
                 results['{},stderr'.format(column)] = fit.bse['const']
 
-                fd.write('Summary of statistics for {} n_step = {}\n'
-                         .format(column, n_step))
+                fd.write(
+                    'Summary of statistics for {} n_step = {}\n'.format(
+                        column, n_step
+                    )
+                )
                 fd.write('{}\n\n'.format(fit.summary()))
 
-                printer.normal(__(
-                    '{column:>20s} = {value:9.3f} ± {stderr:6.3f}'
-                    '{tau:6.1f} {inefficiency:6.1f}',
-                    column=column, value=fit.params['const'],
-                    stderr=fit.bse['const'],
-                    **result,
-                    indent=7*' ',
-                    wrap=False, dedent=False
-                ))
+                printer.normal(
+                    __(
+                        '{column:>20s} = {value:9.3f} ± {stderr:6.3f}'
+                        '{tau:6.1f} {inefficiency:6.1f}',
+                        column=column,
+                        value=fit.params['const'],
+                        stderr=fit.bse['const'],
+                        **result,
+                        indent=7 * ' ',
+                        wrap=False,
+                        dedent=False
+                    )
+                )
 
                 if False:
                     result = statsmodels.tsa.stattools.adfuller(y0)
                     print(
-                        '\n\t   '
-                        'Testing Convergence with Augmented Dickey-Fuller method',
+                        '\n\t   Testing Convergence with Augmented '
+                        'Dickey-Fuller method',
                         file=fd
                     )
                     print('\tADF Statistic: %f' % result[0], file=fd)
@@ -811,7 +903,7 @@ class LAMMPS(seamm.Node):
                     for key, value in result[4].items():
                         print('\t\t%2s: %.3f' % (key, value), file=fd)
                     print('\n\n\n', file=fd)
-                
+
         # Create graphs of the property
 
         pdf_file = os.path.splitext(filename)[0] + '.pdf'
@@ -828,18 +920,24 @@ class LAMMPS(seamm.Node):
                 figure.subplots_adjust(hspace=0.4, wspace=0.4)
                 figure.suptitle('Analysis of ' + column)
                 ax1 = figure.add_subplot(
-                    211, title='Trajectory', xlabel='time (fs)',
+                    211,
+                    title='Trajectory',
+                    xlabel='time (fs)',
                     ylabel=LAMMPS.display_units[column]
                 )
                 ax1.plot(x, y)
 
                 ax2 = figure.add_subplot(212)
                 lags = 3 * n_c
-                if lags > len(data)/2:
-                    lags = int(len(data)/2)
+                if lags > len(data) / 2:
+                    lags = int(len(data) / 2)
                 plot_acf(
-                    data[column], ax=ax2, lags=lags,
-                    use_vlines=False, linestyle='-', marker=""
+                    data[column],
+                    ax=ax2,
+                    lags=lags,
+                    use_vlines=False,
+                    linestyle='-',
+                    marker=""
                 )
 
                 pdf.savefig(figure)

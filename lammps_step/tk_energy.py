@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """The graphical part of a LAMMPS Energy step"""
 
 import lammps_step
@@ -10,8 +11,17 @@ import tkinter.ttk as ttk
 
 
 class TkEnergy(seamm.TkNode):
-    def __init__(self, tk_flowchart=None, node=None, canvas=None,
-                 x=None, y=None, w=200, h=50):
+
+    def __init__(
+        self,
+        tk_flowchart=None,
+        node=None,
+        canvas=None,
+        x=None,
+        y=None,
+        w=200,
+        h=50
+    ):
         '''Initialize a node
 
         Keyword arguments:
@@ -19,8 +29,15 @@ class TkEnergy(seamm.TkNode):
 
         self.results_widgets = []
 
-        super().__init__(tk_flowchart=tk_flowchart, node=node,
-                         canvas=canvas, x=x, y=y, w=w, h=h)
+        super().__init__(
+            tk_flowchart=tk_flowchart,
+            node=node,
+            canvas=canvas,
+            x=x,
+            y=y,
+            w=w,
+            h=h
+        )
 
     def right_click(self, event):
         """Probably need to add our dialog...
@@ -33,7 +50,6 @@ class TkEnergy(seamm.TkNode):
 
     def create_dialog(self):
         P = self.node.parameters
-
         """Create the dialog!"""
         self.dialog = Pmw.Dialog(
             self.toplevel,
@@ -41,7 +57,8 @@ class TkEnergy(seamm.TkNode):
             defaultbutton='OK',
             master=self.toplevel,
             title='Edit Energy parameters',
-            command=self.handle_dialog)
+            command=self.handle_dialog
+        )
         self.dialog.withdraw()
 
         # The tabbed notebook
@@ -60,7 +77,7 @@ class TkEnergy(seamm.TkNode):
             'All relevant parameters are set in the initialization step.'
         )
         self['message'].grid()
-            
+
         # Second tab for results
         rframe = self['results frame'] = ttk.Frame(notebook)
         notebook.add(rframe, text='Results', sticky=tk.NSEW)
@@ -188,12 +205,12 @@ class TkEnergy(seamm.TkNode):
         if width < mw:
             width = mw
         if width > sw:
-            width = int(0.9*sw)
+            width = int(0.9 * sw)
         if height < mh:
             height = mh
         if height > sh:
-            height = int(0.9*sh)
-            
+            height = int(0.9 * sh)
+
         self.dialog.geometry('{}x{}'.format(width, height))
 
     def handle_dialog(self, result):
@@ -208,7 +225,8 @@ class TkEnergy(seamm.TkNode):
         if result != "OK":
             self.dialog.deactivate(result)
             raise RuntimeError(
-                "Don't recognize dialog result '{}'".format(result))
+                "Don't recognize dialog result '{}'".format(result)
+            )
 
         self.dialog.deactivate(result)
 

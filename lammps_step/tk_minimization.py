@@ -1,23 +1,39 @@
 # -*- coding: utf-8 -*-
+
 """The graphical part of a LAMMPS minimization step"""
 
 import lammps_step
 import seamm_widgets as sw
-import pprint  # nopep8
 import tkinter as tk
 import tkinter.ttk as ttk
 
 
 class TkMinimization(lammps_step.TkEnergy):
-    def __init__(self, tk_flowchart=None, node=None, canvas=None,
-                 x=None, y=None, w=200, h=50):
+
+    def __init__(
+        self,
+        tk_flowchart=None,
+        node=None,
+        canvas=None,
+        x=None,
+        y=None,
+        w=200,
+        h=50
+    ):
         '''Initialize a node
 
         Keyword arguments:
         '''
 
-        super().__init__(tk_flowchart=tk_flowchart, node=node,
-                         canvas=canvas, x=x, y=y, w=w, h=h)
+        super().__init__(
+            tk_flowchart=tk_flowchart,
+            node=node,
+            canvas=canvas,
+            x=x,
+            y=y,
+            w=w,
+            h=h
+        )
 
     def create_dialog(self):
         """Create the dialog!"""
@@ -32,17 +48,20 @@ class TkMinimization(lammps_step.TkEnergy):
         w['convergence_label'] = convergence_label
 
         convergence = ttk.Combobox(
-            frame, state='readonly',
-            values=['normal',
-                    'tight',
-                    'loose',
-                    'crude',
-                    'on forces',
-                    'on energy and forces',
-                    'on just the energy change',
-                    'from variable',
-                    ],
-            justify=tk.LEFT, width=20
+            frame,
+            state='readonly',
+            values=[
+                'normal',
+                'tight',
+                'loose',
+                'crude',
+                'on forces',
+                'on energy and forces',
+                'on just the energy change',
+                'from variable',
+            ],
+            justify=tk.LEFT,
+            width=20
         )
         convergence.set(self.node.convergence)
         w['convergence'] = convergence
@@ -52,11 +71,14 @@ class TkMinimization(lammps_step.TkEnergy):
         w['etol_label'] = etol_label
 
         etol_method = ttk.Combobox(
-            frame, state='readonly',
-            values=['is',
-                    'from variable',
-                    ],
-            justify=tk.LEFT, width=10
+            frame,
+            state='readonly',
+            values=[
+                'is',
+                'from variable',
+            ],
+            justify=tk.LEFT,
+            width=10
         )
         etol_method.set(self.node.etol_method)
         w['etol_method'] = etol_method
@@ -74,11 +96,14 @@ class TkMinimization(lammps_step.TkEnergy):
         w['ftol_label'] = ftol_label
 
         ftol_method = ttk.Combobox(
-            frame, state='readonly',
-            values=['is',
-                    'from variable',
-                    ],
-            justify=tk.LEFT, width=10
+            frame,
+            state='readonly',
+            values=[
+                'is',
+                'from variable',
+            ],
+            justify=tk.LEFT,
+            width=10
         )
         ftol_method.set(self.node.ftol_method)
         w['ftol_method'] = ftol_method
@@ -96,12 +121,15 @@ class TkMinimization(lammps_step.TkEnergy):
         w['maxiters_label'] = maxiters_label
 
         maxiters_method = ttk.Combobox(
-            frame, state='readonly',
-            values=['default',
-                    'is',
-                    'from variable',
-                    ],
-            justify=tk.LEFT, width=10
+            frame,
+            state='readonly',
+            values=[
+                'default',
+                'is',
+                'from variable',
+            ],
+            justify=tk.LEFT,
+            width=10
         )
         maxiters_method.set(self.node.maxiters_method)
         w['maxiters_method'] = maxiters_method
@@ -119,12 +147,15 @@ class TkMinimization(lammps_step.TkEnergy):
         w['maxevals_label'] = maxevals_label
 
         maxevals_method = ttk.Combobox(
-            frame, state='readonly',
-            values=['default',
-                    'is',
-                    'from variable',
-                    ],
-            justify=tk.LEFT, width=10
+            frame,
+            state='readonly',
+            values=[
+                'default',
+                'is',
+                'from variable',
+            ],
+            justify=tk.LEFT,
+            width=10
         )
         maxevals_method.set(self.node.maxevals_method)
         w['maxevals_method'] = maxevals_method
@@ -207,7 +238,8 @@ class TkMinimization(lammps_step.TkEnergy):
         if result != "OK":
             self.dialog.deactivate(result)
             raise RuntimeError(
-                "Don't recognize dialog result '{}'".format(result))
+                "Don't recognize dialog result '{}'".format(result)
+            )
 
         self.dialog.deactivate(result)
 

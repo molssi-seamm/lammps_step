@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """A single-point initialization in LAMMPS"""
 
 import seamm_ff_util
@@ -41,18 +42,13 @@ thermo_variables = [
 
 
 class Initialization(seamm.Node):
-    def __init__(self,
-                 flowchart=None,
-                 title='Initialization',
-                 extension=None):
+
+    def __init__(self, flowchart=None, title='Initialization', extension=None):
         """Initialize the node"""
 
         logger.debug('Creating Initialization {}'.format(self))
 
-        super().__init__(
-            flowchart=flowchart,
-            title=title,
-            extension=extension)
+        super().__init__(flowchart=flowchart, title=title, extension=extension)
 
         self.description = 'Initialization of a LAMMPS calculation'
 
@@ -97,9 +93,15 @@ class Initialization(seamm.Node):
         if self.kspace_method != 'none':
             string += ' The accuracy goal is {accuracy:.2E}.'
 
-        job.job(__(string, indent=self.indent+'    ',
-                   cutoff=self.cutoff, method=self.kspace_method,
-                   accuracy=float(self.kspace_accuracy)))
+        job.job(
+            __(
+                string,
+                indent=self.indent + '    ',
+                cutoff=self.cutoff,
+                method=self.kspace_method,
+                accuracy=float(self.kspace_accuracy)
+            )
+        )
 
         return next_node
 
@@ -108,10 +110,12 @@ class Initialization(seamm.Node):
 
         self.description = []
         self.description.append(__(self.header, indent=self.indent))
-        
+
         structure = seamm.data.structure
-        logger.debug('Structure in LAMMPS initialization:\n' +
-                     pprint.pformat(structure))
+        logger.debug(
+            'Structure in LAMMPS initialization:\n' +
+            pprint.pformat(structure)
+        )
 
         # Atom-type if necessary
         ff = seamm.data.forcefield
@@ -160,8 +164,10 @@ class Initialization(seamm.Node):
                               not self.shift_nonbond else 'no'
             string = 'Setup for a periodic (crystalline or fluid) system.'
         else:
-            raise RuntimeError('The LAMMPS step can only handle 0-'
-                               ' or 3-D periodicity at the moment!')
+            raise RuntimeError(
+                'The LAMMPS step can only handle 0-'
+                ' or 3-D periodicity at the moment!'
+            )
 
         lines.append('atom_style          full')
         lines.append('atom_modify         sort 0 0.0')
@@ -173,7 +179,8 @@ class Initialization(seamm.Node):
         terms = ff.ff['terms']
 
         logging.debug(
-            'LAMMPS initialization, terms = \n' + pprint.pformat(terms))
+            'LAMMPS initialization, terms = \n' + pprint.pformat(terms)
+        )
 
         # control of nonbonds
         nonbond_term = None
@@ -191,7 +198,8 @@ class Initialization(seamm.Node):
             mixing = 'sixthpower'
         else:
             raise RuntimeError(
-                "Can't handle nonbond term {} yet!".format(nonbond_term))
+                "Can't handle nonbond term {} yet!".format(nonbond_term)
+            )
 
         shift = 'yes' if self.shift_nonbond else 'no'
         if self.kspace_method == 'automatic':
@@ -213,32 +221,46 @@ class Initialization(seamm.Node):
                     pair_style = pair_style_base + '/coul/long'
                     if n_atoms < self.ewald_atom_cutoff:
                         kspace_style = 'ewald {}'.format(self.kspace_accuracy)
-                        string += ('using the Ewald summation method with '
-                                   'an accuracy of {accuracy:.2E}.')
+                        string += (
+                            'using the Ewald summation method with '
+                            'an accuracy of {accuracy:.2E}.'
+                        )
                     elif fraction_charged_atoms < \
                             self.charged_atom_fraction_cutoff:
                         kspace_style = 'pppm/cg {} {}'.format(
                             self.kspace_accuracy,
                             self.charged_atom_fraction_cutoff
                         )
-                        string += ('using the PPPM method optimized for few '
-                                   'atoms with charges, with '
-                                   'an accuracy of {accuracy:.2E}.')
+                        string += (
+                            'using the PPPM method optimized for few '
+                            'atoms with charges, with '
+                            'an accuracy of {accuracy:.2E}.'
+                        )
                     else:
                         kspace_style = 'pppm {}'.format(self.kspace_accuracy)
-                        string += ('using the PPPM method with '
-                                   'an accuracy of {accuracy:.2E}.')
-                lines.append('pair_style          {} {}'.format(
-                    pair_style, self.cutoff))
+                        string += (
+                            'using the PPPM method with '
+                            'an accuracy of {accuracy:.2E}.'
+                        )
+                lines.append(
+                    'pair_style          {} {}'.format(
+                        pair_style, self.cutoff
+                    )
+                )
                 lines.append(
                     'pair_modify         mix ' + mixing +
-                    ' tail {} shift {}'.format(tail_correction, shift))
+                    ' tail {} shift {}'.format(tail_correction, shift)
+                )
                 if shift:
-                    string += (' The van der Waals terms will be shifted '
-                               'to zero energy at the cutoff distance.')
+                    string += (
+                        ' The van der Waals terms will be shifted '
+                        'to zero energy at the cutoff distance.'
+                    )
                 if tail_correction:
-                    string += (' A long-range correction for the '
-                               'van der Waals terms will be added.')
+                    string += (
+                        ' A long-range correction for the '
+                        'van der Waals terms will be added.'
+                    )
                 if kspace_style != '':
                     lines.append('kspace_style        ' + kspace_style)
             else:
@@ -251,8 +273,10 @@ class Initialization(seamm.Node):
                         'charges on the atoms, no long-range coulomb method '
                         'will be used.'
                     )
-                elif (n_atoms > self.msm_atom_cutoff and
-                      pair_style_base in msm_pair_styles):
+                elif (
+                    n_atoms > self.msm_atom_cutoff and
+                    pair_style_base in msm_pair_styles
+                ):
                     pair_style = pair_style_base + '/coul/msm'
                     string += (
                         'The nonbonded interactions will be handled with '
@@ -281,22 +305,33 @@ class Initialization(seamm.Node):
                         ' a simple cutoff of {cutoff} Å.'
                     )
                 if shift:
-                    string += (' The van der Waals terms will be shifted '
-                               'to zero energy at the cutoff distance.')
-                lines.append('pair_style          {} {}'.format(
-                    pair_style, self.cutoff))
-                lines.append('pair_modify         mix ' + mixing +
-                             ' shift {}'.format(shift))
+                    string += (
+                        ' The van der Waals terms will be shifted '
+                        'to zero energy at the cutoff distance.'
+                    )
+                lines.append(
+                    'pair_style          {} {}'.format(
+                        pair_style, self.cutoff
+                    )
+                )
+                lines.append(
+                    'pair_modify         mix ' + mixing +
+                    ' shift {}'.format(shift)
+                )
                 if kspace_style != '':
                     lines.append(
-                        'kspace_style        ' +
-                        kspace_style.format(accuracy=self.accuracy,
-                                            smallq=self.kspace_smallq)
+                        'kspace_style        ' + kspace_style.format(
+                            accuracy=self.accuracy, smallq=self.kspace_smallq
+                        )
                     )
             self.description.append(
-                __(string, indent=self.indent+'    ',
-                   accuracy=float(self.kspace_accuracy),
-                   smallq=float(self.kspace_smallq), cutoff=self.cutoff)
+                __(
+                    string,
+                    indent=self.indent + '    ',
+                    accuracy=float(self.kspace_accuracy),
+                    smallq=float(self.kspace_smallq),
+                    cutoff=self.cutoff
+                )
             )
         else:
             if periodicity == 3:
@@ -309,11 +344,15 @@ class Initialization(seamm.Node):
                     kspace_style = kspace_methods[self.kspace_method].\
                         format(accuracy=self.accuracy,
                                smallq=self.kspace_smallq)
-                lines.append('pair_style          {} {}'.format(
-                    pair_style, self.cutoff))
+                lines.append(
+                    'pair_style          {} {}'.format(
+                        pair_style, self.cutoff
+                    )
+                )
                 lines.append(
                     'pair_modify         mix ' + mixing +
-                    ' tail {} shift {}'.format(tail_correction, shift))
+                    ' tail {} shift {}'.format(tail_correction, shift)
+                )
                 if kspace_style != '':
                     lines.append('kspace_style        ' + kspace_style)
             else:
@@ -321,10 +360,15 @@ class Initialization(seamm.Node):
                     pair_style = pair_style_base
                 else:
                     pair_style = pair_style_base + '/coul/cut'
-                lines.append('pair_style          {} {}'.format(
-                    pair_style, self.cutoff))
-                lines.append('pair_modify         mix ' + mixing +
-                             ' shift {}'.format(shift))
+                lines.append(
+                    'pair_style          {} {}'.format(
+                        pair_style, self.cutoff
+                    )
+                )
+                lines.append(
+                    'pair_modify         mix ' + mixing +
+                    ' shift {}'.format(shift)
+                )
                 if 'msm' in kspace_methods[self.kspace_method]:
                     kspace_style = kspace_methods[self.kspace_method].\
                                    format(accuracy=self.accuracy,
@@ -351,8 +395,7 @@ class Initialization(seamm.Node):
                 lines.append(line)
         if 'torsion' in terms and eex['n_torsions'] > 0:
             if len(terms['torsion']) == 1:
-                dihedral_style = lammps_step.dihedral_style[terms['torsion'][
-                    0]]
+                dihedral_style = lammps_step.dihedral_style[terms['torsion'][0]]  # noqa: E501
                 lines.append('dihedral_style      ' + dihedral_style)
             else:
                 line = 'dihedral_style      hybrid'
@@ -361,8 +404,8 @@ class Initialization(seamm.Node):
                 lines.append(line)
         if 'out-of-plane' in terms and eex['n_oops'] > 0:
             if len(terms['out-of-plane']) == 1:
-                improper_style = lammps_step.improper_style[terms[
-                    'out-of-plane'][0]]
+                improper_style = lammps_step.improper_style[
+                    terms['out-of-plane'][0]]
                 lines.append('improper_style      ' + improper_style)
             else:
                 line = 'improper_style      hybrid'
@@ -375,7 +418,8 @@ class Initialization(seamm.Node):
 
         # Set up standard variables
         for variable in thermo_variables:
-            lines.append('variable            {var} equal {var}'.format(
-                var=variable))
+            lines.append(
+                'variable            {var} equal {var}'.format(var=variable)
+            )
 
         return (lines, eex)

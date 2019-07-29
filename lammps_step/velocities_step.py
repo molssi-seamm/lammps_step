@@ -7,8 +7,7 @@ import lammps_step
 
 class VelocitiesStep(object):
     my_description = {
-        'description':
-        'Set the velocities in preparation for MD',
+        'description': 'Set the velocities in preparation for MD',
         'group': 'Calculations',
         'name': 'Velocities'
     }

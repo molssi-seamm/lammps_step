@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """Helper class needed for the stevedore integration. Needs to provide
 a description() method that returns a dict containing a description of
 this node, and a factory() method for creating the graphical and non-graphical
@@ -9,8 +10,7 @@ import lammps_step
 
 class LAMMPSStep(object):
     my_description = {
-        'description':
-        'An interface for the LAMMPS molecular dynamics code',
+        'description': 'An interface for the LAMMPS molecular dynamics code',
         'group': 'Simulations',
         'name': 'LAMMPS'
     }

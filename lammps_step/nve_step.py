@@ -7,8 +7,7 @@ import lammps_step
 
 class NVEStep(object):
     my_description = {
-        'description':
-        'NVE (microcanonical) dynamics',
+        'description': 'NVE (microcanonical) dynamics',
         'group': 'Calculations',
         'name': 'NVE dynamics'
     }

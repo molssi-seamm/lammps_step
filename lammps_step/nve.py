@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """NVE (microcanonical) dynamics in LAMMPS"""
 
 import lammps_step
@@ -7,7 +8,6 @@ import seamm
 from seamm_util import ureg, Q_, units_class  # noqa: F401
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
-import pprint
 
 logger = logging.getLogger(__name__)
 job = printing.getPrinter()
@@ -15,18 +15,13 @@ printer = printing.getPrinter('lammps')
 
 
 class NVE(lammps_step.Energy):
-    def __init__(self,
-                 flowchart=None,
-                 title='NVE dynamics',
-                 extension=None):
+
+    def __init__(self, flowchart=None, title='NVE dynamics', extension=None):
         """Initialize the node"""
 
         logger.debug('Creating NVE {}'.format(self))
 
-        super().__init__(
-            flowchart=flowchart,
-            title=title,
-            extension=extension)
+        super().__init__(flowchart=flowchart, title=title, extension=extension)
 
         self.description = 'NVE dynamics step in LAMMPS'
 
@@ -38,9 +33,11 @@ class NVE(lammps_step.Energy):
         """Create the text description of what this step will do.
         """
 
-        text = ("{time} of microcanonical (NVE) dynamics using a "
-                "timestep of {timestep}. The trajectory will be "
-                "sampled every {sampling}.")
+        text = (
+            "{time} of microcanonical (NVE) dynamics using a "
+            "timestep of {timestep}. The trajectory will be "
+            "sampled every {sampling}."
+        )
 
         return text
 
@@ -63,7 +60,7 @@ class NVE(lammps_step.Energy):
         """Get the input for an NVE dynamics run in LAMMPS"""
 
         self.description = []
-        self.description.append(__(self.header, indent=3*' '))
+        self.description.append(__(self.header, indent=3 * ' '))
 
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data
@@ -82,14 +79,16 @@ class NVE(lammps_step.Energy):
                 PP[key] = '{:~P}'.format(PP[key])
 
         self.description.append(
-            __(self.description_text(), **PP, indent=7*' ')
+            __(self.description_text(), **PP, indent=7 * ' ')
         )
 
         time = P['time'].to('fs').magnitude
         nsteps = round(time / timestep)
 
-        thermo_properties = ('time temp press etotal ke pe ebond '
-                             'eangle edihed eimp evdwl etail ecoul elong')
+        thermo_properties = (
+            'time temp press etotal ke pe ebond '
+            'eangle edihed eimp evdwl etail ecoul elong'
+        )
         properties = 'v_time v_temp v_press v_etotal v_ke v_pe v_emol v_epair'
         titles = 'tstep t T P Etot Eke Epe Emol Epair'
 
@@ -101,7 +100,7 @@ class NVE(lammps_step.Energy):
         lines.append('reset_timestep      0')
         lines.append('timestep            {}'.format(timestep))
         lines.append('thermo_style        custom {}'.format(thermo_properties))
-        lines.append('thermo              {}'.format(int(nsteps/100)))
+        lines.append('thermo              {}'.format(int(nsteps / 100)))
         nfixes += 1
         lines.append('fix                 {} all nve'.format(nfixes))
         # summary output written 10 times during run so we can see progress
@@ -110,17 +109,22 @@ class NVE(lammps_step.Energy):
         nrepeat = int(nfreq / nevery)
         nfreq = nevery * nrepeat
         nfixes += 1
-        lines.append('fix                 {} '.format(nfixes) +
-                     'all  ave/time '
-                     '{} {} {} {} file summary_nve_{}.txt'.format(
-                         nevery, nrepeat, nfreq, properties,
-                         '_'.join(str(e) for e in self._id)))
+        lines.append(
+            'fix                 {} '.format(nfixes) + 'all  ave/time '
+            '{} {} {} {} file summary_nve_{}.txt'.format(
+                nevery, nrepeat, nfreq, properties,
+                '_'.join(str(e) for e in self._id)
+            )
+        )
         # instantaneous output written for averaging
         if P['sampling'] == 'none':
-            self.decription.append(__(
-                "The run will be {nsteps:n} steps of dynamics.",
-                nsteps=nsteps, indent=7*' '
-            ))
+            self.decription.append(
+                __(
+                    "The run will be {nsteps:n} steps of dynamics.",
+                    nsteps=nsteps,
+                    indent=7 * ' '
+                )
+            )
         else:
             sampling = P['sampling'].to('fs').magnitude
             nevery = round(sampling / timestep)
@@ -129,22 +133,28 @@ class NVE(lammps_step.Energy):
             nfreq = nevery * nrepeat
             nfixes += 1
             lines.append(
-                'fix                 {} '.format(nfixes) +
-                'all ave/time ' +
+                'fix                 {} '.format(nfixes) + 'all ave/time ' +
                 "{} {} {} {} off 2 title2 '{}' file trajectory_nve_{}.txt"
                 .format(
                     nevery, nrepeat, nfreq, properties, titles,
-                    '_'.join(str(e) for e in self._id))
+                    '_'.join(str(e) for e in self._id)
+                )
             )
-            self.description.append(__(
-                ("The run will be {nsteps:,d} steps of dynamics "
-                 "sampled every {nevery:n} steps."),
-                nsteps=nsteps, nevery=nevery, indent=7*' '
-            ))
-                         
+            self.description.append(
+                __(
+                    (
+                        "The run will be {nsteps:,d} steps of dynamics "
+                        "sampled every {nevery:n} steps."
+                    ),
+                    nsteps=nsteps,
+                    nevery=nevery,
+                    indent=7 * ' '
+                )
+            )
+
         lines.append('run                 {}'.format(nsteps))
         lines.append('')
-        for fix in range(1, nfixes+1):
+        for fix in range(1, nfixes + 1):
             lines.append('unfix               {}'.format(fix))
 
         return lines
