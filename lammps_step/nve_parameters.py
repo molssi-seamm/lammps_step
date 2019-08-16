@@ -3,7 +3,6 @@
 
 import lammps_step
 import logging
-import pprint
 
 logger = logging.getLogger(__name__)
 
@@ -13,20 +12,16 @@ class NVE_Parameters(lammps_step.EnergyParameters):
 
     parameters = {
         "time": {
-            "value": 100.0,
             "default": 100.0,
             "kind": "float",
-            "units": "ps",
             "default_units": "ps",
             "format_string": ".1f",
             "description": "Simulation time:",
             "help_text": ("The time to simulate in the dynamics run.")
         },
         "timestep": {
-            "value": "normal",
             "default": "normal",
             "kind": "float",
-            "units": "fs",
             "default_units": "fs",
             "enumeration": ('normal', 'accurate but slow', 'coarse but fast'),
             "format_string": ".1f",
@@ -42,10 +37,8 @@ class NVE_Parameters(lammps_step.EnergyParameters):
                           "a wavelength of 3 micrometers.")
         },
         "sampling": {
-            "value": 20.0,
             "default": 20.0,
             "kind": "float",
-            "units": "fs",
             "default_units": "fs",
             "enumeration": ('none', ),
             "format_string": ".1f",

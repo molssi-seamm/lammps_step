@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """The graphical part of a LAMMPS Initialization step"""
 
 import lammps_step
@@ -9,15 +10,31 @@ import tkinter.ttk as ttk
 
 
 class TkInitialization(seamm.TkNode):
-    def __init__(self, tk_flowchart=None, node=None, canvas=None,
-                 x=None, y=None, w=200, h=50):
+
+    def __init__(
+        self,
+        tk_flowchart=None,
+        node=None,
+        canvas=None,
+        x=None,
+        y=None,
+        w=200,
+        h=50
+    ):
         '''Initialize a node
 
         Keyword arguments:
         '''
 
-        super().__init__(tk_flowchart=tk_flowchart, node=node,
-                         canvas=canvas, x=x, y=y, w=w, h=h)
+        super().__init__(
+            tk_flowchart=tk_flowchart,
+            node=node,
+            canvas=canvas,
+            x=x,
+            y=y,
+            w=w,
+            h=h
+        )
 
     def right_click(self, event):
         """Probably need to add our dialog...
@@ -36,7 +53,8 @@ class TkInitialization(seamm.TkNode):
             defaultbutton='OK',
             master=self.toplevel,
             title='Edit LAMMPS Initialization',
-            command=self.handle_dialog)
+            command=self.handle_dialog
+        )
         self.dialog.withdraw()
 
         self['hull'] = ttk.Frame(self.dialog.interior())
@@ -45,8 +63,11 @@ class TkInitialization(seamm.TkNode):
         # Frame for options for all systems
 
         frame = self['frame'] = ttk.LabelFrame(
-            self['hull'], text='For all systems', relief=tk.SUNKEN,
-            borderwidth=5, labelanchor=tk.N
+            self['hull'],
+            text='For all systems',
+            relief=tk.SUNKEN,
+            borderwidth=5,
+            labelanchor=tk.N
         )
 
         # Cutoff
@@ -67,8 +88,11 @@ class TkInitialization(seamm.TkNode):
         # Frame for the periodic system options, i.e. kspace, etc.
 
         pframe = self['pframe'] = ttk.LabelFrame(
-            self['hull'], text='For periodic systems', relief=tk.SUNKEN,
-            borderwidth=5, labelanchor=tk.N
+            self['hull'],
+            text='For periodic systems',
+            relief=tk.SUNKEN,
+            borderwidth=5,
+            labelanchor=tk.N
         )
 
         # Tail correction
@@ -86,7 +110,8 @@ class TkInitialization(seamm.TkNode):
             pframe, text="Long range method:"
         )
         self['kspace_method'] = ttk.Combobox(
-            pframe, width=30,
+            pframe,
+            width=30,
             values=list(lammps_step.initialization.kspace_methods)
         )
         self['kspace_method'].bind(
@@ -95,16 +120,12 @@ class TkInitialization(seamm.TkNode):
         self['kspace_method'].set(self.node.kspace_method)
 
         # accuracy
-        self['accuracy_label'] = ttk.Label(
-            pframe, text='Accuracy:'
-        )
+        self['accuracy_label'] = ttk.Label(pframe, text='Accuracy:')
         self['accuracy'] = ttk.Entry(pframe, width=15)
         self['accuracy'].insert(0, self.node.kspace_accuracy)
 
         # small charge cuttoff
-        self['smallq_label'] = ttk.Label(
-            pframe, text='Small charge cutoff:'
-        )
+        self['smallq_label'] = ttk.Label(pframe, text='Small charge cutoff:')
         self['smallq'] = ttk.Entry(pframe, width=15)
         self['smallq'].insert(0, self.node.kspace_smallq)
 
@@ -120,12 +141,8 @@ class TkInitialization(seamm.TkNode):
         self['shift_nonbond'].grid(row=row, column=1, sticky=tk.W)
         row += 1
 
-        self['frame'].grid(
-            row=0, column=0, sticky=tk.EW, pady=10
-        )
-        self['pframe'].grid(
-            row=1, column=0, sticky=tk.EW, pady=10
-        )
+        self['frame'].grid(row=0, column=0, sticky=tk.EW, pady=10)
+        self['pframe'].grid(row=1, column=0, sticky=tk.EW, pady=10)
 
     def handle_dialog(self, result):
         if result is None or result == 'Cancel':
@@ -139,7 +156,8 @@ class TkInitialization(seamm.TkNode):
         if result != "OK":
             self.dialog.deactivate(result)
             raise RuntimeError(
-                "Don't recognize dialog result '{}'".format(result))
+                "Don't recognize dialog result '{}'".format(result)
+            )
 
         self.dialog.deactivate(result)
 
@@ -185,10 +203,8 @@ class TkInitialization(seamm.TkNode):
                 self['smallq_label'].grid(row=row, column=0, sticky=tk.E)
                 self['smallq'].grid(row=row, column=1, sticky=tk.W)
                 row += 1
-            
+
         if method[0] == '$' or 'dispersion' not in method:
-            self['tail_correction_label'].grid(
-                row=row, column=0, sticky=tk.E)
+            self['tail_correction_label'].grid(row=row, column=0, sticky=tk.E)
             self['tail_correction'].grid(row=row, column=1, sticky=tk.W)
             row += 1
-

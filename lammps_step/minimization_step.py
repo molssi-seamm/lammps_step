@@ -7,8 +7,7 @@ import lammps_step
 
 class MinimizationStep(object):
     my_description = {
-        'description':
-        'Minimization',
+        'description': 'Minimization',
         'group': 'Calculations',
         'name': 'Minimization'
     }

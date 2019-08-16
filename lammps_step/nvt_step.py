@@ -7,8 +7,7 @@ import lammps_step
 
 class NVTStep(object):
     my_description = {
-        'description':
-        'NVT (canonical) dynamics',
+        'description': 'NVT (canonical) dynamics',
         'group': 'Calculations',
         'name': 'NVT dynamics'
     }

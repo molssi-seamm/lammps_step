@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """A single-point energy in LAMMPS"""
 
 import lammps_step
@@ -11,14 +12,12 @@ logger = logging.getLogger(__name__)
 class Energy(seamm.Node):
     """Handle a singlepoint energy calculation in LAMMPS"""
 
-    def __init__(self, flowchart=None, title='Energy',
-                 extension=None):
+    def __init__(self, flowchart=None, title='Energy', extension=None):
         """Initialize the node"""
 
         logger.debug('Creating Energy {}'.format(self))
 
-        super().__init__(flowchart=flowchart, title=title,
-                         extension=extension)
+        super().__init__(flowchart=flowchart, title=title, extension=extension)
 
         self.description = 'A single point energy calculation'
         self.parameters = lammps_step.EnergyParameters()

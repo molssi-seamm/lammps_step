@@ -7,8 +7,7 @@ import lammps_step
 
 class NPTStep(object):
     my_description = {
-        'description':
-        'NPT (isothermal–isobaric) dynamics',
+        'description': 'NPT (isothermal–isobaric) dynamics',
         'group': 'Calculations',
         'name': 'NPT dynamics'
     }

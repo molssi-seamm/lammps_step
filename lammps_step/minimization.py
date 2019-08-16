@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """Minimization step in LAMMPS"""
 
 from seamm import data
@@ -10,18 +11,13 @@ logger = logging.getLogger(__name__)
 
 
 class Minimization(lammps_step.Energy):
-    def __init__(self,
-                 flowchart=None,
-                 title='Minimization',
-                 extension=None):
+
+    def __init__(self, flowchart=None, title='Minimization', extension=None):
         """Initialize the node"""
 
         logger.debug('Creating Minimization {}'.format(self))
 
-        super().__init__(
-            flowchart=flowchart,
-            title=title,
-            extension=extension)
+        super().__init__(flowchart=flowchart, title=title, extension=extension)
 
         self.description = 'Minimization step in LAMMPS'
 
@@ -77,17 +73,20 @@ class Minimization(lammps_step.Energy):
                 etol = self.etol
             else:
                 raise RuntimeError(
-                    'Variable handling not implemented for etol')
+                    'Variable handling not implemented for etol'
+                )
         elif 'forces' in self.convergence:
             # force tolerance
             if self.ftol_method == 'is':
                 ftol = self.ftol.to('kcal/mol/Å').magnitude
             else:
                 raise RuntimeError(
-                    'Variable handling not implemented for ftol')
+                    'Variable handling not implemented for ftol'
+                )
         else:
             raise RuntimeError(
-                'Variable handling not implemented for convergence')
+                'Variable handling not implemented for convergence'
+            )
 
         # maximum number of iterations
         if maxiters is None:
@@ -97,7 +96,8 @@ class Minimization(lammps_step.Energy):
                 maxiters = self.maxiters
             else:
                 raise RuntimeError(
-                    'Variable handling not implemented for maxiters')
+                    'Variable handling not implemented for maxiters'
+                )
 
         # maximum number of energy evaluations
         if maxevals is None:
@@ -107,18 +107,23 @@ class Minimization(lammps_step.Energy):
                 maxevals = self.maxevals
             else:
                 raise RuntimeError(
-                    'Variable handling not implemented for maxevals')
+                    'Variable handling not implemented for maxevals'
+                )
 
-        thermo_properties = ('press etotal ke pe ebond '
-                             'eangle edihed eimp evdwl etail ecoul elong')
+        thermo_properties = (
+            'press etotal ke pe ebond '
+            'eangle edihed eimp evdwl etail ecoul elong'
+        )
 
         lines.append('')
         lines.append('#     Minimization')
         lines.append('')
         lines.append('thermo_style        custom {}'.format(thermo_properties))
         lines.append('thermo              {}'.format(100))
-        lines.append('minimize            {} {} {} {}'.format(
-            etol, ftol, maxiters, maxevals)
+        lines.append(
+            'minimize            {} {} {} {}'.format(
+                etol, ftol, maxiters, maxevals
+            )
         )
 
         return lines
