@@ -10,11 +10,11 @@ ToDo:
 import lammps_step
 import logging
 import seamm
+from seamm import data
 from seamm_util import ureg, Q_, units_class  # noqa: F401
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
 import random
-from textwrap import dedent
 
 logger = logging.getLogger(__name__)
 job = printing.getPrinter()
