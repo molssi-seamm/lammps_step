@@ -755,6 +755,10 @@ class LAMMPS(seamm.Node):
         printer.normal('       Analysis of ' +
                        os.path.basename(filename) + '\n')
         
+        printer.normal(
+            '            Property           Value       stderr  tau    ineff\n'
+            '       --------------------   ---------   ------- ------ ------'
+        )
         correlation = {}
         summary_file = os.path.splitext(filename)[0] + '.summary'
         with open(summary_file, 'w') as fd:
@@ -789,8 +793,8 @@ class LAMMPS(seamm.Node):
                 fd.write('{}\n\n'.format(fit.summary()))
 
                 printer.normal(__(
-                    '{column:>20s} = {value:9.3f} ± {stderr:6.3f}'
-                    '{tau:6.1f} {inefficiency:6.1f}',
+                    '{column:>20s} = {value:9.3f} ± {stderr:7.3f}'
+                    ' {tau:6.1f} {inefficiency:6.1f}',
                     column=column, value=fit.params['const'],
                     stderr=fit.bse['const'],
                     **result,
