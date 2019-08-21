@@ -135,6 +135,18 @@ class LAMMPS(seamm.Node):
             flowchart=flowchart, title='LAMMPS', extension=extension
         )
 
+    @property
+    def version(self):
+        """The semantic version of this module.
+        """
+        return lammps_step.__version__
+
+    @property
+    def git_revision(self):
+        """The git version of this module.
+        """
+        return lammps_step.__git_revision__
+
     def set_id(self, node_id):
         """Set the id for node to a given tuple"""
         self._id = node_id
@@ -144,24 +156,29 @@ class LAMMPS(seamm.Node):
 
         return self.next()
 
-    def describe(self, indent='', json_dict=None):
-        """Write out information about what this node will do
-        If json_dict is passed in, add information to that dictionary
-        so that it can be written out by the controller as appropriate.
-        """
+    def descrption_text(self, P=None):
+        """Return a short description of this step.
 
-        next_node = super().describe(indent, json_dict)
+        Return a nicely formatted string describing what this step will
+        do. 
+
+        Keyword arguments:
+            P: a dictionary of parameter values, which may be variables
+                or final values. If None, then the parameters values will
+                be used as is.
+        """
 
         self.lammps_flowchart.root_directory = self.flowchart.root_directory
 
         # Get the first real node
         node = self.lammps_flowchart.get_node('1').next()
 
+        text = ''
         while node is not None:
-            node.describe(indent + '    ', json_dict)
+            node.description_text()
             node = node.next()
 
-        return next_node
+        return text
 
     def run(self):
         """Run a LAMMPS simulation
