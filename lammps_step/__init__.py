@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
-"""Top-level package for LAMMPS step."""
-
-__author__ = """Paul Saxe"""
-__email__ = 'psaxe@molssi.org'
-__version__ = '0.1.0'
+"""
+lammps_step
+A step for running molecular dynamics using LAMMPS.
+"""
 
 # Bring up the classes so that they appear to be directly in
 # the lammps_step package.
@@ -54,6 +53,15 @@ from lammps_step.npt import NPT  # noqa: F401
 from lammps_step.npt_parameters import NPT_Parameters  # noqa: F401
 from lammps_step.npt_step import NPTStep  # noqa: F401
 from lammps_step.tk_npt import TkNPT  # noqa: F401
+
+# Handle versioneer
+from ._version import get_versions
+__author__ = """Paul Saxe"""
+__email__ = 'psaxe@molssi.org'
+versions = get_versions()
+__version__ = versions['version']
+__git_revision__ = versions['full-revisionid']
+del get_versions, versions
 
 properties = {
     "T":
