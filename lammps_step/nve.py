@@ -29,6 +29,27 @@ class NVE(lammps_step.Energy):
 
         self.parameters = lammps_step.NVE_Parameters()
 
+    @property
+    def header(self):
+        """A printable header for this section of output"""
+        return (
+            'Step {}: {}'.format(
+                '.'.join(str(e) for e in self._id), self.title
+            )
+        )
+
+    @property
+    def version(self):
+        """The semantic version of this module.
+        """
+        return lammps_step.__version__
+
+    @property
+    def git_revision(self):
+        """The git version of this module.
+        """
+        return lammps_step.__git_revision__
+
     def description_text(self):
         """Create the text description of what this step will do.
         """
@@ -40,21 +61,6 @@ class NVE(lammps_step.Energy):
         )
 
         return text
-
-    def describe(self, indent='', json_dict=None):
-        """Print the initial description of this step. Parameters
-        will be left as variables and expressions at this point
-        because there is no context in which to evaluate them."""
-
-        # Can't call super() because it will print too much
-        self.visited = True
-        job.job('\n' + self.indent + self.header)
-        next_node = self.next()
-
-        P = self.parameters.values_to_dict()
-        job.job(__(self.description_text(), **P, indent=self.indent + '    '))
-
-        return next_node
 
     def get_input(self):
         """Get the input for an NVE dynamics run in LAMMPS"""

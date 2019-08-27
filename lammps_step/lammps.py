@@ -156,11 +156,11 @@ class LAMMPS(seamm.Node):
 
         return self.next()
 
-    def descrption_text(self, P=None):
+    def description_text(self, P=None):
         """Return a short description of this step.
 
         Return a nicely formatted string describing what this step will
-        do. 
+        do.
 
         Keyword arguments:
             P: a dictionary of parameter values, which may be variables
@@ -173,9 +173,10 @@ class LAMMPS(seamm.Node):
         # Get the first real node
         node = self.lammps_flowchart.get_node('1').next()
 
-        text = ''
+        text = self.header + '\n\n'
         while node is not None:
-            node.description_text()
+            text += __(node.description_text(), indent=3*' ').__str__()
+            text += '\n'
             node = node.next()
 
         return text
@@ -189,6 +190,8 @@ class LAMMPS(seamm.Node):
             raise RuntimeError('LAMMPS run(): there is no structure!')
 
         next_node = super().run(printer)
+
+        printer.important(self.header + '\n')
 
         self.lammps_flowchart.root_directory = self.flowchart.root_directory
 
@@ -857,8 +860,8 @@ class LAMMPS(seamm.Node):
                        os.path.basename(filename) + '\n')
         
         printer.normal(
-            '            Property           Value       stderr  tau    ineff\n'
-            '       --------------------   ---------   ------- ------ ------'
+            '               Property           Value       stderr  tau    ineff\n'
+            '          --------------------   ---------   ------- ------ ------'
         )
         correlation = {}
         summary_file = os.path.splitext(filename)[0] + '.summary'
@@ -898,7 +901,7 @@ class LAMMPS(seamm.Node):
 
                 printer.normal(
                     __(
-                        '{column:>20s} = {value:9.3f} ± {stderr:7.3f}'
+                        '{column:>23s} = {value:9.3f} ± {stderr:7.3f}'
                         '{tau:6.1f} {inefficiency:6.1f}',
                         column=column,
                         value=fit.params['const'],

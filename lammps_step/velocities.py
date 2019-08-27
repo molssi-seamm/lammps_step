@@ -34,9 +34,42 @@ class Velocities(seamm.Node):
         self.description = 'Set the initial velocities on the atoms'
         self.parameters = lammps_step.VelocitiesParameters()
 
-    def description_text(self, P):
-        """Prepare information about what this node will do
+    @property
+    def header(self):
+        """A printable header for this section of output"""
+        return (
+            'Step {}: {}'.format(
+                '.'.join(str(e) for e in self._id), self.title
+            )
+        )
+
+    @property
+    def version(self):
+        """The semantic version of this module.
         """
+        return lammps_step.__version__
+
+    @property
+    def git_revision(self):
+        """The git version of this module.
+        """
+        return lammps_step.__git_revision__
+
+    def description_text(self, P=None):
+        """Return a short description of this step.
+
+        Return a nicely formatted string describing what this step will
+        do.
+
+        Keyword arguments:
+            P: a dictionary of parameter values, which may be variables
+                or final values. If None, then the parameters values will
+                be used as is.
+        """
+
+        if not P:
+            P = self.parameters.values_to_dict()
+
         text = ('Set the velocities to give a temperature {T} ' 'by {method}.')
 
         if P['remove_momentum'][0] == '$':
@@ -60,14 +93,10 @@ class Velocities(seamm.Node):
                     "with the seed '{seed}'."
                 )
 
-        return text
+        return self.header + '\n' + __(text, **P, indent=4*' ').__str__()
 
     def get_input(self):
         """Get the input for setting the velocities in LAMMPS"""
-        self._long_header = ''
-        self._long_header += str(__(self.header, indent=3 * ' '))
-        self._long_header += '\n'
-
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data
         )
@@ -90,10 +119,9 @@ class Velocities(seamm.Node):
             if isinstance(PP[key], units_class):
                 PP[key] = '{:~P}'.format(PP[key])
 
-        self._long_header += str(
-            __(self.description_text(PP), **PP, indent=7 * ' ')
-        )
-        self.description = [self._long_header]
+        self.description = [str(
+            __(self.description_text(PP), **PP, indent=3 * ' ')
+        )]
 
         # Get the input lines
         lines = []

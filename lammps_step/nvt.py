@@ -217,11 +217,20 @@ class NVT(lammps_step.NVE):
 
         logger.debug("NVT.init() completed")
 
-    def description_text(self, P):
-        """Create the text description of what this step will do.
-        The dictionary of control values is passed in as P so that
-        the code can test values, etc.
+    def description_text(self, P=None):
+        """Return a short description of this step.
+
+        Return a nicely formatted string describing what this step will
+        do.
+
+        Keyword arguments:
+            P: a dictionary of parameter values, which may be variables
+                or final values. If None, then the parameters values will
+                be used as is.
         """
+
+        if not P:
+            P = self.parameters.values_to_dict()
 
         # What will we do?
 
@@ -286,7 +295,7 @@ class NVT(lammps_step.NVE):
         else:
             text += ("using the thermostat given by {thermostat}")
 
-        return text
+        return self.header + '\n' + __(text, **P, indent=4*' ').__str__()
 
     def describe(self, indent='', json_dict=None):
         """Write out information about what this node will do
@@ -311,7 +320,6 @@ class NVT(lammps_step.NVE):
         """Get the input for an NVT dynamics run in LAMMPS"""
 
         self.description = []
-        self.description.append(__(self.header, indent=3 * ' '))
 
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data
@@ -342,7 +350,7 @@ class NVT(lammps_step.NVE):
                 PP[key] = '{:~P}'.format(PP[key])
 
         self.description.append(
-            __(self.description_text(PP), **PP, indent=7 * ' ')
+            __(self.description_text(PP), **PP, indent=3*' ').__str__()
         )
 
         time = P['time'].to('fs').magnitude
@@ -453,7 +461,7 @@ class NVT(lammps_step.NVE):
                 __(
                     "The run will be {nsteps:n} steps of dynamics.",
                     nsteps=nsteps,
-                    indent=7 * ' '
+                    indent=7*' '
                 )
             )
         else:
@@ -479,7 +487,7 @@ class NVT(lammps_step.NVE):
                     ),
                     nsteps=nsteps,
                     nevery=nevery,
-                    indent=7 * ' '
+                    indent=7*' '
                 )
             )
 
