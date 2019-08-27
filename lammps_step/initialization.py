@@ -50,8 +50,7 @@ class Initialization(seamm.Node):
 
         super().__init__(flowchart=flowchart, title=title, extension=extension)
 
-        self.description = 'Initialization of a LAMMPS calculation'
-
+        self.description = []
         self.cutoff = 10.0
         self.kspace_method = 'automatic'
         self.kspace_accuracy = 1.0e-05
@@ -63,53 +62,74 @@ class Initialization(seamm.Node):
         self.shift_nonbond = False
 
     @property
+    def header(self):
+        """A printable header for this section of output"""
+        return (
+            'Step {}: {}'.format(
+                '.'.join(str(e) for e in self._id), self.title
+            )
+        )
+
+    @property
+    def version(self):
+        """The semantic version of this module.
+        """
+        return lammps_step.__version__
+
+    @property
+    def git_revision(self):
+        """The git version of this module.
+        """
+        return lammps_step.__git_revision__
+
+    @property
     def kspace_methods(self):
         """The list of avilable methods"""
         return list(kspace_methods)
 
-    def describe(self, indent='', json_dict=None):
-        """Write out information about what this node will do
-        If json_dict is passed in, add information to that dictionary
-        so that it can be written out by the controller as appropriate.
+    def description_text(self, P=None):
+        """Return a short description of this step.
+
+        Return a nicely formatted string describing what this step will
+        do.
+
+        Keyword arguments:
+            P: a dictionary of parameter values, which may be variables
+                or final values. If None, then the parameters values will
+                be used as is.
         """
 
-        next_node = super().describe(indent, json_dict)
-
-        string = 'Initialize the calculation with a cutoff of {cutoff} Å'
+        text = 'Initialize the calculation with a cutoff of {cutoff} Å'
         if self.shift_nonbond:
-            string += ', shifting the nonbond energies to 0 at the cutoff'
-        string += '. If the system is periodic'
+            text += ', shifting the nonbond energies to 0 at the cutoff'
+        text += '. If the system is periodic'
         if self.kspace_method[0] == '$':
-            string += " use the variable '{method}' to determine whether "
-            string += "and how to accelerate the k-space summations."
+            text += " use the variable '{method}' to determine whether "
+            text += "and how to accelerate the k-space summations."
         elif self.kspace_method == 'none':
-            string += ' no k-space acceleration method will be used.'
+            text += ' no k-space acceleration method will be used.'
         elif self.kspace_method == 'automatic':
-            string += ' the best k-space acceleration method for the '
-            string += ' molecular system will be chosen.'
+            text += ' the best k-space acceleration method for the '
+            text += ' molecular system will be chosen.'
         else:
-            string += ' the {method} for k-space acceleration will be used.'
+            text += ' the {method} for k-space acceleration will be used.'
 
         if self.kspace_method != 'none':
-            string += ' The accuracy goal is {accuracy:.2E}.'
+            text += ' The accuracy goal is {accuracy:.2E}.'
 
-        job.job(
-            __(
-                string,
-                indent=self.indent + '    ',
-                cutoff=self.cutoff,
-                method=self.kspace_method,
-                accuracy=float(self.kspace_accuracy)
-            )
-        )
-
-        return next_node
+        return self.header + '\n' + __(
+            text,
+            indent=4*' ',
+            cutoff=self.cutoff,
+            method=self.kspace_method,
+            accuracy=float(self.kspace_accuracy)
+        ).__str__()
 
     def get_input(self):
         """Get the input for the initialization of LAMMPS"""
 
         self.description = []
-        self.description.append(__(self.header, indent=self.indent))
+        self.description.append('   ' + self.header)
 
         structure = seamm.data.structure
         logger.debug(
@@ -327,7 +347,7 @@ class Initialization(seamm.Node):
             self.description.append(
                 __(
                     string,
-                    indent=self.indent + '    ',
+                    indent=7*' ',
                     accuracy=float(self.kspace_accuracy),
                     smallq=float(self.kspace_smallq),
                     cutoff=self.cutoff

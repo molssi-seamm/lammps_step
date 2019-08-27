@@ -121,11 +121,14 @@ class NPT(lammps_step.NVT):
 
         logger.debug("NPT.init() completed")
 
-    def description_text(self, P):
+    def description_text(self, P=None):
         """Create the text description of what this step will do.
         The dictionary of control values is passed in as P so that
         the code can test values, etc.
         """
+
+        if not P:
+            P = self.parameters.values_to_dict()
 
         # What will we do?
 
@@ -190,7 +193,7 @@ class NPT(lammps_step.NVT):
         else:
             text += ("using the thermostat given by {thermostat}")
 
-        return text
+        return self.header + '\n' + __(text, **P, indent=4*' ').__str__()
 
     def describe(self, indent='', json_dict=None):
         """Write out information about what this node will do
@@ -217,7 +220,6 @@ class NPT(lammps_step.NVT):
         keep_orthorhombic = True
 
         self.description = []
-        self.description.append(__(self.header, indent=3 * ' '))
 
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data
@@ -248,7 +250,7 @@ class NPT(lammps_step.NVT):
                 PP[key] = '{:~P}'.format(PP[key])
 
         self.description.append(
-            __(self.description_text(PP), **PP, indent=7 * ' ')
+            __(self.description_text(PP), **PP, indent=3*' ')
         )
 
         time = P['time'].to('fs').magnitude
@@ -384,7 +386,7 @@ class NPT(lammps_step.NVT):
                 __(
                     "The run will be {nsteps:n} steps of dynamics.",
                     nsteps=nsteps,
-                    indent=7 * ' '
+                    indent=3*' '
                 )
             )
         else:
@@ -410,7 +412,7 @@ class NPT(lammps_step.NVT):
                     ),
                     nsteps=nsteps,
                     nevery=nevery,
-                    indent=7 * ' '
+                    indent=7*' '
                 )
             )
 

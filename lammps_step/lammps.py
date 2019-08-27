@@ -135,6 +135,18 @@ class LAMMPS(seamm.Node):
             flowchart=flowchart, title='LAMMPS', extension=extension
         )
 
+    @property
+    def version(self):
+        """The semantic version of this module.
+        """
+        return lammps_step.__version__
+
+    @property
+    def git_revision(self):
+        """The git version of this module.
+        """
+        return lammps_step.__git_revision__
+
     def set_id(self, node_id):
         """Set the id for node to a given tuple"""
         self._id = node_id
@@ -144,24 +156,30 @@ class LAMMPS(seamm.Node):
 
         return self.next()
 
-    def describe(self, indent='', json_dict=None):
-        """Write out information about what this node will do
-        If json_dict is passed in, add information to that dictionary
-        so that it can be written out by the controller as appropriate.
-        """
+    def description_text(self, P=None):
+        """Return a short description of this step.
 
-        next_node = super().describe(indent, json_dict)
+        Return a nicely formatted string describing what this step will
+        do.
+
+        Keyword arguments:
+            P: a dictionary of parameter values, which may be variables
+                or final values. If None, then the parameters values will
+                be used as is.
+        """
 
         self.lammps_flowchart.root_directory = self.flowchart.root_directory
 
         # Get the first real node
         node = self.lammps_flowchart.get_node('1').next()
 
+        text = self.header + '\n\n'
         while node is not None:
-            node.describe(indent + '    ', json_dict)
+            text += __(node.description_text(), indent=3*' ').__str__()
+            text += '\n'
             node = node.next()
 
-        return next_node
+        return text
 
     def run(self):
         """Run a LAMMPS simulation
@@ -172,6 +190,8 @@ class LAMMPS(seamm.Node):
             raise RuntimeError('LAMMPS run(): there is no structure!')
 
         next_node = super().run(printer)
+
+        printer.important(self.header + '\n')
 
         self.lammps_flowchart.root_directory = self.flowchart.root_directory
 
@@ -840,8 +860,8 @@ class LAMMPS(seamm.Node):
                        os.path.basename(filename) + '\n')
         
         printer.normal(
-            '            Property           Value       stderr  tau    ineff\n'
-            '       --------------------   ---------   ------- ------ ------'
+            '               Property           Value       stderr  tau    ineff\n'
+            '          --------------------   ---------   ------- ------ ------'
         )
         correlation = {}
         summary_file = os.path.splitext(filename)[0] + '.summary'
@@ -881,7 +901,7 @@ class LAMMPS(seamm.Node):
 
                 printer.normal(
                     __(
-                        '{column:>20s} = {value:9.3f} ± {stderr:7.3f}'
+                        '{column:>23s} = {value:9.3f} ± {stderr:7.3f}'
                         '{tau:6.1f} {inefficiency:6.1f}',
                         column=column,
                         value=fit.params['const'],
