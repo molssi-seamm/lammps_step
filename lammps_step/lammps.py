@@ -858,10 +858,12 @@ class LAMMPS(seamm.Node):
 
         printer.normal('       Analysis of ' +
                        os.path.basename(filename) + '\n')
-        
+
         printer.normal(
-            '               Property           Value       stderr  tau    ineff\n'
-            '          --------------------   ---------   ------- ------ ------'
+            '               Property           Value       stderr  tau   '
+            'ineff\n'
+            '          --------------------   ---------   ------- ------ '
+            '------'
         )
         correlation = {}
         summary_file = os.path.splitext(filename)[0] + '.summary'
