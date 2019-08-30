@@ -234,7 +234,7 @@ class LAMMPS(seamm.Node):
         if np and int(np) > 1:
             cmd = ['mpirun', '-np', np, 'lmp_mpi', '-in', 'molssi.dat']
         else:
-            cmd = ['lmp-serial', '-in', 'molssi.dat']
+            cmd = ['lmp_serial', '-in', 'molssi.dat']
 
         result = local.run(cmd=cmd, files=files, return_files=return_files)
 
