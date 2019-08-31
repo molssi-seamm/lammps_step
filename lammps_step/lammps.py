@@ -191,7 +191,18 @@ class LAMMPS(seamm.Node):
 
         next_node = super().run(printer)
 
-        printer.important(self.header + '\n')
+        # Whether to run parallel and if so, how many mpi processes
+        np = os.getenv('SEAMM_LAMMPS_MPI_NP', default=None)
+        if not np:
+            np = os.getenv('SEAMM_MPI_NP', default=None)
+
+        printer.important(self.header)
+        if np and int(np) > 1:
+            printer.important(
+                '   LAMMPS using MPI with {} processes.\n'.format(np)
+            )
+        else:
+            printer.important('   LAMMPS using the serial version.\n')
 
         self.lammps_flowchart.root_directory = self.flowchart.root_directory
 
@@ -218,14 +229,14 @@ class LAMMPS(seamm.Node):
         for filename in files:
             with open(os.path.join(self.directory, filename), mode='w') as fd:
                 fd.write(files[filename])
-
         local = seamm.ExecLocal()
         return_files = ['summary_*.txt', 'trajectory_*.txt']
-        result = local.run(
-            cmd=['lammps_omp', '-sf', 'omp', '-in', 'molssi.dat'],  # nopep8
-            files=files,
-            return_files=return_files
-        )
+        if np and int(np) > 1:
+            cmd = ['mpirun', '-np', np, 'lmp_mpi', '-in', 'molssi.dat']
+        else:
+            cmd = ['lmp_serial', '-in', 'molssi.dat']
+
+        result = local.run(cmd=cmd, files=files, return_files=return_files)
 
         if result is None:
             logger.error('There was an error running LAMMPS')
