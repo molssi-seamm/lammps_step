@@ -27,10 +27,8 @@ requirements = [
     'matplotlib',
     'seamm_util',
     'seamm',
-    'pprint',
     'scipy',
     'seamm_ff_util',
-    'statistics',
     'statsmodels',
 ]
 
