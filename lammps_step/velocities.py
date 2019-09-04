@@ -93,7 +93,7 @@ class Velocities(seamm.Node):
                     "with the seed '{seed}'."
                 )
 
-        return self.header + '\n' + __(text, **P, indent=4*' ').__str__()
+        return self.header + '\n' + __(text, **P, indent=4 * ' ').__str__()
 
     def get_input(self):
         """Get the input for setting the velocities in LAMMPS"""
@@ -119,9 +119,9 @@ class Velocities(seamm.Node):
             if isinstance(PP[key], units_class):
                 PP[key] = '{:~P}'.format(PP[key])
 
-        self.description = [str(
-            __(self.description_text(PP), **PP, indent=3 * ' ')
-        )]
+        self.description = [
+            str(__(self.description_text(PP), **PP, indent=3 * ' '))
+        ]
 
         # Get the input lines
         lines = []

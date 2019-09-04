@@ -8,12 +8,12 @@ import lammps_step
 class InitializationStep(object):
     my_description = {
         'description':
-            ('The initialization of LAMMPS, specifying e.g. nonbond methods '
-             'and cutoffs'),
-        'group':
-            'Calculations',
-        'name':
-            'Initialization'
+            (
+                'The initialization of LAMMPS, specifying e.g. nonbond '
+                'methods and cutoffs'
+            ),
+        'group': 'Calculations',
+        'name': 'Initialization'
     }
 
     def __init__(self, flowchart=None, gui=None):

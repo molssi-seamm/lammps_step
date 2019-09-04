@@ -160,12 +160,7 @@ class LAMMPS(seamm.Node):
             "--lammps-log-level",
             default=argparse.SUPPRESS,
             choices=[
-                'CRITICAL',
-                'ERROR',
-                'WARNING',
-                'INFO',
-                'DEBUG',
-                'NOTSET'
+                'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'
             ],
             type=upcase,
             help="the logging level for the LAMMPS step"
@@ -290,7 +285,7 @@ class LAMMPS(seamm.Node):
 
         text = self.header + '\n\n'
         while node is not None:
-            text += __(node.description_text(), indent=3*' ').__str__()
+            text += __(node.description_text(), indent=3 * ' ').__str__()
             text += '\n'
             node = node.next()
 
@@ -322,7 +317,7 @@ class LAMMPS(seamm.Node):
             if np == 'default':
                 atoms = seamm.data.structure['atoms']
                 n_atoms = len(atoms['elements'])
-                np = int(round(n_atoms/o.lammps_atoms_per_core))
+                np = int(round(n_atoms / o.lammps_atoms_per_core))
                 if np < 1:
                     np = 1
             else:
@@ -366,8 +361,8 @@ class LAMMPS(seamm.Node):
         else:
             printer.important('   LAMMPS using the serial version.\n')
 
-        logger.info('\n' + 80*'-' + '\n' + self.parser.format_help())
-        logger.info('\n' + 80*'-' + '\n' + self.parser.format_values())
+        logger.info('\n' + 80 * '-' + '\n' + self.parser.format_help())
+        logger.info('\n' + 80 * '-' + '\n' + self.parser.format_values())
 
         self.lammps_flowchart.root_directory = self.flowchart.root_directory
 
@@ -1032,8 +1027,9 @@ class LAMMPS(seamm.Node):
         logger.debug('Columns: {}'.format(data.columns))
         logger.debug('  Types:\n{}'.format(data.dtypes))
 
-        printer.normal('       Analysis of ' +
-                       os.path.basename(filename) + '\n')
+        printer.normal(
+            '       Analysis of ' + os.path.basename(filename) + '\n'
+        )
 
         printer.normal(
             '               Property           Value       stderr  tau   '

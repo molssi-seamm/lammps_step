@@ -295,7 +295,7 @@ class NVT(lammps_step.NVE):
         else:
             text += ("using the thermostat given by {thermostat}")
 
-        return self.header + '\n' + __(text, **P, indent=4*' ').__str__()
+        return self.header + '\n' + __(text, **P, indent=4 * ' ').__str__()
 
     def describe(self, indent='', json_dict=None):
         """Write out information about what this node will do
@@ -350,7 +350,7 @@ class NVT(lammps_step.NVE):
                 PP[key] = '{:~P}'.format(PP[key])
 
         self.description.append(
-            __(self.description_text(PP), **PP, indent=3*' ').__str__()
+            __(self.description_text(PP), **PP, indent=3 * ' ').__str__()
         )
 
         time = P['time'].to('fs').magnitude
@@ -461,7 +461,7 @@ class NVT(lammps_step.NVE):
                 __(
                     "The run will be {nsteps:n} steps of dynamics.",
                     nsteps=nsteps,
-                    indent=7*' '
+                    indent=7 * ' '
                 )
             )
         else:
@@ -487,7 +487,7 @@ class NVT(lammps_step.NVE):
                     ),
                     nsteps=nsteps,
                     nevery=nevery,
-                    indent=7*' '
+                    indent=7 * ' '
                 )
             )
 
