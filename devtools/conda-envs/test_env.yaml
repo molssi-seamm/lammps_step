@@ -1,0 +1,23 @@
+name: test
+channels:
+  - rdkit
+dependencies:
+    # Base depends
+  - python
+  - pip
+  - rdkit
+  - configargparse
+
+    # Testing
+  - pytest
+  - pytest-cov
+
+  # Pip-only installs
+  - pip:
+    - codecov
+    - pillow
+    - seamm-ff-util
+    - seamm_util
+    - packaging
+    - pprint
+

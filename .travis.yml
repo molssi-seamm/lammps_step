@@ -1,34 +1,63 @@
 language: python
-dist: xenial
-python:
-- 3.7
-- 3.6
-- 3.5
+
+# Run jobs on container-based infrastructure, can be overridden per job
+
+matrix:
+  include:
+    # Extra includes for OSX since python language is not available by default on OSX
+    - os: osx
+      language: generic
+      env: PYTHON_VER=3.6
+    - os: osx
+      language: generic
+      env: PYTHON_VER=3.7
+
+
+    - os: linux
+      language: generic  # No need to set Python version since its conda
+      env: PYTHON_VER=3.6
+    - os: linux
+      language: generic
+      env: PYTHON_VER=3.7
+
+
+before_install:
+    # Additional info about the build
+  - uname -a
+  - df -h
+  - ulimit -a
+
+    # Install the Python environment
+  - source devtools/travis-ci/before_install.sh
+  - python -V
+
+install:
+
+    # Create test environment for package
+  - python devtools/scripts/create_conda_env.py -n=test -p=$PYTHON_VER devtools/conda-envs/test_env.yaml
+    # Activate the test environment
+  - conda activate test
+    # Build and install package
+  - python setup.py develop --no-deps
+
+
+script:
+  - pytest -v --cov=lammps_step tests/
+
+notifications:
+    email: false
+
+after_success:
+  - codecov
+
 deploy:
   provider: pypi
   distributions: sdist bdist_wheel
   skip_existing: true
   on:
-    python: 3.6
+    condition: $PYTHON_VER = 3.7
+    condition: $TRAVIS_OS_NAME = linux
     repo: molssi-seamm/lammps_step
     tags: true
   user: seamm
-  password:
     secure: jMeh/MAX8Mi8A9hrJDVPCpSD4PRplt2IB5cL9cCtMlt0dSFiGqNIX4wVuyA06My4XoPVDQq7sShUZFm5EOIEiFfXgrhMcN2TcwDmmYwUSq0BNBeG/lp3J6Ul6ISghznYThdF2QuMrgacDlMmMnmwuMYI1XVc8bHTeRAE/4xgoBVh2rZn34wUE9jxRk/3kSUKQWtZc4zNuXIFHGsbYPqwDuH0UG04iEFCMStjC2VfqUIH3dLqpqygSvfu8D0wluZjmss0bfqyX0NIJmjmxhqOeGgffMxNr1elW9H1bKpUzuVteakR7iR3x6E4uC8MgpVU8zGKBz/aMY3n+bEuw7tZrFGcsSNfkLMsRwOB9IV4KWq2FMyipLQ0uX7Iewp7FGManx9FeANUWbKm9B4Q8fF7uPXZYiPldg/3BvGJWB2CFR5o9hHNJBwR0RcwITs+mdmk6Su7VpV1qvKOV48Kf8Cu4Bi6FXO3pAh8jrPYGzYgErawjLfMbKTSw6xThsaBsn1xlsmHFNqc0KG123+ler1PMEBrzdx0KV/2NxocJfZV/6Q8srhCkYfPEnMWklQj3H6RMw1u0/uvr/IMXy7kJXKhuQbMjgM+Lg3aORjqLhw+clRcOjhuSxe0ZetV+P2StuSTB1Hd72sOZvDryhEK9H3i9npcOciWqtOmlsRRehAiBFo=
-matrix:
-  fast_finish: true
-stages:
-- lint
-- check
-- test
-install:
-- pip install -U tox-travis
-- pip install -U codecov
-jobs:
-  include:
-  - stage: lint
-    script: tox -e lint
-    python: '3.6'
-script: tox -e coverage
-after_success:
-- codecov -e TOX_ENV

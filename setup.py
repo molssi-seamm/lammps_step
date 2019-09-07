@@ -32,14 +32,6 @@ requirements = [
     'statsmodels',
 ]
 
-setup_requirements = [
-    'pytest-runner',
-]
-
-test_requirements = [
-    'pytest',
-]
-
 setup(
     name='lammps_step',
     author="Paul Saxe",
@@ -86,11 +78,10 @@ setup(
     keywords='lammps_step',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
-        'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
