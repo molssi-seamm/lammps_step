@@ -27,9 +27,10 @@ requirements = [
     'py-cpuinfo',
     'Pmw',
     'matplotlib',
-    'seamm_util',
+    'seamm-util',
     'seamm',
-    'seamm_ff_util',
+    'seamm-ff-util',
+    'seamm-widgets',
     'statsmodels',
 ]
 
