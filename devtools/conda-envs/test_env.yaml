@@ -7,6 +7,9 @@ dependencies:
   - pip
   - rdkit
   - configargparse
+  - matplotlib
+  - py-cpuinfo
+  - statsmodels
 
     # Testing
   - pytest
@@ -18,6 +21,7 @@ dependencies:
     - pillow
     - seamm-ff-util
     - seamm_util
+    - seamm
     - packaging
     - pprint
 

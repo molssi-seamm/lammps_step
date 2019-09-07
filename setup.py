@@ -23,11 +23,12 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
+    'configargparse',
+    'py-cpuinfo',
     'Pmw',
     'matplotlib',
     'seamm_util',
     'seamm',
-    'scipy',
     'seamm_ff_util',
     'statsmodels',
 ]
