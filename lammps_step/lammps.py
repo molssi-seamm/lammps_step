@@ -2,6 +2,9 @@
 
 """A node or step for LAMMPS in a flowchart"""
 
+import argparse
+import configargparse
+import cpuinfo
 import datetime
 import glob
 import lammps_step
@@ -29,6 +32,15 @@ from matplotlib.backends.backend_pdf import PdfPages  # noqa: E402
 logger = logging.getLogger(__name__)
 job = printing.getPrinter()
 printer = printing.getPrinter('lammps')
+
+
+def upcase(string):
+    """Return an uppercase version of the string.
+
+    Used for the type argument in argparse/
+    """
+    return string.upper()
+
 
 bond_style = {
     'quadratic_bond': 'harmonic',
@@ -117,12 +129,110 @@ class LAMMPS(seamm.Node):
         namespace='org.molssi.seamm.lammps',
         extension=None
     ):
-        '''Setup the main LAMMPS step
+        """Setup the main LAMMPS step
 
         Keyword arguments:
-        '''
+        """
         logger.debug('Creating LAMMPS {}'.format(self))
 
+        # Argument/config parsing
+        self.parser = configargparse.ArgParser(
+            auto_env_var_prefix='',
+            default_config_files=[
+                '/etc/seamm/lammps.ini',
+                '/etc/seamm/lammps_step.ini',
+                '/etc/seamm/seamm.ini',
+                '~/.seamm/lammps.ini',
+                '~/.seamm/lammps_step.ini',
+                '~/.seamm/seamm.ini',
+            ]
+        )
+
+        self.parser.add_argument(
+            '--seamm-configfile',
+            is_config_file=True,
+            default=None,
+            help='a configuration file to override others'
+        )
+
+        # Options for this plugin
+        self.parser.add_argument(
+            "--lammps-log-level",
+            default=argparse.SUPPRESS,
+            choices=[
+                'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'
+            ],
+            type=upcase,
+            help="the logging level for the LAMMPS step"
+        )
+
+        # General SEAMM options
+        self.parser.add_argument(
+            '--seamm-use-mpi',
+            action='store_true',
+            help='use mpi if this flag is present'
+        )
+        self.parser.add_argument(
+            '--seamm-mpi-np',
+            default=argparse.SUPPRESS,
+            help='how many mpi processes to use'
+        )
+        self.parser.add_argument(
+            '--seamm-mpi-max-np',
+            default=argparse.SUPPRESS,
+            help='maximum number of mpi processes to use'
+        )
+        self.parser.add_argument(
+            '--seamm-mpiexec',
+            default=argparse.SUPPRESS,
+            help='the mpiexec command to use'
+        )
+
+        # LAMMPS specific options
+        self.parser.add_argument(
+            '--lammps-use-mpi',
+            action='store_true',
+            help='whether to use mpi for LAMMPS'
+        )
+        self.parser.add_argument(
+            '--lammps-mpi-np',
+            default=argparse.SUPPRESS,
+            help='how many mpi processes to use for LAMMPS'
+        )
+        self.parser.add_argument(
+            '--lammps-mpi-max-np',
+            default=argparse.SUPPRESS,
+            help='maximum number of mpi processes to use for LAMMPS'
+        )
+        self.parser.add_argument(
+            '--lammps-mpiexec',
+            default=argparse.SUPPRESS,
+            help='the mpiexec command to use for LAMMPS'
+        )
+        self.parser.add_argument(
+            '--lammps-serial',
+            default='lmp_serial',
+            help='the serial version of LAMMPS'
+        )
+        self.parser.add_argument(
+            '--lammps-mpi',
+            default='lmp_mpi',
+            help='the mpi version of LAMMPS'
+        )
+        self.parser.add_argument(
+            '--lammps-atoms-per-core',
+            type=int,
+            default='1000',
+            help='the optimal number of atoms per core for LAMMPS'
+        )
+
+        self.options, self.unknown = self.parser.parse_known_args()
+
+        # Set the logging level for this module if requested
+        if 'lammps_log_level' in self.options:
+            logger.setLevel(self.options.lammps_log_level)
+
+        # The subflowchart
         self.lammps_flowchart = seamm.Flowchart(
             parent=self, name='LAMMPS', namespace=namespace
         )
@@ -175,7 +285,7 @@ class LAMMPS(seamm.Node):
 
         text = self.header + '\n\n'
         while node is not None:
-            text += __(node.description_text(), indent=3*' ').__str__()
+            text += __(node.description_text(), indent=3 * ' ').__str__()
             text += '\n'
             node = node.next()
 
@@ -191,18 +301,68 @@ class LAMMPS(seamm.Node):
 
         next_node = super().run(printer)
 
-        # Whether to run parallel and if so, how many mpi processes
-        np = os.getenv('SEAMM_LAMMPS_MPI_NP', default=None)
-        if not np:
-            np = os.getenv('SEAMM_MPI_NP', default=None)
+        # Parse the options
+        o = self.options
 
+        # Whether to run parallel and if so, how many mpi processes
+        use_mpi = 'lammps_use_mpi' in o or 'seamm_use_mpi' in o
+        if use_mpi:
+            if 'seamm_mpi_np' in o:
+                np = o.seamm_mpi_np
+            elif 'lammps_mpi_np' in o:
+                np = o.lammps_mpi_np
+            else:
+                np = 'default'
+
+            if np == 'default':
+                atoms = seamm.data.structure['atoms']
+                n_atoms = len(atoms['elements'])
+                np = int(round(n_atoms / o.lammps_atoms_per_core))
+                if np < 1:
+                    np = 1
+            else:
+                np = int(np)
+
+            if np == 1:
+                use_mpi = False
+            else:
+                if 'seamm_mpi_max_np' in o:
+                    max_np = o.seamm_mpi_max_np
+                elif 'lammps_mpi_max_np' in o:
+                    max_np = o.lammps_mpi_max_np
+                else:
+                    max_np = 'default'
+
+                if max_np == 'default':
+                    # How many processors does this node have?
+                    info = cpuinfo.get_cpu_info()
+                    max_np = info['count']
+                    # Account for Intel hyperthreading
+                    if info['arch'][0:3] == 'X86':
+                        max_np = int(max_np / 2)
+                logger.info(
+                    'The maximum number of cores to use is {}'.format(max_np)
+                )
+
+        if use_mpi:
+            if 'lammps_mpiexec' in o:
+                mpiexec = o.lammps_mpiexec
+            elif 'seamm_mpiexec' in o:
+                mpiexec = o.seamm_mpiexec
+            else:
+                use_mpi = False
+
+        # Print headers and get to work
         printer.important(self.header)
-        if np and int(np) > 1:
+        if use_mpi:
             printer.important(
                 '   LAMMPS using MPI with {} processes.\n'.format(np)
             )
         else:
             printer.important('   LAMMPS using the serial version.\n')
+
+        logger.info('\n' + 80 * '-' + '\n' + self.parser.format_help())
+        logger.info('\n' + 80 * '-' + '\n' + self.parser.format_values())
 
         self.lammps_flowchart.root_directory = self.flowchart.root_directory
 
@@ -231,10 +391,10 @@ class LAMMPS(seamm.Node):
                 fd.write(files[filename])
         local = seamm.ExecLocal()
         return_files = ['summary_*.txt', 'trajectory_*.txt']
-        if np and int(np) > 1:
-            cmd = ['mpirun', '-np', np, 'lmp_mpi', '-in', 'molssi.dat']
+        if use_mpi:
+            cmd = [mpiexec, '-np', str(np), o.lammps_mpi, '-in', 'molssi.dat']
         else:
-            cmd = ['lmp_serial', '-in', 'molssi.dat']
+            cmd = [o.lammps_serial, '-in', 'molssi.dat']
 
         result = local.run(cmd=cmd, files=files, return_files=return_files)
 
@@ -867,8 +1027,9 @@ class LAMMPS(seamm.Node):
         logger.debug('Columns: {}'.format(data.columns))
         logger.debug('  Types:\n{}'.format(data.dtypes))
 
-        printer.normal('       Analysis of ' +
-                       os.path.basename(filename) + '\n')
+        printer.normal(
+            '       Analysis of ' + os.path.basename(filename) + '\n'
+        )
 
         printer.normal(
             '               Property           Value       stderr  tau   '

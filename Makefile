@@ -51,7 +51,7 @@ clean-test: ## remove test and coverage artifacts
 
 lint: ## check style with yapf
 	flake8 $(MODULE) tests
-#	yapf --diff --recursive $(MODULE) tests
+	yapf --diff --recursive $(MODULE) tests
 
 format: ## reformat with with yapf and isort
 	yapf --recursive --in-place $(MODULE) tests

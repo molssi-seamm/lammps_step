@@ -1,0 +1,9 @@
+Pmw
+configargparse
+matplotlib
+py-cpuinfo
+seamm>=0.6
+seamm-ff-util>=0.6
+seamm-util>=0.6
+seamm-widgets>=0.6
+statsmodels

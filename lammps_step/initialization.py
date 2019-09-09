@@ -119,7 +119,7 @@ class Initialization(seamm.Node):
 
         return self.header + '\n' + __(
             text,
-            indent=4*' ',
+            indent=4 * ' ',
             cutoff=self.cutoff,
             method=self.kspace_method,
             accuracy=float(self.kspace_accuracy)
@@ -347,7 +347,7 @@ class Initialization(seamm.Node):
             self.description.append(
                 __(
                     string,
-                    indent=7*' ',
+                    indent=7 * ' ',
                     accuracy=float(self.kspace_accuracy),
                     smallq=float(self.kspace_smallq),
                     cutoff=self.cutoff
@@ -415,7 +415,8 @@ class Initialization(seamm.Node):
                 lines.append(line)
         if 'torsion' in terms and eex['n_torsions'] > 0:
             if len(terms['torsion']) == 1:
-                dihedral_style = lammps_step.dihedral_style[terms['torsion'][0]]  # noqa: E501
+                dihedral_style = lammps_step.dihedral_style[terms['torsion'][0]
+                                                           ]  # noqa: E501
                 lines.append('dihedral_style      ' + dihedral_style)
             else:
                 line = 'dihedral_style      hybrid'
