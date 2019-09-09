@@ -22,17 +22,8 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [
-    'configargparse',
-    'py-cpuinfo',
-    'Pmw',
-    'matplotlib',
-    'seamm-util',
-    'seamm',
-    'seamm-ff-util',
-    'seamm-widgets',
-    'statsmodels',
-]
+with open('requirements_install.txt') as fd:
+    requirements = fd.read()
 
 setup(
     name='lammps_step',
@@ -45,7 +36,6 @@ setup(
     license='BSD-3-Clause',
     url='https://github.com/molssi-seamm/lammps_step',
 
-    
     # Which Python importable modules should be included when your package is
     # installed handled automatically by setuptools. Use 'exclude' to prevent
     # some specific subpackage(s) from being added, if needed
