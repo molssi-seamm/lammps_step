@@ -10,7 +10,7 @@ packaging==19.1
 pandas==0.25.1
 patsy==0.5.1
 pbr==5.4.3
-Pillow==6.1.0
+Pillow==6.2.0
 Pint==0.9
 Pmw==2.0.1
 py-cpuinfo==5.0.0
