@@ -5,7 +5,6 @@
 import seamm
 import Pmw
 import tkinter as tk
-import tkinter.ttk as ttk
 
 
 class TkCustom(seamm.TkNode):
@@ -46,18 +45,7 @@ class TkCustom(seamm.TkNode):
 
     def create_dialog(self):
         """Create the dialog!"""
-        self.dialog = Pmw.Dialog(
-            self.toplevel,
-            buttons=('OK', 'Help', 'Cancel'),
-            master=self.toplevel,
-            title='Edit Custom step',
-            command=self.handle_dialog
-        )
-        self.dialog.withdraw()
-
-        frame = ttk.Frame(self.dialog.interior())
-        frame.pack(expand=tk.YES, fill=tk.BOTH)
-        self._widget['frame'] = frame
+        frame = super().create_dialog('Edit LAMMPS Custom Step')
 
         fixedFont = Pmw.logicalfont('Fixed')
         text = self._widget['text'] = Pmw.ScrolledText(
@@ -72,34 +60,21 @@ class TkCustom(seamm.TkNode):
         text.insert('1.0', self.node.text)
         text.pack(expand=tk.YES, fill=tk.BOTH)
 
-    def edit(self):
-        """Present a dialog for editing the input for the LAMMPS energy
-        calculation"""
-
-        if self.dialog is None:
-            self.create_dialog()
-            self.reset_dialog()
-
-        self.dialog.activate(geometry='centerscreenfirst')
-
-    def reset_dialog(self, widget=None):
-        pass
-
     def handle_dialog(self, result):
+        """Do the right thing when the dialog is closed.
+        """
         if result is None or result == 'Cancel':
             self.dialog.deactivate(result)
-            return
-
-        if result == 'Help':
-            # display help!!!
-            return
-
-        if result != "OK":
+            self['text'].delete(1.0, 'end')
+            self['text'].insert(1.0, self.node.text)
+        elif result == 'Help':
+            self.help()
+        elif result == 'OK':
+            self.dialog.deactivate(result)
+            # Capture the parameters from the widgets
+            self.node.text = self['text'].get(1.0, tk.END)
+        else:
             self.dialog.deactivate(result)
             raise RuntimeError(
                 "Don't recognize dialog result '{}'".format(result)
             )
-
-        self.dialog.deactivate(result)
-
-        self.node.text = self._widget['text'].get('1.0', 'end')

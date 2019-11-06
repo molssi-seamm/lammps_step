@@ -233,7 +233,7 @@ class LAMMPS(seamm.Node):
             logger.setLevel(self.options.lammps_log_level)
 
         # The subflowchart
-        self.lammps_flowchart = seamm.Flowchart(
+        self.subflowchart = seamm.Flowchart(
             parent=self, name='LAMMPS', namespace=namespace
         )
         self.lammps_units = 'real'
@@ -262,7 +262,7 @@ class LAMMPS(seamm.Node):
         self._id = node_id
 
         # and set our subnodes
-        self.lammps_flowchart.set_ids(self._id)
+        self.subflowchart.set_ids(self._id)
 
         return self.next()
 
@@ -278,10 +278,10 @@ class LAMMPS(seamm.Node):
                 be used as is.
         """
 
-        self.lammps_flowchart.root_directory = self.flowchart.root_directory
+        self.subflowchart.root_directory = self.flowchart.root_directory
 
         # Get the first real node
-        node = self.lammps_flowchart.get_node('1').next()
+        node = self.subflowchart.get_node('1').next()
 
         text = self.header + '\n\n'
         while node is not None:
@@ -364,10 +364,10 @@ class LAMMPS(seamm.Node):
         logger.info('\n' + 80 * '-' + '\n' + self.parser.format_help())
         logger.info('\n' + 80 * '-' + '\n' + self.parser.format_values())
 
-        self.lammps_flowchart.root_directory = self.flowchart.root_directory
+        self.subflowchart.root_directory = self.flowchart.root_directory
 
         # Get the first real node
-        node = self.lammps_flowchart.get_node('1').next()
+        node = self.subflowchart.get_node('1').next()
 
         input_data = []
         while node is not None:
@@ -985,7 +985,7 @@ class LAMMPS(seamm.Node):
         """Analyze the output of the calculation
         """
         # Get the first real node
-        node = self.lammps_flowchart.get_node('1').next()
+        node = self.subflowchart.get_node('1').next()
 
         while node is not None:
             for value in node.description:

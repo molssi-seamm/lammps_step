@@ -5,7 +5,6 @@
 import lammps_step
 import seamm_widgets as sw
 import seamm
-import Pmw
 import tkinter as tk
 import tkinter.ttk as ttk
 
@@ -48,23 +47,16 @@ class TkEnergy(seamm.TkNode):
 
         self.popup_menu.tk_popup(event.x_root, event.y_root, 0)
 
-    def create_dialog(self):
-        P = self.node.parameters
+    def create_dialog(self, title='', widget='frame'):
         """Create the dialog!"""
-        self.dialog = Pmw.Dialog(
-            self.toplevel,
-            buttons=('OK', 'Help', 'Cancel'),
-            defaultbutton='OK',
-            master=self.toplevel,
-            title='Edit Energy parameters',
-            command=self.handle_dialog
-        )
-        self.dialog.withdraw()
 
-        # The tabbed notebook
-        notebook = ttk.Notebook(self.dialog.interior())
-        notebook.pack(side='top', fill=tk.BOTH, expand=tk.YES)
-        self['notebook'] = notebook
+        print('super()')
+        print(super())
+        notebook = super().create_dialog(
+            title='Edit LAMMPS Energy Step', widget='notebook'
+        )
+
+        P = self.node.parameters
 
         # Main frame holding the widgets
         frame = ttk.Frame(notebook)
@@ -108,15 +100,7 @@ class TkEnergy(seamm.TkNode):
 
         self.setup_results('energy')
 
-    def edit(self):
-        """Present a dialog for editing the input for the LAMMPS energy
-        calculation"""
-
-        if self.dialog is None:
-            self.create_dialog()
-            self.reset_dialog()
-
-        self.dialog.activate(geometry='centerscreenfirst')
+        self.reset_dialog()
 
     def reset_dialog(self, widget=None):
         """Layout the dialog according to the current control
@@ -216,39 +200,37 @@ class TkEnergy(seamm.TkNode):
     def handle_dialog(self, result):
         if result is None or result == 'Cancel':
             self.dialog.deactivate(result)
-            return
-
-        if result == 'Help':
-            # display help!!!
-            return
-
-        if result != "OK":
+            self.node.parameters.reset_widgets()
+            # Reset the layout to make sure it is correct
+            self.reset_dialog()
+        elif result == 'Help':
+            self.help()
+        elif result == 'OK':
             self.dialog.deactivate(result)
-            raise RuntimeError(
-                "Don't recognize dialog result '{}'".format(result)
-            )
 
-        self.dialog.deactivate(result)
+            # Shortcut for parameters
+            P = self.node.parameters
 
-        # Shortcut for parameters
-        P = self.node.parameters
+            # and from the results tab...
+            if self.tk_var['create tables'].get():
+                P['create tables'].value = 'yes'
+            else:
+                P['create tables'].value = 'no'
 
-        # and from the results tab...
-        if self.tk_var['create tables'].get():
-            P['create tables'].value = 'yes'
-        else:
-            P['create tables'].value = 'no'
+            results = P['results'].value = {}
+            for key, w_check, w_variable, w_table, w_column in self.results_widgets:  # noqa: E501
 
-        results = P['results'].value = {}
-        for key, w_check, w_variable, w_table, w_column \
-                in self.results_widgets:
-
-            if self.tk_var[key].get():
-                tmp = results[key] = dict()
-                tmp['variable'] = w_variable.get()
-            table = w_table.get()
-            if table != '':
-                if key not in results:
+                if self.tk_var[key].get():
                     tmp = results[key] = dict()
-                tmp['table'] = table
-                tmp['column'] = w_column.get()
+                    tmp['variable'] = w_variable.get()
+                    table = w_table.get()
+                if table != '':
+                    if key not in results:
+                        tmp = results[key] = dict()
+                    tmp['table'] = table
+                    tmp['column'] = w_column.get()
+            else:
+                self.dialog.deactivate(result)
+                raise RuntimeError(
+                    "Don't recognize dialog result '{}'".format(result)
+                )
