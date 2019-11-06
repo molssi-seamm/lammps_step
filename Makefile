@@ -50,12 +50,11 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 
 lint: ## check style with yapf
-	flake8 $(MODULE) tests
 	yapf --diff --recursive $(MODULE) tests
+	flake8 $(MODULE) tests
 
 format: ## reformat with with yapf and isort
 	yapf --recursive --in-place $(MODULE) tests
-#	isort --recursive --atomic $(MODULE) tests
 
 test: ## run tests quickly with the default Python
 	py.test
