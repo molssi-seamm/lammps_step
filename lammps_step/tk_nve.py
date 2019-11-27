@@ -3,9 +3,12 @@
 """The graphical part of a LAMMPS Energy step"""
 
 import lammps_step
+import logging
 import seamm_widgets as sw
 import tkinter as tk
 import tkinter.ttk as ttk
+
+logger = logging.getLogger(__name__)
 
 
 class TkNVE(lammps_step.TkEnergy):
@@ -18,7 +21,8 @@ class TkNVE(lammps_step.TkEnergy):
         x=None,
         y=None,
         w=200,
-        h=50
+        h=50,
+        my_logger=logger
     ):
         '''Initialize a node
 
@@ -32,16 +36,17 @@ class TkNVE(lammps_step.TkEnergy):
             x=x,
             y=y,
             w=w,
-            h=h
+            h=h,
+            my_logger=my_logger
         )
 
-    def create_dialog(self):
+    def create_dialog(
+        self, title='Edit NVE dynamics parameters', calculation='nve'
+    ):
         """Create the dialog!"""
 
         # Let parent classes do their thing.
-        super().create_dialog(
-            title='Edit NVE dynamics parameters', calculation='nve'
-        )
+        super().create_dialog(title=title, calculation=calculation)
 
         # Shortcut for parameters
         P = self.node.parameters
