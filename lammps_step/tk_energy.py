@@ -21,7 +21,8 @@ class TkEnergy(seamm.TkNode):
         x=None,
         y=None,
         w=200,
-        h=50
+        h=50,
+        my_logger=logger
     ):
         '''Initialize a node
 
@@ -34,9 +35,9 @@ class TkEnergy(seamm.TkNode):
         self.parser = configargparse.ArgParser(
             auto_env_var_prefix='',
             default_config_files=[
-                '/etc/seamm/lammps_tkenergy.ini',
+                '/etc/seamm/lammps_tk_energy.ini',
                 '/etc/seamm/seamm.ini',
-                '~/.seamm/lammps_tkenergy.ini',
+                '~/.seamm/lammps_tk_energy.ini',
                 '~/.seamm/seamm.ini',
             ]
         )
@@ -50,7 +51,7 @@ class TkEnergy(seamm.TkNode):
 
         # Options for this plugin
         self.parser.add_argument(
-            "--lammps-tkenergy-log-level",
+            "--lammps-tk_energy-log-level",
             default=configargparse.SUPPRESS,
             choices=[
                 'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'
@@ -62,12 +63,11 @@ class TkEnergy(seamm.TkNode):
         self.options, self.unknown = self.parser.parse_known_args()
 
         # Set the logging level for this module if requested
-        print(self.options)
-        if 'lammps_tkenergy_log_level' in self.options:
-            logger.setLevel(self.options.lammps_tkenergy_log_level)
+        if 'lammps_tk_energy_log_level' in self.options:
+            logger.setLevel(self.options.lammps_tk_energy_log_level)
             logger.critical(
                 'Set log level to {}'.format(
-                    self.options.lammps_tkenergy_log_level
+                    self.options.lammps_tk_energy_log_level
                 )
             )
 
@@ -79,7 +79,8 @@ class TkEnergy(seamm.TkNode):
             x=x,
             y=y,
             w=w,
-            h=h
+            h=h,
+            my_logger=my_logger
         )
 
     def right_click(self, event):
