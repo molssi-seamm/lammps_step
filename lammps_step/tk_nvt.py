@@ -2,6 +2,7 @@
 
 """The graphical part of a LAMMPS NVT dynamics step"""
 
+import configargparse
 import lammps_step
 import logging
 import seamm_widgets as sw
@@ -22,13 +23,55 @@ class TkNVT(lammps_step.TkNVE):
         x=None,
         y=None,
         w=200,
-        h=50
+        h=50,
+        my_logger=logger
     ):
         '''Initialize a node
 
         Keyword arguments:
         '''
 
+        # Argument/config parsing
+        self.parser = configargparse.ArgParser(
+            auto_env_var_prefix='',
+            default_config_files=[
+                '/etc/seamm/lammps_tk_nvt.ini',
+                '/etc/seamm/seamm.ini',
+                '~/.seamm/lammps_tk_nvt.ini',
+                '~/.seamm/seamm.ini',
+            ]
+        )
+
+        self.parser.add_argument(
+            '--seamm-configfile',
+            is_config_file=True,
+            default=None,
+            help='a configuration file to override others'
+        )
+
+        # Options for this plugin
+        self.parser.add_argument(
+            "--lammps-tk-nvt-log-level",
+            default=configargparse.SUPPRESS,
+            choices=[
+                'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'
+            ],
+            type=lambda string: string.upper(),
+            help="the logging level for the LAMMPS Tk_energy step"
+        )
+
+        self.options, self.unknown = self.parser.parse_known_args()
+
+        # Set the logging level for this module if requested
+        if 'lammps_tk_nvt_log_level' in self.options:
+            logger.setLevel(self.options.lammps_tk_nvt_log_level)
+            logger.critical(
+                'Set log level to {}'.format(
+                    self.options.lammps_tk_nvt_log_level
+                )
+            )
+
+        # Call the constructor for the superclass
         super().__init__(
             tk_flowchart=tk_flowchart,
             node=node,
@@ -36,18 +79,35 @@ class TkNVT(lammps_step.TkNVE):
             x=x,
             y=y,
             w=w,
-            h=h
+            h=h,
+            my_logger=my_logger
         )
 
-    def create_dialog(self):
-        """Create the dialog!"""
+    def create_dialog(
+        self, title='Edit NVT dynamics parameters', calculation='nvt'
+    ):
+        """Create the edit dialog!
+
+        This is reasonably complicated, so a bit of description
+        is in order. The superclass NVE creates the dialog
+        along with the basic runtime and timestep.
+
+        This method adds a second frame for setting the temperature and
+        thermostat (this is the T part of NVT).
+
+        The layout is handled in part by the NVT superclass, which
+        handles the temperature frame. Our part is handled by two
+        methods:
+
+        * reset_dialog does the general layout of the large blocks
+        * reset_temperature_frame handles the layout of the temperature
+          section except
+        """
 
         logger.debug('TkNVT.create_dialog')
 
         # Let parent classes do their thing.
-        super().create_dialog()
-
-        self.dialog.configure(title='Edit NVT dynamics parameters')
+        super().create_dialog(title=title, calculation=calculation)
 
         # Shortcut for parameters
         P = self.node.parameters
@@ -72,7 +132,18 @@ class TkNVT(lammps_step.TkNVE):
             "<<ComboboxSelected>>", self.reset_temperature_frame
         )
 
-        self.setup_results('nvt')
+    def reset_dialog(self, widget=None):
+        """Layout the widgets as needed for the current state"""
+
+        row = super().reset_dialog()
+
+        self['temperature_frame'].grid(
+            row=row, column=0, sticky=tk.EW, pady=10
+        )
+        row += 1
+        self.reset_temperature_frame()
+
+        return row
 
     def reset_temperature_frame(self, widget=None):
         """Layout the widgets in the temperature frame
@@ -145,58 +216,39 @@ class TkNVT(lammps_step.TkNVE):
 
         t_frame.columnconfigure(0, minsize=50)
 
-    def reset_dialog(self, widget=None):
-        """Layout the widgets as needed for the current state"""
-
-        row = super().reset_dialog()
-
-        self['temperature_frame'].grid(
-            row=row, column=0, sticky=tk.EW, pady=10
-        )
-        row += 1
-        self.reset_temperature_frame()
-
-        return row
-
     def handle_dialog(self, result):
+        """Handle the user cancelling, closing or OK'ing the dialog.
 
-        if result is None or result == 'Cancel':
-            self.dialog.deactivate(result)
-            return
+        If the user cancels or closes the dialog with the x button,
+        revert the widgets to their previous state.
 
-        if result == 'Help':
-            # display help!!!
-            return
+        If the user clocks 'OK', save the changes to both the control
+        parameters and the results requested.
+        """
+        if result == 'OK':
+            # Shortcut for parameters
+            P = self.node.parameters
 
-        if result != "OK":
-            self.dialog.deactivate(result)
-            raise RuntimeError(
-                "Don't recognize dialog result '{}'".format(result)
-            )
+            thermostat = self['thermostat'].get()
+
+            P['T0'].set(self['T0'].get())
+            P['T1'].set(self['T1'].get())
+            P['thermostat'].set(thermostat)
+
+            if thermostat != 'velocity rescaling':
+                P['Tdamp'].set(self['Tdamp'].get())
+
+            if thermostat == 'Nose-Hoover':
+                P['Tchain'].set(self['Tchain'].get())
+                P['Tloop'].set(self['Tloop'].get())
+                P['drag'].set(self['drag'].get())
+            elif 'csvr' in thermostat or 'csld' in thermostat or \
+                 thermostat == 'Langevin':
+                P['seed'].set(self['seed'].get())
+            elif thermostat == 'velocity rescaling':
+                P['frequency'].set(self['frequency'].get())
+                P['window'].set(self['window'].get())
+                P['fraction'].set(self['fraction'].get())
 
         # Let base classes reap their parameters
         super().handle_dialog(result)
-
-        # Shortcut for parameters
-        P = self.node.parameters
-
-        thermostat = self['thermostat'].get()
-
-        P['T0'].set(self['T0'].get())
-        P['T1'].set(self['T1'].get())
-        P['thermostat'].set(thermostat)
-
-        if thermostat != 'velocity rescaling':
-            P['Tdamp'].set(self['Tdamp'].get())
-
-        if thermostat == 'Nose-Hoover':
-            P['Tchain'].set(self['Tchain'].get())
-            P['Tloop'].set(self['Tloop'].get())
-            P['drag'].set(self['drag'].get())
-        elif 'csvr' in thermostat or 'csld' in thermostat or \
-             thermostat == 'Langevin':
-            P['seed'].set(self['seed'].get())
-        elif thermostat == 'velocity rescaling':
-            P['frequency'].set(self['frequency'].get())
-            P['window'].set(self['window'].get())
-            P['fraction'].set(self['fraction'].get())
