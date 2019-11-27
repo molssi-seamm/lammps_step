@@ -2,11 +2,13 @@
 
 """The graphical part of a LAMMPS Energy step"""
 
+import configargparse
 import lammps_step
-import seamm_widgets as sw
+import logging
 import seamm
-import tkinter as tk
 import tkinter.ttk as ttk
+
+logger = logging.getLogger(__name__)
 
 
 class TkEnergy(seamm.TkNode):
@@ -28,6 +30,48 @@ class TkEnergy(seamm.TkNode):
 
         self.results_widgets = []
 
+        # Argument/config parsing
+        self.parser = configargparse.ArgParser(
+            auto_env_var_prefix='',
+            default_config_files=[
+                '/etc/seamm/lammps_tkenergy.ini',
+                '/etc/seamm/seamm.ini',
+                '~/.seamm/lammps_tkenergy.ini',
+                '~/.seamm/seamm.ini',
+            ]
+        )
+
+        self.parser.add_argument(
+            '--seamm-configfile',
+            is_config_file=True,
+            default=None,
+            help='a configuration file to override others'
+        )
+
+        # Options for this plugin
+        self.parser.add_argument(
+            "--lammps-tkenergy-log-level",
+            default=configargparse.SUPPRESS,
+            choices=[
+                'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'
+            ],
+            type=lambda string: string.upper(),
+            help="the logging level for the LAMMPS Tk_energy step"
+        )
+
+        self.options, self.unknown = self.parser.parse_known_args()
+
+        # Set the logging level for this module if requested
+        print(self.options)
+        if 'lammps_tkenergy_log_level' in self.options:
+            logger.setLevel(self.options.lammps_tkenergy_log_level)
+            logger.critical(
+                'Set log level to {}'.format(
+                    self.options.lammps_tkenergy_log_level
+                )
+            )
+
+        # Call the constructor for the energy
         super().__init__(
             tk_flowchart=tk_flowchart,
             node=node,
@@ -47,190 +91,18 @@ class TkEnergy(seamm.TkNode):
 
         self.popup_menu.tk_popup(event.x_root, event.y_root, 0)
 
-    def create_dialog(self, title='', widget='frame'):
+    def create_dialog(
+        self, title='Edit LAMMPS Energy Step', calculation='energy'
+    ):
         """Create the dialog!"""
 
-        print('super()')
-        print(super())
-        notebook = super().create_dialog(
-            title='Edit LAMMPS Energy Step', widget='notebook'
-        )
-
-        P = self.node.parameters
-
-        # Main frame holding the widgets
-        frame = ttk.Frame(notebook)
-        self['frame'] = frame
-        notebook.add(frame, text='Parameters', sticky=tk.NW)
+        super().create_dialog(title=title, widget='notebook', results_tab=True)
 
         self['message'] = ttk.Label(
-            frame,
+            self['frame'],
             text='The LAMMPS energy step has no parameters\n'
             'All relevant parameters are set in the initialization step.'
         )
         self['message'].grid()
 
-        # Second tab for results
-        rframe = self['results frame'] = ttk.Frame(notebook)
-        notebook.add(rframe, text='Results', sticky=tk.NSEW)
-
-        var = self.tk_var['create tables'] = tk.IntVar()
-        if P['create tables'].value == 'yes':
-            var.set(1)
-        else:
-            var.set(0)
-        self['create tables'] = ttk.Checkbutton(
-            rframe, text='Create tables if needed', variable=var
-        )
-        self['create tables'].grid(row=0, column=0, sticky=tk.W)
-
-        self['results'] = sw.ScrolledColumns(
-            rframe,
-            columns=[
-                'Result',
-                'Save',
-                'Variable name',
-                'In table',
-                'Column name',
-            ]
-        )
-        self['results'].grid(row=1, column=0, sticky=tk.NSEW)
-        rframe.columnconfigure(0, weight=1)
-        rframe.rowconfigure(1, weight=1)
-
-        self.setup_results('energy')
-
-        self.reset_dialog()
-
-    def reset_dialog(self, widget=None):
-        """Layout the dialog according to the current control
-        parameters. For the energy, there are no parameters, so
-        do nothing."""
-
-        pass
-
-    def setup_results(self, calculation='energy'):
-        """Layout the results tab of the dialog"""
-        results = self.node.parameters['results'].value
-
-        self.results_widgets = []
-        table = self['results']
-        frame = table.interior()
-
-        row = 0
-        for key, entry in lammps_step.properties.items():
-            if 'calculation' not in entry:
-                continue
-            if calculation not in entry['calculation']:
-                continue
-            if 'dimensionality' not in entry:
-                continue
-            if entry['dimensionality'] != 'scalar':
-                continue
-
-            widgets = []
-            widgets.append(key)
-
-            table.cell(row, 0, entry['description'])
-
-            # variable
-            var = self.tk_var[key] = tk.IntVar()
-            var.set(0)
-            w = ttk.Checkbutton(frame, variable=var)
-            table.cell(row, 1, w)
-            widgets.append(w)
-            e = ttk.Entry(frame, width=15)
-            e.insert(0, key.lower())
-            table.cell(row, 2, e)
-            widgets.append(e)
-
-            if key in results:
-                if 'variable' in results[key]:
-                    var.set(1)
-                    e.delete(0, tk.END)
-                    e.insert(0, results[key]['variable'])
-
-            # table
-            w = ttk.Combobox(frame, width=10)
-            table.cell(row, 3, w)
-            widgets.append(w)
-            e = ttk.Entry(frame, width=15)
-            e.insert(0, key.lower())
-            table.cell(row, 4, e)
-            widgets.append(e)
-
-            if key in results:
-                if 'table' in results[key]:
-                    w.set(results[key]['table'])
-                    e.delete(0, tk.END)
-                    e.insert(0, results[key]['column'])
-
-            self.results_widgets.append(widgets)
-            row += 1
-
-        # And make the dialog wide enough
-        frame.update_idletasks()
-        width = frame.winfo_width() + 70  # extra space for frame, etc.
-        height = frame.winfo_height()
-        sw = frame.winfo_screenwidth()
-        sh = frame.winfo_screenheight()
-
-        mw = 0
-        mh = 0
-        for tab in self['notebook'].tabs():
-            tab = frame.nametowidget(tab)
-            w = tab.winfo_reqwidth()
-            h = tab.winfo_reqheight()
-            if w > mw:
-                mw = w
-            if h > mh:
-                mh = h
-
-        if width < mw:
-            width = mw
-        if width > sw:
-            width = int(0.9 * sw)
-        if height < mh:
-            height = mh
-        if height > sh:
-            height = int(0.9 * sh)
-
-        self.dialog.geometry('{}x{}'.format(width, height))
-
-    def handle_dialog(self, result):
-        if result is None or result == 'Cancel':
-            self.dialog.deactivate(result)
-            self.node.parameters.reset_widgets()
-            # Reset the layout to make sure it is correct
-            self.reset_dialog()
-        elif result == 'Help':
-            self.help()
-        elif result == 'OK':
-            self.dialog.deactivate(result)
-
-            # Shortcut for parameters
-            P = self.node.parameters
-
-            # and from the results tab...
-            if self.tk_var['create tables'].get():
-                P['create tables'].value = 'yes'
-            else:
-                P['create tables'].value = 'no'
-
-            results = P['results'].value = {}
-            for key, w_check, w_variable, w_table, w_column in self.results_widgets:  # noqa: E501
-
-                if self.tk_var[key].get():
-                    tmp = results[key] = dict()
-                    tmp['variable'] = w_variable.get()
-                    table = w_table.get()
-                if table != '':
-                    if key not in results:
-                        tmp = results[key] = dict()
-                    tmp['table'] = table
-                    tmp['column'] = w_column.get()
-            else:
-                self.dialog.deactivate(result)
-                raise RuntimeError(
-                    "Don't recognize dialog result '{}'".format(result)
-                )
+        self.setup_results(lammps_step.properties, calculation=calculation)

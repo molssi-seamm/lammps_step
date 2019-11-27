@@ -72,23 +72,6 @@ class TkLAMMPS(seamm.TkNode):
 
         self.popup_menu.tk_popup(event.x_root, event.y_root, 0)
 
-    def handle_dialog(self, result):
-        if result is None or result == 'Cancel':
-            self.dialog.deactivate(result)
-            return
-
-        if result == 'Help':
-            # display help!!!
-            return
-
-        if result != "OK":
-            self.dialog.deactivate(result)
-            raise RuntimeError(
-                "Don't recognize dialog result '{}'".format(result)
-            )
-
-        self.dialog.deactivate(result)
-
     def update_flowchart(self, tk_flowchart=None, flowchart=None):
         """Update the nongraphical flowchart. Only used in nodes that contain
         flowcharts"""

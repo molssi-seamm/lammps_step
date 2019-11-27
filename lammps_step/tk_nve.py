@@ -39,9 +39,9 @@ class TkNVE(lammps_step.TkEnergy):
         """Create the dialog!"""
 
         # Let parent classes do their thing.
-        super().create_dialog()
-
-        self.dialog.configure(title='Edit NVE dynamics parameters')
+        super().create_dialog(
+            title='Edit NVE dynamics parameters', calculation='nve'
+        )
 
         # Shortcut for parameters
         P = self.node.parameters
@@ -71,8 +71,6 @@ class TkNVE(lammps_step.TkEnergy):
 
         sw.align_labels((self['time'], self['timestep'], self['sampling']))
 
-        self.setup_results('nve')
-
     def reset_dialog(self, widget=None):
         """Layout the widgets as needed for the current state"""
 
@@ -84,42 +82,27 @@ class TkNVE(lammps_step.TkEnergy):
         return 1
 
     def handle_dialog(self, result):
-        if result is None or result == 'Cancel':
-            self.dialog.deactivate(result)
-            return
+        if result == 'OK':
+            # Shortcut for parameters
+            P = self.node.parameters
 
-        if result == 'Help':
-            # display help!!!
-            return
+            value, units = self['time'].get()
+            P['time'].value = value
+            P['time'].units = units
 
-        if result != "OK":
-            self.dialog.deactivate(result)
-            raise RuntimeError(
-                "Don't recognize dialog result '{}'".format(result)
-            )
+            tmp = self['timestep'].get()
+            if tmp in P['timestep'].enumeration:
+                P['timestep'].value = tmp
+            else:
+                P['timestep'].value = tmp[0]
+                P['timestep'].units = tmp[1]
 
-        self.dialog.deactivate(result)
+            tmp = self['sampling'].get()
+            if tmp in P['sampling'].enumeration:
+                P['sampling'].value = tmp
+            else:
+                P['sampling'].value = tmp[0]
+                P['sampling'].units = tmp[1]
 
         # Let base classes reap their parameters
         super().handle_dialog(result)
-
-        # Shortcut for parameters
-        P = self.node.parameters
-
-        value, units = self['time'].get()
-        P['time'].value = value
-        P['time'].units = units
-
-        tmp = self['timestep'].get()
-        if tmp in P['timestep'].enumeration:
-            P['timestep'].value = tmp
-        else:
-            P['timestep'].value = tmp[0]
-            P['timestep'].units = tmp[1]
-
-        tmp = self['sampling'].get()
-        if tmp in P['sampling'].enumeration:
-            P['sampling'].value = tmp
-        else:
-            P['sampling'].value = tmp[0]
-            P['sampling'].units = tmp[1]
