@@ -35,8 +35,10 @@ class TkNPT(lammps_step.TkNVT):
             h=h
         )
 
-    def create_dialog(self):
-        """Create the dialog!
+    def create_dialog(
+        self, title='Edit NPT dynamics parameters', calculation='npt'
+    ):
+        """Create the edit dialog!
 
         This is reasonably complicated, so a bit of description
         is in order. The superclasses NVT and NVE create the dialog
@@ -59,7 +61,7 @@ class TkNPT(lammps_step.TkNVT):
         """
 
         # Let parent classes do their thing.
-        super().create_dialog()
+        super().create_dialog(title=title, calculation=calculation)
 
         # Shortcut for parameters
         P = self.node.parameters
@@ -117,7 +119,25 @@ class TkNPT(lammps_step.TkNVT):
                 "<<ComboboxSelected>>", self.reset_stress_frame
             )
 
-        self.setup_results('npt')
+    def reset_dialog(self, widget=None):
+        """Layout the widgets as needed for the current state"""
+
+        row = super().reset_dialog()
+
+        # Reset the trajectory frame to span 2 columns
+        self['trj_frame'].grid(row=0, column=0, columnspan=2)
+
+        self['temperature_frame'].grid(
+            row=row, column=0, sticky=tk.N, padx=10, pady=10
+        )
+        self.reset_temperature_frame()
+
+        self['pressure_frame'].grid(
+            row=row, column=1, sticky=tk.N, padx=10, pady=10
+        )
+        self.reset_pressure_frame()
+
+        return 2
 
     def reset_pressure_frame(self, widget=None):
         """Layout the widgets for the pressure/stress control
@@ -713,54 +733,20 @@ class TkNPT(lammps_step.TkNVT):
                 row += 1
             sw.align_labels(widgets)
 
-    def reset_dialog(self, widget=None):
-        """Layout the widgets as needed for the current state"""
-
-        frame = self['frame']
-        for slave in frame.grid_slaves():
-            slave.grid_forget()
-
-        self['trj_frame'].grid(row=0, column=0, columnspan=2)
-
-        self['temperature_frame'].grid(
-            row=1, column=0, sticky=tk.N, padx=10, pady=10
-        )
-        self.reset_temperature_frame()
-
-        self['pressure_frame'].grid(
-            row=1, column=1, sticky=tk.N, padx=10, pady=10
-        )
-        self.reset_pressure_frame()
-
-        return 2
-
     def handle_dialog(self, result):
         """Handle when the user clicks a button on the dialog,
         which can either be 'Cancel', 'Help' or 'OK', or they can
         close the dialog with the 'x' button == 'Cancel'"""
 
-        if result is None or result == 'Cancel':
-            self.dialog.deactivate(result)
-            return
+        if result == 'OK':
+            # Shortcut for parameters
+            P = self.node.parameters
 
-        if result == 'Help':
-            # display help!!!
-            return
-
-        if result != "OK":
-            self.dialog.deactivate(result)
-            raise RuntimeError(
-                "Don't recognize dialog result '{}'".format(result)
-            )
+            # Gather all the parameters. It maybe a bit of an overkill,
+            # but it is easy.
+            for key in lammps_step.NPT_Parameters.parameters:
+                if key not in ('results', 'create table'):
+                    P[key].set_from_widget()
 
         # Let base classes reap their parameters
         super().handle_dialog(result)
-
-        # Shortcut for parameters
-        P = self.node.parameters
-
-        # and just get all of ours. This may be overkill, but it
-        # is easy. We'll sort out what it all means later!
-        for key in lammps_step.NPT_Parameters.parameters:
-            if key not in ('results', 'create table'):
-                P[key].set_from_widget()
