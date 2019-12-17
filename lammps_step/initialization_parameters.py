@@ -9,13 +9,13 @@ logger = logging.getLogger(__name__)
 kspace_methods = {
     'automatic': '',
     'none': 'none',
-    'Ewald summation method': 'ewald {accuracy:.2E}',
-    'PPPM (Particle-particle particle-mesh) method': 'pppm {accuracy:.2E}',
-    'PPPM method for few charged atoms': 'pppm/cg {accuracy:.2E} {smallq}',
-    'PPPM method with a staggered mesh': 'pppm/stagger {accuracy:.2E}',
-    'PPPM method including dispersion terms': 'pppm/disp {accuracy:.2E}',
-    'MSM (Multilevel summation method)': 'msm {accuracy:.2E}',
-    'MSM method for few charged atoms': 'msm/cg {accuracy:.2E} {smallq}'
+    'Ewald summation method': 'ewald {kspace_accuracy}',
+    'PPPM (Particle-particle particle-mesh) method': 'pppm {kspace_accuracy}',
+    'PPPM method for few charged atoms': 'pppm/cg {kspace_accuracy} {smallq}',
+    'PPPM method with a staggered mesh': 'pppm/stagger {kspace_accuracy}',
+    'PPPM method including dispersion terms': 'pppm/disp {kspace_accuracy}',
+    'MSM (Multilevel summation method)': 'msm {kspace_accuracy}',
+    'MSM method for few charged atoms': 'msm/cg {kspace_accuracy} {smallq}'
 }
 
 
@@ -38,7 +38,7 @@ class InitializationParameters(seamm.Parameters):
             "kind": "enumeration",
             "default_units": "",
             "enumeration": tuple(kspace_methods.keys()),
-            "format_string": ".1f",
+            "format_string": "",
             "description": "K-space method:",
             "help_text": "The method for handling long-range interactions."
         },
@@ -47,7 +47,7 @@ class InitializationParameters(seamm.Parameters):
             "kind": "float",
             "default_units": "",
             "enumeration": tuple(),
-            "format_string": ".1e",
+            "format_string": ".2e",
             "description": "K-space accuracy:",
             "help_text": "The target accuracy for the k-space method."
         },
