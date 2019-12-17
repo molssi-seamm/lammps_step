@@ -35,9 +35,9 @@ class TkEnergy(seamm.TkNode):
         self.parser = configargparse.ArgParser(
             auto_env_var_prefix='',
             default_config_files=[
-                '/etc/seamm/lammps_tk_energy.ini',
+                '/etc/seamm/lammps_energy.ini',
                 '/etc/seamm/seamm.ini',
-                '~/.seamm/lammps_tk_energy.ini',
+                '~/.seamm/lammps_energy.ini',
                 '~/.seamm/seamm.ini',
             ]
         )
@@ -51,7 +51,7 @@ class TkEnergy(seamm.TkNode):
 
         # Options for this plugin
         self.parser.add_argument(
-            "--lammps-tk_energy-log-level",
+            "--lammps-tk-energy-log-level",
             default=configargparse.SUPPRESS,
             choices=[
                 'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'
