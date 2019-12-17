@@ -98,7 +98,7 @@ class Initialization(seamm.Node):
             text += ' the {method} for k-space acceleration will be used.'
 
         if P['kspace_method'] != 'none':
-            text += ' The accuracy goal is {accuracy:.2E}.'
+            text += ' The accuracy goal is {kspace_accuracy}.'
 
         return self.header + '\n' + __(text, **P, indent=4 * ' ').__str__()
 
@@ -111,6 +111,9 @@ class Initialization(seamm.Node):
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data
         )
+
+        # Fix some things
+        P['cutoff'] = P['cutoff'].to('angstrom').magnitude
 
         # Get the structure
         structure = seamm.data.structure
@@ -163,7 +166,7 @@ class Initialization(seamm.Node):
             string = 'Setup for a molecular (non-periodic) system.'
         elif periodicity == 3:
             lines.append('boundary            p p p')
-            tail_correction = 'yes' if P['use_tail_correction'] and \
+            tail_correction = 'yes' if P['tail_correction'] and \
                               not P['shift_nonbond'] else 'no'
             string = 'Setup for a periodic (crystalline or fluid) system.'
         else:
@@ -226,7 +229,7 @@ class Initialization(seamm.Node):
                         kspace_style = 'ewald {}'.format(P['kspace_accuracy'])
                         string += (
                             'using the Ewald summation method with '
-                            'an accuracy of {accuracy:.2E}.'
+                            'an accuracy of {kspace_accuracy}.'
                         )
                     elif fraction_charged_atoms < \
                             P['charged_atom_fraction_cutoff']:
@@ -237,13 +240,13 @@ class Initialization(seamm.Node):
                         string += (
                             'using the PPPM method optimized for few '
                             'atoms with charges, with '
-                            'an accuracy of {accuracy:.2E}.'
+                            'an accuracy of {kspace_accuracy}.'
                         )
                     else:
                         kspace_style = 'pppm {}'.format(P['kspace_accuracy'])
                         string += (
                             'using the PPPM method with '
-                            'an accuracy of {accuracy:.2E}.'
+                            'an accuracy of {kspace_accuracy}.'
                         )
                 lines.append(
                     'pair_style          {} {}'.format(
@@ -287,19 +290,19 @@ class Initialization(seamm.Node):
                     )
                     if fraction_charged_atoms < \
                        P['charged_atom_fraction_cutoff']:
-                        kspace_style = 'msm/cg {accuracy:.2E} {smallq:.2E}'
+                        kspace_style = 'msm/cg {kspace_accuracy} {smallq}'
                         string += (
                             ' The MSM method will be used to handle '
                             'the longer range coulombic interactions, using '
                             'the approach tuned for systems with few charges.'
-                            'The accuracy goal is {accuracy:.2E}.'
+                            'The accuracy goal is {kspace_accuracy}.'
                         )
                     else:
-                        kspace_style = 'msm {accuracy:.2E}'
+                        kspace_style = 'msm {kspace_accuracy}'
                         string += (
                             ' The MSM method will be used to handle '
                             'the longer range coulombic interactions.'
-                            'The accuracy goal is {accuracy:.2E}.'
+                            'The accuracy goal is {kspace_accuracy}.'
                         )
                 else:
                     pair_style = pair_style_base + '/coul/cut'
