@@ -14,7 +14,7 @@ class EnergyParameters(seamm.Parameters):
         "results": {
             "default": {},
             "kind": "dictionary",
-            "default_units": "",
+            "default_units": None,
             "enumeration": tuple(),
             "format_string": "",
             "description": "results",
@@ -24,7 +24,7 @@ class EnergyParameters(seamm.Parameters):
         "create tables": {
             "default": "yes",
             "kind": "boolean",
-            "default_units": "",
+            "default_units": None,
             "enumeration": ('yes', 'no'),
             "format_string": "",
             "description": "Create tables as needed:",

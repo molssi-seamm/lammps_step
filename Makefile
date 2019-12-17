@@ -50,12 +50,11 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 
 lint: ## check style with yapf
-	flake8 $(MODULE) tests
 	yapf --diff --recursive $(MODULE) tests
+	flake8 $(MODULE) tests
 
 format: ## reformat with with yapf and isort
 	yapf --recursive --in-place $(MODULE) tests
-#	isort --recursive --atomic $(MODULE) tests
 
 test: ## run tests quickly with the default Python
 	py.test
@@ -93,7 +92,7 @@ dist: clean ## builds source and wheel package
 	python setup.py bdist_wheel
 	ls -l dist
 
-install: clean ## install the package to the active Python's site-packages
+install: uninstall ## install the package to the active Python's site-packages
 	python setup.py install
 
 uninstall: clean ## uninstall the package

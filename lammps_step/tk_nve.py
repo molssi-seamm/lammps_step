@@ -3,9 +3,12 @@
 """The graphical part of a LAMMPS Energy step"""
 
 import lammps_step
+import logging
 import seamm_widgets as sw
 import tkinter as tk
 import tkinter.ttk as ttk
+
+logger = logging.getLogger(__name__)
 
 
 class TkNVE(lammps_step.TkEnergy):
@@ -18,7 +21,8 @@ class TkNVE(lammps_step.TkEnergy):
         x=None,
         y=None,
         w=200,
-        h=50
+        h=50,
+        my_logger=logger
     ):
         '''Initialize a node
 
@@ -32,16 +36,17 @@ class TkNVE(lammps_step.TkEnergy):
             x=x,
             y=y,
             w=w,
-            h=h
+            h=h,
+            my_logger=my_logger
         )
 
-    def create_dialog(self):
+    def create_dialog(
+        self, title='Edit NVE dynamics parameters', calculation='nve'
+    ):
         """Create the dialog!"""
 
         # Let parent classes do their thing.
-        super().create_dialog()
-
-        self.dialog.configure(title='Edit NVE dynamics parameters')
+        super().create_dialog(title=title, calculation=calculation)
 
         # Shortcut for parameters
         P = self.node.parameters
@@ -71,8 +76,6 @@ class TkNVE(lammps_step.TkEnergy):
 
         sw.align_labels((self['time'], self['timestep'], self['sampling']))
 
-        self.setup_results('nve')
-
     def reset_dialog(self, widget=None):
         """Layout the widgets as needed for the current state"""
 
@@ -84,42 +87,27 @@ class TkNVE(lammps_step.TkEnergy):
         return 1
 
     def handle_dialog(self, result):
-        if result is None or result == 'Cancel':
-            self.dialog.deactivate(result)
-            return
+        if result == 'OK':
+            # Shortcut for parameters
+            P = self.node.parameters
 
-        if result == 'Help':
-            # display help!!!
-            return
+            value, units = self['time'].get()
+            P['time'].value = value
+            P['time'].units = units
 
-        if result != "OK":
-            self.dialog.deactivate(result)
-            raise RuntimeError(
-                "Don't recognize dialog result '{}'".format(result)
-            )
+            tmp = self['timestep'].get()
+            if tmp in P['timestep'].enumeration:
+                P['timestep'].value = tmp
+            else:
+                P['timestep'].value = tmp[0]
+                P['timestep'].units = tmp[1]
 
-        self.dialog.deactivate(result)
+            tmp = self['sampling'].get()
+            if tmp in P['sampling'].enumeration:
+                P['sampling'].value = tmp
+            else:
+                P['sampling'].value = tmp[0]
+                P['sampling'].units = tmp[1]
 
         # Let base classes reap their parameters
         super().handle_dialog(result)
-
-        # Shortcut for parameters
-        P = self.node.parameters
-
-        value, units = self['time'].get()
-        P['time'].value = value
-        P['time'].units = units
-
-        tmp = self['timestep'].get()
-        if tmp in P['timestep'].enumeration:
-            P['timestep'].value = tmp
-        else:
-            P['timestep'].value = tmp[0]
-            P['timestep'].units = tmp[1]
-
-        tmp = self['sampling'].get()
-        if tmp in P['sampling'].enumeration:
-            P['sampling'].value = tmp
-        else:
-            P['sampling'].value = tmp[0]
-            P['sampling'].units = tmp[1]

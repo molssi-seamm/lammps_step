@@ -22,6 +22,8 @@ from lammps_step.custom_step import CustomStep  # noqa: F401
 from lammps_step.tk_custom import TkCustom  # noqa: F401
 
 from lammps_step.initialization import Initialization  # noqa: F401
+from lammps_step.initialization_parameters import InitializationParameters  # noqa: F401, E501
+from lammps_step.initialization_parameters import kspace_methods  # noqa: F401
 from lammps_step.initialization_step import InitializationStep  # noqa: F401
 from lammps_step.tk_initialization import TkInitialization  # noqa: F401
 

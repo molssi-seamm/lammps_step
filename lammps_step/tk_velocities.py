@@ -4,9 +4,7 @@
 
 import seamm
 import seamm_widgets as sw
-import Pmw
 import tkinter as tk
-import tkinter.ttk as ttk
 
 
 class TkVelocities(seamm.TkNode):
@@ -48,19 +46,7 @@ class TkVelocities(seamm.TkNode):
     def create_dialog(self):
         """Create the dialog!"""
 
-        self.dialog = Pmw.Dialog(
-            self.toplevel,
-            buttons=('OK', 'Help', 'Cancel'),
-            defaultbutton='OK',
-            master=self.toplevel,
-            title='Edit velocity step',
-            command=self.handle_dialog
-        )
-        self.dialog.withdraw()
-
-        frame = ttk.Frame(self.dialog.interior())
-        frame.pack(expand=tk.YES, fill=tk.BOTH)
-        self['frame'] = frame
+        frame = super().create_dialog('Edit LAMMPS Velocity Step')
 
         # Create all the widgets
         P = self.node.parameters
@@ -71,14 +57,7 @@ class TkVelocities(seamm.TkNode):
         self['method'].combobox.bind("<Return>", self.reset_dialog)
         self['method'].combobox.bind("<FocusOut>", self.reset_dialog)
 
-    def edit(self):
-        """Present a dialog for editing the input for the LAMMPS velocities"""
-
-        if self.dialog is None:
-            self.create_dialog()
-            self.reset_dialog()
-
-        self.dialog.activate(geometry='centerscreenfirst')
+        self.reset_dialog()
 
     def reset_dialog(self, widget=None):
         """Lay out the widgets given the current state"""
@@ -100,27 +79,4 @@ class TkVelocities(seamm.TkNode):
             widgets.append(self['seed'])
             row += 1
 
-            sw.alignlabels(widgets)
-
-    def handle_dialog(self, result):
-        if result is None or result == 'Cancel':
-            self.dialog.deactivate(result)
-            return
-
-        if result == 'Help':
-            # display help!!!
-            return
-
-        if result != "OK":
-            self.dialog.deactivate(result)
-            raise RuntimeError(
-                "Don't recognize dialog result '{}'".format(result)
-            )
-
-        self.dialog.deactivate(result)
-
-        # Shortcut for parameters
-        P = self.node.parameters
-
-        for key in P:
-            P[key].set_from_widget()
+            sw.align_labels(widgets)

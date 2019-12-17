@@ -23,6 +23,7 @@ import statsmodels.stats.stattools
 import statsmodels.api
 import statsmodels.tools
 from statsmodels.graphics.tsaplots import plot_acf
+import sys
 
 import matplotlib
 matplotlib.use('pdf')
@@ -233,7 +234,7 @@ class LAMMPS(seamm.Node):
             logger.setLevel(self.options.lammps_log_level)
 
         # The subflowchart
-        self.lammps_flowchart = seamm.Flowchart(
+        self.subflowchart = seamm.Flowchart(
             parent=self, name='LAMMPS', namespace=namespace
         )
         self.lammps_units = 'real'
@@ -262,7 +263,7 @@ class LAMMPS(seamm.Node):
         self._id = node_id
 
         # and set our subnodes
-        self.lammps_flowchart.set_ids(self._id)
+        self.subflowchart.set_ids(self._id)
 
         return self.next()
 
@@ -278,14 +279,37 @@ class LAMMPS(seamm.Node):
                 be used as is.
         """
 
-        self.lammps_flowchart.root_directory = self.flowchart.root_directory
+        self.subflowchart.root_directory = self.flowchart.root_directory
 
         # Get the first real node
-        node = self.lammps_flowchart.get_node('1').next()
+        node = self.subflowchart.get_node('1').next()
 
         text = self.header + '\n\n'
         while node is not None:
-            text += __(node.description_text(), indent=3 * ' ').__str__()
+            try:
+                text += __(node.description_text(), indent=3 * ' ').__str__()
+            except Exception as e:
+                print(
+                    'Error describing LAMMPS flowchart: {} in {}'.format(
+                        str(e), str(node)
+                    )
+                )
+                logger.critical(
+                    'Error describing LAMMPS flowchart: {} in {}'.format(
+                        str(e), str(node)
+                    )
+                )
+                raise
+            except:  # noqa: E722
+                print(
+                    "Unexpected error describing LAMMPS flowchart: {} in {}"
+                    .format(sys.exc_info()[0], str(node))
+                )
+                logger.critical(
+                    "Unexpected error describing LAMMPS flowchart: {} in {}"
+                    .format(sys.exc_info()[0], str(node))
+                )
+                raise
             text += '\n'
             node = node.next()
 
@@ -364,18 +388,64 @@ class LAMMPS(seamm.Node):
         logger.info('\n' + 80 * '-' + '\n' + self.parser.format_help())
         logger.info('\n' + 80 * '-' + '\n' + self.parser.format_values())
 
-        self.lammps_flowchart.root_directory = self.flowchart.root_directory
+        self.subflowchart.root_directory = self.flowchart.root_directory
 
         # Get the first real node
-        node = self.lammps_flowchart.get_node('1').next()
+        node = self.subflowchart.get_node('1').next()
 
         input_data = []
         while node is not None:
             if isinstance(node, lammps_step.Initialization):
-                lines, eex = node.get_input()
+                try:
+                    lines, eex = node.get_input()
+                except Exception as e:
+                    print(
+                        'Error running LAMMPS flowchart: {} in {}'.format(
+                            str(e), str(node)
+                        )
+                    )
+                    logger.critical(
+                        'Error running LAMMPS flowchart: {} in {}'.format(
+                            str(e), str(node)
+                        )
+                    )
+                    raise
+                except:  # noqa: E722
+                    print(
+                        "Unexpected error running LAMMPS flowchart: {} in {}"
+                        .format(sys.exc_info()[0], str(node))
+                    )
+                    logger.critical(
+                        "Unexpected error running LAMMPS flowchart: {} in {}"
+                        .format(sys.exc_info()[0], str(node))
+                    )
+                    raise
                 input_data += lines
             else:
-                input_data += node.get_input()
+                try:
+                    input_data += node.get_input()
+                except Exception as e:
+                    print(
+                        'Error running LAMMPS flowchart: {} in {}'.format(
+                            str(e), str(node)
+                        )
+                    )
+                    logger.critical(
+                        'Error running LAMMPS flowchart: {} in {}'.format(
+                            str(e), str(node)
+                        )
+                    )
+                    raise
+                except:  # noqa: E722
+                    print(
+                        "Unexpected error running LAMMPS flowchart: {} in {}"
+                        .format(sys.exc_info()[0], str(node))
+                    )
+                    logger.critical(
+                        "Unexpected error running LAMMPS flowchart: {} in {}"
+                        .format(sys.exc_info()[0], str(node))
+                    )
+                    raise
             node = node.next()
 
         files = {'molssi.dat': '\n'.join(input_data)}
@@ -985,7 +1055,7 @@ class LAMMPS(seamm.Node):
         """Analyze the output of the calculation
         """
         # Get the first real node
-        node = self.lammps_flowchart.get_node('1').next()
+        node = self.subflowchart.get_node('1').next()
 
         while node is not None:
             for value in node.description:

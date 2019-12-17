@@ -2,11 +2,13 @@
 
 """The graphical part of a LAMMPS Initialization step"""
 
-import lammps_step
+import configargparse
+import logging
 import seamm
-import Pmw
 import tkinter as tk
 import tkinter.ttk as ttk
+
+logger = logging.getLogger(__name__)
 
 
 class TkInitialization(seamm.TkNode):
@@ -19,12 +21,53 @@ class TkInitialization(seamm.TkNode):
         x=None,
         y=None,
         w=200,
-        h=50
+        h=50,
+        my_logger=logger
     ):
-        '''Initialize a node
+        """Setup  the LAMMPS initialization node.
 
         Keyword arguments:
-        '''
+        """
+
+        # Argument/config parsing
+        self.parser = configargparse.ArgParser(
+            auto_env_var_prefix='',
+            default_config_files=[
+                '/etc/seamm/lammps_tk_initialization.ini',
+                '/etc/seamm/seamm.ini',
+                '~/.seamm/lammps_tk_initialization.ini',
+                '~/.seamm/seamm.ini',
+            ]
+        )
+
+        self.parser.add_argument(
+            '--seamm-configfile',
+            is_config_file=True,
+            default=None,
+            help='a configuration file to override others'
+        )
+
+        # Options for this plugin
+        self.parser.add_argument(
+            "--lammps-tk-initialization-log-level",
+            default=configargparse.SUPPRESS,
+            choices=[
+                'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'
+            ],
+            type=lambda string: string.upper(),
+            help="the logging level for the LAMMPS Tk_energy step"
+        )
+
+        self.options, self.unknown = self.parser.parse_known_args()
+
+        # Set the logging level for this module if requested
+        if 'lammps_tk_initialization_log_level' in self.options:
+            logger.setLevel(self.options.lammps_tk_initialization_log_level)
+            logger.critical(
+                'Set log level to {}'.format(
+                    self.options.lammps_tk_initialization_log_level
+                )
+            )
 
         super().__init__(
             tk_flowchart=tk_flowchart,
@@ -33,7 +76,8 @@ class TkInitialization(seamm.TkNode):
             x=x,
             y=y,
             w=w,
-            h=h
+            h=h,
+            my_logger=my_logger
         )
 
     def right_click(self, event):
@@ -47,137 +91,50 @@ class TkInitialization(seamm.TkNode):
 
     def create_dialog(self):
         """Create the dialog!"""
-        self.dialog = Pmw.Dialog(
-            self.toplevel,
-            buttons=('OK', 'Help', 'Cancel'),
-            defaultbutton='OK',
-            master=self.toplevel,
-            title='Edit LAMMPS Initialization',
-            command=self.handle_dialog
-        )
-        self.dialog.withdraw()
+        frame = super().create_dialog('Edit LAMMPS Initialization Step')
 
-        self['hull'] = ttk.Frame(self.dialog.interior())
-        self['hull'].pack(expand=tk.YES, fill=tk.BOTH)
+        # Shortcut for parameters
+        P = self.node.parameters
 
         # Frame for options for all systems
-
-        frame = self['frame'] = ttk.LabelFrame(
-            self['hull'],
+        general = self['general'] = ttk.LabelFrame(
+            frame,
             text='For all systems',
             relief=tk.SUNKEN,
             borderwidth=5,
             labelanchor=tk.N
         )
 
-        # Cutoff
-        self['cutoff_label'] = ttk.Label(frame, text='Cutoff:')
-        self['cutoff'] = ttk.Entry(frame, width=15)
-        self['cutoff'].insert(0, self.node.cutoff)
-
-        # Shift nonbond
-        self.tk_var['shift_nonbond'] = tk.IntVar()
-        self.tk_var['shift_nonbond'].set(self.node.shift_nonbond)
-        self['shift_nonbond_label'] = ttk.Label(
-            frame, text='Shift to 0 at cutoff:'
-        )
-        self['shift_nonbond'] = ttk.Checkbutton(
-            frame, variable=self.tk_var['shift_nonbond']
-        )
+        for key in ('cutoff', 'shift_nonbond'):
+            self[key] = P[key].widget(general)
 
         # Frame for the periodic system options, i.e. kspace, etc.
-
-        pframe = self['pframe'] = ttk.LabelFrame(
-            self['hull'],
+        periodic = self['periodic'] = ttk.LabelFrame(
+            frame,
             text='For periodic systems',
             relief=tk.SUNKEN,
             borderwidth=5,
             labelanchor=tk.N
         )
 
-        # Tail correction
-        self.tk_var['tail_correction'] = tk.IntVar()
-        self.tk_var['tail_correction'].set(self.node.use_tail_correction)
-        self['tail_correction_label'] = ttk.Label(
-            pframe, text='Correct for long range tail (periodic):'
-        )
-        self['tail_correction'] = ttk.Checkbutton(
-            pframe, variable=self.tk_var['tail_correction']
-        )
+        for key in (
+            'tail_correction', 'kspace_method', 'kspace_accuracy',
+            'kspace_smallq'
+        ):
+            self[key] = P[key].widget(periodic)
 
-        # k-space methods
-        self['kspace_method_label'] = ttk.Label(
-            pframe, text="Long range method:"
-        )
-        self['kspace_method'] = ttk.Combobox(
-            pframe,
-            width=30,
-            values=list(lammps_step.initialization.kspace_methods)
-        )
         self['kspace_method'].bind(
             "<<ComboboxSelected>>", self.kspace_method_cb
         )
-        self['kspace_method'].set(self.node.kspace_method)
-
-        # accuracy
-        self['accuracy_label'] = ttk.Label(pframe, text='Accuracy:')
-        self['accuracy'] = ttk.Entry(pframe, width=15)
-        self['accuracy'].insert(0, self.node.kspace_accuracy)
-
-        # small charge cuttoff
-        self['smallq_label'] = ttk.Label(pframe, text='Small charge cutoff:')
-        self['smallq'] = ttk.Entry(pframe, width=15)
-        self['smallq'].insert(0, self.node.kspace_smallq)
 
         # Grid in the static part of the dialog
 
-        row = 0
+        self['general'].grid(row=0, column=0, sticky=tk.EW, pady=10)
+        self['cutoff'].grid(row=0, column=0, sticky=tk.W)
+        self['shift_nonbond'].grid(row=1, column=0, sticky=tk.W)
 
-        self['cutoff_label'].grid(row=row, column=0, sticky=tk.E)
-        self['cutoff'].grid(row=row, column=1, sticky=tk.W)
-        row += 1
-
-        self['shift_nonbond_label'].grid(row=row, column=0, sticky=tk.E)
-        self['shift_nonbond'].grid(row=row, column=1, sticky=tk.W)
-        row += 1
-
-        self['frame'].grid(row=0, column=0, sticky=tk.EW, pady=10)
-        self['pframe'].grid(row=1, column=0, sticky=tk.EW, pady=10)
-
-    def handle_dialog(self, result):
-        if result is None or result == 'Cancel':
-            self.dialog.deactivate(result)
-            return
-
-        if result == 'Help':
-            # display help!!!
-            return
-
-        if result != "OK":
-            self.dialog.deactivate(result)
-            raise RuntimeError(
-                "Don't recognize dialog result '{}'".format(result)
-            )
-
-        self.dialog.deactivate(result)
-
-        self.node.cutoff = self['cutoff'].get()
-        self.node.shift_nonbond = self.tk_var['shift_nonbond'].get()
-        self.node.use_tail_correction = \
-            self.tk_var['tail_correction'].get()
-        self.node.kspace_method = self['kspace_method'].get()
-        self.node.kspace_accuracy = self['accuracy'].get()
-        self.node.kspace_smallq = self['smallq'].get()
-
-    def edit(self):
-        """Present a dialog for editing the input for the LAMMPS initialization
-        """
-
-        if self.dialog is None:
-            self.create_dialog()
-            self.kspace_method_cb()
-
-        self.dialog.activate(geometry='centerscreenfirst')
+        self['periodic'].grid(row=1, column=0, sticky=tk.EW, pady=10)
+        self.kspace_method_cb()
 
     def kspace_method_cb(self, event=None):
         """Grid the widgets into the dialog, depending on the current values
@@ -185,26 +142,22 @@ class TkInitialization(seamm.TkNode):
         """
 
         # Remove any widgets previously packed
-        for slave in self['pframe'].grid_slaves():
+        for slave in self['periodic'].grid_slaves():
             slave.grid_forget()
 
         row = 0
-        self['kspace_method_label'].grid(row=row, column=0, sticky=tk.E)
-        self['kspace_method'].grid(row=row, column=1, sticky=tk.W)
+        self['kspace_method'].grid(row=row, column=0, sticky=tk.W)
         row += 1
 
         method = self['kspace_method'].get()
         if method != 'none':
-            self['accuracy_label'].grid(row=row, column=0, sticky=tk.E)
-            self['accuracy'].grid(row=row, column=1, sticky=tk.W)
+            self['kspace_accuracy'].grid(row=row, column=0, sticky=tk.W)
             row += 1
 
             if 'few charged' in method or method[0] == '$':
-                self['smallq_label'].grid(row=row, column=0, sticky=tk.E)
-                self['smallq'].grid(row=row, column=1, sticky=tk.W)
+                self['kspace_smallq'].grid(row=row, column=0, sticky=tk.W)
                 row += 1
 
         if method[0] == '$' or 'dispersion' not in method:
-            self['tail_correction_label'].grid(row=row, column=0, sticky=tk.E)
-            self['tail_correction'].grid(row=row, column=1, sticky=tk.W)
+            self['tail_correction'].grid(row=row, column=0, sticky=tk.W)
             row += 1
