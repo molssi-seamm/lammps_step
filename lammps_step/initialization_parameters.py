@@ -61,7 +61,7 @@ class InitializationParameters(seamm.Parameters):
             "help_text": ("The cutoff for the charge on an atom to "
                           "be considered not zero.")
         },
-        "charge_atom_fraction_cutoff": {
+        "charged_atom_fraction_cutoff": {
             "default": 0.1,
             "kind": "float",
             "default_units": "",
