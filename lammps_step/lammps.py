@@ -24,6 +24,7 @@ import statsmodels.api
 import statsmodels.tools
 from statsmodels.graphics.tsaplots import plot_acf
 import sys
+import warnings
 
 import matplotlib
 matplotlib.use('pdf')
@@ -1102,10 +1103,10 @@ class LAMMPS(seamm.Node):
         )
 
         printer.normal(
-            '               Property           Value       stderr  tau   '
-            'ineff\n'
-            '          --------------------   ---------   ------- ------ '
-            '------'
+            '               Property           Value       stderr    tau   '
+            ' ineff\n'
+            '          --------------------   ---------   ------- -------- '
+            ' ------'
         )
         correlation = {}
         summary_file = os.path.splitext(filename)[0] + '.summary'
@@ -1134,22 +1135,37 @@ class LAMMPS(seamm.Node):
                 fit = model.fit()
 
                 results[column] = fit.params['const']
-                results['{},stderr'.format(column)] = fit.bse['const']
+
+                # Convert warnings to errors, for statsmodels.
+                with warnings.catch_warnings():
+                    warnings.filterwarnings('error')
+                    try:
+                        bse = fit.bse['const']
+                    except Exception:
+                        bse = float('Inf')
+                    results['{},stderr'.format(column)] = bse
 
                 fd.write(
                     'Summary of statistics for {} n_step = {}\n'.format(
                         column, n_step
                     )
                 )
-                fd.write('{}\n\n'.format(fit.summary()))
+
+                # Convert warnings to errors, for statsmodels.
+                with warnings.catch_warnings():
+                    warnings.filterwarnings('error')
+                    try:
+                        fd.write('{}\n\n'.format(fit.summary()))
+                    except Exception as e:
+                        fd.write('{}\n\n'.format(str(e)))
 
                 printer.normal(
                     __(
                         '{column:>23s} = {value:9.3f} ± {stderr:7.3f}'
-                        '{tau:6.1f} {inefficiency:6.1f}',
+                        ' {tau:8.1f} {inefficiency:7.1f}',
                         column=column,
                         value=fit.params['const'],
-                        stderr=fit.bse['const'],
+                        stderr=bse,
                         **result,
                         indent=7 * ' ',
                         wrap=False,
@@ -1180,35 +1196,37 @@ class LAMMPS(seamm.Node):
                 n_step = int(round(inefficiency))
                 n_c = correlation[column]['n_c']
 
-                x = data.index[::n_step]
-                y = data[column][::n_step]
-
-                figure = pyplot.figure(figsize=(7, 9.5))
-                figure.subplots_adjust(hspace=0.4, wspace=0.4)
-                figure.suptitle('Analysis of ' + column)
-                ax1 = figure.add_subplot(
-                    211,
-                    title='Trajectory',
-                    xlabel='time (fs)',
-                    ylabel=LAMMPS.display_units[column]
-                )
-                ax1.plot(x, y)
-
-                ax2 = figure.add_subplot(212)
                 lags = 3 * n_c
                 if lags > len(data) / 2:
                     lags = int(len(data) / 2)
-                plot_acf(
-                    data[column],
-                    ax=ax2,
-                    lags=lags,
-                    use_vlines=False,
-                    linestyle='-',
-                    marker=""
-                )
 
-                pdf.savefig(figure)
-                pyplot.close()
+                if lags > 1:
+                    x = data.index[::n_step]
+                    y = data[column][::n_step]
+
+                    figure = pyplot.figure(figsize=(7, 9.5))
+                    figure.subplots_adjust(hspace=0.4, wspace=0.4)
+                    figure.suptitle('Analysis of ' + column)
+                    ax1 = figure.add_subplot(
+                        211,
+                        title='Trajectory',
+                        xlabel='time (fs)',
+                        ylabel=LAMMPS.display_units[column]
+                    )
+                    ax1.plot(x, y)
+
+                    ax2 = figure.add_subplot(212)
+                    plot_acf(
+                        data[column],
+                        ax=ax2,
+                        lags=lags,
+                        use_vlines=False,
+                        linestyle='-',
+                        marker=""
+                    )
+
+                    pdf.savefig(figure)
+                    pyplot.close()
 
             d = pdf.infodict()
             d['Title'] = 'LAMMPS Trajectory Analysis'
