@@ -382,7 +382,7 @@ class NPT(lammps_step.NVT):
         )
         # instantaneous output written for averaging
         if P['sampling'] == 'none':
-            self.decription.append(
+            self.description.append(
                 __(
                     "The run will be {nsteps:n} steps of dynamics.",
                     nsteps=nsteps,

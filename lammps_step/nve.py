@@ -124,7 +124,7 @@ class NVE(lammps_step.Energy):
         )
         # instantaneous output written for averaging
         if P['sampling'] == 'none':
-            self.decription.append(
+            self.description.append(
                 __(
                     "The run will be {nsteps:n} steps of dynamics.",
                     nsteps=nsteps,
