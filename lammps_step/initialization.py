@@ -290,7 +290,9 @@ class Initialization(seamm.Node):
                     )
                     if fraction_charged_atoms < \
                        P['charged_atom_fraction_cutoff']:
-                        kspace_style = 'msm/cg {kspace_accuracy} {smallq}'
+                        kspace_style = (
+                            'msm/cg {kspace_accuracy} {kspace_smallq}'
+                        )
                         string += (
                             ' The MSM method will be used to handle '
                             'the longer range coulombic interactions, using '
@@ -326,19 +328,9 @@ class Initialization(seamm.Node):
                 )
                 if kspace_style != '':
                     lines.append(
-                        'kspace_style        ' + kspace_style.format(
-                            accuracy=P['accuracy'], smallq=P['kspace_smallq']
-                        )
+                        'kspace_style        ' + kspace_style.format(**P)
                     )
-            self.description.append(
-                __(
-                    string,
-                    indent=7 * ' ',
-                    accuracy=float(P['kspace_accuracy']),
-                    smallq=float(P['kspace_smallq']),
-                    cutoff=P['cutoff']
-                )
-            )
+            self.description.append(__(string, indent=7 * ' ', **P))
         else:
             if periodicity == 3:
                 kspace_style = ''
@@ -349,7 +341,7 @@ class Initialization(seamm.Node):
                     pair_style = pair_style_base + '/coul/long'
                     kspace_style = (
                         lammps_step.kspace_methods[P['kspace_method']].format(
-                            accuracy=P['accuracy'], smallq=P['kspace_smallq']
+                            **P
                         )
                     )
                 lines.append(
@@ -380,7 +372,7 @@ class Initialization(seamm.Node):
                 if 'msm' in lammps_step.kspace_methods[P['kspace_method']]:
                     kspace_style = (
                         lammps_step.kspace_methods[P['kspace_method']].format(
-                            accuracy=P['accuracy'], smallq=P['kspace_smallq']
+                            **P
                         )
                     )
                     lines.append('kspace_style        ' + kspace_style)
