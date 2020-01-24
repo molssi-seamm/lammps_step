@@ -1,6 +1,8 @@
 name: test
+
 channels:
   - rdkit
+
 dependencies:
     # Base depends
   - python
@@ -12,8 +14,11 @@ dependencies:
   - statsmodels
 
     # Testing
+  - coverage
+  - flake8
   - pytest
   - pytest-cov
+  - pytest-runner
 
   # Pip-only installs
   - pip:
@@ -26,3 +31,5 @@ dependencies:
     - packaging
     - pprint
 
+      # Testing
+    - yapf
