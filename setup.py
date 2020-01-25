@@ -29,7 +29,7 @@ setup(
     name='lammps_step',
     author="Paul Saxe",
     author_email='psaxe@molssi.org',
-    description=short_description[1:],
+    description=short_description[1],
     long_description=readme + '\n\n' + history,
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
