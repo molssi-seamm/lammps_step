@@ -31,6 +31,7 @@ setup(
     author_email='psaxe@molssi.org',
     description=short_description[1],
     long_description=readme + '\n\n' + history,
+    long_description_content_type='text/x-rst',
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     license='BSD-3-Clause',
