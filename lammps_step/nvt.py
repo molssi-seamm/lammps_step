@@ -356,16 +356,16 @@ class NVT(lammps_step.NVE):
         time = P['time'].to('fs').magnitude
         nsteps = round(time / timestep)
 
+        T0 = P['T0'].to('K').magnitude
+        T1 = P['T1'].to('K').magnitude
+        Tdamp = P['Tdamp'].to('fs').magnitude
+
         thermo_properties = (
             'time temp press etotal ke pe ebond '
             'eangle edihed eimp evdwl etail ecoul elong'
         )
         properties = 'v_time v_temp v_press v_etotal v_ke v_pe v_epair'
-        titles = 'tstep t T P Etot Eke Epe Epair'
-
-        T0 = P['T0'].to('K').magnitude
-        T1 = P['T1'].to('K').magnitude
-        Tdamp = P['Tdamp'].to('fs').magnitude
+        title2 = 'tstep t T P Etot Eke Epe Epair'
 
         lines = []
         lines.append('')
@@ -449,9 +449,11 @@ class NVT(lammps_step.NVE):
         nfreq = nevery * nrepeat
         nfixes += 1
         lines.append(
-            'fix                 {} '.format(nfixes) + 'all ave/time ' +
-            "{} {} {} {} off 2 title2 '{}' file summary_nvt_{}.txt".format(
-                nevery, nrepeat, nfreq, properties, titles,
+            (
+                "fix                 {} all ave/time {} {} {} {} off 2 "
+                "title2 '{}' file summary_nvt_{}.txt"
+            ).format(
+                nfixes, nevery, nrepeat, nfreq, properties, title2,
                 '_'.join(str(e) for e in self._id)
             )
         )
@@ -471,11 +473,23 @@ class NVT(lammps_step.NVE):
             nrepeat = 1
             nfreq = nevery * nrepeat
             nfixes += 1
+
+            if T0 == T1:
+                title1 = (
+                    '!MolSSI trajectory 1.0 LAMMPS, NVT {} steps of {} fs, '
+                    'T={} K'
+                ).format(int(nsteps / nevery), timestep * nevery, T0)
+            else:
+                title1 = (
+                    '!MolSSI trajectory 1.0 LAMMPS, NVT {} steps of {} fs, '
+                    'T={}-{} K'
+                ).format(nsteps, timestep, T0, T1)
             lines.append(
-                'fix                 {} '.format(nfixes) + 'all ave/time ' +
-                "{} {} {} {} off 2 title2 '{}' file trajectory_nvt_{}.txt"
-                .format(
-                    nevery, nrepeat, nfreq, properties, titles,
+                (
+                    "fix                 {} all ave/time {} {} {} {} off 2"
+                    " title1 '{}' title2 '{}' file trajectory_nvt_{}.seamm_trj"
+                ).format(
+                    nfixes, nevery, nrepeat, nfreq, properties, title1, title2,
                     '_'.join(str(e) for e in self._id)
                 )
             )

@@ -5,7 +5,6 @@
 import argparse
 import configargparse
 import cpuinfo
-import datetime
 import glob
 import lammps_step
 import logging
@@ -22,14 +21,8 @@ import pprint
 import statsmodels.stats.stattools
 import statsmodels.api
 import statsmodels.tools
-from statsmodels.graphics.tsaplots import plot_acf
 import sys
 import warnings
-
-import matplotlib
-matplotlib.use('pdf')
-import matplotlib.pyplot as pyplot  # noqa: E402
-from matplotlib.backends.backend_pdf import PdfPages  # noqa: E402
 
 logger = logging.getLogger(__name__)
 job = printing.getPrinter()
@@ -461,7 +454,7 @@ class LAMMPS(seamm.Node):
             with open(os.path.join(self.directory, filename), mode='w') as fd:
                 fd.write(files[filename])
         local = seamm.ExecLocal()
-        return_files = ['summary_*.txt', 'trajectory_*.txt']
+        return_files = ['summary_*.txt', 'trajectory_*.seamm_trj']
         if use_mpi:
             cmd = [mpiexec, '-np', str(np), o.lammps_mpi, '-in', 'molssi.dat']
         else:
@@ -1067,7 +1060,9 @@ class LAMMPS(seamm.Node):
             id = '_'.join(str(e) for e in node._id)
 
             filenames = glob.glob(
-                os.path.join(self.directory, '*trajectory*' + id + '.txt')
+                os.path.join(
+                    self.directory, '*trajectory*' + id + '.seamm_trj'
+                )
             )
 
             for filename in filenames:
@@ -1091,7 +1086,7 @@ class LAMMPS(seamm.Node):
                 fd,
                 sep=' ',
                 header=0,
-                comment='#',
+                comment='!',
                 index_col=1,
             )
 
@@ -1189,51 +1184,54 @@ class LAMMPS(seamm.Node):
 
         # Create graphs of the property
 
-        pdf_file = os.path.splitext(filename)[0] + '.pdf'
-        with PdfPages(pdf_file) as pdf:
-            for column in data.columns[1:]:
-                inefficiency = correlation[column]['inefficiency']
-                n_step = int(round(inefficiency))
-                n_c = correlation[column]['n_c']
+        self.initialize_graphs()
 
-                lags = 3 * n_c
-                if lags > len(data) / 2:
-                    lags = int(len(data) / 2)
+        for column in data.columns[1:]:
+            inefficiency = correlation[column]['inefficiency']
+            n_step = int(round(inefficiency))
+            n_c = correlation[column]['n_c']
 
-                if lags > 1:
-                    x = data.index[::n_step]
-                    y = data[column][::n_step]
+            lags = 3 * n_c
+            if lags > len(data) / 2:
+                lags = int(len(data) / 2)
 
-                    figure = pyplot.figure(figsize=(7, 9.5))
-                    figure.subplots_adjust(hspace=0.4, wspace=0.4)
-                    figure.suptitle('Analysis of ' + column)
-                    ax1 = figure.add_subplot(
-                        211,
-                        title='Trajectory',
-                        xlabel='time (fs)',
-                        ylabel=LAMMPS.display_units[column]
-                    )
-                    ax1.plot(x, y)
+            if lags > 1:
+                x = data.index[::n_step]
+                y = data[column][::n_step]
 
-                    ax2 = figure.add_subplot(212)
-                    plot_acf(
-                        data[column],
-                        ax=ax2,
-                        lags=lags,
-                        use_vlines=False,
-                        linestyle='-',
-                        marker=""
-                    )
+                t_units = 'fs'
+                if x[-1] >= 10000:
+                    x *= 0.001
+                    t_units = 'ps'
 
-                    pdf.savefig(figure)
-                    pyplot.close()
+                self.add_graph(
+                    column,
+                    template='line.graph_template',
+                    context={
+                        'title':
+                            column,
+                        'x':
+                            list(x),
+                        'xlabel':
+                            'Time (' + t_units + ')',
+                        'y':
+                            list(y),
+                        'ylabel':
+                            column + '(' + LAMMPS.display_units[column] + ')'
+                    },
+                    description=column + ' over entire run'
+                )
 
-            d = pdf.infodict()
-            d['Title'] = 'LAMMPS Trajectory Analysis'
-            d['Author'] = 'MolSSI Framework'
-            d['Subject'] = 'Analysis of LAMMPS trajectories'
-            d['Keywords'] = 'LAMMPS dynamics'
-            d['CreationDate'] = datetime.datetime.today()
-            d['ModDate'] = datetime.datetime.today()
+                # plot_acf(
+                #     data[column],
+                #     ax=ax2,
+                #     lags=lags,
+                #     use_vlines=False,
+                #     linestyle='-',
+                #     marker=""
+                # )
+
+        graph_file = os.path.splitext(filename)[0] + '.graph'
+        self.write_graphs(graph_file)
 
         return results

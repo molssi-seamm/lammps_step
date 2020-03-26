@@ -96,7 +96,7 @@ class NVE(lammps_step.Energy):
             'eangle edihed eimp evdwl etail ecoul elong'
         )
         properties = 'v_time v_temp v_press v_etotal v_ke v_pe v_emol v_epair'
-        titles = 'tstep t T P Etot Eke Epe Emol Epair'
+        title2 = 'tstep t T P Etot Eke Epe Emol Epair'
 
         lines = []
         nfixes = 0
@@ -138,11 +138,17 @@ class NVE(lammps_step.Energy):
             nrepeat = 1
             nfreq = nevery * nrepeat
             nfixes += 1
+            title1 = (
+                '!MolSSI trajectory 1.0 LAMMPS, NVE {} steps of {} fs'.format(
+                    int(nsteps / nevery), timestep * nevery
+                )
+            )
             lines.append(
-                'fix                 {} '.format(nfixes) + 'all ave/time ' +
-                "{} {} {} {} off 2 title2 '{}' file trajectory_nve_{}.txt"
-                .format(
-                    nevery, nrepeat, nfreq, properties, titles,
+                (
+                    "fix                 {} all ave/time {} {} {} {} off 2 "
+                    "title1 '{}' title2 '{}' file trajectory_nve_{}.seamm_trj"
+                ).format(
+                    nfixes, nevery, nrepeat, nfreq, properties, title1, title2,
                     '_'.join(str(e) for e in self._id)
                 )
             )

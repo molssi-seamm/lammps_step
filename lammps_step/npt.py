@@ -256,16 +256,6 @@ class NPT(lammps_step.NVT):
         time = P['time'].to('fs').magnitude
         nsteps = round(time / timestep)
 
-        thermo_properties = (
-            'time temp press etotal ke pe ebond '
-            'eangle edihed eimp evdwl etail ecoul elong'
-        )
-        properties = (
-            'v_time v_temp v_press v_density v_cella v_cellb '
-            'v_cellc v_etotal v_ke v_pe v_epair'
-        )
-        titles = 'tstep t T P density a b c Etot Eke Epe Epair'
-
         T0 = P['T0'].to('K').magnitude
         T1 = P['T1'].to('K').magnitude
         Tdamp = P['Tdamp'].to('fs').magnitude
@@ -276,6 +266,16 @@ class NPT(lammps_step.NVT):
 
         # Work out the pressure/stress part of the command
         ptext = self.get_pressure_text(P, keep_orthorhombic)
+
+        thermo_properties = (
+            'time temp press etotal ke pe ebond '
+            'eangle edihed eimp evdwl etail ecoul elong'
+        )
+        properties = (
+            'v_time v_temp v_press v_density v_cella v_cellb '
+            'v_cellc v_etotal v_ke v_pe v_epair'
+        )
+        title2 = 'tstep t T P density a b c Etot Eke Epe Epair'
 
         # and build the LAMMPS script
         lines = []
@@ -376,7 +376,7 @@ class NPT(lammps_step.NVT):
         lines.append(
             'fix                 {} '.format(nfixes) + 'all ave/time ' +
             "{} {} {} {} off 2 title2 '{}' file summary_npt_{}.txt".format(
-                nevery, nrepeat, nfreq, properties, titles,
+                nevery, nrepeat, nfreq, properties, title2,
                 '_'.join(str(e) for e in self._id)
             )
         )
@@ -396,11 +396,22 @@ class NPT(lammps_step.NVT):
             nrepeat = 1
             nfreq = nevery * nrepeat
             nfixes += 1
+            if T0 == T1:
+                title1 = (
+                    '!MolSSI trajectory 1.0 LAMMPS, NPT {} steps of {} fs, '
+                    'T={} K'
+                ).format(int(nsteps / nevery), timestep * nevery, T0)
+            else:
+                title1 = (
+                    '!MolSSI trajectory 1.0 LAMMPS, NPT {} steps of {} fs, '
+                    'T={}-{} K'
+                ).format(int(nsteps / nevery), timestep * nevery, T0, T1)
             lines.append(
-                'fix                 {} '.format(nfixes) + 'all ave/time ' +
-                "{} {} {} {} off 2 title2 '{}' file trajectory_npt_{}.txt"
-                .format(
-                    nevery, nrepeat, nfreq, properties, titles,
+                (
+                    "fix                 {} all ave/time {} {} {} {} off 2 "
+                    "title1 '{}' title2 '{}' file trajectory_npt_{}.seamm_trj"
+                ).format(
+                    nfixes, nevery, nrepeat, nfreq, properties, title1, title2,
                     '_'.join(str(e) for e in self._id)
                 )
             )
