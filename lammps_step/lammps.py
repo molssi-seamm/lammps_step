@@ -117,6 +117,20 @@ class LAMMPS(seamm.Node):
         "Emol": "kcal/mol",
         "Epair": "kcal/mol",
     }
+    display_title = {
+        "T": "Temperature",
+        "P": "Pressure",
+        "t": "Time",
+        "density": "Density",
+        "a": "a lattice parameter",
+        "b": "b lattice parameter",
+        "c": "c lattice parameter",
+        "Etot": "Total Energy",
+        "Eke": "Kinetic Energy",
+        "Epe": "Potential Energy",
+        "Emol": "Molecular Energy, Valence Terms",
+        "Epair": "Pair (Nonbond) Energy",
+    }
 
     def __init__(
         self,
@@ -219,6 +233,11 @@ class LAMMPS(seamm.Node):
             type=int,
             default='1000',
             help='the optimal number of atoms per core for LAMMPS'
+        )
+        self.parser.add_argument(
+            '--lammps-html',
+            action='store_true',
+            help='whether to write out html files for graphs, etc.'
         )
 
         self.options, self.unknown = self.parser.parse_known_args()
@@ -1078,6 +1097,8 @@ class LAMMPS(seamm.Node):
         """
         import seamm_util.md_statistics as md_statistics
 
+        write_html = 'lammps_html' in self.options
+        rootname = os.path.splitext(filename)[0]
         results = {}
 
         # Process the trajectory data
@@ -1104,7 +1125,7 @@ class LAMMPS(seamm.Node):
             ' ------'
         )
         correlation = {}
-        summary_file = os.path.splitext(filename)[0] + '.summary'
+        summary_file = rootname + '.summary'
         with open(summary_file, 'w') as fd:
             x = data.index
             for column in data.columns[1:]:
@@ -1112,17 +1133,17 @@ class LAMMPS(seamm.Node):
 
                 # Find the autocorrelation time...
                 t_delta = x[1] - x[0]
-                result = md_statistics.analyze_autocorrelation(
+                acf = md_statistics.analyze_autocorrelation(
                     y, method='zr', nlags=16, interval=t_delta
                 )
-                correlation[column] = result
+                correlation[column] = acf
 
-                for key, value in result.items():
+                for key, value in acf.items():
                     if 'acf' not in key and 'confidence' not in key:
                         results['{},{}'.format(column, key)] = value
 
                 # And get the statistics accounting for the correlation
-                n_step = int(round(result['inefficiency']))
+                n_step = int(round(acf['inefficiency']))
 
                 x0 = statsmodels.tools.add_constant(data.index[::n_step])
                 y0 = data[column][::n_step]
@@ -1161,7 +1182,7 @@ class LAMMPS(seamm.Node):
                         column=column,
                         value=fit.params['const'],
                         stderr=bse,
-                        **result,
+                        **acf,
                         indent=7 * ' ',
                         wrap=False,
                         dedent=False
@@ -1184,54 +1205,202 @@ class LAMMPS(seamm.Node):
 
         # Create graphs of the property
 
-        self.initialize_graphs()
+        # Work out the time step, rather than give the whole vector
+        t = data.index
+        dt_raw = t[1] - t[0]
+        dt = dt_raw
+        t_units = 'fs'
+        len_trj = (len(t) - 1) * dt_raw
+        if len_trj >= 10000000000:
+            t_units = 'ms'
+            dt /= 1000000000
+        elif len_trj >= 10000000:
+            t_units = 'ns'
+            dt /= 1000000
+        elif len_trj >= 10000:
+            t_units = 'ps'
+            dt /= 1000
+        t_max = (len(t) - 1) * dt
 
         for column in data.columns[1:]:
-            inefficiency = correlation[column]['inefficiency']
+            figure = self.create_figure(
+                module_path=(self.__module__.split('.')[0], 'seamm'),
+                template='line.graph_template',
+                title=LAMMPS.display_title[column]
+            )
+
+            # The autocorrelation function
+            plot_acf = figure.add_plot('acf')
+
+            acf = correlation[column]
+
+            inefficiency = acf['inefficiency']
             n_step = int(round(inefficiency))
-            n_c = correlation[column]['n_c']
+            n_c = acf['n_c']
 
-            lags = 3 * n_c
-            if lags > len(data) / 2:
-                lags = int(len(data) / 2)
+            len_acf = 3 * n_c
+            if len_acf < 19:
+                len_acf = 19
+            if len_acf > len(y):
+                len_acf = len(y)
 
-            if lags > 1:
-                x = data.index[::n_step]
-                y = data[column][::n_step]
+            y = [1.0] + list(acf['acf'])[:len_acf]
 
-                t_units = 'fs'
-                if x[-1] >= 10000:
-                    x *= 0.001
-                    t_units = 'ps'
+            dt_acf = dt_raw
+            t_acf_units = 'fs'
+            len_acf = (len(y) - 1) * dt_raw
+            if len_acf >= 2000000000:
+                t_acf_units = 'ms'
+                dt_acf /= 1000000000
+            elif len_acf >= 2000000:
+                t_acf_units = 'ns'
+                dt_acf /= 1000000
+            elif len_acf >= 2000:
+                t_acf_units = 'ps'
+                dt_acf /= 1000
 
-                self.add_graph(
-                    column,
-                    template='line.graph_template',
-                    context={
-                        'title':
-                            column,
-                        'x':
-                            list(x),
-                        'xlabel':
-                            'Time (' + t_units + ')',
-                        'y':
-                            list(y),
-                        'ylabel':
-                            column + '(' + LAMMPS.display_units[column] + ')'
-                    },
-                    description=column + ' over entire run'
-                )
+            x_acf_axis = plot_acf.add_axis(
+                'x', label='Time ({})'.format(t_acf_units)
+            )
+            y_acf_axis = plot_acf.add_axis('y', label='acf', anchor=x_acf_axis)
+            x_acf_axis.anchor = y_acf_axis
 
-                # plot_acf(
-                #     data[column],
-                #     ax=ax2,
-                #     lags=lags,
-                #     use_vlines=False,
-                #     linestyle='-',
-                #     marker=""
-                # )
+            # Put the fit to the autocorrelation time in first so the
+            # subsequent trajectory trce sits in top
+            tau = acf['tau']
+            t = 0.0
+            fit = []
+            for step in range(len(y)):
+                fit.append(math.exp(-t / tau))
+                t += dt_raw
 
-        graph_file = os.path.splitext(filename)[0] + '.graph'
-        self.write_graphs(graph_file)
+            plot_acf.add_trace(
+                x_axis=x_acf_axis,
+                y_axis=y_acf_axis,
+                name='fit',
+                x0=0,
+                dx=dt_acf,
+                xlabel='t',
+                xunits=t_acf_units,
+                y=fit,
+                ylabel='fit',
+                yunits='',
+                color='gray'
+            )
+
+            # the partly transparent error band
+            yplus = [1]
+            yminus = [1]
+            t_acf = [0.0]
+            tmp = 0.0
+            for lower, upper in acf['confidence_interval']:
+                tmp += dt_acf
+                t_acf.append(tmp)
+                yplus.append(upper)
+                yminus.append(lower)
+
+            plot_acf.add_trace(
+                x_axis=x_acf_axis,
+                y_axis=y_acf_axis,
+                name='stderr',
+                x=t_acf + t_acf[::-1],
+                xlabel='t',
+                xunits=t_acf_units,
+                y=yplus + yminus[::-1],
+                ylabel='stderr',
+                yunits=LAMMPS.display_units[column],
+                showlegend='false',
+                color='rgba(211,211,211,0.5)',
+                fill='toself',
+            )
+
+            # And the acf plot last
+            plot_acf.add_trace(
+                x_axis=x_acf_axis,
+                y_axis=y_acf_axis,
+                name='acf',
+                x0=0,
+                dx=dt_acf,
+                xlabel='t',
+                xunits=t_acf_units,
+                y=y,
+                ylabel='acf',
+                yunits='',
+                color='red'
+            )
+
+            # The property data over the trajectory
+            y = list(data[column])
+
+            plot = figure.add_plot('trj')
+
+            ylabel = LAMMPS.display_title[column]
+            if LAMMPS.display_units[column] != '':
+                ylabel += ' ({})'.format(LAMMPS.display_units[column])
+
+            x_axis = plot.add_axis('x', label='Time ({})'.format(t_units))
+            y_axis = plot.add_axis('y', label=ylabel, anchor=x_axis)
+            x_axis.anchor = y_axis
+
+            # Add the trajectory, error band and median value in that order so
+            # stack in a nice order.
+
+            value = results[column]
+            stderr = results[column + ',stderr']
+
+            # Add the trajectory
+            plot.add_trace(
+                x_axis=x_axis,
+                y_axis=y_axis,
+                name=column,
+                x0=0,
+                dx=dt,
+                xlabel='t',
+                xunits=t_units,
+                y=list(y),
+                ylabel=column,
+                yunits=LAMMPS.display_units[column],
+                color='#4dbd74'
+            )
+
+            # the partly transparent error band
+            plot.add_trace(
+                x_axis=x_axis,
+                y_axis=y_axis,
+                name='stderr',
+                x=[0, t_max, t_max, 0],
+                xlabel='t',
+                xunits=t_units,
+                y=[
+                    value + stderr, value + stderr, value - stderr,
+                    value - stderr
+                ],
+                ylabel='stderr',
+                yunits=LAMMPS.display_units[column],
+                showlegend='false',
+                color='rgba(211,211,211,0.5)',
+                fill='toself',
+            )
+
+            # and finally the median value so it is on top
+            plot.add_trace(
+                x_axis=x_axis,
+                y_axis=y_axis,
+                name='average',
+                x=[0, t_max],
+                xlabel='t',
+                xunits=t_units,
+                y=[value, value],
+                ylabel='average',
+                yunits=LAMMPS.display_units[column],
+                color='black'
+            )
+
+            figure.grid_plots('trj - acf')
+            figure.dump('{}_{}.graph'.format(rootname, column))
+
+            if write_html:
+                figure.template = 'line.html_template'
+                figure.dump('{}_{}.html'.format(rootname, column))
 
         return results
