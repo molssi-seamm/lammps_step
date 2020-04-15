@@ -24,12 +24,11 @@ dependencies:
   - pip:
     - codecov
     - pillow
-    - seamm-ff-util
-    - seamm_util
-    - seamm
-    - seamm-widgets
+    - seamm-ff-util>=0.9
+    - seamm_util>=0.9
+    - seamm>=0.9
+    - seamm-widgets>=0.9
     - packaging
-    - pprint
 
       # Testing
     - yapf
