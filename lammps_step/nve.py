@@ -29,27 +29,6 @@ class NVE(lammps_step.Energy):
 
         self.parameters = lammps_step.NVE_Parameters()
 
-    @property
-    def header(self):
-        """A printable header for this section of output"""
-        return (
-            'Step {}: {}'.format(
-                '.'.join(str(e) for e in self._id), self.title
-            )
-        )
-
-    @property
-    def version(self):
-        """The semantic version of this module.
-        """
-        return lammps_step.__version__
-
-    @property
-    def git_revision(self):
-        """The git version of this module.
-        """
-        return lammps_step.__git_revision__
-
     def description_text(self):
         """Create the text description of what this step will do.
         """
