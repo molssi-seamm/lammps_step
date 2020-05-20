@@ -2,10 +2,12 @@
 
 """Minimization step in LAMMPS"""
 
+import logging
+
 from seamm import data
 from seamm_util import ureg, Q_, units_class  # noqa: F401
+from seamm_util.printing import FormattedText as __
 import lammps_step
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +37,32 @@ class Minimization(lammps_step.Energy):
         self.maxevals = 30000
         self.maxevals_variable = ''
 
+    def description_text(self, P=None):
+        """Create the text description of what this step will do.
+        """
+
+        if not P:
+            P = self.parameters.values_to_dict()
+
+        text = "Structure optimization calculation."
+
+        return self.header + '\n' + __(text, indent=4 * ' ').__str__()
+
     def get_input(self):
         """Get the input for a minimization in LAMMPS"""
+
+        P = self.parameters.values_to_dict()
+
+        # Have to fix formatting for printing...
+        PP = dict(P)
+        for key in PP:
+            if isinstance(PP[key], units_class):
+                PP[key] = '{:~P}'.format(PP[key])
+
+        self.description = []
+        self.description.append(
+            __(self.description_text(PP), **PP, indent=3 * ' ')
+        )
 
         n_atoms = len(data.structure['atoms']['elements'])
         nDOF = 3 * n_atoms
