@@ -41,7 +41,7 @@ class NVE(lammps_step.Energy):
 
         return text
 
-    def get_input(self):
+    def get_input(self, extras=None):
         """Get the input for an NVE dynamics run in LAMMPS"""
 
         self.description = []
@@ -143,9 +143,16 @@ class NVE(lammps_step.Energy):
                 )
             )
 
+        if extras is not None and 'shake' in extras:
+            nfixes += 1
+            lines.append(extras['shake'].format(nfixes))
+
+        lines.append('')
         lines.append('run                 {}'.format(nsteps))
         lines.append('')
+
         for fix in range(1, nfixes + 1):
             lines.append('unfix               {}'.format(fix))
+        lines.append('')
 
         return lines
