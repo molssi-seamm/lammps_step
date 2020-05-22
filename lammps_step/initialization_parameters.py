@@ -116,7 +116,29 @@ class InitializationParameters(seamm.Parameters):
             "description": ("Shift nonbonded interactions to zero at the "
                             "cutoff"),
             "help_text": ("Shift the nonbonded interactions to zero at the "
-                          "cutoff distance toavoid energy jumps.")
+                          "cutoff distance to avoid energy jumps.")
+        },
+        "rigid_waters": {
+            "default": "yes",
+            "kind": "boolean",
+            "format_string": "s",
+            "enumeration": (
+                "no",
+                "yes"
+            ),
+            "description": ("Keep the internal geometry of water molecules "
+                            "fixed"),
+            "help_text": ("Use shake or rattle, as appropriate, to keep "
+                          "the water molecules rigid.")
+        },
+        "fix_XH_bond_lengths": {
+            "default": "none",
+            "kind": "enumeration",
+            "default_units": "",
+            "enumeration": ('none', 'all', 'CH'),
+            "format_string": "",
+            "description": "Fix X-H bond lengths",
+            "help_text": "Fix the bond lengths for H bonded to X."
         },
     }
 

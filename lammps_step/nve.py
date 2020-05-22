@@ -29,27 +29,6 @@ class NVE(lammps_step.Energy):
 
         self.parameters = lammps_step.NVE_Parameters()
 
-    @property
-    def header(self):
-        """A printable header for this section of output"""
-        return (
-            'Step {}: {}'.format(
-                '.'.join(str(e) for e in self._id), self.title
-            )
-        )
-
-    @property
-    def version(self):
-        """The semantic version of this module.
-        """
-        return lammps_step.__version__
-
-    @property
-    def git_revision(self):
-        """The git version of this module.
-        """
-        return lammps_step.__git_revision__
-
     def description_text(self):
         """Create the text description of what this step will do.
         """
@@ -62,7 +41,7 @@ class NVE(lammps_step.Energy):
 
         return text
 
-    def get_input(self):
+    def get_input(self, extras=None):
         """Get the input for an NVE dynamics run in LAMMPS"""
 
         self.description = []
@@ -164,9 +143,16 @@ class NVE(lammps_step.Energy):
                 )
             )
 
+        if extras is not None and 'shake' in extras:
+            nfixes += 1
+            lines.append(extras['shake'].format(nfixes))
+
+        lines.append('')
         lines.append('run                 {}'.format(nsteps))
         lines.append('')
+
         for fix in range(1, nfixes + 1):
             lines.append('unfix               {}'.format(fix))
+        lines.append('')
 
         return lines

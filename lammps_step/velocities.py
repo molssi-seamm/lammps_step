@@ -95,7 +95,7 @@ class Velocities(seamm.Node):
 
         return self.header + '\n' + __(text, **P, indent=4 * ' ').__str__()
 
-    def get_input(self):
+    def get_input(self, extras=None):
         """Get the input for setting the velocities in LAMMPS"""
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data

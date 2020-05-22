@@ -316,7 +316,7 @@ class NVT(lammps_step.NVE):
 
         return next_node
 
-    def get_input(self):
+    def get_input(self, extras=None):
         """Get the input for an NVT dynamics run in LAMMPS"""
 
         self.description = []
@@ -505,9 +505,16 @@ class NVT(lammps_step.NVE):
                 )
             )
 
+        if extras is not None and 'shake' in extras:
+            nfixes += 1
+            lines.append(extras['shake'].format(nfixes))
+
+        lines.append('')
         lines.append('run                 {}'.format(nsteps))
         lines.append('')
+
         for fix in range(1, nfixes + 1):
             lines.append('unfix               {}'.format(fix))
+        lines.append('')
 
         return lines

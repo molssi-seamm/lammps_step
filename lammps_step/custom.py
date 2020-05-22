@@ -21,7 +21,7 @@ class Custom(seamm.Node):
 
         self.text = '# Custom script for LAMMPS (replace this!)\n\n'
 
-    def get_input(self):
+    def get_input(self, extras=None):
         """Get the custom input for LAMMPS"""
 
         lines = []
