@@ -48,7 +48,7 @@ class Minimization(lammps_step.Energy):
 
         return self.header + '\n' + __(text, indent=4 * ' ').__str__()
 
-    def get_input(self):
+    def get_input(self, extras=None):
         """Get the input for a minimization in LAMMPS"""
 
         P = self.parameters.values_to_dict()
