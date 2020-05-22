@@ -102,7 +102,7 @@ class Initialization(seamm.Node):
 
         return self.header + '\n' + __(text, **P, indent=4 * ' ').__str__()
 
-    def get_input(self):
+    def get_input(self, extras=None):
         """Get the input for the initialization of LAMMPS"""
 
         self.description = []
@@ -199,30 +199,26 @@ class Initialization(seamm.Node):
             pprint.pprint(terms)
             raise RuntimeError("Cannot find nonbond term in forcefield!")
 
-        print('Non bond term is ' + nonbond_term)
         if nonbond_term == 'nonbond(9-6)':
             pair_style_base = 'lj/class2'
             mixing = 'sixthpower'
         elif nonbond_term == 'nonbond(12-6)':
             pair_style_base = 'lj/cut'
-
             # What type of mixing rule?
             modifiers = ff.ff['modifiers']['nonbond(12-6)']
             mixing = ''
             for section in modifiers:
-                print(section)
-                if 'combination' in modifiers[section]:
-                    print(modifiers[section]['combination'])
-                    if mixing == '':
-                        mixing = modifiers[section]['combination']
-                    if mixing != modifiers[section]['combination']:
-                        raise RuntimeError(
-                            'Conflicting combination rules in nonbond(12-6) '
-                            "section '" + section + "'"
-                        )
+                for item in modifiers[section]:
+                    if 'combination' in item:
+                        if mixing == '':
+                            mixing = item.split()[1]
+                        if mixing != item.split()[1]:
+                            raise RuntimeError(
+                                'Conflicting combination rules in '
+                                "nonbond(12-6) section '" + section + "'"
+                            )
             if mixing == "":
-                mixing = 'arithmetic'
-            print('LJ 12-6 potentials using "' + mixing + '" mixing rule')
+                mixing = 'geometric'
         else:
             raise RuntimeError(
                 "Can't handle nonbond term {} yet!".format(nonbond_term)
