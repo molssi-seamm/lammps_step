@@ -9,6 +9,7 @@ import glob
 import lammps_step
 import logging
 from math import sqrt, exp, degrees, radians, cos, acos
+# import numpy
 import seamm
 from seamm import data
 import seamm_util
@@ -19,11 +20,10 @@ import os
 import os.path
 import pandas
 import pprint
-import statsmodels.stats.stattools
-import statsmodels.api
-import statsmodels.tools
+import statsmodels.tsa.stattools as stattools
 import sys
-import warnings
+
+from pymbar import timeseries
 
 logger = logging.getLogger(__name__)
 job = printing.getPrinter()
@@ -1168,9 +1168,9 @@ class LAMMPS(seamm.Node):
     def analyze_trajectory(self, filename, sampling_rate=20):
         """Read a trajectory file and do the statistical analysis
         """
-        import seamm_util.md_statistics as md_statistics
-
-        write_html = 'lammps_html' in self.options
+        write_html = (
+            'lammps_html' in self.options and self.options.lammps_html
+        )
         rootname = os.path.splitext(filename)[0]
         results = {}
 
@@ -1192,111 +1192,126 @@ class LAMMPS(seamm.Node):
         )
 
         printer.normal(
-            '               Property           Value       stderr    tau   '
-            ' ineff\n'
-            '          --------------------   ---------   ------- -------- '
-            ' ------'
+            '                                             Std Error  '
+            'Time to\n'
+            '               Property           Value       of mean   '
+            'convergence     tau    inefficiency\n'
+            '          --------------------   ---------  ---------   '
+            '-----------  --------  ------------'
         )
-        correlation = {}
-        summary_file = rootname + '.summary'
-        with open(summary_file, 'w') as fd:
-            x = data.index
-            for column in data.columns[1:]:
-                y = data[column]
-
-                # Find the autocorrelation time...
-                t_delta = x[1] - x[0]
-                acf = md_statistics.analyze_autocorrelation(
-                    y, method='zr', nlags=16, interval=t_delta
-                )
-                correlation[column] = acf
-
-                for key, value in acf.items():
-                    if 'acf' not in key and 'confidence' not in key:
-                        results['{},{}'.format(column, key)] = value
-
-                # And get the statistics accounting for the correlation
-                n_step = int(round(acf['inefficiency']))
-
-                x0 = statsmodels.tools.add_constant(data.index[::n_step])
-                y0 = data[column][::n_step]
-                model = statsmodels.api.OLS(y0, x0)
-                fit = model.fit()
-
-                results[column] = fit.params['const']
-
-                # Convert warnings to errors, for statsmodels.
-                with warnings.catch_warnings():
-                    warnings.filterwarnings('error')
-                    try:
-                        bse = fit.bse['const']
-                    except Exception:
-                        bse = float('Inf')
-                    results['{},stderr'.format(column)] = bse
-
-                fd.write(
-                    'Summary of statistics for {} n_step = {}\n'.format(
-                        column, n_step
-                    )
-                )
-
-                # Convert warnings to errors, for statsmodels.
-                with warnings.catch_warnings():
-                    warnings.filterwarnings('error')
-                    try:
-                        fd.write('{}\n\n'.format(fit.summary()))
-                    except Exception as e:
-                        fd.write('{}\n\n'.format(str(e)))
-
-                printer.normal(
-                    __(
-                        '{column:>23s} = {value:9.3f} ± {stderr:7.3f}'
-                        ' {tau:8.1f} {inefficiency:7.1f}',
-                        column=column,
-                        value=fit.params['const'],
-                        stderr=bse,
-                        **acf,
-                        indent=7 * ' ',
-                        wrap=False,
-                        dedent=False
-                    )
-                )
-
-                if False:
-                    result = statsmodels.tsa.stattools.adfuller(y0)
-                    print(
-                        '\n\t   Testing Convergence with Augmented '
-                        'Dickey-Fuller method',
-                        file=fd
-                    )
-                    print('\tADF Statistic: %f' % result[0], file=fd)
-                    print('\tp-value: %f' % result[1], file=fd)
-                    print('\tCritical Values:', file=fd)
-                    for key, value in result[4].items():
-                        print('\t\t%2s: %.3f' % (key, value), file=fd)
-                    print('\n\n\n', file=fd)
-
-        # Create graphs of the property
 
         # Work out the time step, rather than give the whole vector
         t = data.index
-        dt_raw = t[1] - t[0]
-        dt = dt_raw
+        dt_fs = t[1] - t[0]
+        dt = dt_fs
         t_units = 'fs'
-        len_trj = (len(t) - 1) * dt_raw
+        len_trj = (len(t) - 1) * dt_fs
+        divisor = 1
         if len_trj >= 10000000000:
             t_units = 'ms'
             dt /= 1000000000
+            divisor = 10000000000
         elif len_trj >= 10000000:
             t_units = 'ns'
             dt /= 1000000
+            divisor = 10000000
         elif len_trj >= 10000:
             t_units = 'ps'
             dt /= 1000
+            divisor = 10000
         t_max = float((len(t) - 1) * dt)
 
         for column in data.columns[1:]:
-            logger.debug('Column = ' + column)
+            y = data[column]
+
+            # compute indices of uncorrelated timeseries using pymbar
+            yy = y.to_numpy()
+            conv, inefficiency, Neff_max = timeseries.detectEquilibration(yy)
+            tau = dt_fs * (inefficiency - 1) / 2
+            if tau < dt_fs / 2:
+                tau = dt_fs / 2
+            t0 = t[conv]
+            y_t_equil = yy[conv:]
+            indices = timeseries.subsampleCorrelatedData(
+                y_t_equil, g=inefficiency
+            )
+            if len(indices) == 0:
+                print('Problem with column ' + column)
+                print('yy')
+                print(yy)
+                print('y_t_equil')
+                print(y_t_equil)
+                print('indices')
+                print(indices)
+                continue
+            y_n = y_t_equil[indices]
+            n_samples = len(y_n)
+            mean = y_n.mean()
+            std = y_n.std()
+            sem = std / sqrt(n_samples)
+
+            # Get the autocorrelation function
+            nlags = 4 * int(round(inefficiency + 0.5))
+            if nlags > len(y_t_equil):
+                nlags = len(y_t_equil) / 2
+            acf, confidence = stattools.acf(
+                y_t_equil,
+                nlags=nlags,
+                alpha=0.05,
+                fft=nlags > 16,
+                unbiased=False
+            )
+
+            results[column] = mean
+            results['{},stderr'.format(column)] = sem
+            results['{},n_sample'.format(column)] = n_samples
+
+            # Work out units on convergence time
+            conv_units = 'fs'
+            t_conv = t0
+            if t0 >= 10000000000:
+                conv_units = 'ms'
+                t_conv = t0 / 10000000000
+            elif t0 >= 10000000:
+                conv_units = 'ns'
+                t_conv = t0 / 10000000
+            elif t0 >= 10000:
+                conv_units = 'ps'
+                t_conv = t0 / 10000
+
+            # Work out units on autocorrelation time
+            tau_units = 'fs'
+            t_tau = tau
+            if tau >= 10000000000:
+                tau_units = 'ms'
+                t_tau = tau / 10000000000
+            elif tau >= 10000000:
+                tau_units = 'ns'
+                t_tau = tau / 10000000
+            elif tau >= 10000:
+                tau_units = 'ps'
+                t_tau = tau / 10000
+
+            printer.normal(
+                __(
+                    '{column:>23s} = {value:9.3f} ± {stderr:7.3f}'
+                    ' {t0:9.0f} {conv_units} {tau:8.1f} {tau_units} '
+                    '{inefficiency:10.1f}',
+                    column=column,
+                    value=mean,
+                    stderr=sem,
+                    t0=t_conv,
+                    conv_units=conv_units,
+                    tau=t_tau,
+                    tau_units=tau_units,
+                    inefficiency=inefficiency,
+                    indent=7 * ' ',
+                    wrap=False,
+                    dedent=False
+                )
+            )
+
+            # Create graphs of the property
             figure = self.create_figure(
                 module_path=(self.__module__.split('.')[0], 'seamm'),
                 template='line.graph_template',
@@ -1306,23 +1321,9 @@ class LAMMPS(seamm.Node):
             # The autocorrelation function
             plot_acf = figure.add_plot('acf')
 
-            acf = correlation[column]
-
-            inefficiency = acf['inefficiency']
-            n_step = int(round(inefficiency))
-            n_c = acf['n_c']
-
-            len_acf = 3 * n_c
-            if len_acf < 19:
-                len_acf = 19
-            if len_acf > len(y):
-                len_acf = len(y)
-
-            y = [1.0] + list(acf['acf'])[:len_acf]
-
-            dt_acf = float(dt_raw)
+            dt_acf = float(dt_fs)
             t_acf_units = 'fs'
-            len_acf = (len(y) - 1) * dt_raw
+            len_acf = (len(acf) - 1) * dt_fs
             if len_acf >= 2000000000:
                 t_acf_units = 'ms'
                 dt_acf /= 1000000000
@@ -1340,13 +1341,12 @@ class LAMMPS(seamm.Node):
             x_acf_axis.anchor = y_acf_axis
 
             # Put the fit to the autocorrelation time in first so the
-            # subsequent trajectory trce sits in top
-            tau = acf['tau']
-            t = 0.0
-            fit = []
-            for step in range(len(y)):
-                fit.append(exp(-t / tau))
-                t += dt_raw
+            # subsequent trajectory trace sits in top
+            ts = 0.0
+            fit = [1.0]
+            for step in range(len(acf) - 1):
+                ts += dt_fs
+                fit.append(exp(-ts / tau))
 
             plot_acf.add_trace(
                 x_axis=x_acf_axis,
@@ -1363,15 +1363,15 @@ class LAMMPS(seamm.Node):
             )
 
             # the partly transparent error band
-            yplus = [1]
-            yminus = [1]
-            t_acf = [0.0]
+            yplus = []
+            yminus = []
+            t_acf = []
             tmp = 0.0
-            for lower, upper in acf['confidence_interval']:
-                tmp += dt_acf
+            for lower, upper in confidence:
                 t_acf.append(tmp)
                 yplus.append(upper)
                 yminus.append(lower)
+                tmp += dt_acf
 
             plot_acf.add_trace(
                 x_axis=x_acf_axis,
@@ -1397,7 +1397,7 @@ class LAMMPS(seamm.Node):
                 dx=dt_acf,
                 xlabel='t',
                 xunits=t_acf_units,
-                y=y,
+                y=list(acf),
                 ylabel='acf',
                 yunits='',
                 color='red'
@@ -1419,9 +1419,6 @@ class LAMMPS(seamm.Node):
             # Add the trajectory, error band and median value in that order so
             # stack in a nice order.
 
-            value = results[column]
-            stderr = results[column + ',stderr']
-
             # Add the trajectory
             plot.add_trace(
                 x_axis=x_axis,
@@ -1438,18 +1435,16 @@ class LAMMPS(seamm.Node):
             )
 
             # the partly transparent error band
+            t_min = t0 / divisor
             plot.add_trace(
                 x_axis=x_axis,
                 y_axis=y_axis,
-                name='stderr',
-                x=[0, t_max, t_max, 0],
+                name='sem',
+                x=[t_min, t_max, t_max, t_min],
                 xlabel='t',
                 xunits=t_units,
-                y=[
-                    value + stderr, value + stderr, value - stderr,
-                    value - stderr
-                ],
-                ylabel='stderr',
+                y=[mean + sem, mean + sem, mean - sem, mean - sem],
+                ylabel='sem',
                 yunits=LAMMPS.display_units[column],
                 showlegend='false',
                 color='rgba(211,211,211,0.5)',
@@ -1461,10 +1456,10 @@ class LAMMPS(seamm.Node):
                 x_axis=x_axis,
                 y_axis=y_axis,
                 name='average',
-                x=[0, t_max],
+                x=[t_min, t_max],
                 xlabel='t',
                 xunits=t_units,
-                y=[value, value],
+                y=[mean, mean],
                 ylabel='average',
                 yunits=LAMMPS.display_units[column],
                 color='black'
