@@ -29,6 +29,7 @@ dependencies:
     - seamm>=0.9
     - seamm-widgets>=0.9
     - packaging
+    - pymbar
 
       # Testing
     - yapf
