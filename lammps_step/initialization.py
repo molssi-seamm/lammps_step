@@ -178,6 +178,9 @@ class Initialization(seamm.Node):
         lines.append('atom_style          full')
         lines.append('atom_modify         sort 0 0.0')
         lines.append('newton              on')
+        if n_atoms < 20:
+            # LAMMPS has problems with bins for small systems
+            lines.append('neighbor            2.0 nsq')
         lines.append('')
         lines.append('#    define the style of forcefield')
         lines.append('')
