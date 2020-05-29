@@ -417,8 +417,9 @@ class Initialization(seamm.Node):
                 lines.append(line)
         if 'torsion' in terms and eex['n_torsions'] > 0:
             if len(terms['torsion']) == 1:
-                dihedral_style = lammps_step.dihedral_style[terms['torsion'][0]
-                                                           ]  # noqa: E501
+                #  yapf: disable
+                dihedral_style = lammps_step.dihedral_style[terms['torsion'][0]]  # noqa: E501
+                #  yapf: enable
                 lines.append('dihedral_style      ' + dihedral_style)
             else:
                 line = 'dihedral_style      hybrid'
