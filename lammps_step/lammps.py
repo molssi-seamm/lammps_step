@@ -400,9 +400,9 @@ class LAMMPS(seamm.Node):
                 use_mpi = False
             else:
                 if 'seamm_mpi_max_np' in o:
-                    max_np = o.seamm_mpi_max_np
+                    max_np = int(o.seamm_mpi_max_np)
                 elif 'lammps_mpi_max_np' in o:
-                    max_np = o.lammps_mpi_max_np
+                    max_np = int(o.lammps_mpi_max_np)
                 else:
                     max_np = 'default'
 
@@ -416,6 +416,8 @@ class LAMMPS(seamm.Node):
                 logger.info(
                     'The maximum number of cores to use is {}'.format(max_np)
                 )
+                if np > max_np:
+                    np = max_np
 
         if use_mpi:
             if 'lammps_mpiexec' in o:
@@ -429,7 +431,7 @@ class LAMMPS(seamm.Node):
         printer.important(self.header)
         if use_mpi:
             printer.important(
-                '   LAMMPS using MPI with {} processes.\n'.format(np)
+                '    LAMMPS using MPI with {} processes.\n'.format(np)
             )
         else:
             printer.important('   LAMMPS using the serial version.\n')
@@ -1207,30 +1209,37 @@ class LAMMPS(seamm.Node):
         t_units = 'fs'
         len_trj = (len(t) - 1) * dt_fs
         divisor = 1
-        if len_trj >= 10000000000:
+        if len_trj >= 4000000000:
             t_units = 'ms'
-            dt /= 1000000000
-            divisor = 10000000000
-        elif len_trj >= 10000000:
+            divisor = 1000000000
+        elif len_trj >= 4000000:
             t_units = 'ns'
-            dt /= 1000000
-            divisor = 10000000
-        elif len_trj >= 10000:
+            divisor = 1000000
+        elif len_trj >= 4000:
             t_units = 'ps'
-            dt /= 1000
-            divisor = 10000
+            divisor = 1000
+        dt /= divisor
         t_max = float((len(t) - 1) * dt)
 
+        have_warning = False
+        have_acf_warning = False
         for column in data.columns[1:]:
             y = data[column]
+
+            logger.info('Analyzing {}, nsamples = {}'.format(column, len(y)))
 
             # compute indices of uncorrelated timeseries using pymbar
             yy = y.to_numpy()
             conv, inefficiency, Neff_max = timeseries.detectEquilibration(yy)
+
+            logger.info(
+                '  converged in {} steps, inefficiency = {}, Neff_max = {}'
+                .format(conv, inefficiency, Neff_max)
+            )
             tau = dt_fs * (inefficiency - 1) / 2
             if tau < dt_fs / 2:
                 tau = dt_fs / 2
-            t0 = t[conv]
+            t0 = conv * dt_fs
             y_t_equil = yy[conv:]
             indices = timeseries.subsampleCorrelatedData(
                 y_t_equil, g=inefficiency
@@ -1251,16 +1260,23 @@ class LAMMPS(seamm.Node):
             sem = std / sqrt(n_samples)
 
             # Get the autocorrelation function
-            nlags = 4 * int(round(inefficiency + 0.5))
-            if nlags > len(y_t_equil):
-                nlags = len(y_t_equil) / 2
-            acf, confidence = stattools.acf(
-                y_t_equil,
-                nlags=nlags,
-                alpha=0.05,
-                fft=nlags > 16,
-                unbiased=False
-            )
+            if len(y_t_equil) < 8:
+                have_acf = False
+                have_acf_warning = True
+                acf_warning = '^'
+            else:
+                have_acf = True
+                acf_warning = ' '
+                nlags = 4 * int(round(inefficiency + 0.5))
+                if nlags > int(len(y_t_equil) / 2):
+                    nlags = int(len(y_t_equil) / 2)
+                acf, confidence = stattools.acf(
+                    y_t_equil,
+                    nlags=nlags,
+                    alpha=0.05,
+                    fft=nlags > 16,
+                    unbiased=False
+                )
 
             results[column] = mean
             results['{},stderr'.format(column)] = sem
@@ -1269,41 +1285,49 @@ class LAMMPS(seamm.Node):
             # Work out units on convergence time
             conv_units = 'fs'
             t_conv = t0
-            if t0 >= 10000000000:
+            if t0 >= 1000000000:
                 conv_units = 'ms'
-                t_conv = t0 / 10000000000
-            elif t0 >= 10000000:
+                t_conv = t0 / 1000000000
+            elif t0 >= 1000000:
                 conv_units = 'ns'
-                t_conv = t0 / 10000000
-            elif t0 >= 10000:
+                t_conv = t0 / 1000000
+            elif t0 >= 1000:
                 conv_units = 'ps'
-                t_conv = t0 / 10000
+                t_conv = t0 / 1000
 
             # Work out units on autocorrelation time
             tau_units = 'fs'
             t_tau = tau
-            if tau >= 10000000000:
+            if tau >= 1000000000:
                 tau_units = 'ms'
-                t_tau = tau / 10000000000
-            elif tau >= 10000000:
+                t_tau = tau / 1000000000
+            elif tau >= 1000000:
                 tau_units = 'ns'
-                t_tau = tau / 10000000
-            elif tau >= 10000:
+                t_tau = tau / 1000000
+            elif tau >= 1000:
                 tau_units = 'ps'
-                t_tau = tau / 10000
+                t_tau = tau / 1000
+
+            if n_samples < 100:
+                have_warning = True
+                warn = '*'
+            else:
+                warn = ' '
 
             printer.normal(
                 __(
-                    '{column:>23s} = {value:9.3f} ± {stderr:7.3f}'
-                    ' {t0:9.0f} {conv_units} {tau:8.1f} {tau_units} '
-                    '{inefficiency:10.1f}',
+                    '{column:>23s} = {value:9.3f} ± {stderr:7.3f}{warn}'
+                    ' {t0:8.2f} {conv_units} {tau:8.1f} {tau_units}{acf} '
+                    '{inefficiency:9.1f}',
                     column=column,
                     value=mean,
                     stderr=sem,
+                    warn=warn,
                     t0=t_conv,
                     conv_units=conv_units,
                     tau=t_tau,
                     tau_units=tau_units,
+                    acf=acf_warning,
                     inefficiency=inefficiency,
                     indent=7 * ' ',
                     wrap=False,
@@ -1319,89 +1343,92 @@ class LAMMPS(seamm.Node):
             )
 
             # The autocorrelation function
-            plot_acf = figure.add_plot('acf')
+            if have_acf:
+                plot_acf = figure.add_plot('acf')
 
-            dt_acf = float(dt_fs)
-            t_acf_units = 'fs'
-            len_acf = (len(acf) - 1) * dt_fs
-            if len_acf >= 2000000000:
-                t_acf_units = 'ms'
-                dt_acf /= 1000000000
-            elif len_acf >= 2000000:
-                t_acf_units = 'ns'
-                dt_acf /= 1000000
-            elif len_acf >= 2000:
-                t_acf_units = 'ps'
-                dt_acf /= 1000
+                dt_acf = float(dt_fs)
+                t_acf_units = 'fs'
+                len_acf = (len(acf) - 1) * dt_fs
+                if len_acf >= 2000000000:
+                    t_acf_units = 'ms'
+                    dt_acf /= 1000000000
+                elif len_acf >= 2000000:
+                    t_acf_units = 'ns'
+                    dt_acf /= 1000000
+                elif len_acf >= 2000:
+                    t_acf_units = 'ps'
+                    dt_acf /= 1000
 
-            x_acf_axis = plot_acf.add_axis(
-                'x', label='Time ({})'.format(t_acf_units)
-            )
-            y_acf_axis = plot_acf.add_axis('y', label='acf', anchor=x_acf_axis)
-            x_acf_axis.anchor = y_acf_axis
+                x_acf_axis = plot_acf.add_axis(
+                    'x', label='Time ({})'.format(t_acf_units)
+                )
+                y_acf_axis = plot_acf.add_axis(
+                    'y', label='acf', anchor=x_acf_axis
+                )
+                x_acf_axis.anchor = y_acf_axis
 
-            # Put the fit to the autocorrelation time in first so the
-            # subsequent trajectory trace sits in top
-            ts = 0.0
-            fit = [1.0]
-            for step in range(len(acf) - 1):
-                ts += dt_fs
-                fit.append(exp(-ts / tau))
+                # Put the fit to the autocorrelation time in first so the
+                # subsequent trajectory trace sits in top
+                ts = 0.0
+                fit = [1.0]
+                for step in range(len(acf) - 1):
+                    ts += dt_fs
+                    fit.append(exp(-ts / tau))
 
-            plot_acf.add_trace(
-                x_axis=x_acf_axis,
-                y_axis=y_acf_axis,
-                name='fit',
-                x0=0,
-                dx=dt_acf,
-                xlabel='t',
-                xunits=t_acf_units,
-                y=fit,
-                ylabel='fit',
-                yunits='',
-                color='gray'
-            )
+                plot_acf.add_trace(
+                    x_axis=x_acf_axis,
+                    y_axis=y_acf_axis,
+                    name='fit',
+                    x0=0,
+                    dx=dt_acf,
+                    xlabel='t',
+                    xunits=t_acf_units,
+                    y=fit,
+                    ylabel='fit',
+                    yunits='',
+                    color='gray'
+                )
 
-            # the partly transparent error band
-            yplus = []
-            yminus = []
-            t_acf = []
-            tmp = 0.0
-            for lower, upper in confidence:
-                t_acf.append(tmp)
-                yplus.append(upper)
-                yminus.append(lower)
-                tmp += dt_acf
+                # the partly transparent error band
+                yplus = []
+                yminus = []
+                t_acf = []
+                tmp = 0.0
+                for lower, upper in confidence:
+                    t_acf.append(tmp)
+                    yplus.append(upper)
+                    yminus.append(lower)
+                    tmp += dt_acf
 
-            plot_acf.add_trace(
-                x_axis=x_acf_axis,
-                y_axis=y_acf_axis,
-                name='stderr',
-                x=t_acf + t_acf[::-1],
-                xlabel='t',
-                xunits=t_acf_units,
-                y=yplus + yminus[::-1],
-                ylabel='stderr',
-                yunits=LAMMPS.display_units[column],
-                showlegend='false',
-                color='rgba(211,211,211,0.5)',
-                fill='toself',
-            )
+                plot_acf.add_trace(
+                    x_axis=x_acf_axis,
+                    y_axis=y_acf_axis,
+                    name='stderr',
+                    x=t_acf + t_acf[::-1],
+                    xlabel='t',
+                    xunits=t_acf_units,
+                    y=yplus + yminus[::-1],
+                    ylabel='stderr',
+                    yunits=LAMMPS.display_units[column],
+                    showlegend='false',
+                    color='rgba(211,211,211,0.5)',
+                    fill='toself',
+                )
 
-            # And the acf plot last
-            plot_acf.add_trace(
-                x_axis=x_acf_axis,
-                y_axis=y_acf_axis,
-                name='acf',
-                x0=0,
-                dx=dt_acf,
-                xlabel='t',
-                xunits=t_acf_units,
-                y=list(acf),
-                ylabel='acf',
-                yunits='',
-                color='red'
-            )
+                # And the acf plot last
+                plot_acf.add_trace(
+                    x_axis=x_acf_axis,
+                    y_axis=y_acf_axis,
+                    name='acf',
+                    x0=0,
+                    dx=dt_acf,
+                    xlabel='t',
+                    xunits=t_acf_units,
+                    y=list(acf),
+                    ylabel='acf',
+                    yunits='',
+                    color='red'
+                )
 
             # The property data over the trajectory
             y = list(data[column])
@@ -1465,12 +1492,37 @@ class LAMMPS(seamm.Node):
                 color='black'
             )
 
-            figure.grid_plots('trj - acf')
+            if have_acf:
+                figure.grid_plots('trj - acf')
+            else:
+                figure.grid_plots('trj')
             figure.dump('{}_{}.graph'.format(rootname, column))
 
             if write_html:
                 figure.template = 'line.html_template'
                 figure.dump('{}_{}.html'.format(rootname, column))
+
+        if have_warning or have_acf_warning:
+            printer.normal('\n')
+        if have_warning:
+            printer.normal(
+                __(
+                    '          * this property has less than 100 independent '
+                    'samples, so may not be accurate.',
+                    wrap=False,
+                    dedent=False
+                )
+            )
+
+        if have_acf_warning:
+            printer.normal(
+                __(
+                    '          ^ there are not enough samples after '
+                    'equilibration to plot the ACF.',
+                    wrap=False,
+                    dedent=False
+                )
+            )
 
         return results
 
