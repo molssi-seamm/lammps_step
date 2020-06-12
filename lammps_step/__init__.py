@@ -164,11 +164,7 @@ properties = {
         },
     "density":
         {
-            "calculation": [
-                "nve",
-                "nvt",
-                "npt",
-            ],
+            "calculation": ["npt"],
             "description": "pressure",
             "dimensionality": "scalar",
             "type": "float",
@@ -176,11 +172,7 @@ properties = {
         },
     "density,stderr":
         {
-            "calculation": [
-                "nve",
-                "nvt",
-                "npt",
-            ],
+            "calculation": ["npt"],
             "description": "stderr of density",
             "dimensionality": "scalar",
             "type": "float",
@@ -188,11 +180,7 @@ properties = {
         },
     "density,tau":
         {
-            "calculation": [
-                "nve",
-                "nvt",
-                "npt",
-            ],
+            "calculation": ["npt"],
             "description": "autocorrelation time of density",
             "dimensionality": "scalar",
             "type": "float",
@@ -200,11 +188,7 @@ properties = {
         },
     "density,inefficiency":
         {
-            "calculation": [
-                "nve",
-                "nvt",
-                "npt",
-            ],
+            "calculation": ["npt"],
             "description": "statistical inefficiency of density sampling",
             "dimensionality": "scalar",
             "type": "float",
@@ -212,47 +196,15 @@ properties = {
         },
     "a":
         {
-            "calculation": [
-                "nve",
-                "nvt",
-                "npt",
-            ],
+            "calculation": ["npt"],
             "description": "cell parameter 'a'",
-            "dimensionality": "scalar",
-            "type": "float",
-            "units": "Å"
-        },
-    "b":
-        {
-            "calculation": [
-                "nve",
-                "nvt",
-                "npt",
-            ],
-            "description": "cell parameter 'b'",
-            "dimensionality": "scalar",
-            "type": "float",
-            "units": "Å"
-        },
-    "c":
-        {
-            "calculation": [
-                "nve",
-                "nvt",
-                "npt",
-            ],
-            "description": "cell parameter 'c'",
             "dimensionality": "scalar",
             "type": "float",
             "units": "Å"
         },
     "a,stderr":
         {
-            "calculation": [
-                "nve",
-                "nvt",
-                "npt",
-            ],
+            "calculation": ["npt"],
             "description": "stderr of cell 'a'",
             "dimensionality": "scalar",
             "type": "float",
@@ -260,11 +212,7 @@ properties = {
         },
     "a,tau":
         {
-            "calculation": [
-                "nve",
-                "nvt",
-                "npt",
-            ],
+            "calculation": ["npt"],
             "description": "autocorrelation time of cell 'a'",
             "dimensionality": "scalar",
             "type": "float",
@@ -272,12 +220,72 @@ properties = {
         },
     "a,inefficiency":
         {
-            "calculation": [
-                "nve",
-                "nvt",
-                "npt",
-            ],
+            "calculation": ["npt"],
             "description": "statistical inefficiency of cell 'a' sampling",
+            "dimensionality": "scalar",
+            "type": "float",
+            "units": ""
+        },
+    "b":
+        {
+            "calculation": ["npt"],
+            "description": "cell parameter 'b'",
+            "dimensionality": "scalar",
+            "type": "float",
+            "units": "Å"
+        },
+    "b,stderr":
+        {
+            "calculation": ["npt"],
+            "description": "stderr of cell 'b'",
+            "dimensionality": "scalar",
+            "type": "float",
+            "units": "K"
+        },
+    "b,tau":
+        {
+            "calculation": ["npt"],
+            "description": "autocorrelation time of cell 'b'",
+            "dimensionality": "scalar",
+            "type": "float",
+            "units": "fs"
+        },
+    "b,inefficiency":
+        {
+            "calculation": ["npt"],
+            "description": "statistical inefficiency of cell 'b' sampling",
+            "dimensionality": "scalar",
+            "type": "float",
+            "units": ""
+        },
+    "c":
+        {
+            "calculation": ["npt"],
+            "description": "cell parameter 'c'",
+            "dimensionality": "scalar",
+            "type": "float",
+            "units": "Å"
+        },
+    "c,stderr":
+        {
+            "calculation": ["npt"],
+            "description": "stderr of cell 'c'",
+            "dimensionality": "scalar",
+            "type": "float",
+            "units": "K"
+        },
+    "c,tau":
+        {
+            "calculation": ["npt"],
+            "description": "autocorrelation time of cell 'c'",
+            "dimensionality": "scalar",
+            "type": "float",
+            "units": "fs"
+        },
+    "c,inefficiency":
+        {
+            "calculation": ["npt"],
+            "description": "statistical inefficiency of cell 'c' sampling",
             "dimensionality": "scalar",
             "type": "float",
             "units": ""

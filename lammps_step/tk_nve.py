@@ -29,6 +29,9 @@ class TkNVE(lammps_step.TkEnergy):
         Keyword arguments:
         '''
 
+        # Metadata for the properties
+        self.property_metadata = {}
+
         super().__init__(
             tk_flowchart=tk_flowchart,
             node=node,
@@ -39,6 +42,13 @@ class TkNVE(lammps_step.TkEnergy):
             h=h,
             my_logger=my_logger
         )
+
+        # Get the property metadata
+        for item, data in lammps_step.properties.items():
+            if ',' in item:
+                continue
+            if 'nve' in data["calculation"]:
+                self.property_metadata[item] = data
 
     def create_dialog(
         self, title='Edit NVE dynamics parameters', calculation='nve'
@@ -52,39 +62,85 @@ class TkNVE(lammps_step.TkEnergy):
         P = self.node.parameters
 
         # Frame to isolate widgets
-        self['trj_frame'] = ttk.LabelFrame(
+        c_frame = self['control_frame'] = ttk.LabelFrame(
             self['frame'],
             borderwidth=4,
             relief='sunken',
-            text='Trajectory',
+            text='General Parameters',
             labelanchor='n',
             padding=10
         )
 
-        self['time'] = P['time'].widget(self['trj_frame'])
-        self['timestep'] = P['timestep'].widget(self['trj_frame'])
-        self['sampling'] = P['sampling'].widget(self['trj_frame'])
+        for key in lammps_step.NVE_Parameters.parameters:
+            if key == 'control_properties':
+                self[key] = P[key].widget(
+                    c_frame, metadata=self.property_metadata
+                )
+            else:
+                self[key] = P[key].widget(c_frame)
 
-        row = 0
+        # make the control combobox wide enough
+        self['run_control'].combobox.configure(width=40)
 
-        self['time'].grid(row=row, column=0, sticky=tk.W)
-        row += 1
-        self['timestep'].grid(row=row, column=0, sticky=tk.W)
-        row += 1
-        self['sampling'].grid(row=row, column=0, sticky=tk.W)
-        row += 1
-
-        sw.align_labels((self['time'], self['timestep'], self['sampling']))
+        # and binding to change as needed
+        self['run_control'].combobox.bind(
+            "<<ComboboxSelected>>", self.reset_control_frame
+        )
 
     def reset_dialog(self, widget=None):
         """Layout the widgets as needed for the current state"""
 
         frame = self['frame']
+        # Clear the dialog
         for slave in frame.grid_slaves():
             slave.grid_forget()
 
-        self['trj_frame'].grid(row=0, column=0)
-        return 1
+        # Put in our control frame
+        row = 0
+        self['control_frame'].grid(row=row, column=0)
+        row += 1
+
+        # and the widgets in it
+        self.reset_control_frame()
+
+        return row
+
+    def reset_control_frame(self, widget=None):
+        """Layout the control widgets as needed for the current state"""
+
+        run_control = self['run_control'].get()
+
+        # Clear out the previous widgets
+        c_frame = self['control_frame']
+        for slave in c_frame.grid_slaves():
+            slave.grid_forget()
+
+        # And put them back in depending...
+        row = 0
+        self['run_control'].grid(row=row, column=0, sticky=tk.W)
+        row += 1
+
+        widgets = []
+        if 'fixed length' in run_control:
+            widgets.append(self['time'])
+            self['time'].grid(row=row, column=0, sticky=tk.W)
+            row += 1
+        else:
+            widgets.append(self['maximum_time'])
+            self['maximum_time'].grid(row=row, column=0, sticky=tk.W)
+            row += 1
+        widgets.append(self['timestep'])
+        self['timestep'].grid(row=row, column=0, sticky=tk.W)
+        row += 1
+        if 'fixed length' in run_control:
+            widgets.append(self['sampling'])
+            self['sampling'].grid(row=row, column=0, sticky=tk.W)
+            row += 1
+        else:
+            self['control_properties'].grid(row=row, column=0, sticky=tk.NSEW)
+            row += 1
+
+        sw.align_labels(widgets)
 
     def handle_dialog(self, result):
         if result == 'OK':

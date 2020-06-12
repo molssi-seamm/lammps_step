@@ -83,6 +83,14 @@ class TkNVT(lammps_step.TkNVE):
             my_logger=my_logger
         )
 
+        # Overwrite the property metadata
+        self.property_metadata = {}
+        for item, data in lammps_step.properties.items():
+            if ',' in item:
+                continue
+            if 'nvt' in data["calculation"]:
+                self.property_metadata[item] = data
+
     def create_dialog(
         self, title='Edit NVT dynamics parameters', calculation='nvt'
     ):

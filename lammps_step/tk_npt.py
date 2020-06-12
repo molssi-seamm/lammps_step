@@ -35,6 +35,14 @@ class TkNPT(lammps_step.TkNVT):
             h=h
         )
 
+        # Overwrite the property metadata
+        self.property_metadata = {}
+        for item, data in lammps_step.properties.items():
+            if ',' in item:
+                continue
+            if 'npt' in data["calculation"]:
+                self.property_metadata[item] = data
+
     def create_dialog(
         self, title='Edit NPT dynamics parameters', calculation='npt'
     ):
@@ -125,7 +133,7 @@ class TkNPT(lammps_step.TkNVT):
         row = super().reset_dialog()
 
         # Reset the trajectory frame to span 2 columns
-        self['trj_frame'].grid(row=0, column=0, columnspan=2)
+        self['control_frame'].grid(row=0, column=0, columnspan=2)
 
         self['temperature_frame'].grid(
             row=row, column=0, sticky=tk.N, padx=10, pady=10
