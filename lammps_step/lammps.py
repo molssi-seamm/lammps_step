@@ -446,8 +446,18 @@ class LAMMPS(seamm.Node):
 
         input_data = []
         extras = {}
-        while node is not None:
-            if isinstance(node, lammps_step.Initialization):
+
+        history_nodes = []
+
+        # Create overall directory for the lammps step
+
+        os.makedirs(self.directory, exist_ok=True)
+
+        while node is not None: 
+
+            next_node = node.next()
+
+            if isinstance(node, lammps_step.Initialization): 
                 try:
                     lines, eex = node.get_input()
                 except Exception as e:
@@ -472,8 +482,14 @@ class LAMMPS(seamm.Node):
                         .format(sys.exc_info()[0], str(node))
                     )
                     raise
-                input_data += lines
 
+                files = {}
+                files['structure.dat'] = '\n'.join(self.structure_data(eex))
+                with open(os.path.join(self.directory,'structure.dat'), mode='w') as fd:
+                    fd.write(files['structure.dat'])
+                logger.debug('structure.dat:\n' + files['structure.dat'])
+                initialization_header = lines
+                input_data += lines
                 # Find the bond & angle types as needed for shake/rattle
                 P = node.parameters.current_values_to_dict(
                     context=seamm.flowchart_variables._data
@@ -481,9 +497,15 @@ class LAMMPS(seamm.Node):
                 shake = self.shake_fix(P, eex)
                 if shake != '':
                     extras['shake'] = shake
+
+                history_nodes.append(node._id[1])
+
             else:
+
+
+
                 try:
-                    input_data += node.get_input(extras)
+                    new_input_data = node.get_input(extras)
                 except Exception as e:
                     print(
                         'Error running LAMMPS flowchart: {} in {}'.format(
@@ -506,67 +528,212 @@ class LAMMPS(seamm.Node):
                         .format(sys.exc_info()[0], str(node))
                     )
                     raise
-            node = node.next()
 
-        # Add a final dump for the structure
-        input_data.append('')
-        input_data.append(
-            'write_dump          all custom  dump_end.txt id xu yu zu'
-            ' modify flush yes sort id'
-        )
-        input_data.append('')
 
-        files = {'molssi.dat': '\n'.join(input_data)}
-        logger.debug('molssi.dat:\n' + files['molssi.dat'])
+                parms = node.parameters.to_dict()
 
-        # Get the structure file from the eex
-        files['structure.dat'] = '\n'.join(self.structure_data(eex))
-        logger.debug('structure.dat:\n' + files['structure.dat'])
+                if 'run_control' in parms:
+                    if 'Until properties converge' in parms['run_control']['value']:
 
-        os.makedirs(self.directory, exist_ok=True)
-        for filename in files:
-            with open(os.path.join(self.directory, filename), mode='w') as fd:
-                fd.write(files[filename])
-        local = seamm.ExecLocal()
-        return_files = ['summary_*.txt', 'trajectory_*.seamm_trj', 'dump*.txt']
-        if use_mpi:
-            cmd = [mpiexec, '-np', str(np), o.lammps_mpi, '-in', 'molssi.dat']
-        else:
-            cmd = [o.lammps_serial, '-in', 'molssi.dat']
+                        accum_base = 'lammps_substep_%s_iter_0' % ('_'.join(history_nodes)) 
+                        accum_infile = accum_base + '.dat' 
+                        accum_dump = accum_base + '.dump' 
+                        input_data.append('write_dump          all custom  %s id xu yu zu modify flush yes sort id' % (accum_dump))
 
-        result = local.run(cmd=cmd, files=files, return_files=return_files)
+                        files[accum_infile] = '\n'.join(input_data)
 
-        if result is None:
-            logger.error('There was an error running LAMMPS')
-            return None
+                        logger.debug(accum_infile + ':\n' + files[accum_infile])
 
-        logger.debug('\n' + pprint.pformat(result))
+                        # Get the structure file from the eex
+                        
+                        with open(os.path.join(self.directory, accum_infile), mode='w') as fd:
+                            fd.write(files[accum_infile])
 
-        logger.debug('stdout:\n' + result['stdout'])
-        with open(os.path.join(self.directory, 'stdout.txt'), mode='w') as fd:
-            fd.write(result['stdout'])
+                        return_files = ['summary_*.txt', 'trajectory_*.seamm_trj', '*.dump']
+                        local = seamm.ExecLocal()
+                        
+                        if use_mpi:
+                            cmd = [mpiexec, '-np', str(np), o.lammps_mpi, '-in', accum_infile]
+                        else:
+                            cmd = [o.lammps_serial, '-in', accum_infile]
+                        
+                        result = local.run(cmd=cmd, files=files, return_files=return_files)
+                        
+                        if result is None:
+                            logger.error('There was an error running LAMMPS')
+                            return None
+                        
+                        logger.debug('\n' + pprint.pformat(result))
+                        
+                        logger.debug('stdout:\n' + result['stdout'])
+                        
+                        with open(os.path.join(self.directory, 'stdout.txt'), mode='w') as fd:
+                            fd.write(result['stdout'])
+                        
+                        if result['stderr'] != '':
+                            logger.warning('stderr:\n' + result['stderr'])
+                            with open(
+                                os.path.join(self.directory, 'stderr.txt'), mode='w'
+                            ) as fd:
+                                fd.write(result['stderr'])
 
-        if result['stderr'] != '':
-            logger.warning('stderr:\n' + result['stderr'])
-            with open(
-                os.path.join(self.directory, 'stderr.txt'), mode='w'
-            ) as fd:
-                fd.write(result['stderr'])
+                        for filename in result['files']:
+                            with open(os.path.join(self.directory, filename), mode='w') as fd:
+                                if result[filename]['data'] is not None:
+                                    fd.write(result[filename]['data'])
+                                else:
+                                    fd.write(result[filename]['exception'])
 
-        for filename in result['files']:
-            with open(os.path.join(self.directory, filename), mode='w') as fd:
-                if result[filename]['data'] is not None:
-                    fd.write(result[filename]['data'])
+                        # Update the coordinates in the system
+                        self.read_dump(os.path.join(self.directory, accum_dump))
+
+                        #self.analyze()
+                        print('Analyzing steps ', ' '.join(history_nodes))
+
+                        iteration = 0
+
+                        while True:
+
+                            curr_base = 'lammps_substep_%s_iter_%d' % (node._id[1], iteration)
+                            curr_dump = curr_base + '.dump'
+                            new_input_data.insert(0, 'read_dump           ' + accum_dump + ' 1000 x y z')
+                            new_input_data = initialization_header + new_input_data
+                            new_input_data.append('write_dump          all custom  %s id xu yu zu modify flush yes sort id' % (curr_dump))
+
+
+                            # Create input file for the current substep iteration
+   
+                            curr_infile = curr_base + '.dat'
+    
+                            files[curr_infile] = '\n'.join(new_input_data)
+
+                            with open(os.path.join(self.directory, accum_dump), 'r') as fd:
+                                files[accum_dump] = fd.read()
+    
+                            logger.debug(curr_infile + ':\n' + files[curr_infile])
+    
+                            # Get the structure file from the eex
+                            
+                            with open(os.path.join(self.directory, curr_infile), mode='w') as fd:
+                                fd.write(files[curr_infile])
+    
+                            return_files = ['summary_*.txt', 'trajectory_*.seamm_trj', '*.dump']
+
+                            local = seamm.ExecLocal()
+                            
+                            if use_mpi:
+                                cmd = [mpiexec, '-np', str(np), o.lammps_mpi, '-in', curr_infile]
+                            else:
+                                cmd = [o.lammps_serial, '-in', curr_infile]
+                            
+                            result = local.run(cmd=cmd, files=files, return_files=return_files)
+                            
+                            if result is None:
+                                logger.error('There was an error running LAMMPS')
+                                return None
+                            
+                            logger.debug('\n' + pprint.pformat(result))
+                            
+                            logger.debug('stdout:\n' + result['stdout'])
+                            
+                            with open(os.path.join(self.directory, 'stdout.txt'), mode='w') as fd:
+                                fd.write(result['stdout'])
+                            
+                            if result['stderr'] != '':
+                                logger.warning('stderr:\n' + result['stderr'])
+                                with open(
+                                    os.path.join(self.directory, 'stderr.txt'), mode='w'
+                                ) as fd:
+                                    fd.write(result['stderr'])
+                            
+                            for filename in result['files']:
+                                with open(os.path.join(self.directory, filename), mode='w') as fd:
+                                    if result[filename]['data'] is not None:
+                                        fd.write(result[filename]['data'])
+                                    else:
+                                        fd.write(result[filename]['exception'])
+                                
+                            # Update the coordinates in the system
+                            self.read_dump(os.path.join(self.directory, curr_dump))
+
+                            # Analyze the results
+                            # self.analyze()
+
+                            print('Analyzing step ', node._id[1])
+
+                            iteration = iteration + 1
+
+                            if iteration > 3:
+                                history_nodes = []
+
+                                input_data = []
+                                break
+
+                            try:
+                                new_input_data = node.get_input(extras)
+                            except Exception as e:
+                                print(
+                                    'Error running LAMMPS flowchart: {} in {}'.format(
+                                        str(e), str(node)
+                                    )
+                                )
+                                logger.critical(
+                                    'Error running LAMMPS flowchart: {} in {}'.format(
+                                        str(e), str(node)
+                                    )
+                                )
+                                raise
+                            except:  # noqa: E722
+                                print(
+                                    "Unexpected error running LAMMPS flowchart: {} in {}"
+                                    .format(sys.exc_info()[0], str(node))
+                                )
+                                logger.critical(
+                                    "Unexpected error running LAMMPS flowchart: {} in {}"
+                                    .format(sys.exc_info()[0], str(node))
+                                )
+                                raise
+                    else:
+
+                        input_data += new_input_data
+                        history_nodes.append(node._id[1])
+
                 else:
-                    fd.write(result[filename]['exception'])
+                    try:
+                        new_input_data = node.get_input(extras)
+                    except Exception as e:
+                        print(
+                            'Error running LAMMPS flowchart: {} in {}'.format(
+                                str(e), str(node)
+                            )
+                        )
+                        logger.critical(
+                            'Error running LAMMPS flowchart: {} in {}'.format(
+                                str(e), str(node)
+                            )
+                        )
+                        raise
+                    except:  # noqa: E722
+                        print(
+                            "Unexpected error running LAMMPS flowchart: {} in {}"
+                            .format(sys.exc_info()[0], str(node))
+                        )
+                        logger.critical(
+                            "Unexpected error running LAMMPS flowchart: {} in {}"
+                            .format(sys.exc_info()[0], str(node))
+                        )
+                        raise
 
-        # Update the coordinates in the system
-        self.read_dump(os.path.join(self.directory, 'dump_end.txt'))
+                    input_data += new_input_data
+                    history_nodes.append(node._id[1])
 
-        # Analyze the results
-        self.analyze()
+
+            node = next_node 
 
         return next_node
+
+
+
 
     def structure_data(self, eex, triclinic=False):
         """Create the LAMMPS structure file from the energy expression"""
