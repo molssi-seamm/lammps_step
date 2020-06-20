@@ -530,14 +530,16 @@ class LAMMPS(seamm.Node):
                     raise
 
 
-                parms = node.parameters.to_dict()
+                P = node.parameters.current_values_to_dict(
+                    context=seamm.flowchart_variables._data
+                )
 
-                if 'run_control' in parms:
-                    if 'Until properties converge' in parms['run_control']['value']:
+                if 'run_control' in P:
+                    if 'Until properties converge' in P['run_control']:
 
                         accum_base = 'lammps_substep_%s_iter_0' % ('_'.join(history_nodes)) 
                         accum_infile = accum_base + '.dat' 
-                        accum_dump = accum_base + '.dump' 
+                        accum_dump = accum_base + '.dump.*' 
                         input_data.append('write_dump          all custom  %s id xu yu zu modify flush yes sort id' % (accum_dump))
 
                         files[accum_infile] = '\n'.join(input_data)
@@ -549,7 +551,7 @@ class LAMMPS(seamm.Node):
                         with open(os.path.join(self.directory, accum_infile), mode='w') as fd:
                             fd.write(files[accum_infile])
 
-                        return_files = ['summary_*.txt', 'trajectory_*.seamm_trj', '*.dump']
+                        return_files = ['summary_*.txt', 'trajectory_*.seamm_trj', '*.dump.*']
                         local = seamm.ExecLocal()
                         
                         if use_mpi:
@@ -584,8 +586,42 @@ class LAMMPS(seamm.Node):
                                 else:
                                     fd.write(result[filename]['exception'])
 
-                        # Update the coordinates in the system
+#                        import pdb
+#                        pdb.set_trace()
+#
+#                        try: 
+#                                prev_node = node.previous()
+#
+#                                P_prev = prev_node.parameters.to_dict()
+#
+#                                last_snapshot = str(P_prev['time'].magnitude)
+                                
+#                        except KeyError: # Previous step was NVT or NPT or was a complex step
+
+                                # Need to figure out for how long the previous step ran. 
+
+                        accum_dump_filenames= glob.glob(os.path.join(self.directory, accum_dump))
+
+                         # Probably the step didn't run
+                        if len(accum_dump_filenames) == 0:
+                            raise FileNotFoundError('Lammps_step: could not find any file with the pattern %s' % (accum_dump))
+
+                        run_lengths = []
+
+                        for accum_dump in accum_dump_filenames:
+                            try:
+                                pre, ext = os.path.splitext(accum_dump) 
+                                ext = int(ext.strip('.'))
+                            except ValueError:
+                                raise Exception('Lammps_step: could not extract run length from dump file %s' % (accum_dump))
+                            run_lengths.append(ext)
+                               
+                            last_snapshot = str(max(run_lengths))
+
+                        accum_dump = accum_dump.replace('*', last_snapshot)
                         self.read_dump(os.path.join(self.directory, accum_dump))
+                                    
+                        # Update the coordinates in the system
 
                         #self.analyze()
                         print('Analyzing steps ', ' '.join(history_nodes))
@@ -594,12 +630,22 @@ class LAMMPS(seamm.Node):
 
                         while True:
 
-                            curr_base = 'lammps_substep_%s_iter_%d' % (node._id[1], iteration)
-                            curr_dump = curr_base + '.dump'
-                            new_input_data.insert(0, 'read_dump           ' + accum_dump + ' 1000 x y z')
+
+                            new_input_data.insert(0, 'read_dump          %s %s x y z' % (accum_dump, last_snapshot))
+                            curr_base = 'lammps_substep_%s_iter_%d' % (node._id[1], iteration) 
+
+                            if P['timestep'] == 'normal':
+                                timestep = 1.0
+                            else:
+                                timestep = P['timestep'].to('fs').magnitude
+
+                            time = P['time'].to('fs').magnitude
+
+                            nsteps = round(time / timestep)
+                            curr_dump = curr_base + '.dump.%d' % nsteps #  + node.parameters['time']['value'] 
+
                             new_input_data = initialization_header + new_input_data
                             new_input_data.append('write_dump          all custom  %s id xu yu zu modify flush yes sort id' % (curr_dump))
-
 
                             # Create input file for the current substep iteration
    
@@ -617,7 +663,7 @@ class LAMMPS(seamm.Node):
                             with open(os.path.join(self.directory, curr_infile), mode='w') as fd:
                                 fd.write(files[curr_infile])
     
-                            return_files = ['summary_*.txt', 'trajectory_*.seamm_trj', '*.dump']
+                            return_files = ['summary_*.txt', 'trajectory_*.seamm_trj', '*.dump.*']
 
                             local = seamm.ExecLocal()
                             
@@ -659,14 +705,17 @@ class LAMMPS(seamm.Node):
                             # Analyze the results
                             # self.analyze()
 
+                            accum_dump = curr_dump
+                            last_snapshot = os.path.splitext(accum_dump)[1].strip('.')
+                                    
                             print('Analyzing step ', node._id[1])
 
                             iteration = iteration + 1
 
-                            if iteration > 3:
+                            if iteration > 2:
                                 history_nodes = []
 
-                                input_data = []
+                                input_data = initialization_header
                                 break
 
                             try:
