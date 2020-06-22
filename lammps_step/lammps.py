@@ -498,7 +498,7 @@ class LAMMPS(seamm.Node):
                 if shake != '':
                     extras['shake'] = shake
 
-                history_nodes.append(node._id[1])
+                history_nodes.append(node)
 
             else:
 
@@ -537,7 +537,8 @@ class LAMMPS(seamm.Node):
                 if 'run_control' in P:
                     if 'Until properties converge' in P['run_control']:
 
-                        accum_base = 'lammps_substep_%s_iter_0' % ('_'.join(history_nodes)) 
+                        history_nodes_ids = [n._id[1] for n in history_nodes]
+                        accum_base = 'lammps_substep_%s_iter_0' % ('_'.join(history_nodes_ids)) 
                         accum_infile = accum_base + '.dat' 
                         accum_dump = accum_base + '.dump.*' 
                         input_data.append('write_dump          all custom  %s id xu yu zu modify flush yes sort id' % (accum_dump))
@@ -624,7 +625,7 @@ class LAMMPS(seamm.Node):
                         # Update the coordinates in the system
 
                         #self.analyze()
-                        print('Analyzing steps ', ' '.join(history_nodes))
+                        print('Analyzing steps ', ' '.join(history_nodes_ids))
 
                         iteration = 0
 
@@ -745,7 +746,7 @@ class LAMMPS(seamm.Node):
                     else:
 
                         input_data += new_input_data
-                        history_nodes.append(node._id[1])
+                        history_nodes.append(node)
 
                 else:
                     try:
@@ -774,8 +775,10 @@ class LAMMPS(seamm.Node):
                         raise
 
                     input_data += new_input_data
-                    history_nodes.append(node._id[1])
+                    history_nodes.append(node)
 
+            if len(history_nodes) > 0:
+                print(history_nodes)
 
             node = next_node 
 
