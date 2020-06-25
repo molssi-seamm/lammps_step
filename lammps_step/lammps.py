@@ -703,21 +703,9 @@ class LAMMPS(seamm.Node):
                             # Update the coordinates in the system
                             self.read_dump(os.path.join(self.directory, curr_dump))
 
-                            # Analyze the results
-                            # self.analyze()
-
                             accum_dump = curr_dump
                             last_snapshot = os.path.splitext(accum_dump)[1].strip('.')
                                     
-                            print('Analyzing step ', node._id[1])
-
-                            iteration = iteration + 1
-
-                            if iteration > 2:
-                                history_nodes = []
-
-                                input_data = initialization_header
-                                break
 
                             try:
                                 new_input_data = node.get_input(extras)
@@ -743,6 +731,33 @@ class LAMMPS(seamm.Node):
                                     .format(sys.exc_info()[0], str(node))
                                 )
                                 raise
+
+
+                            # Analyze the results
+                            analysis = self.analyze(node=node)
+                            if analysis['Epe,short_production_warning'] or analysis['Epe,few_neff_warning']:
+                                for idx, line in enumerate(new_input_data):
+                                    if 'run' in line:
+                                        new_line = new_input_data[idx].split()
+                                        new_line[1] = str(int(new_line[1]) * 2)
+                                        new_line = '              '.join(new_line)
+                                        new_input_data[idx] = new_line
+
+
+                            else:
+                                import pdb
+                                pdb.set_trace()
+                                print(results)
+
+                            iteration = iteration + 1
+
+                            if iteration > 2:
+                                history_nodes = []
+
+                                input_data = initialization_header
+                                break
+
+
                     else:
 
                         input_data += new_input_data
@@ -1439,33 +1454,29 @@ class LAMMPS(seamm.Node):
         else:
             return value
 
-    def analyze(self, indent='', **kwargs):
+    def analyze(self, indent='', node=None, **kwargs):
         """Analyze the output of the calculation
         """
         # Get the first real node
-        node = self.subflowchart.get_node('1').next()
 
-        while node is not None:
-            for value in node.description:
-                printer.important(value)
-                printer.important(' ')
+        for value in node.description:
+            printer.important(value)
+            printer.important(' ')
 
-            # Find any trajectory files
-            id = '_'.join(str(e) for e in node._id)
+        # Find any trajectory files
+        id = '_'.join(str(e) for e in node._id)
 
-            filenames = glob.glob(
-                os.path.join(
-                    self.directory, '*trajectory*' + id + '.seamm_trj'
-                )
+        filenames = glob.glob(
+            os.path.join(
+                self.directory, '*trajectory*' + id + '.seamm_trj'
             )
+        )
 
-            for filename in filenames:
-                data = self.analyze_trajectory(filename)
-                node.analyze(data=data)
+        for filename in filenames:
+            data = self.analyze_trajectory(filename)
+            node.analyze(data=data)
 
-            node = node.next()
-
-        return
+        return data
 
     def analyze_trajectory(self, filename, sampling_rate=20):
         """Read a trajectory file and do the statistical analysis
@@ -1523,6 +1534,7 @@ class LAMMPS(seamm.Node):
 
         have_warning = False
         have_acf_warning = False
+
         for column in data.columns[1:]:
             y = data[column]
 
@@ -1566,7 +1578,7 @@ class LAMMPS(seamm.Node):
                 acf_warning = '^'
             else:
                 have_acf = True
-                acf_warning = ' '
+                acf_warning = ' ' 
                 nlags = 4 * int(round(inefficiency + 0.5))
                 if nlags > int(len(y_t_equil) / 2):
                     nlags = int(len(y_t_equil) / 2)
@@ -1581,6 +1593,7 @@ class LAMMPS(seamm.Node):
             results[column] = mean
             results['{},stderr'.format(column)] = sem
             results['{},n_sample'.format(column)] = n_samples
+            results['{},short_production_warning'.format(column)] = have_acf_warning
 
             # Work out units on convergence time
             conv_units = 'fs'
@@ -1614,6 +1627,8 @@ class LAMMPS(seamm.Node):
             else:
                 warn = ' '
 
+            results['{},few_neff_warning'.format(column)] = have_warning
+
             printer.normal(
                 __(
                     '{column:>23s} = {value:9.3f} ± {stderr:7.3f}{warn}'
@@ -1634,7 +1649,6 @@ class LAMMPS(seamm.Node):
                     dedent=False
                 )
             )
-
             # Create graphs of the property
             figure = self.create_figure(
                 module_path=(self.__module__.split('.')[0], 'seamm'),
