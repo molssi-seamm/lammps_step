@@ -70,9 +70,6 @@ class NVE(lammps_step.Energy):
         time = P['time'].to('fs').magnitude
         nsteps = round(time / timestep)
 
-        if 'nsteps' in extras:
-            nsteps = extras['nsteps']
-
         thermo_properties = (
             'time temp press etotal ke pe ebond '
             'eangle edihed eimp evdwl etail ecoul elong'

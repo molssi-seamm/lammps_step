@@ -453,9 +453,8 @@ class LAMMPS(seamm.Node):
 
         os.makedirs(self.directory, exist_ok=True)
 
-        while node is not None: 
 
-            next_node = node.next()
+        while node is not None: 
 
             if isinstance(node, lammps_step.Initialization): 
                 try:
@@ -533,6 +532,7 @@ class LAMMPS(seamm.Node):
                 P = node.parameters.current_values_to_dict(
                     context=seamm.flowchart_variables._data
                 )
+
 
                 if 'run_control' in P:
                     if 'Until properties converge' in P['run_control']:
@@ -629,20 +629,25 @@ class LAMMPS(seamm.Node):
 
                         iteration = 0
 
+                        if P['timestep'] == 'normal':
+                            timestep = 1.0
+                        else:
+                            timestep = P['timestep'].to('fs').magnitude
+
                         while True:
 
+
+                            P = node.parameters.current_values_to_dict(
+                                context=seamm.flowchart_variables._data
+                            )
 
                             new_input_data.insert(0, 'read_dump          %s %s x y z' % (accum_dump, last_snapshot))
                             curr_base = 'lammps_substep_%s_iter_%d' % (node._id[1], iteration) 
 
-                            if P['timestep'] == 'normal':
-                                timestep = 1.0
-                            else:
-                                timestep = P['timestep'].to('fs').magnitude
-
                             time = P['time'].to('fs').magnitude
 
                             nsteps = round(time / timestep)
+
                             curr_dump = curr_base + '.dump.%d' % nsteps #  + node.parameters['time']['value'] 
 
                             new_input_data = initialization_header + new_input_data
@@ -732,31 +737,76 @@ class LAMMPS(seamm.Node):
                                 )
                                 raise
 
-
                             # Analyze the results
                             analysis = self.analyze(node=node)
-                            if analysis['Epe,short_production_warning'] or analysis['Epe,few_neff_warning']:
-                                for idx, line in enumerate(new_input_data):
-                                    if 'run' in line:
-                                        new_line = new_input_data[idx].split()
-                                        new_line[1] = str(int(new_line[1]) * 2)
-                                        new_line = '              '.join(new_line)
-                                        new_input_data[idx] = new_line
 
+                            if analysis['Epe,short_production_warning'] is False:
+                                if analysis['Epe,few_neff_warning'] is False:
 
-                            else:
-                                import pdb
-                                pdb.set_trace()
-                                print(results)
+                                    history_nodes = []
+                                    input_data = initialization_header
+                                    break
 
+                            for idx, line in enumerate(new_input_data):
+                                if 'run' in line:
+                                    new_line = new_input_data[idx].split()
+                                    new_nsteps = int(new_line[1]) * 2
+                                    new_line[1] = str(new_nsteps)
+                                    new_line = '              '.join(new_line)
+                                    new_input_data[idx] = new_line
+                            new_time = new_nsteps * timestep * ureg.femtosecond 
+                            new_time = new_time.to(P['time'].units)
+
+                            node.parameters['time'].value = new_time.magnitude
+                            #P_temp = node.parameters.current_values_to_dict(
+                            #    context=seamm.flowchart_variables._data
+                            #)
+
+                            #P_temp['time'] = new_time
+
+                            #node.parameters.update(P_temp)
+                            
                             iteration = iteration + 1
 
-                            if iteration > 2:
-                                history_nodes = []
+#                            if analysis['Epe,short_production_warning']: 
+#                                for idx, line in enumerate(new_input_data):
+#                                    if 'run' in line:
+#                                        new_line = new_input_data[idx].split()
+#                                        new_nsteps = int(new_line[1]) * 2
+#                                        new_line[1] = str(new_nsteps)
+#                                        new_line = '              '.join(new_line)
+#                                        new_input_data[idx] = new_line
+#                            else:
+#                                if analysis['Epe,few_neff_warning']:
+#                                    for idx, line in enumerate(new_input_data):
+#                                        if 'run' in line:
+#                                            new_line = new_input_data[idx].split()
+#                                            new_nsteps = int(new_line[1]) * 2
+#                                            new_line[1] = str(new_nsteps)
+#                                            new_line = '              '.join(new_line)
+#                                            new_input_data[idx] = new_line
+#
+#                                else:
+#                                    history_nodes = []
+#                                    input_data = initialization_header
+#                                    break
 
-                                input_data = initialization_header
-                                break
 
+
+
+
+#                            else:
+#                                import pdb
+#                                pdb.set_trace()
+#                                print(results)
+
+                            #iteration = iteration + 1
+
+                            #if iteration > 2:
+                            #    history_nodes = []
+
+                            #    input_data = initialization_header
+                            #    break
 
                     else:
 
@@ -792,7 +842,7 @@ class LAMMPS(seamm.Node):
                     input_data += new_input_data
                     history_nodes.append(node)
 
-            node = next_node 
+            node = node.next()
 
 
 
@@ -868,15 +918,13 @@ class LAMMPS(seamm.Node):
                 last_snapshot = str(max(run_lengths))
      
             accum_dump = accum_dump.replace('*', last_snapshot)
-            self.read_dump(os.path.join(self.directory, accum_dump))
      
+            # Update the coordinates in the system
             self.read_dump(os.path.join(self.directory, accum_dump))
                         
-            # Update the coordinates in the system
-            
-            #self.analyze()
-            print('Analyzing steps ', ' '.join(history_nodes_ids))
-
+           
+            for past_node in history_nodes:
+                self.analyze(node=past_node)
 
         return next_node
 
@@ -1532,10 +1580,15 @@ class LAMMPS(seamm.Node):
         dt /= divisor
         t_max = float((len(t) - 1) * dt)
 
+<<<<<<< HEAD
         have_warning = False
         have_acf_warning = False
+=======
+>>>>>>> 16b6b08e00789fc5e30d04d39b9781b783168ff7
 
         for column in data.columns[1:]:
+            have_warning = False
+            have_acf_warning = False
             y = data[column]
 
             logger.info('Analyzing {}, nsamples = {}'.format(column, len(y)))
@@ -1572,7 +1625,7 @@ class LAMMPS(seamm.Node):
             sem = std / sqrt(n_samples)
 
             # Get the autocorrelation function
-            if len(y_t_equil) < 8:
+            if len(y_t_equil) < 10000:
                 have_acf = False
                 have_acf_warning = True
                 acf_warning = '^'
@@ -1589,6 +1642,8 @@ class LAMMPS(seamm.Node):
                     fft=nlags > 16,
                     unbiased=False
                 )
+
+
 
             results[column] = mean
             results['{},stderr'.format(column)] = sem
