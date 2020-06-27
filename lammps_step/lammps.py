@@ -587,20 +587,6 @@ class LAMMPS(seamm.Node):
                                 else:
                                     fd.write(result[filename]['exception'])
 
-#                        import pdb
-#                        pdb.set_trace()
-#
-#                        try: 
-#                                prev_node = node.previous()
-#
-#                                P_prev = prev_node.parameters.to_dict()
-#
-#                                last_snapshot = str(P_prev['time'].magnitude)
-                                
-#                        except KeyError: # Previous step was NVT or NPT or was a complex step
-
-                                # Need to figure out for how long the previous step ran. 
-
                         accum_dump_filenames= glob.glob(os.path.join(self.directory, accum_dump))
 
                          # Probably the step didn't run
@@ -737,8 +723,11 @@ class LAMMPS(seamm.Node):
                                 )
                                 raise
 
+                            import pdb 
+                            pdb.set_trace()
                             # Analyze the results
                             analysis = self.analyze(node=node)
+                            pdb.set_trace()
 
                             if analysis['Epe,short_production_warning'] is False:
                                 if analysis['Epe,few_neff_warning'] is False:
@@ -754,59 +743,14 @@ class LAMMPS(seamm.Node):
                                     new_line[1] = str(new_nsteps)
                                     new_line = '              '.join(new_line)
                                     new_input_data[idx] = new_line
+
                             new_time = new_nsteps * timestep * ureg.femtosecond 
+
                             new_time = new_time.to(P['time'].units)
 
                             node.parameters['time'].value = new_time.magnitude
-                            #P_temp = node.parameters.current_values_to_dict(
-                            #    context=seamm.flowchart_variables._data
-                            #)
-
-                            #P_temp['time'] = new_time
-
-                            #node.parameters.update(P_temp)
                             
                             iteration = iteration + 1
-
-#                            if analysis['Epe,short_production_warning']: 
-#                                for idx, line in enumerate(new_input_data):
-#                                    if 'run' in line:
-#                                        new_line = new_input_data[idx].split()
-#                                        new_nsteps = int(new_line[1]) * 2
-#                                        new_line[1] = str(new_nsteps)
-#                                        new_line = '              '.join(new_line)
-#                                        new_input_data[idx] = new_line
-#                            else:
-#                                if analysis['Epe,few_neff_warning']:
-#                                    for idx, line in enumerate(new_input_data):
-#                                        if 'run' in line:
-#                                            new_line = new_input_data[idx].split()
-#                                            new_nsteps = int(new_line[1]) * 2
-#                                            new_line[1] = str(new_nsteps)
-#                                            new_line = '              '.join(new_line)
-#                                            new_input_data[idx] = new_line
-#
-#                                else:
-#                                    history_nodes = []
-#                                    input_data = initialization_header
-#                                    break
-
-
-
-
-
-#                            else:
-#                                import pdb
-#                                pdb.set_trace()
-#                                print(results)
-
-                            #iteration = iteration + 1
-
-                            #if iteration > 2:
-                            #    history_nodes = []
-
-                            #    input_data = initialization_header
-                            #    break
 
                     else:
 
@@ -1579,12 +1523,6 @@ class LAMMPS(seamm.Node):
             divisor = 1000
         dt /= divisor
         t_max = float((len(t) - 1) * dt)
-
-<<<<<<< HEAD
-        have_warning = False
-        have_acf_warning = False
-=======
->>>>>>> 16b6b08e00789fc5e30d04d39b9781b783168ff7
 
         for column in data.columns[1:]:
             have_warning = False
