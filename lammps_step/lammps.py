@@ -3,6 +3,7 @@
 """A node or step for LAMMPS in a flowchart"""
 
 import copy
+from scipy.stats import t 
 import argparse
 import configargparse
 import cpuinfo
@@ -628,6 +629,13 @@ class LAMMPS(seamm.Node):
                     else:
                         timestep = P['timestep'].to('fs').magnitude
 
+                    control_properties = {}
+                    for each_prop in P['control_properties']:
+                        k = each_prop[0]
+                        control_properties[k] = {'value': float(each_prop[1][0].strip('%')), 
+                                'units': each_prop[1][1],
+                                'enough_accuracy': False}
+
                     while True:
 
 
@@ -709,13 +717,24 @@ class LAMMPS(seamm.Node):
                         # Analyze the results
                         analysis = self.analyze(node=node)
 
-                        if analysis['Epe,short_production_warning'] is False:
-                            if analysis['Epe,few_neff_warning'] is False:
+                        for k, v in control_properties.items():
+                            if analysis[k + ',short_production_warning'] is False:
+                                if analysis[k + ',few_neff_warning'] is False:
 
-                                history_nodes = []
-                                input_data = copy.deepcopy(initialization_header)
-                                input_data.append("read_dump          %s %s x y z" % (os.path.join(self.directory, curr_dump), last_snapshot))
-                                break
+                                    accuracy = v['value'] / 100
+                                    dof = analysis[k + ',n_sample'] 
+                                    mean = analysis[k]
+                                    ci = t.interval(0.95, dof - 1, loc=0, scale=1)
+                                    interval = ci[1] - ci[0]
+
+                                    if abs(interval / mean) < accuracy:
+                                        control_properties[k]['enough_accuracy'] = True
+
+                        enough_acc = [v['enough_accuracy'] for k, v in control_properties.items()]
+                        if all(enough_acc) is True:
+                            history_nodes = []
+                            input_data = copy.deepcopy(initialization_header)
+                            input_data.append("read_dump          %s %s x y z" % (os.path.join(self.directory, curr_dump), last_snapshot))
 
                         try:
                             new_input_data = node.get_input(extras)
@@ -1472,20 +1491,30 @@ class LAMMPS(seamm.Node):
             )
         )
 
+        P = node.parameters.current_values_to_dict(
+            context=seamm.flowchart_variables._data
+        )
+
+        control_properties = [prp[0] for prp in P['control_properties']]
+
         for filename in filenames:
-            data = self.analyze_trajectory(filename)
+            data = self.analyze_trajectory(filename, control_properties=control_properties)
             node.analyze(data=data)
 
         return data
 
-    def analyze_trajectory(self, filename, sampling_rate=20):
+    def analyze_trajectory(self, filename, sampling_rate=20, control_properties=None):
         """Read a trajectory file and do the statistical analysis
         """
+
         write_html = (
             'lammps_html' in self.options and self.options.lammps_html
         )
         rootname = os.path.splitext(filename)[0]
         results = {}
+
+        if 't' not in control_properties:
+            control_properties.append('t')
 
         # Process the trajectory data
         with open(filename, 'r') as fd:
@@ -1494,7 +1523,8 @@ class LAMMPS(seamm.Node):
                 sep=' ',
                 header=0,
                 comment='!',
-                index_col=1,
+                usecols=control_properties,
+                index_col='t'
             )
 
         logger.debug('Columns: {}'.format(data.columns))
@@ -1532,7 +1562,7 @@ class LAMMPS(seamm.Node):
         dt /= divisor
         t_max = float((len(t) - 1) * dt)
 
-        for column in data.columns[1:]:
+        for column in data.columns:
             have_warning = False
             have_acf_warning = False
             y = data[column]
@@ -1588,8 +1618,6 @@ class LAMMPS(seamm.Node):
                     fft=nlags > 16,
                     unbiased=False
                 )
-
-
 
             results[column] = mean
             results['{},stderr'.format(column)] = sem
