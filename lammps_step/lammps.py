@@ -535,8 +535,7 @@ class LAMMPS(seamm.Node):
                     context=seamm.flowchart_variables._data
                 )
 
-#                import pdb
-#                pdb.set_trace()
+
                 if 'run_control' not in P or 'Until' not in P['run_control']:
                         input_data += new_input_data
                         history_nodes.append(node)
@@ -619,8 +618,7 @@ class LAMMPS(seamm.Node):
                                     
                         # Update the coordinates in the system
 
-                        #self.analyze()
-                        print('Analyzing steps ', ' '.join(history_nodes_ids))
+                        self.analyze(nodes=history_nodes)
 
                     iteration = 0
 
@@ -715,15 +713,15 @@ class LAMMPS(seamm.Node):
                         last_snapshot = os.path.splitext(accum_dump)[1].strip('.')        
 
                         # Analyze the results
-                        analysis = self.analyze(node=node)
+                        analysis = self.analyze(nodes=node)
 
                         for k, v in control_properties.items():
                             if analysis[k + ',short_production_warning'] is False:
                                 if analysis[k + ',few_neff_warning'] is False:
 
                                     accuracy = v['value'] / 100
-                                    dof = analysis[k + ',n_sample'] 
-                                    mean = analysis[k]
+                                    dof = analysis[node._id[1]][k + ',n_sample'] 
+                                    mean = analysis[node._id[1]][k]
                                     ci = t.interval(0.95, dof - 1, loc=0, scale=1)
                                     interval = ci[1] - ci[0]
 
@@ -893,10 +891,8 @@ class LAMMPS(seamm.Node):
             # Update the coordinates in the system
             self.read_dump(os.path.join(self.directory, accum_dump))
                         
+            self.analyze(nodes=history_nodes)
            
-            for past_node in history_nodes:
-                self.analyze(node=past_node)
-
         return next_node
 
 
@@ -1473,33 +1469,41 @@ class LAMMPS(seamm.Node):
         else:
             return value
 
-    def analyze(self, indent='', node=None, **kwargs):
+    def analyze(self, indent='', nodes=None, **kwargs):
         """Analyze the output of the calculation
         """
-        # Get the first real node
+        if isinstance(nodes, list) is False:
+            nodes = [nodes]
 
-        for value in node.description:
-            printer.important(value)
-            printer.important(' ')
+        ret = {node._id[1]: None for node in nodes}
 
-        # Find any trajectory files
-        id = '_'.join(str(e) for e in node._id)
+        for node in nodes:
 
-        filenames = glob.glob(
-            os.path.join(
-                self.directory, '*trajectory*' + id + '.seamm_trj'
+            for value in node.description:
+                printer.important(value)
+                printer.important(' ')
+
+            id_str = '_'.join(str(e) for e in node._id)
+
+            filenames = glob.glob(
+                os.path.join(
+                    self.directory, '*trajectory*' + id_str + '.seamm_trj'
+                )
             )
-        )
 
-        P = node.parameters.current_values_to_dict(
-            context=seamm.flowchart_variables._data
-        )
+            P = node.parameters.current_values_to_dict(
+                context=seamm.flowchart_variables._data
+            )
 
-        control_properties = [prp[0] for prp in P['control_properties']]
+            if 'control_properties' in P:
+                control_properties = [prp[0] for prp in P['control_properties']]
 
-        for filename in filenames:
-            data = self.analyze_trajectory(filename, control_properties=control_properties)
-            node.analyze(data=data)
+            data = None
+            for filename in filenames:
+                data = self.analyze_trajectory(filename, control_properties=control_properties)
+                node.analyze(data=data)
+
+            ret[node._id[1]] = data
 
         return data
 
