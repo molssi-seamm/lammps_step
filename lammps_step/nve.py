@@ -96,7 +96,7 @@ class NVE(lammps_step.Energy):
         nfixes += 1
         lines.append(
             'fix                 {} '.format(nfixes) + 'all  ave/time '
-            '{} {} {} {} file summary_nve_{}.txt'.format(
+            '{} {} {} {} file summary_nve_{}_iter_0.txt'.format(
                 nevery, nrepeat, nfreq, properties,
                 '_'.join(str(e) for e in self._id)
             )
@@ -125,7 +125,7 @@ class NVE(lammps_step.Energy):
             lines.append(
                 (
                     "fix                 {} all ave/time {} {} {} {} off 2 "
-                    "title1 '{}' title2 '{}' file trajectory_nve_{}.seamm_trj"
+                    "title1 '{}' title2 '{}' file trajectory_nve_{}_iter_0.seamm_trj"
                 ).format(
                     nfixes, nevery, nrepeat, nfreq, properties, title1, title2,
                     '_'.join(str(e) for e in self._id)
