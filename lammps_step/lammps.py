@@ -4,6 +4,7 @@
 
 import copy
 from scipy.stats import t 
+import re
 import argparse
 import configargparse
 import cpuinfo
@@ -38,7 +39,6 @@ def upcase(string):
     Used for the type argument in argparse/
     """
     return string.upper()
-
 
 bond_style = {
     'quadratic_bond': 'harmonic',
@@ -251,6 +251,7 @@ class LAMMPS(seamm.Node):
         )
         self.lammps_units = 'real'
         self._data = {}
+        self._trajectory = []
 
         self.maxlags = 100
 
@@ -543,7 +544,7 @@ class LAMMPS(seamm.Node):
                 else:
                 #if 'run_control' in P:
                 #    if 'Until properties converge' in P['run_control']:
-                    if len(history_nodes) > 0:
+                    if len(history_nodes) > 0: # if imcccc
 
                         history_nodes_ids = [n._id[1] for n in history_nodes]
                         accum_base = os.path.join(self.directory, 'lammps_substep_%s_iter_0' % ('_'.join(history_nodes_ids)))
@@ -622,6 +623,7 @@ class LAMMPS(seamm.Node):
 
                     iteration = 0
 
+
                     if P['timestep'] == 'normal':
                         timestep = 1.0
                     else:
@@ -656,8 +658,10 @@ class LAMMPS(seamm.Node):
                         # Create input file for the current substep iteration
    
                         curr_infile = curr_base + '.dat'
-    
-                        files[curr_infile] = '\n'.join(new_input_data)
+
+                        new_input_data_txt = '\n'.join(new_input_data).replace('iter_0.seamm_trj', 'iter_%d.seamm_trj' % iteration)
+
+                        files[curr_infile] = new_input_data_txt 
 
                         with open(os.path.join(self.directory, accum_dump), 'r') as fd:
                             files[accum_dump] = fd.read()
@@ -713,18 +717,18 @@ class LAMMPS(seamm.Node):
                         last_snapshot = os.path.splitext(accum_dump)[1].strip('.')        
 
                         # Analyze the results
+                        
                         analysis = self.analyze(nodes=node)
 
                         for k, v in control_properties.items():
-                            if analysis[k + ',short_production_warning'] is False:
-                                if analysis[k + ',few_neff_warning'] is False:
+                            if analysis[node._id[1]][k + ',short_production_warning'] is False:
+                                if analysis[node._id[1]][k + ',few_neff_warning'] is False:
 
                                     accuracy = v['value'] / 100
                                     dof = analysis[node._id[1]][k + ',n_sample'] 
                                     mean = analysis[node._id[1]][k]
                                     ci = t.interval(0.95, dof - 1, loc=0, scale=1)
                                     interval = ci[1] - ci[0]
-
                                     if abs(interval / mean) < accuracy:
                                         control_properties[k]['enough_accuracy'] = True
 
@@ -733,6 +737,8 @@ class LAMMPS(seamm.Node):
                             history_nodes = []
                             input_data = copy.deepcopy(initialization_header)
                             input_data.append("read_dump          %s %s x y z" % (os.path.join(self.directory, curr_dump), last_snapshot))
+                            self.read_dump(os.path.join(self.directory, curr_dump))
+                            break
 
                         try:
                             new_input_data = node.get_input(extras)
@@ -763,7 +769,7 @@ class LAMMPS(seamm.Node):
                         for idx, line in enumerate(new_input_data):
                             if 'run' in line:
                                 new_line = new_input_data[idx].split()
-                                new_nsteps = int(new_line[1]) * 2
+                                new_nsteps = round(float(new_line[1]) * 1.5)
                                 new_line[1] = str(new_nsteps)
                                 new_line = '              '.join(new_line)
                                 new_input_data[idx] = new_line
@@ -812,7 +818,6 @@ class LAMMPS(seamm.Node):
                 #    history_nodes.append(node)
 
             node = node.next()
-
 
 
         if len(history_nodes) > 0:
@@ -1469,6 +1474,7 @@ class LAMMPS(seamm.Node):
         else:
             return value
 
+
     def analyze(self, indent='', nodes=None, **kwargs):
         """Analyze the output of the calculation
         """
@@ -1487,25 +1493,33 @@ class LAMMPS(seamm.Node):
 
             filenames = glob.glob(
                 os.path.join(
-                    self.directory, '*trajectory*' + id_str + '.seamm_trj'
+                    self.directory, '*trajectory*' + id_str + '*.seamm_trj'
                 )
             )
+
+            filenames.sort(key=lambda x: int(re.search('iter_\d+',x).group().split('_')[1]))
+
+            if len(filenames) > 0:
+                filename = filenames[-1] 
 
             P = node.parameters.current_values_to_dict(
                 context=seamm.flowchart_variables._data
             )
 
-            if 'control_properties' in P:
-                control_properties = [prp[0] for prp in P['control_properties']]
+            node_data = None
+            if 'run_control' in P:
 
-            data = None
-            for filename in filenames:
-                data = self.analyze_trajectory(filename, control_properties=control_properties)
-                node.analyze(data=data)
+                if P['run_control'] == 'For a fixed length of simulated time.': 
+                    control_properties = lambda x: x not in ['tstep']
+                else:
+                    control_properties = [prp[0] for prp in P['control_properties']]
+                    
+                node_data = self.analyze_trajectory(filename, control_properties=control_properties)
+                node.analyze(data=node_data)
 
-            ret[node._id[1]] = data
+            ret[node._id[1]] = node_data
 
-        return data
+        return ret
 
     def analyze_trajectory(self, filename, sampling_rate=20, control_properties=None):
         """Read a trajectory file and do the statistical analysis
@@ -1514,15 +1528,19 @@ class LAMMPS(seamm.Node):
         write_html = (
             'lammps_html' in self.options and self.options.lammps_html
         )
-        rootname = os.path.splitext(filename)[0]
+
+        #rootname = os.path.splitext(filename)[0]
+        rootname = 'ROOTNAME'
+
         results = {}
 
-        if 't' not in control_properties:
+        if isinstance(control_properties, list) and 't' not in control_properties:
             control_properties.append('t')
 
         # Process the trajectory data
+        
         with open(filename, 'r') as fd:
-            data = pandas.read_csv(
+            file_data = pandas.read_csv(
                 fd,
                 sep=' ',
                 header=0,
@@ -1530,6 +1548,14 @@ class LAMMPS(seamm.Node):
                 usecols=control_properties,
                 index_col='t'
             )
+            self._trajectory.append(file_data[:-1])
+      
+
+        dt_fs = file_data.index[1] - file_data.index[0]
+        dt = dt_fs
+        data = pandas.concat(self._trajectory)
+        data = data.reset_index(drop=True)
+        data.index *= dt
 
         logger.debug('Columns: {}'.format(data.columns))
         logger.debug('  Types:\n{}'.format(data.dtypes))
@@ -1549,8 +1575,6 @@ class LAMMPS(seamm.Node):
 
         # Work out the time step, rather than give the whole vector
         t = data.index
-        dt_fs = t[1] - t[0]
-        dt = dt_fs
         t_units = 'fs'
         len_trj = (len(t) - 1) * dt_fs
         divisor = 1
