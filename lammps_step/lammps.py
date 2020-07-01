@@ -630,10 +630,10 @@ class LAMMPS(seamm.Node):
                         timestep = P['timestep'].to('fs').magnitude
 
                     control_properties = {}
-                    for each_prop in P['control_properties']:
-                        k = each_prop[0]
-                        control_properties[k] = {'value': float(each_prop[1][0].strip('%')), 
-                                'units': each_prop[1][1],
+                    for prp in P['control_properties']:
+                        k = prp[0]
+                        control_properties[k] = {'accuracy': float(prp[1][0].strip('%')), 
+                                'units': prp[1][1],
                                 'enough_accuracy': False}
 
                     while True:
@@ -720,24 +720,27 @@ class LAMMPS(seamm.Node):
                         
                         analysis = self.analyze(nodes=node)
 
-                        for k, v in control_properties.items():
-                            if analysis[node._id[1]][k + ',short_production_warning'] is False:
-                                if analysis[node._id[1]][k + ',few_neff_warning'] is False:
+                        node_id = node._id[1]
+                        pdb.set_trace()
+                        for prp, v in analysis[node_id].items():
+                            if v['short_production']is False:
+                                if v['few_neff']is False:
 
-                                    accuracy = v['value'] / 100
-                                    dof = analysis[node._id[1]][k + ',n_sample'] 
-                                    mean = analysis[node._id[1]][k]
+                                    accuracy = control_properties[prp]['accuracy'] / 100
+                                    dof = v['n_sample'] 
+                                    mean = v['mean'] 
                                     ci = t.interval(0.95, dof - 1, loc=0, scale=1)
                                     interval = ci[1] - ci[0]
                                     if abs(interval / mean) < accuracy:
-                                        control_properties[k]['enough_accuracy'] = True
+                                        control_properties[prp]['enough_accuracy'] = True
 
-                        enough_acc = [v['enough_accuracy'] for k, v in control_properties.items()]
+                        enough_acc = [v['enough_accuracy'] for prp, v in control_properties.items()]
                         if all(enough_acc) is True:
                             history_nodes = []
                             input_data = copy.deepcopy(initialization_header)
                             input_data.append("read_dump          %s %s x y z" % (os.path.join(self.directory, curr_dump), last_snapshot))
                             self.read_dump(os.path.join(self.directory, curr_dump))
+                            self._trajectory = []
                             break
 
                         try:
@@ -1647,10 +1650,11 @@ class LAMMPS(seamm.Node):
                     unbiased=False
                 )
 
-            results[column] = mean
-            results['{},stderr'.format(column)] = sem
-            results['{},n_sample'.format(column)] = n_samples
-            results['{},short_production_warning'.format(column)] = have_acf_warning
+            results[column] = {}
+            results[column]['mean'] = mean
+            results[column]['sem'] = sem
+            results[column]['n_sample'] = n_samples
+            results[column]['short_production'] = have_acf_warning
 
             # Work out units on convergence time
             conv_units = 'fs'
@@ -1684,7 +1688,7 @@ class LAMMPS(seamm.Node):
             else:
                 warn = ' '
 
-            results['{},few_neff_warning'.format(column)] = have_warning
+            results[column]['few_neff'] = have_warning
 
             printer.normal(
                 __(
