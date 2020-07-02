@@ -862,8 +862,6 @@ class LAMMPS(seamm.Node):
      
             # Update the coordinates in the system
             self.read_dump(os.path.join(self.directory, accum_dump))
-            import pdb
-            pdb.set_trace()
             self.analyze(nodes=history_nodes)
            
         return next_node
@@ -1580,8 +1578,7 @@ class LAMMPS(seamm.Node):
             indices = timeseries.subsampleCorrelatedData(
                 y_t_equil, g=inefficiency
             )
-            import pdb
-            pdb.set_trace()
+
             if len(indices) == 0:
                 print('Problem with column ' + column)
                 print('yy')
