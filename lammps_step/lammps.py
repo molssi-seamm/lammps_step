@@ -619,6 +619,7 @@ class LAMMPS(seamm.Node):
                         # Update the coordinates in the system
 
                         self.analyze(nodes=history_nodes)
+                        self._trajectory = []
 
                     iteration = 0
 
@@ -715,7 +716,6 @@ class LAMMPS(seamm.Node):
                         last_snapshot = os.path.splitext(accum_dump)[1].strip('.')        
 
                         # Analyze the results
-                        
                         analysis = self.analyze(nodes=node)
 
                         node_id = node._id[1]
