@@ -550,7 +550,7 @@ class LAMMPS(seamm.Node):
                         accum_base = os.path.join(self.directory, 'lammps_substep_%s_iter_0' % ('_'.join(history_nodes_ids)))
                         accum_infile = accum_base + '.dat' 
                         accum_dump = accum_base + '.dump.*' 
-                        input_data.append('write_dump          all custom  %s id xu yu zu modify flush yes sort id' % (accum_dump))
+                        input_data.append('write_dump          all custom  %s id xu yu zu vx vy vz modify flush yes sort id' % (accum_dump))
 
                         files[accum_infile] = '\n'.join(input_data)
 
@@ -623,27 +623,26 @@ class LAMMPS(seamm.Node):
 
                     iteration = 0
 
-
-                    if P['timestep'] == 'normal':
-                        timestep = 1.0
-                    else:
-                        timestep = P['timestep'].to('fs').magnitude
-
-                    control_properties = {}
-                    for prp in P['control_properties']:
-                        k = prp[0]
-                        control_properties[k] = {'accuracy': float(prp[1][0].strip('%')), 
-                                'units': prp[1][1],
-                                'enough_accuracy': False}
-
                     while True:
+
+                        if P['timestep'] == 'normal':
+                            timestep = 1.0
+                        else:
+                            timestep = P['timestep'].to('fs').magnitude
+
+                        control_properties = {}
+                        for prp in P['control_properties']:
+                            k = prp[0]
+                            control_properties[k] = {'accuracy': float(prp[1][0].strip('%')), 
+                                    'units': prp[1][1],
+                                    'enough_accuracy': False}
 
 
                         P = node.parameters.current_values_to_dict(
                             context=seamm.flowchart_variables._data
                         )
 
-                        new_input_data.insert(0, 'read_dump          %s %s x y z' % (accum_dump, last_snapshot))
+                        new_input_data.insert(0, 'read_dump          %s %s x y z vx vy vz' % (accum_dump, last_snapshot))
                         curr_base = 'lammps_substep_%s_iter_%d' % (node._id[1], iteration)
 
                         time = P['time'].to('fs').magnitude
@@ -653,7 +652,7 @@ class LAMMPS(seamm.Node):
                         curr_dump = curr_base + '.dump.%d' % nsteps #  + node.parameters['time']['value'] 
 
                         new_input_data = initialization_header + new_input_data
-                        new_input_data.append('write_dump          all custom  %s id xu yu zu modify flush yes sort id' % (curr_dump))
+                        new_input_data.append('write_dump          all custom  %s id xu yu zu vx vy vz modify flush yes sort id' % (curr_dump))
 
                         # Create input file for the current substep iteration
    
@@ -721,7 +720,6 @@ class LAMMPS(seamm.Node):
                         analysis = self.analyze(nodes=node)
 
                         node_id = node._id[1]
-                        pdb.set_trace()
                         for prp, v in analysis[node_id].items():
                             if v['short_production']is False:
                                 if v['few_neff']is False:
@@ -738,7 +736,7 @@ class LAMMPS(seamm.Node):
                         if all(enough_acc) is True:
                             history_nodes = []
                             input_data = copy.deepcopy(initialization_header)
-                            input_data.append("read_dump          %s %s x y z" % (os.path.join(self.directory, curr_dump), last_snapshot))
+                            input_data.append("read_dump          %s %s x y z vx vy vz" % (os.path.join(self.directory, curr_dump), last_snapshot))
                             self.read_dump(os.path.join(self.directory, curr_dump))
                             self._trajectory = []
                             break
@@ -829,7 +827,7 @@ class LAMMPS(seamm.Node):
             accum_base = 'lammps_substep_%s_iter_0' % ('_'.join(history_nodes_ids)) 
             accum_infile = accum_base + '.dat' 
             accum_dump = accum_base + '.dump.*' 
-            input_data.append('write_dump          all custom  %s id xu yu zu modify flush yes sort id' % (accum_dump))
+            input_data.append('write_dump          all custom  %s id xu yu zu vx vy vz modify flush yes sort id' % (accum_dump))
             
             files[accum_infile] = '\n'.join(input_data)
             
@@ -1986,6 +1984,7 @@ class LAMMPS(seamm.Node):
         section = ''
         section_lines = []
         xyz = []
+        vel = []
         with open(dumpfile, 'r') as fd:
             lineno = 0
             for line in fd:
@@ -2052,8 +2051,9 @@ class LAMMPS(seamm.Node):
                             )
                     elif 'ATOMS' in section:
                         for tmp in section_lines:
-                            id, x, y, z = tmp.split()
+                            id, x, y, z, vx, vy, vz = tmp.split()
                             xyz.append((float(x), float(y), float(z)))
+                            vel.append((float(vx), float(vy), float(vz)))
                     section = line[6:].strip()
                     section_lines = []
                 else:
@@ -2064,9 +2064,11 @@ class LAMMPS(seamm.Node):
             logger.debug("  processing section '{}'".format(section))
             logger.debug('  handling the atoms')
             for tmp in section_lines:
-                id, x, y, z = tmp.split()
+                id, x, y, z, vx, vy, vz = tmp.split()
                 xyz.append((float(x), float(y), float(z)))
+                vel.append((float(vx), float(vy), float(vz)))
 
         if periodicity == 3:
             system['cell'] = cell
         atoms['coordinates'] = xyz
+        atoms['velocities'] = vel
