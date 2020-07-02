@@ -542,8 +542,7 @@ class LAMMPS(seamm.Node):
                         history_nodes.append(node)
 
                 else:
-                #if 'run_control' in P:
-                #    if 'Until properties converge' in P['run_control']:
+
                     if len(history_nodes) > 0: # if imcccc
 
                         history_nodes_ids = [n._id[1] for n in history_nodes]
@@ -783,41 +782,6 @@ class LAMMPS(seamm.Node):
                         
                         iteration = iteration + 1
 
-                #    else:
-
-                #input_data.append("# READ DATA GOES HERE")
-                #input_data += new_input_data
-                #history_nodes.append(node)
-
-                #else:
-                #    try:
-                #        new_input_data = node.get_input(extras)
-                #    except Exception as e:
-                #        print(
-                #            'Error running LAMMPS flowchart: {} in {}'.format(
-                #                str(e), str(node)
-                #            )
-                #        )
-                #        logger.critical(
-                #            'Error running LAMMPS flowchart: {} in {}'.format(
-                #                str(e), str(node)
-                #            )
-                #        )
-                #        raise
-                #    except:  # noqa: E722
-                #        print(
-                #            "Unexpected error running LAMMPS flowchart: {} in {}"
-                #            .format(sys.exc_info()[0], str(node))
-                #        )
-                #        logger.critical(
-                #            "Unexpected error running LAMMPS flowchart: {} in {}"
-                #            .format(sys.exc_info()[0], str(node))
-                #        )
-                #        raise
-
-                #    input_data += new_input_data
-                #    history_nodes.append(node)
-
             node = node.next()
 
 
@@ -896,7 +860,8 @@ class LAMMPS(seamm.Node):
      
             # Update the coordinates in the system
             self.read_dump(os.path.join(self.directory, accum_dump))
-                        
+            import pdb
+            pdb.set_trace()
             self.analyze(nodes=history_nodes)
            
         return next_node
@@ -1530,8 +1495,7 @@ class LAMMPS(seamm.Node):
             'lammps_html' in self.options and self.options.lammps_html
         )
 
-        #rootname = os.path.splitext(filename)[0]
-        rootname = 'ROOTNAME'
+        rootname = os.path.splitext(filename)[0]
 
         results = {}
 
