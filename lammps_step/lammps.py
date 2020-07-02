@@ -728,6 +728,8 @@ class LAMMPS(seamm.Node):
                                     mean = v['mean'] 
                                     ci = t.interval(0.95, dof - 1, loc=0, scale=1)
                                     interval = ci[1] - ci[0]
+                                    print(prp, interval/mean, accuracy)
+                                    print (analysis)
                                     if abs(interval / mean) < accuracy:
                                         control_properties[prp]['enough_accuracy'] = True
 
@@ -1513,7 +1515,7 @@ class LAMMPS(seamm.Node):
                 usecols=control_properties,
                 index_col='t'
             )
-            self._trajectory.append(file_data[:-1])
+            self._trajectory.append(file_data.iloc[:-1])
       
 
         dt_fs = file_data.index[1] - file_data.index[0]
@@ -1578,6 +1580,8 @@ class LAMMPS(seamm.Node):
             indices = timeseries.subsampleCorrelatedData(
                 y_t_equil, g=inefficiency
             )
+            import pdb
+            pdb.set_trace()
             if len(indices) == 0:
                 print('Problem with column ' + column)
                 print('yy')
@@ -1587,6 +1591,7 @@ class LAMMPS(seamm.Node):
                 print('indices')
                 print(indices)
                 continue
+
             y_n = y_t_equil[indices]
             n_samples = len(y_n)
             mean = y_n.mean()
