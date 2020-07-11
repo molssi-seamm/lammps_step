@@ -794,7 +794,7 @@ class LAMMPS(seamm.Node):
                                     ci = t_student.interval(
                                         0.95, dof - 1, loc=0, scale=1
                                     )
-                                    interval = ci[1] - ci[0]
+                                    interval = 0.5*(ci[1] - ci[0])
                                     if abs(interval / mean) < accuracy:
                                         control_properties[prp][
                                             'enough_accuracy'] = True
