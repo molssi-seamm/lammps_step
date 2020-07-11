@@ -3,7 +3,7 @@
 """A node or step for LAMMPS in a flowchart"""
 
 import copy
-from scipy.stats import t
+from scipy.stats import t as t_student
 import re
 import argparse
 import configargparse
@@ -791,7 +791,7 @@ class LAMMPS(seamm.Node):
                                         'accuracy'] / 100
                                     dof = v['n_sample']
                                     mean = v['mean']
-                                    ci = t.interval(
+                                    ci = t_student.interval(
                                         0.95, dof - 1, loc=0, scale=1
                                     )
                                     interval = ci[1] - ci[0]
