@@ -766,24 +766,7 @@ class LAMMPS(seamm.Node):
         return next_node
 
 
-    def _execute_node_history(self):
-
-        history_nodes_ids = [n._id[1] for n in history_nodes]
-        accum_base = 'lammps_substep_%s_iter_0' % (
-            '_'.join(history_nodes_ids)
-        )
-        accum_infile = accum_base + '.dat'
-        accum_dump = accum_base + '.dump.*'
-        input_data.append(
-            f'write_dump          all custom  {accum_dump} id xu yu zu vx '
-            'vy vz modify flush yes sort id'
-        )
-
-        files[accum_infile] = '\n'.join(input_data)
-
-        logger.debug(accum_infile + ':\n' + files[accum_infile])
-
-        # Get the structure file from the eex
+    def _execute_single_sim(self, files):
 
         with open(
             os.path.join(self.directory, accum_infile), mode='w'
@@ -865,6 +848,25 @@ class LAMMPS(seamm.Node):
         # Update the coordinates in the system
         self.read_dump(os.path.join(self.directory, accum_dump))
 
+    def _execute_multiple_sims(self):
+
+        history_nodes_ids = [n._id[1] for n in history_nodes]
+        accum_base = 'lammps_substep_%s_iter_0' % (
+            '_'.join(history_nodes_ids)
+        )
+        accum_infile = accum_base + '.dat'
+        accum_dump = accum_base + '.dump.*'
+        input_data.append(
+            f'write_dump          all custom  {accum_dump} id xu yu zu vx '
+            'vy vz modify flush yes sort id'
+        )
+
+        files[accum_infile] = '\n'.join(input_data)
+
+        logger.debug(accum_infile + ':\n' + files[accum_infile])
+
+        def _execute_single_sim(self, files):
+        # Get the structure file from the eex
 
 
     def structure_data(self, eex, triclinic=False):
