@@ -542,110 +542,8 @@ class LAMMPS(seamm.Node):
                 else:
 
                     if len(history_nodes) > 0:  # if imcccc
-
-                        history_nodes_ids = [n._id[1] for n in history_nodes]
-                        accum_base = os.path.join(
-                            self.directory, 'lammps_substep_%s_iter_0' %
-                            ('_'.join(history_nodes_ids))
-                        )
-                        accum_infile = accum_base + '.dat'
-                        accum_dump = accum_base + '.dump.*'
-                        input_data.append(
-                            f'write_dump          all custom  {accum_dump} id '
-                            'xu yu zu vx vy vz modify flush yes sort id'
-                        )
-
-                        files[accum_infile] = '\n'.join(input_data)
-
-                        logger.debug(
-                            accum_infile + ':\n' + files[accum_infile]
-                        )
-
-                        # Get the structure file from the eex
-
-                        with open(accum_infile, mode='w') as fd:
-                            fd.write(files[accum_infile])
-
-                        return_files = [
-                            'summary_*.txt', 'trajectory_*.seamm_trj',
-                            '*.dump.*'
-                        ]
-                        local = seamm.ExecLocal()
-
-                        if use_mpi:
-                            cmd = [
-                                mpiexec, '-np',
-                                str(np), o.lammps_mpi, '-in', accum_infile
-                            ]
-                        else:
-                            cmd = [o.lammps_serial, '-in', accum_infile]
-
-                        result = local.run(
-                            cmd=cmd, files=files, return_files=return_files
-                        )
-
-                        if result is None:
-                            logger.error('There was an error running LAMMPS')
-                            return None
-
-                        logger.debug('\n' + pprint.pformat(result))
-
-                        logger.debug('stdout:\n' + result['stdout'])
-
-                        with open(
-                            os.path.join(self.directory, 'stdout.txt'),
-                            mode='w'
-                        ) as fd:
-                            fd.write(result['stdout'])
-
-                        if result['stderr'] != '':
-                            logger.warning('stderr:\n' + result['stderr'])
-                            with open(
-                                os.path.join(self.directory, 'stderr.txt'),
-                                mode='w'
-                            ) as fd:
-                                fd.write(result['stderr'])
-
-                        for filename in result['files']:
-                            with open(
-                                os.path.join(self.directory, filename),
-                                mode='w'
-                            ) as fd:
-                                if result[filename]['data'] is not None:
-                                    fd.write(result[filename]['data'])
-                                else:
-                                    fd.write(result[filename]['exception'])
-
-                        accum_dump_filenames = glob.glob(
-                            os.path.join(self.directory, accum_dump)
-                        )
-
-                        # Probably the step didn't run
-                        if len(accum_dump_filenames) == 0:
-                            raise FileNotFoundError(
-                                'Lammps_step: could not find any file with '
-                                'the pattern %s' % (accum_dump)
-                            )
-
-                        run_lengths = []
-
-                        for accum_dump in accum_dump_filenames:
-                            try:
-                                pre, ext = os.path.splitext(accum_dump)
-                                ext = int(ext.strip('.'))
-                            except ValueError:
-                                raise Exception(
-                                    'Lammps_step: could not extract run length'
-                                    ' from dump file %s' % (accum_dump)
-                                )
-                            run_lengths.append(ext)
-
-                            last_snapshot = str(max(run_lengths))
-
-                        accum_dump = accum_dump.replace('*', last_snapshot)
-                        self.read_dump(
-                            os.path.join(self.directory, accum_dump)
-                        )
+        
+                        self._execute_node_history():
 
                         # Update the coordinates in the system
 
@@ -861,105 +759,113 @@ class LAMMPS(seamm.Node):
 
         if len(history_nodes) > 0:
 
-            history_nodes_ids = [n._id[1] for n in history_nodes]
-            accum_base = 'lammps_substep_%s_iter_0' % (
-                '_'.join(history_nodes_ids)
-            )
-            accum_infile = accum_base + '.dat'
-            accum_dump = accum_base + '.dump.*'
-            input_data.append(
-                f'write_dump          all custom  {accum_dump} id xu yu zu vx '
-                'vy vz modify flush yes sort id'
-            )
+            self._execute_node_history()
 
-            files[accum_infile] = '\n'.join(input_data)
-
-            logger.debug(accum_infile + ':\n' + files[accum_infile])
-
-            # Get the structure file from the eex
-
-            with open(
-                os.path.join(self.directory, accum_infile), mode='w'
-            ) as fd:
-                fd.write(files[accum_infile])
-
-            return_files = [
-                'summary_*.txt', 'trajectory_*.seamm_trj', '*.dump.*'
-            ]
-            local = seamm.ExecLocal()
-
-            if use_mpi:
-                cmd = [
-                    mpiexec, '-np',
-                    str(np), o.lammps_mpi, '-in', accum_infile
-                ]
-            else:
-                cmd = [o.lammps_serial, '-in', accum_infile]
-
-            result = local.run(cmd=cmd, files=files, return_files=return_files)
-
-            if result is None:
-                logger.error('There was an error running LAMMPS')
-                return None
-
-            logger.debug('\n' + pprint.pformat(result))
-
-            logger.debug('stdout:\n' + result['stdout'])
-
-            with open(
-                os.path.join(self.directory, 'stdout.txt'), mode='w'
-            ) as fd:
-                fd.write(result['stdout'])
-
-            if result['stderr'] != '':
-                logger.warning('stderr:\n' + result['stderr'])
-                with open(
-                    os.path.join(self.directory, 'stderr.txt'), mode='w'
-                ) as fd:
-                    fd.write(result['stderr'])
-
-            for filename in result['files']:
-                with open(
-                    os.path.join(self.directory, filename), mode='w'
-                ) as fd:
-                    if result[filename]['data'] is not None:
-                        fd.write(result[filename]['data'])
-                    else:
-                        fd.write(result[filename]['exception'])
-
-            accum_dump_filenames = glob.glob(
-                os.path.join(self.directory, accum_dump)
-            )
-
-            # Probably the step didn't run
-            if len(accum_dump_filenames) == 0:
-                raise FileNotFoundError(
-                    'Lammps_step: could not find any file with the pattern %s'
-                    % (accum_dump)
-                )
-
-            run_lengths = []
-
-            for accum_dump in accum_dump_filenames:
-                try:
-                    pre, ext = os.path.splitext(accum_dump)
-                    ext = int(ext.strip('.'))
-                except ValueError:
-                    raise Exception(
-                        'Lammps_step: could not extract run length from dump '
-                        f'file {accum_dump}'
-                    )
-                run_lengths.append(ext)
-
-                last_snapshot = str(max(run_lengths))
-
-            accum_dump = accum_dump.replace('*', last_snapshot)
-
-            # Update the coordinates in the system
-            self.read_dump(os.path.join(self.directory, accum_dump))
             self.analyze(nodes=history_nodes)
 
         return next_node
+
+
+    def _execute_node_history(self):
+
+        history_nodes_ids = [n._id[1] for n in history_nodes]
+        accum_base = 'lammps_substep_%s_iter_0' % (
+            '_'.join(history_nodes_ids)
+        )
+        accum_infile = accum_base + '.dat'
+        accum_dump = accum_base + '.dump.*'
+        input_data.append(
+            f'write_dump          all custom  {accum_dump} id xu yu zu vx '
+            'vy vz modify flush yes sort id'
+        )
+
+        files[accum_infile] = '\n'.join(input_data)
+
+        logger.debug(accum_infile + ':\n' + files[accum_infile])
+
+        # Get the structure file from the eex
+
+        with open(
+            os.path.join(self.directory, accum_infile), mode='w'
+        ) as fd:
+            fd.write(files[accum_infile])
+
+        return_files = [
+            'summary_*.txt', 'trajectory_*.seamm_trj', '*.dump.*'
+        ]
+        local = seamm.ExecLocal()
+
+        if use_mpi:
+            cmd = [
+                mpiexec, '-np',
+                str(np), o.lammps_mpi, '-in', accum_infile
+            ]
+        else:
+            cmd = [o.lammps_serial, '-in', accum_infile]
+
+        result = local.run(cmd=cmd, files=files, return_files=return_files)
+
+        if result is None:
+            logger.error('There was an error running LAMMPS')
+            return None
+
+        logger.debug('\n' + pprint.pformat(result))
+
+        logger.debug('stdout:\n' + result['stdout'])
+
+        with open(
+            os.path.join(self.directory, 'stdout.txt'), mode='w'
+        ) as fd:
+            fd.write(result['stdout'])
+
+        if result['stderr'] != '':
+            logger.warning('stderr:\n' + result['stderr'])
+            with open(
+                os.path.join(self.directory, 'stderr.txt'), mode='w'
+            ) as fd:
+                fd.write(result['stderr'])
+
+        for filename in result['files']:
+            with open(
+                os.path.join(self.directory, filename), mode='w'
+            ) as fd:
+                if result[filename]['data'] is not None:
+                    fd.write(result[filename]['data'])
+                else:
+                    fd.write(result[filename]['exception'])
+
+        accum_dump_filenames = glob.glob(
+            os.path.join(self.directory, accum_dump)
+        )
+
+        # Probably the step didn't run
+        if len(accum_dump_filenames) == 0:
+            raise FileNotFoundError(
+                'Lammps_step: could not find any file with the pattern %s'
+                % (accum_dump)
+            )
+
+        run_lengths = []
+
+        for accum_dump in accum_dump_filenames:
+            try:
+                pre, ext = os.path.splitext(accum_dump)
+                ext = int(ext.strip('.'))
+            except ValueError:
+                raise Exception(
+                    'Lammps_step: could not extract run length from dump '
+                    f'file {accum_dump}'
+                )
+            run_lengths.append(ext)
+
+            last_snapshot = str(max(run_lengths))
+
+        accum_dump = accum_dump.replace('*', last_snapshot)
+
+        # Update the coordinates in the system
+        self.read_dump(os.path.join(self.directory, accum_dump))
+
+
 
     def structure_data(self, eex, triclinic=False):
         """Create the LAMMPS structure file from the energy expression"""
