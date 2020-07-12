@@ -486,18 +486,28 @@ class LAMMPS(seamm.Node):
                     raise
 
                 files = {}
-                files['structure.dat'] = '\n'.join(self.structure_data(eex))
+                files['structure'] = {}
+                files['structure']['filename'] = os.path.join(self.directory, 'structure.dat')
+                files['structure']['data'] = '\n'.join(self.structure_data(eex))
+
                 with open(
-                    os.path.join(self.directory, 'structure.dat'), mode='w'
+                    files['structure']['filename'], mode='w'
                 ) as fd:
-                    fd.write(files['structure.dat'])
-                logger.debug('structure.dat:\n' + files['structure.dat'])
+                    fd.write(files['structure']['data'])
+
+                logger.debug(files['structure']['filename'] + ": " + files['structure.dat'])
+
                 initialization_header = copy.deepcopy(lines)
-                input_data += lines
+
+                files['input'] = {}
+                files['input']['filename'] = None
+                files['input']['data'] = copy.deepcopy(initialization_header)
+
                 # Find the bond & angle types as needed for shake/rattle
                 P = node.parameters.current_values_to_dict(
                     context=seamm.flowchart_variables._data
                 )
+                
                 shake = self.shake_fix(P, eex)
                 if shake != '':
                     extras['shake'] = shake
@@ -536,14 +546,14 @@ class LAMMPS(seamm.Node):
                 )
 
                 if 'run_control' not in P or 'Until' not in P['run_control']:
-                    input_data += new_input_data
+                    files['input']['data'] += new_input_data
                     history_nodes.append(node)
 
                 else:
 
                     if len(history_nodes) > 0:  # if imcccc
         
-                        self._execute_node_history():
+                        files = self._execute_multiple_sims(files):
 
                         # Update the coordinates in the system
 
@@ -572,10 +582,6 @@ class LAMMPS(seamm.Node):
                             context=seamm.flowchart_variables._data
                         )
 
-                        new_input_data.insert(
-                            0, 'read_dump          %s %s x y z vx vy vz' %
-                            (accum_dump, last_snapshot)
-                        )
                         curr_base = 'lammps_substep_%s_iter_%d' % (
                             node._id[1], iteration
                         )
@@ -584,98 +590,36 @@ class LAMMPS(seamm.Node):
 
                         nsteps = round(time / timestep)
 
+                        curr_infile = curr_base + '.dat'
+
                         curr_dump = curr_base + f'.dump.{nsteps:d}'
                         #  + node.parameters['time']['value']
 
+                        new_input_data.insert(
+                            0, 'read_dump          %s %s x y z vx vy vz' %
+                            (files['dump']['filename'], files['dump']['last_snapshot'])
+                        )
+
                         new_input_data = initialization_header + new_input_data
+
                         new_input_data.append(
                             f'write_dump          all custom  {curr_dump} id '
                             'xu yu zu vx vy vz modify flush yes sort id'
                         )
 
-                        # Create input file for the current substep iteration
-
-                        curr_infile = curr_base + '.dat'
-
                         new_input_data_txt = '\n'.join(new_input_data).replace(
                             'iter_0.seamm_trj', 'iter_%d.seamm_trj' % iteration
                         )
 
-                        files[curr_infile] = new_input_data_txt
+                        files['input']['filename'] = curr_infile
+                        files['input']['data'] = new_input_data_txt
 
-                        with open(
-                            os.path.join(self.directory, accum_dump), 'r'
-                        ) as fd:
-                            files[accum_dump] = fd.read()
-
-                        logger.debug(curr_infile + ':\n' + files[curr_infile])
+                        logger.debug(files['input']['filename']+ ':\n' + files['input']['data'])
 
                         # Get the structure file from the eex
 
-                        with open(
-                            os.path.join(self.directory, curr_infile),
-                            mode='w'
-                        ) as fd:
-                            fd.write(files[curr_infile])
 
-                        return_files = [
-                            'summary_*.txt', 'trajectory_*.seamm_trj',
-                            '*.dump.*'
-                        ]
-
-                        local = seamm.ExecLocal()
-
-                        if use_mpi:
-                            cmd = [
-                                mpiexec, '-np',
-                                str(np), o.lammps_mpi, '-in', curr_infile
-                            ]
-                        else:
-                            cmd = [o.lammps_serial, '-in', curr_infile]
-
-                        result = local.run(
-                            cmd=cmd, files=files, return_files=return_files
-                        )
-
-                        if result is None:
-                            logger.error('There was an error running LAMMPS')
-                            return None
-
-                        logger.debug('\n' + pprint.pformat(result))
-
-                        logger.debug('stdout:\n' + result['stdout'])
-
-                        with open(
-                            os.path.join(self.directory, 'stdout.txt'),
-                            mode='w'
-                        ) as fd:
-                            fd.write(result['stdout'])
-
-                        if result['stderr'] != '':
-                            logger.warning('stderr:\n' + result['stderr'])
-                            with open(
-                                os.path.join(self.directory, 'stderr.txt'),
-                                mode='w'
-                            ) as fd:
-                                fd.write(result['stderr'])
-
-                        for filename in result['files']:
-                            with open(
-                                os.path.join(self.directory, filename),
-                                mode='w'
-                            ) as fd:
-                                if result[filename]['data'] is not None:
-                                    fd.write(result[filename]['data'])
-                                else:
-                                    fd.write(result[filename]['exception'])
-
-                        # Update the coordinates in the system
-                        self.read_dump(os.path.join(self.directory, curr_dump))
-
-                        accum_dump = curr_dump
-
-                        last_snapshot = \
-                            os.path.splitext(accum_dump)[1].strip('.')
+                        files = self._execute_single_sim(self, files)
 
                         # Analyze the results
                         analysis = self.analyze(nodes=node)
@@ -703,15 +647,14 @@ class LAMMPS(seamm.Node):
                         ]
                         if all(enough_acc) is True:
                             history_nodes = []
-                            input_data = copy.deepcopy(initialization_header)
-                            input_data.append(
+                            files['input']['data'] = copy.deepcopy(initialization_header)
+                            files['input']['data'].append(
                                 "read_dump          %s %s x y z vx vy vz" % (
-                                    os.path.join(self.directory,
-                                                 curr_dump), last_snapshot
+                                    os.path.join(files['dump']['filename']), files['dump']['last_snapshot']
                                 )
                             )
                             self.read_dump(
-                                os.path.join(self.directory, curr_dump)
+                                )files['dump']['filename'])
                             )
                             self._trajectory = []
                             break
@@ -767,11 +710,16 @@ class LAMMPS(seamm.Node):
 
 
     def _execute_single_sim(self, files):
+    ''' Step #1: Dump input file
+        Step #2: Execute input file
+        Step #3: Dump stderr
+        Step #4: Dump output files
+        '''
 
         with open(
-            os.path.join(self.directory, accum_infile), mode='w'
+            files['input']['filename']), mode='w'
         ) as fd:
-            fd.write(files[accum_infile])
+            fd.write(files['input']['data'])
 
         return_files = [
             'summary_*.txt', 'trajectory_*.seamm_trj', '*.dump.*'
@@ -781,10 +729,10 @@ class LAMMPS(seamm.Node):
         if use_mpi:
             cmd = [
                 mpiexec, '-np',
-                str(np), o.lammps_mpi, '-in', accum_infile
+                str(np), o.lammps_mpi, '-in', files['input']['filename']
             ]
         else:
-            cmd = [o.lammps_serial, '-in', accum_infile]
+            cmd = [o.lammps_serial, '-in', files['input']['filename']]
 
         result = local.run(cmd=cmd, files=files, return_files=return_files)
 
@@ -817,38 +765,43 @@ class LAMMPS(seamm.Node):
                 else:
                     fd.write(result[filename]['exception'])
 
-        accum_dump_filenames = glob.glob(
-            os.path.join(self.directory, accum_dump)
-        )
+        base = os.path.basename(files['input']['filename']).split('.')[0]
+        dump = os.path.join(self.directory, base + '.dump.*')
+        dump_filenames = glob.glob(dump)
 
         # Probably the step didn't run
-        if len(accum_dump_filenames) == 0:
+        if len(dump_filenames) == 0:
             raise FileNotFoundError(
                 'Lammps_step: could not find any file with the pattern %s'
-                % (accum_dump)
+                % (dump)
             )
 
         run_lengths = []
 
-        for accum_dump in accum_dump_filenames:
+        for dump_files in accum_dump_filenames:
             try:
-                pre, ext = os.path.splitext(accum_dump)
+                pre, ext = os.path.splitext(dump_files)
                 ext = int(ext.strip('.'))
             except ValueError:
                 raise Exception(
-                    'Lammps_step: could not extract run length from dump '
-                    f'file {accum_dump}'
+                    'Lammps_step: could not extract run length from dump %s' % dump
                 )
             run_lengths.append(ext)
 
             last_snapshot = str(max(run_lengths))
 
-        accum_dump = accum_dump.replace('*', last_snapshot)
+        dump = dump.replace('*', last_snapshot)
+
+        files['dump'] = {}
+        files['dump']['filename'] = dump
+        files['dump']['last_snapshot'] = last_snapshot
 
         # Update the coordinates in the system
-        self.read_dump(os.path.join(self.directory, accum_dump))
+        self.read_dump(os.path.join(self.directory, dump))
 
-    def _execute_multiple_sims(self):
+        return files
+
+    def _execute_multiple_sims(self, files):
 
         history_nodes_ids = [n._id[1] for n in history_nodes]
         accum_base = 'lammps_substep_%s_iter_0' % (
@@ -856,16 +809,20 @@ class LAMMPS(seamm.Node):
         )
         accum_infile = accum_base + '.dat'
         accum_dump = accum_base + '.dump.*'
-        input_data.append(
+
+        files['input']['data'].append(
             f'write_dump          all custom  {accum_dump} id xu yu zu vx '
             'vy vz modify flush yes sort id'
         )
 
-        files[accum_infile] = '\n'.join(input_data)
+        files['input']['filename'] = accum_infile
+        files['input']['data'] = '\n'.join(files['input']['data'])
 
-        logger.debug(accum_infile + ':\n' + files[accum_infile])
+        logger.debug(files['input']['filename'] ':\n' + )files['input']['data'])
 
-        def _execute_single_sim(self, files):
+        files = _execute_single_sim(files)
+
+        return files
         # Get the structure file from the eex
 
 
