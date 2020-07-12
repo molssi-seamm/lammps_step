@@ -653,9 +653,6 @@ class LAMMPS(seamm.Node):
                                     os.path.join(files['dump']['filename']), files['dump']['last_snapshot']
                                 )
                             )
-                            self.read_dump(
-                                )files['dump']['filename'])
-                            )
                             self._trajectory = []
                             break
 
@@ -702,9 +699,12 @@ class LAMMPS(seamm.Node):
 
         if len(history_nodes) > 0:
 
-            self._execute_node_history()
+            files = self._execute_node_history()
 
             self.analyze(nodes=history_nodes)
+
+        self.read_dump(
+            files['dump']['filename'])
 
         return next_node
 
@@ -795,9 +795,6 @@ class LAMMPS(seamm.Node):
         files['dump'] = {}
         files['dump']['filename'] = dump
         files['dump']['last_snapshot'] = last_snapshot
-
-        # Update the coordinates in the system
-        self.read_dump(os.path.join(self.directory, dump))
 
         return files
 
