@@ -596,15 +596,14 @@ class LAMMPS(seamm.Node):
 
 
     def _execute_single_sim(self, files):
-    ''' Step #1: Dump input file
+        """ 
+        Step #1: Dump input file
         Step #2: Execute input file
         Step #3: Dump stderr
         Step #4: Dump output files
-        '''
+        """
 
-        with open(
-            files['input']['filename']), mode='w'
-        ) as fd:
+        with open(files['input']['filename'], mode='w') as fd:
             fd.write(files['input']['data'])
 
         return_files = [
@@ -713,7 +712,7 @@ class LAMMPS(seamm.Node):
 
         files['input']['filename'] = input_file 
         files['input']['data'] = '\n'.join(files['input']['data'])
-        logger.debug(files['input']['filename'] ':\n' + )files['input']['data'])
+        logger.debug(files['input']['filename'] + ':\n' + files['input']['data'])
 
         return files
 
