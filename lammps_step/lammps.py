@@ -494,14 +494,14 @@ class LAMMPS(seamm.Node):
 
             else:
 
-                new_input_data = self._get_node_input(node)
-
                 P = node.parameters.current_values_to_dict(
                     context=seamm.flowchart_variables._data
                 )
 
                 if 'run_control' not in P or 'Until' not in P['run_control']:
-                    files['input']['data'] += new_input_data
+
+                    files['input']['data'] += self._get_node_input(node)
+
                     history_nodes.append(node)
 
                 else:
@@ -509,87 +509,77 @@ class LAMMPS(seamm.Node):
                     if len(history_nodes) > 0:  # if imcccc
         
                         files = self._prepare_input(files, nodes=history_nodes, read_dump=False, write_dump=True)
+
                         files = _execute_single_sim(files)
 
-                        # Update the coordinates in the system
-
                         self.analyze(nodes=history_nodes)
+
                         self._trajectory = []
 
-                        iteration = 0
+                    iteration = 0
 
-                        while True:
-    
-                            control_properties = {}
-                            for prp in P['control_properties']:
-                                k = prp[0]
-                                control_properties[k] = {
-                                    'accuracy': float(prp[1][0].strip('%')),
-                                    'units': prp[1][1],
-                                    'enough_accuracy': False
-                                }
-    
-                            P = node.parameters.current_values_to_dict(
-                                context=seamm.flowchart_variables._data
-                            )
-    
-    
-                            files = self._prepare_input(files, nodes=node, iteration=iteration, read_dump=True, write_dump=True)
-    
-                            files = self._execute_single_sim(self, files)
-    
-                            # Analyze the results
-                            analysis = self.analyze(nodes=node)
-    
-                            node_id = node._id[1]
-                            for prp, v in analysis[node_id].items():
-                                if v['short_production'] is False:
-                                    if v['few_neff'] is False:
-    
-                                        accuracy = control_properties[prp][
-                                            'accuracy'] / 100
-                                        dof = v['n_sample']
-                                        mean = v['mean']
-                                        ci = t_student.interval(
-                                            0.95, dof - 1, loc=0, scale=1
-                                        )
-                                        interval = 0.5*(ci[1] - ci[0])
-                                        if abs(interval / mean) < accuracy:
-                                            control_properties[prp][
-                                                'enough_accuracy'] = True
-    
-                            enough_acc = [
-                                v['enough_accuracy']
-                                for prp, v in control_properties.items()
-                            ]
-                            if all(enough_acc) is True:
-                                history_nodes = []
-                                files['input']['data'] = copy.deepcopy(initialization_header)
-                                files['input']['data'].append(
-                                    "read_dump          %s %s x y z vx vy vz" % (
-                                        os.path.join(files['dump']['filename']), files['dump']['last_snapshot']
-                                    )
-                                )
-                                self._trajectory = []
-                                break
+                    extras['nsteps'] = 666
+
+                    while True:
+  
+                        new_input_data = self._get_node_input(node, extras)
    
-                            new_input_data = self._get_node_input(node)
+                        extras['nsteps'] = round(1.5 * extras['nsteps'])
+
+                        control_properties = {}
+
+                        for prp in P['control_properties']:
+                            k = prp[0]
+                            control_properties[k] = {
+                                'accuracy': float(prp[1][0].strip('%')),
+                                'units': prp[1][1],
+                                'enough_accuracy': False
+                            }
     
-                            for idx, line in enumerate(new_input_data):
-                                if 'run' in line:
-                                    new_line = new_input_data[idx].split()
-                                    new_nsteps = round(float(new_line[1]) * 1.5)
-                                    new_line[1] = str(new_nsteps)
-                                    new_line = '              '.join(new_line)
-                                    new_input_data[idx] = new_line
+                        P = node.parameters.current_values_to_dict(
+                            context=seamm.flowchart_variables._data
+                        )
     
-                            new_time = new_nsteps * timestep * ureg.femtosecond
+                        files = self._prepare_input(files, nodes=node, iteration=iteration, read_dump=True, write_dump=True)
     
-                            new_time = new_time.to(P['time'].units)
+                        files = self._execute_single_sim(self, files)
     
-                            node.parameters['time'].value = new_time.magnitude
+                        # Analyze the results
+                        analysis = self.analyze(nodes=node)
     
-                            iteration = iteration + 1
+                        node_id = node._id[1]
+                        for prp, v in analysis[node_id].items():
+                            if v['short_production'] is False:
+                                if v['few_neff'] is False:
+    
+                                    accuracy = control_properties[prp][
+                                        'accuracy'] / 100
+                                    dof = v['n_sample']
+                                    mean = v['mean']
+                                    ci = t_student.interval(
+                                        0.95, dof - 1, loc=0, scale=1
+                                    )
+                                    interval = 0.5*(ci[1] - ci[0])
+                                    if abs(interval / mean) < accuracy:
+                                        control_properties[prp][
+                                            'enough_accuracy'] = True
+    
+                        enough_acc = [
+                            v['enough_accuracy']
+                            for prp, v in control_properties.items()
+                        ]
+                        if all(enough_acc) is True:
+                            history_nodes = []
+                            files['input']['data'] = copy.deepcopy(initialization_header)
+                            files['input']['data'].append(
+                                "read_dump          %s %s x y z vx vy vz" % (
+                                    os.path.join(files['dump']['filename']), files['dump']['last_snapshot']
+                                )
+                            )
+                            self._trajectory = []
+                            break 
+    
+                        iteration = iteration + 1
 
             node = node.next()
 

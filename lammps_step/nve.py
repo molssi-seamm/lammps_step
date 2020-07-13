@@ -57,6 +57,12 @@ class NVE(lammps_step.Energy):
         else:
             timestep = P['timestep'].to('fs').magnitude
 
+        if 'nsteps' in extras:
+                nsteps = extras['nsteps']
+        else:
+            time = P['time'].to('fs').magnitude
+            nsteps = round(time / timestep)
+
         # Have to fix formatting for printing...
         PP = dict(P)
         for key in PP:
@@ -66,9 +72,6 @@ class NVE(lammps_step.Energy):
         self.description.append(
             __(self.description_text(), **PP, indent=7 * ' ')
         )
-
-        time = P['time'].to('fs').magnitude
-        nsteps = round(time / timestep)
 
         thermo_properties = (
             'time temp press etotal ke pe ebond '
