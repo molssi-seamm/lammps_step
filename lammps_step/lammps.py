@@ -473,7 +473,7 @@ class LAMMPS(seamm.Node):
                 ) as fd:
                     fd.write(files['structure']['data'])
 
-                logger.debug(files['structure']['filename'] + ": " + files['structure.dat'])
+                logger.debug(files['structure']['filename'] + ": " + files['structure']['data'])
 
                 initialization_header = copy.deepcopy(lines)
 
