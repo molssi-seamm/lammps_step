@@ -460,30 +460,8 @@ class LAMMPS(seamm.Node):
         while node is not None:
 
             if isinstance(node, lammps_step.Initialization):
-                try:
-                    lines, eex = node.get_input()
-                except Exception as e:
-                    print(
-                        'Error running LAMMPS flowchart: {} in {}'.format(
-                            str(e), str(node)
-                        )
-                    )
-                    logger.critical(
-                        'Error running LAMMPS flowchart: {} in {}'.format(
-                            str(e), str(node)
-                        )
-                    )
-                    raise
-                except:  # noqa: E722
-                    print(
-                        "Unexpected error running LAMMPS flowchart: {} in {}"
-                        .format(sys.exc_info()[0], str(node))
-                    )
-                    logger.critical(
-                        "Unexpected error running LAMMPS flowchart: {} in {}"
-                        .format(sys.exc_info()[0], str(node))
-                    )
-                    raise
+
+                lines, eex = self._get_node_input(node)
 
                 files = {}
                 files['structure'] = {}
@@ -516,30 +494,7 @@ class LAMMPS(seamm.Node):
 
             else:
 
-                try:
-                    new_input_data = node.get_input(extras)
-                except Exception as e:
-                    print(
-                        'Error running LAMMPS flowchart: {} in {}'.format(
-                            str(e), str(node)
-                        )
-                    )
-                    logger.critical(
-                        'Error running LAMMPS flowchart: {} in {}'.format(
-                            str(e), str(node)
-                        )
-                    )
-                    raise
-                except:  # noqa: E722
-                    print(
-                        "Unexpected error running LAMMPS flowchart: {} in {}"
-                        .format(sys.exc_info()[0], str(node))
-                    )
-                    logger.critical(
-                        "Unexpected error running LAMMPS flowchart: {} in {}"
-                        .format(sys.exc_info()[0], str(node))
-                    )
-                    raise
+                new_input_data = self._get_node_input(node)
 
                 P = node.parameters.current_values_to_dict(
                     context=seamm.flowchart_variables._data
@@ -553,147 +508,88 @@ class LAMMPS(seamm.Node):
 
                     if len(history_nodes) > 0:  # if imcccc
         
-                        files = self._execute_multiple_sims(files):
+                        files = self._prepare_input(files, nodes=history_nodes, read_dump=False, write_dump=True)
+                        files = _execute_single_sim(files)
 
                         # Update the coordinates in the system
 
                         self.analyze(nodes=history_nodes)
                         self._trajectory = []
 
-                    iteration = 0
+                        iteration = 0
 
-                    while True:
-
-                        if P['timestep'] == 'normal':
-                            timestep = 1.0
-                        else:
-                            timestep = P['timestep'].to('fs').magnitude
-
-                        control_properties = {}
-                        for prp in P['control_properties']:
-                            k = prp[0]
-                            control_properties[k] = {
-                                'accuracy': float(prp[1][0].strip('%')),
-                                'units': prp[1][1],
-                                'enough_accuracy': False
-                            }
-
-                        P = node.parameters.current_values_to_dict(
-                            context=seamm.flowchart_variables._data
-                        )
-
-                        curr_base = 'lammps_substep_%s_iter_%d' % (
-                            node._id[1], iteration
-                        )
-
-                        time = P['time'].to('fs').magnitude
-
-                        nsteps = round(time / timestep)
-
-                        curr_infile = curr_base + '.dat'
-
-                        curr_dump = curr_base + f'.dump.{nsteps:d}'
-                        #  + node.parameters['time']['value']
-
-                        new_input_data.insert(
-                            0, 'read_dump          %s %s x y z vx vy vz' %
-                            (files['dump']['filename'], files['dump']['last_snapshot'])
-                        )
-
-                        new_input_data = initialization_header + new_input_data
-
-                        new_input_data.append(
-                            f'write_dump          all custom  {curr_dump} id '
-                            'xu yu zu vx vy vz modify flush yes sort id'
-                        )
-
-                        new_input_data_txt = '\n'.join(new_input_data).replace(
-                            'iter_0.seamm_trj', 'iter_%d.seamm_trj' % iteration
-                        )
-
-                        files['input']['filename'] = curr_infile
-                        files['input']['data'] = new_input_data_txt
-
-                        logger.debug(files['input']['filename']+ ':\n' + files['input']['data'])
-
-                        # Get the structure file from the eex
-
-
-                        files = self._execute_single_sim(self, files)
-
-                        # Analyze the results
-                        analysis = self.analyze(nodes=node)
-
-                        node_id = node._id[1]
-                        for prp, v in analysis[node_id].items():
-                            if v['short_production'] is False:
-                                if v['few_neff'] is False:
-
-                                    accuracy = control_properties[prp][
-                                        'accuracy'] / 100
-                                    dof = v['n_sample']
-                                    mean = v['mean']
-                                    ci = t_student.interval(
-                                        0.95, dof - 1, loc=0, scale=1
+                        while True:
+    
+                            control_properties = {}
+                            for prp in P['control_properties']:
+                                k = prp[0]
+                                control_properties[k] = {
+                                    'accuracy': float(prp[1][0].strip('%')),
+                                    'units': prp[1][1],
+                                    'enough_accuracy': False
+                                }
+    
+                            P = node.parameters.current_values_to_dict(
+                                context=seamm.flowchart_variables._data
+                            )
+    
+    
+                            files = self._prepare_input(files, nodes=node, iteration=iteration, read_dump=True, write_dump=True)
+    
+                            files = self._execute_single_sim(self, files)
+    
+                            # Analyze the results
+                            analysis = self.analyze(nodes=node)
+    
+                            node_id = node._id[1]
+                            for prp, v in analysis[node_id].items():
+                                if v['short_production'] is False:
+                                    if v['few_neff'] is False:
+    
+                                        accuracy = control_properties[prp][
+                                            'accuracy'] / 100
+                                        dof = v['n_sample']
+                                        mean = v['mean']
+                                        ci = t_student.interval(
+                                            0.95, dof - 1, loc=0, scale=1
+                                        )
+                                        interval = 0.5*(ci[1] - ci[0])
+                                        if abs(interval / mean) < accuracy:
+                                            control_properties[prp][
+                                                'enough_accuracy'] = True
+    
+                            enough_acc = [
+                                v['enough_accuracy']
+                                for prp, v in control_properties.items()
+                            ]
+                            if all(enough_acc) is True:
+                                history_nodes = []
+                                files['input']['data'] = copy.deepcopy(initialization_header)
+                                files['input']['data'].append(
+                                    "read_dump          %s %s x y z vx vy vz" % (
+                                        os.path.join(files['dump']['filename']), files['dump']['last_snapshot']
                                     )
-                                    interval = 0.5*(ci[1] - ci[0])
-                                    if abs(interval / mean) < accuracy:
-                                        control_properties[prp][
-                                            'enough_accuracy'] = True
-
-                        enough_acc = [
-                            v['enough_accuracy']
-                            for prp, v in control_properties.items()
-                        ]
-                        if all(enough_acc) is True:
-                            history_nodes = []
-                            files['input']['data'] = copy.deepcopy(initialization_header)
-                            files['input']['data'].append(
-                                "read_dump          %s %s x y z vx vy vz" % (
-                                    os.path.join(files['dump']['filename']), files['dump']['last_snapshot']
                                 )
-                            )
-                            self._trajectory = []
-                            break
-
-                        try:
-                            new_input_data = node.get_input(extras)
-                        except Exception as e:
-                            print(
-                                'Error running LAMMPS flowchart: {} in {}'
-                                .format(str(e), str(node))
-                            )
-                            logger.critical(
-                                'Error running LAMMPS flowchart: {} in {}'
-                                .format(str(e), str(node))
-                            )
-                            raise
-                        except:  # noqa: E722
-                            print(
-                                "Unexpected error running LAMMPS flowchart: "
-                                f"{sys.exc_info()[0]} in {str(node)}"
-                            )
-                            logger.critical(
-                                "Unexpected error running LAMMPS flowchart: "
-                                f"{sys.exc_info()[0]} in {str(node)}"
-                            )
-                            raise
-
-                        for idx, line in enumerate(new_input_data):
-                            if 'run' in line:
-                                new_line = new_input_data[idx].split()
-                                new_nsteps = round(float(new_line[1]) * 1.5)
-                                new_line[1] = str(new_nsteps)
-                                new_line = '              '.join(new_line)
-                                new_input_data[idx] = new_line
-
-                        new_time = new_nsteps * timestep * ureg.femtosecond
-
-                        new_time = new_time.to(P['time'].units)
-
-                        node.parameters['time'].value = new_time.magnitude
-
-                        iteration = iteration + 1
+                                self._trajectory = []
+                                break
+   
+                            new_input_data = self._get_node_input(node)
+    
+                            for idx, line in enumerate(new_input_data):
+                                if 'run' in line:
+                                    new_line = new_input_data[idx].split()
+                                    new_nsteps = round(float(new_line[1]) * 1.5)
+                                    new_line[1] = str(new_nsteps)
+                                    new_line = '              '.join(new_line)
+                                    new_input_data[idx] = new_line
+    
+                            new_time = new_nsteps * timestep * ureg.femtosecond
+    
+                            new_time = new_time.to(P['time'].units)
+    
+                            node.parameters['time'].value = new_time.magnitude
+    
+                            iteration = iteration + 1
 
             node = node.next()
 
@@ -798,30 +694,67 @@ class LAMMPS(seamm.Node):
 
         return files
 
-    def _execute_multiple_sims(self, files):
+    def _prepare_input(files, nodes=None, iteration=0, read_dump=False, write_dump=False):
 
-        history_nodes_ids = [n._id[1] for n in history_nodes]
-        accum_base = 'lammps_substep_%s_iter_0' % (
-            '_'.join(history_nodes_ids)
+        if isinstance(nodes, list) is False:
+            node_ids= [nodes._id[1]]
+        else:
+            node_ids = [n._id[1] for n in nodes]
+
+        base = 'lammps_substep_%s_iter_%d' % (
+            '_'.join(nodes_ids), iteration
         )
-        accum_infile = accum_base + '.dat'
-        accum_dump = accum_base + '.dump.*'
+        input_file = base + '.dat'
+        dump = base + '.dump.*'
 
-        files['input']['data'].append(
-            f'write_dump          all custom  {accum_dump} id xu yu zu vx '
-            'vy vz modify flush yes sort id'
-        )
+        if read_dump:
+            files['input']['data'].insert(
+                0, 'read_dump          %s %s x y z vx vy vz' %
+                (files['dump']['filename'], files['dump']['last_snapshot'])
+            )
 
-        files['input']['filename'] = accum_infile
+            files['input']['data'] = initialization_header + files['input']['data']
+
+        if write_dump:
+            files['input']['data'].append(
+                f'write_dump          all custom  {dump} id xu yu zu vx '
+                'vy vz modify flush yes sort id'
+            )
+
+        files['input']['filename'] = input_file 
         files['input']['data'] = '\n'.join(files['input']['data'])
-
         logger.debug(files['input']['filename'] ':\n' + )files['input']['data'])
 
-        files = _execute_single_sim(files)
-
         return files
-        # Get the structure file from the eex
 
+
+    def _get_node_input(self, node=None):
+
+        try:
+            lines, eex = node.get_input()
+        except Exception as e:
+            print(
+                'Error running LAMMPS flowchart: {} in {}'.format(
+                    str(e), str(node)
+                )
+            )
+            logger.critical(
+                'Error running LAMMPS flowchart: {} in {}'.format(
+                    str(e), str(node)
+                )
+            )
+            raise
+        except:  # noqa: E722
+            print(
+                "Unexpected error running LAMMPS flowchart: {} in {}"
+                .format(sys.exc_info()[0], str(node))
+            )
+            logger.critical(
+                "Unexpected error running LAMMPS flowchart: {} in {}"
+                .format(sys.exc_info()[0], str(node))
+            )
+            raise
+        return lines, eex
 
     def structure_data(self, eex, triclinic=False):
         """Create the LAMMPS structure file from the energy expression"""
