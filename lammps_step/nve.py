@@ -57,7 +57,7 @@ class NVE(lammps_step.Energy):
         else:
             timestep = P['timestep'].to('fs').magnitude
 
-        if 'nsteps' in extras:
+        if extras is not None and 'nsteps' in extras:
                 nsteps = extras['nsteps']
         else:
             time = P['time'].to('fs').magnitude

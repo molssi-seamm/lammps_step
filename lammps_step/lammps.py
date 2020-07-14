@@ -507,10 +507,10 @@ class LAMMPS(seamm.Node):
                 else:
 
                     if len(history_nodes) > 0:  # if imcccc
-        
+
                         files = self._prepare_input(files, nodes=history_nodes, read_dump=False, write_dump=True)
 
-                        files = _execute_single_sim(files)
+                        files = self._execute_single_sim(files, use_mpi=use_mpi, options=o)
 
                         self.analyze(nodes=history_nodes)
 
@@ -542,7 +542,7 @@ class LAMMPS(seamm.Node):
     
                         files = self._prepare_input(files, nodes=node, iteration=iteration, read_dump=True, write_dump=True)
     
-                        files = self._execute_single_sim(self, files)
+                        files = self._execute_single_sim(self, files, use_mpi=use_mpi, options=o)
     
                         # Analyze the results
                         analysis = self.analyze(nodes=node)
@@ -595,7 +595,7 @@ class LAMMPS(seamm.Node):
         return next_node
 
 
-    def _execute_single_sim(self, files):
+    def _execute_single_sim(self, files, use_mpi=False, options=None):
         """ 
         Step #1: Dump input file
         Step #2: Execute input file
@@ -613,13 +613,14 @@ class LAMMPS(seamm.Node):
 
         if use_mpi:
             cmd = [
-                mpiexec, '-np',
-                str(np), o.lammps_mpi, '-in', files['input']['filename']
+                options.lammps_mpiexec, '-np',
+                str(np), options.lammps_mpi, '-in', files['input']['filename']
             ]
         else:
-            cmd = [o.lammps_serial, '-in', files['input']['filename']]
-
-        result = local.run(cmd=cmd, files=files, return_files=return_files)
+            cmd = [options.lammps_serial, '-in', files['input']['filename']]
+        import pdb
+        pdb.set_trace()
+        result = local.run(cmd=cmd, files={v['filename']: v['data'] for k, v in files.items()}, return_files=return_files)
 
         if result is None:
             logger.error('There was an error running LAMMPS')
@@ -683,7 +684,7 @@ class LAMMPS(seamm.Node):
 
         return files
 
-    def _prepare_input(files, nodes=None, iteration=0, read_dump=False, write_dump=False):
+    def _prepare_input(self, files, nodes=None, iteration=0, read_dump=False, write_dump=False):
 
         if isinstance(nodes, list) is False:
             node_ids= [nodes._id[1]]
@@ -691,7 +692,7 @@ class LAMMPS(seamm.Node):
             node_ids = [n._id[1] for n in nodes]
 
         base = 'lammps_substep_%s_iter_%d' % (
-            '_'.join(nodes_ids), iteration
+            '_'.join(node_ids), iteration
         )
         input_file = base + '.dat'
         dump = base + '.dump.*'
@@ -720,7 +721,7 @@ class LAMMPS(seamm.Node):
     def _get_node_input(self, node=None):
 
         try:
-            lines, eex = node.get_input()
+            ret = node.get_input()
         except Exception as e:
             print(
                 'Error running LAMMPS flowchart: {} in {}'.format(
@@ -743,7 +744,7 @@ class LAMMPS(seamm.Node):
                 .format(sys.exc_info()[0], str(node))
             )
             raise
-        return lines, eex
+        return ret
 
     def structure_data(self, eex, triclinic=False):
         """Create the LAMMPS structure file from the energy expression"""
