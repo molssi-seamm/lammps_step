@@ -251,7 +251,7 @@ class LAMMPS(seamm.Node):
             parent=self, name='LAMMPS', namespace=namespace
         )
         self.lammps_units = 'real'
-        self._data = {}
+        self._initialization_header = None
         self._trajectory = []
 
         self.maxlags = 100
@@ -461,7 +461,7 @@ class LAMMPS(seamm.Node):
 
             if isinstance(node, lammps_step.Initialization):
 
-                lines, eex = self._get_node_input(node)
+                lines, eex = self._get_node_input(node=node)
 
                 files = {}
                 files['structure'] = {}
@@ -474,11 +474,11 @@ class LAMMPS(seamm.Node):
 
                 logger.debug(files['structure']['filename'] + ": " + files['structure']['data'])
 
-                initialization_header = copy.deepcopy(lines)
+                self._initialization_header = copy.deepcopy(lines)
 
                 files['input'] = {}
                 files['input']['filename'] = None
-                files['input']['data'] = copy.deepcopy(initialization_header)
+                files['input']['data'] = copy.deepcopy(self._initialization_header)
 
                 # Find the bond & angle types as needed for shake/rattle
                 P = node.parameters.current_values_to_dict(
@@ -489,8 +489,6 @@ class LAMMPS(seamm.Node):
                 if shake != '':
                     extras['shake'] = shake
 
-                history_nodes.append(node)
-
             else:
 
                 P = node.parameters.current_values_to_dict(
@@ -499,15 +497,12 @@ class LAMMPS(seamm.Node):
 
                 if 'run_control' not in P or 'Until' not in P['run_control']:
 
-                    files['input']['data'] += self._get_node_input(node)
-
                     history_nodes.append(node)
 
                 else:
 
                     if len(history_nodes) > 0:  # if imcccc
-
-                        files = self._prepare_input(files, nodes=history_nodes, read_dump=False, write_dump=True)
+                        files = self._prepare_input(files, nodes=history_nodes, read_dump=False, write_dump=True, extras=extras)
 
                         files = self._execute_single_sim(files, use_mpi=use_mpi, options=o)
 
@@ -520,9 +515,7 @@ class LAMMPS(seamm.Node):
                     extras['nsteps'] = 666
 
                     while True:
-  
-                        new_input_data = self._get_node_input(node, extras)
-   
+                        
                         extras['nsteps'] = round(1.5 * extras['nsteps'])
 
                         control_properties = {}
@@ -539,9 +532,9 @@ class LAMMPS(seamm.Node):
                             context=seamm.flowchart_variables._data
                         )
     
-                        files = self._prepare_input(files, nodes=node, iteration=iteration, read_dump=True, write_dump=True)
-    
-                        files = self._execute_single_sim(self, files, use_mpi=use_mpi, options=o)
+                        files = self._prepare_input(files, nodes=node, iteration=iteration, read_dump=True, write_dump=True, extras=extras)
+                        
+                        files = self._execute_single_sim(files, use_mpi=use_mpi, options=o)
     
                         # Analyze the results
                         analysis = self.analyze(nodes=node)
@@ -569,10 +562,10 @@ class LAMMPS(seamm.Node):
                         ]
                         if all(enough_acc) is True:
                             history_nodes = []
-                            files['input']['data'] = copy.deepcopy(initialization_header)
+                            files['input']['data'] = copy.deepcopy(self._initialization_header)
                             files['input']['data'].append(
                                 "read_dump          %s %s x y z vx vy vz" % (
-                                    os.path.join(files['dump']['filename']), files['dump']['last_snapshot']
+                                    os.path.join(files['dump']['filename']), files['dump']['data']
                                 )
                             )
                             self._trajectory = []
@@ -618,7 +611,9 @@ class LAMMPS(seamm.Node):
             ]
         else:
             cmd = [options.lammps_serial, '-in', files['input']['filename']]
-
+        
+        import pdb
+        pdb.set_trace()
         result = local.run(cmd=cmd, files={v['filename']: v['data'] for k, v in files.items()}, return_files=return_files)
 
         if result is None:
@@ -676,16 +671,25 @@ class LAMMPS(seamm.Node):
 
         files['dump'] = {}
         files['dump']['filename'] = dump
-        files['dump']['last_snapshot'] = last_snapshot
+        files['dump']['data'] = last_snapshot
+
+        files['input'] = {}
+        files['input']['data'] = copy.deepcopy(self._initialization_header)
 
         return files
 
-    def _prepare_input(self, files, nodes=None, iteration=0, read_dump=False, write_dump=False):
+    def _prepare_input(self, files, nodes=None, iteration=0, read_dump=False, write_dump=False, extras=None):
 
         if isinstance(nodes, list) is False:
             node_ids= [nodes._id[1]]
+            new_input_data = self._get_node_input(node=nodes, extras=extras)
+
         else:
-            node_ids = [n._id[1] for n in nodes]
+            node_ids = []
+            new_input_data = []
+            for n in nodes:
+                node_ids.append(n._id[1])
+                new_input_data += self._get_node_input(node=n, extras=extras)
 
         base = 'lammps_substep_%s_iter_%d' % (
             '_'.join(node_ids), iteration
@@ -695,18 +699,18 @@ class LAMMPS(seamm.Node):
         dump = base + '.dump.*'
 
         if read_dump:
-            files['input']['data'].insert(
+            new_input_data.insert(
                 0, 'read_dump          %s %s x y z vx vy vz' %
-                (files['dump']['filename'], files['dump']['last_snapshot'])
+                (files['dump']['filename'], files['dump']['data'])
             )
 
-            files['input']['data'] = initialization_header + files['input']['data']
-
         if write_dump:
-            files['input']['data'].append(
+            new_input_data.append(
                 f'write_dump          all custom  {dump} id xu yu zu vx '
                 'vy vz modify flush yes sort id'
             )
+
+        files['input']['data'] += new_input_data
 
         files['input']['filename'] = input_file 
         files['input']['data'] = '\n'.join(files['input']['data'])
@@ -715,7 +719,7 @@ class LAMMPS(seamm.Node):
         return files
 
 
-    def _get_node_input(self, node=None):
+    def _get_node_input(self, node=None, extras=None):
 
         try:
             ret = node.get_input()
