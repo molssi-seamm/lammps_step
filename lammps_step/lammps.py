@@ -465,12 +465,11 @@ class LAMMPS(seamm.Node):
 
                 files = {}
                 files['structure'] = {}
-                files['structure']['filename'] = os.path.join(self.directory, 'structure.dat')
+                files['structure']['filename'] = 'structure.dat'
                 files['structure']['data'] = '\n'.join(self.structure_data(eex))
 
-                with open(
-                    files['structure']['filename'], mode='w'
-                ) as fd:
+                f = os.path.join(self.directory, files['structure']['filename'])
+                with open(f, mode='w') as fd:
                     fd.write(files['structure']['data'])
 
                 logger.debug(files['structure']['filename'] + ": " + files['structure']['data'])
@@ -603,7 +602,8 @@ class LAMMPS(seamm.Node):
         Step #4: Dump output files
         """
 
-        with open(files['input']['filename'], mode='w') as fd:
+        f = os.path.join(self.directory, files['input']['filename'])
+        with open(f, mode='w') as fd:
             fd.write(files['input']['data'])
 
         return_files = [
@@ -618,8 +618,7 @@ class LAMMPS(seamm.Node):
             ]
         else:
             cmd = [options.lammps_serial, '-in', files['input']['filename']]
-        import pdb
-        pdb.set_trace()
+
         result = local.run(cmd=cmd, files={v['filename']: v['data'] for k, v in files.items()}, return_files=return_files)
 
         if result is None:
@@ -630,22 +629,19 @@ class LAMMPS(seamm.Node):
 
         logger.debug('stdout:\n' + result['stdout'])
 
-        with open(
-            os.path.join(self.directory, 'stdout.txt'), mode='w'
-        ) as fd:
+        f = os.path.join(self.directory, 'stdout.txt')
+        with open(f, mode='w') as fd:
             fd.write(result['stdout'])
 
         if result['stderr'] != '':
             logger.warning('stderr:\n' + result['stderr'])
-            with open(
-                os.path.join(self.directory, 'stderr.txt'), mode='w'
-            ) as fd:
+            f = os.path.join(self.directory, 'sstderr.txt')
+            with open(f, mode='w') as fd:
                 fd.write(result['stderr'])
 
         for filename in result['files']:
-            with open(
-                os.path.join(self.directory, filename), mode='w'
-            ) as fd:
+            f = os.path.join(self.directory, filename)
+            with open(f, mode='w') as fd:
                 if result[filename]['data'] is not None:
                     fd.write(result[filename]['data'])
                 else:
@@ -664,9 +660,9 @@ class LAMMPS(seamm.Node):
 
         run_lengths = []
 
-        for dump_files in accum_dump_filenames:
+        for dump_file in dump_filenames:
             try:
-                pre, ext = os.path.splitext(dump_files)
+                pre, ext = os.path.splitext(dump_file)
                 ext = int(ext.strip('.'))
             except ValueError:
                 raise Exception(
@@ -694,6 +690,7 @@ class LAMMPS(seamm.Node):
         base = 'lammps_substep_%s_iter_%d' % (
             '_'.join(node_ids), iteration
         )
+
         input_file = base + '.dat'
         dump = base + '.dump.*'
 
