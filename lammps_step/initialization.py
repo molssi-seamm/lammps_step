@@ -438,7 +438,8 @@ class Initialization(seamm.Node):
                 lines.append(line)
 
         lines.append('')
-        lines.append('read_data           structure.dat')
+        if extras is not None and 'read_data' in extras and extras['read_data'] is True:
+            lines.append('read_data           structure.dat')
 
         # Set up standard variables
         for variable in thermo_variables:
