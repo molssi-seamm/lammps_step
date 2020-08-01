@@ -1,5 +1,6 @@
 Pmw
 configargparse
+kim-qury
 py-cpuinfo
 pymbar
 seamm>=0.9
