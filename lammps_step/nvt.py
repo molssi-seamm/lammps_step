@@ -326,19 +326,7 @@ class NVT(lammps_step.NVE):
         )
 
         # Fix variables with special cases
-
-        # These need to be based on masses...
-        if P['timestep'] == 'normal':
-            timestep = 1.0
-            P['timestep'] = Q_(timestep, ureg.fs)
-        elif P['timestep'] == 'accurate but slow':
-            timestep = 0.5
-            P['timestep'] = Q_(timestep, ureg.fs)
-        elif P['timestep'] == 'coarse but fast':
-            timestep = 2.0
-            P['timestep'] = Q_(timestep, ureg.fs)
-        else:
-            timestep = P['timestep'].to('fs').magnitude
+        timestep, P['timestep'] = self.timestep(P['timestep'])
 
         if P['seed'] == 'random':
             # Apparently the seed must be no larger than 900,000,000
@@ -354,14 +342,9 @@ class NVT(lammps_step.NVE):
             __(self.description_text(PP), **PP, indent=3 * ' ').__str__()
         )
 
-        # time = P['time'].to('fs').magnitude
         time = lammps_step.to_lammps_units(P['time'], quantity='time')
-        timestep = lammps_step.to_lammps_units(P['timestep'], quantity='time')
         nsteps = round(time / timestep)
 
-        # T0 = P['T0'].to('K').magnitude
-        # T1 = P['T1'].to('K').magnitude
-        # Tdamp = P['Tdamp'].to('fs').magnitude
         T0 = lammps_step.to_lammps_units(P['T0'], quantity='temperature')
         T1 = lammps_step.to_lammps_units(P['T1'], quantity='temperature')
         Tdamp = lammps_step.to_lammps_units(P['Tdamp'], quantity='time')
@@ -421,13 +404,11 @@ class NVT(lammps_step.NVE):
             nfixes += 1
             lines.append('fix                 {} '.format(nfixes) + 'all nve')
         elif P['thermostat'] == 'velocity rescaling':
-            # frequency = P['frequency'].to('fs').magnitude
             frequency = lammps_step.to_lammps_units(
                 P['frequency'], quantity='time'
             )
 
             nevery = round(nsteps / (frequency / timestep))
-            # window = P['window'].to('K').magnitude
             window = lammps_step.to_lammps_units(
                 P['window'], quantity='temperature'
             )
@@ -480,7 +461,6 @@ class NVT(lammps_step.NVE):
                 )
             )
         else:
-            # sampling = P['sampling'].to('fs').magnitude
             sampling = lammps_step.to_lammps_units(
                 P['sampling'], quantity='time'
             )

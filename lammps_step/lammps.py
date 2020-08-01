@@ -59,45 +59,6 @@ improper_style = {
     'wilson_out_of_plane': 'class2',
 }
 
-lammps_units = {
-    'real':
-        {
-            '[mass]': 'g/mol',
-            '[distance]': 'Å',
-            '[time]': 'fs',
-            '[length] ** 2 * [mass] / [substance] / [time] ** 2': 'kcal/mol',
-            '[length] ** 2 * [mass] / [time] ** 2': 'kcal/mol',
-            '[length] / [time]': 'Å/fs',
-            '[length] * [mass] / [substance] / [time] ** 2': 'kcal/mol/Å',
-            '[length] * [mass] / [time] ** 2': 'kcal/mol/Å',
-            '[temperature]': 'K',
-            '[mass] / [length] / [time] ** 2': 'bar',
-            '[mass] / [length] / [time]': 'poise',
-            '[current] * [time]': 'e',
-            '[current] * [length] * [time]': 'e*Å',
-            '[length] * [mass] / [current] / [time] ** 3': 'V/Å',
-            '[mass] / [length] ** 3': 'g/mL'
-        },
-    'metal':
-        {
-            '[mass]': 'g/mol',
-            '[distance]': 'Å',
-            '[time]': 'ps',
-            '[length] ** 2 * [mass] / [substance] / [time] ** 2': 'eV',
-            '[length] ** 2 * [mass] / [time] ** 2': 'eV',
-            '[length] / [time]': 'Å/ps',
-            '[length] * [mass] / [substance] / [time] ** 2': 'eV/Å',
-            '[length] * [mass] / [time] ** 2': 'eV/Å',
-            '[temperature]': 'K',
-            '[mass] / [length] / [time] ** 2': 'atm',
-            '[mass] / [length] / [time]': 'poise',
-            '[current] * [time]': 'e',
-            '[current] * [length] * [time]': 'e*Å',
-            '[length] * [mass] / [current] / [time] ** 3': 'V/Å',
-            '[mass] / [length] ** 3': 'g/mL'
-        }
-}
-
 
 class LAMMPS(seamm.Node):
     display_units = {
@@ -247,7 +208,6 @@ class LAMMPS(seamm.Node):
         self.subflowchart = seamm.Flowchart(
             parent=self, name='LAMMPS', namespace=namespace
         )
-        self.lammps_units = 'real'
         self._data = {}
 
         self.maxlags = 100
@@ -441,6 +401,8 @@ class LAMMPS(seamm.Node):
 
         self.subflowchart.root_directory = self.flowchart.root_directory
 
+        files = {}
+
         # Get the first real node
         node = self.subflowchart.get_node('1').next()
 
@@ -481,6 +443,11 @@ class LAMMPS(seamm.Node):
                 shake = self.shake_fix(P, eex)
                 if shake != '':
                     extras['shake'] = shake
+
+                # Get the structure file from the eex. Need to do this now
+                # so that we have the atomic masses later for timestep.
+                files['structure.dat'] = '\n'.join(self.structure_data(eex))
+                logger.debug('structure.dat:\n' + files['structure.dat'])
             else:
                 try:
                     input_data += node.get_input(extras)
@@ -516,12 +483,8 @@ class LAMMPS(seamm.Node):
         )
         input_data.append('')
 
-        files = {'input.txt': '\n'.join(input_data)}
+        files['input.txt'] = '\n'.join(input_data)
         logger.debug('input.txt:\n' + files['input.txt'])
-
-        # Get the structure file from the eex
-        files['structure.dat'] = '\n'.join(self.structure_data(eex))
-        logger.debug('structure.dat:\n' + files['structure.dat'])
 
         os.makedirs(self.directory, exist_ok=True)
         for filename in files:
@@ -660,11 +623,13 @@ class LAMMPS(seamm.Node):
 
         lines.append('Masses')
         lines.append('')
+        self._data['masses'] = []
         for i, parameters in zip(
             range(1, eex['n_atom_types'] + 1), eex['masses']
         ):
             mass, itype = parameters
             lines.append('{:6d} {} # {}'.format(i, mass, itype))
+            self._data['masses'].append(mass)
 
         # nonbonds
         if 'nonbond_parameters' in eex:
@@ -1137,16 +1102,6 @@ class LAMMPS(seamm.Node):
 
         lines.append('')
         return lines
-
-    def to_lammps_units(self, value):
-        dimensionality = str(value.dimensionality)
-        return value.to(lammps_units[self.lammps_units][dimensionality])
-
-    def magnitude_in_lammps_units(self, value):
-        if isinstance(value, units_class):
-            return self.to_lammps_units(value).magnitude
-        else:
-            return value
 
     def analyze(self, indent='', **kwargs):
         """Analyze the output of the calculation
