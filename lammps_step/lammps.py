@@ -59,45 +59,6 @@ improper_style = {
     'wilson_out_of_plane': 'class2',
 }
 
-lammps_units = {
-    'real':
-        {
-            '[mass]': 'g/mol',
-            '[distance]': 'Å',
-            '[time]': 'fs',
-            '[length] ** 2 * [mass] / [substance] / [time] ** 2': 'kcal/mol',
-            '[length] ** 2 * [mass] / [time] ** 2': 'kcal/mol',
-            '[length] / [time]': 'Å/fs',
-            '[length] * [mass] / [substance] / [time] ** 2': 'kcal/mol/Å',
-            '[length] * [mass] / [time] ** 2': 'kcal/mol/Å',
-            '[temperature]': 'K',
-            '[mass] / [length] / [time] ** 2': 'bar',
-            '[mass] / [length] / [time]': 'poise',
-            '[current] * [time]': 'e',
-            '[current] * [length] * [time]': 'e*Å',
-            '[length] * [mass] / [current] / [time] ** 3': 'V/Å',
-            '[mass] / [length] ** 3': 'g/mL'
-        },
-    'metal':
-        {
-            '[mass]': 'g/mol',
-            '[distance]': 'Å',
-            '[time]': 'ps',
-            '[length] ** 2 * [mass] / [substance] / [time] ** 2': 'eV',
-            '[length] ** 2 * [mass] / [time] ** 2': 'eV',
-            '[length] / [time]': 'Å/ps',
-            '[length] * [mass] / [substance] / [time] ** 2': 'eV/Å',
-            '[length] * [mass] / [time] ** 2': 'eV/Å',
-            '[temperature]': 'K',
-            '[mass] / [length] / [time] ** 2': 'atm',
-            '[mass] / [length] / [time]': 'poise',
-            '[current] * [time]': 'e',
-            '[current] * [length] * [time]': 'e*Å',
-            '[length] * [mass] / [current] / [time] ** 3': 'V/Å',
-            '[mass] / [length] ** 3': 'g/mL'
-        }
-}
-
 
 class LAMMPS(seamm.Node):
     display_units = {
@@ -247,7 +208,6 @@ class LAMMPS(seamm.Node):
         self.subflowchart = seamm.Flowchart(
             parent=self, name='LAMMPS', namespace=namespace
         )
-        self.lammps_units = 'real'
         self._data = {}
 
         self.maxlags = 100
@@ -441,6 +401,8 @@ class LAMMPS(seamm.Node):
 
         self.subflowchart.root_directory = self.flowchart.root_directory
 
+        files = {}
+
         # Get the first real node
         node = self.subflowchart.get_node('1').next()
 
@@ -481,6 +443,11 @@ class LAMMPS(seamm.Node):
                 shake = self.shake_fix(P, eex)
                 if shake != '':
                     extras['shake'] = shake
+
+                # Get the structure file from the eex. Need to do this now
+                # so that we have the atomic masses later for timestep.
+                files['structure.dat'] = '\n'.join(self.structure_data(eex))
+                logger.debug('structure.dat:\n' + files['structure.dat'])
             else:
                 try:
                     input_data += node.get_input(extras)
@@ -516,12 +483,8 @@ class LAMMPS(seamm.Node):
         )
         input_data.append('')
 
-        files = {'molssi.dat': '\n'.join(input_data)}
-        logger.debug('molssi.dat:\n' + files['molssi.dat'])
-
-        # Get the structure file from the eex
-        files['structure.dat'] = '\n'.join(self.structure_data(eex))
-        logger.debug('structure.dat:\n' + files['structure.dat'])
+        files['input.txt'] = '\n'.join(input_data)
+        logger.debug('input.txt:\n' + files['input.txt'])
 
         os.makedirs(self.directory, exist_ok=True)
         for filename in files:
@@ -530,9 +493,9 @@ class LAMMPS(seamm.Node):
         local = seamm.ExecLocal()
         return_files = ['summary_*.txt', 'trajectory_*.seamm_trj', 'dump*.txt']
         if use_mpi:
-            cmd = [mpiexec, '-np', str(np), o.lammps_mpi, '-in', 'molssi.dat']
+            cmd = [mpiexec, '-np', str(np), o.lammps_mpi, '-in', 'input.txt']
         else:
-            cmd = [o.lammps_serial, '-in', 'molssi.dat']
+            cmd = [o.lammps_serial, '-in', 'input.txt']
 
         result = local.run(cmd=cmd, files=files, return_files=return_files)
 
@@ -639,48 +602,59 @@ class LAMMPS(seamm.Node):
         lines.append('Atoms')
         lines.append('')
 
-        for i, xyz_index, q in zip(
-            range(1, eex['n_atoms'] + 1), eex['atoms'], eex['charges']
-        ):
-            x, y, z, index = xyz_index
-            lines.append(
-                '{:6d} {:6d} {:6d} {:6.3f} {:12.7f} {:12.7f} {:12.7f}'.format(
-                    i, 1, index, q, x, y, z
+        if 'charges' in eex:
+            for i, xyz_index, q in zip(
+                range(1, eex['n_atoms'] + 1), eex['atoms'], eex['charges']
+            ):
+                x, y, z, index = xyz_index
+                # The '1' is molecule ID ... should correct at some point!
+                lines.append(
+                    f'{i:6d}      1 {index:6d} {q:6.3f} {x:12.7f} {y:12.7f} '
+                    f'{z:12.7f}'
                 )
-            )
+        else:
+            for i, xyz_index in enumerate(eex['atoms']):
+                x, y, z, index = xyz_index
+                lines.append(
+                    f'{i+1:6d} {index:6d} {x:12.7f} {y:12.7f} {z:12.7f}'
+                )
+            pass
         lines.append('')
 
         lines.append('Masses')
         lines.append('')
+        self._data['masses'] = []
         for i, parameters in zip(
             range(1, eex['n_atom_types'] + 1), eex['masses']
         ):
             mass, itype = parameters
             lines.append('{:6d} {} # {}'.format(i, mass, itype))
+            self._data['masses'].append(mass)
 
         # nonbonds
-        lines.append('')
-        lines.append('Pair Coeffs')
-        lines.append('')
-        for i, parameters in zip(
-            range(1, eex['n_atom_types'] + 1), eex['nonbond parameters']
-        ):
-            form, values, types, parameters_type, real_types = \
-                parameters
-            if form == 'nonbond(9-6)':
-                lines.append(
-                    '{:6d} {} {} # {} --> {}'.format(
-                        i, values['eps'], values['rmin'], types[0],
-                        real_types[0]
+        if 'nonbond_parameters' in eex:
+            lines.append('')
+            lines.append('Pair Coeffs')
+            lines.append('')
+            for i, parameters in zip(
+                range(1, eex['n_atom_types'] + 1), eex['nonbond parameters']
+            ):
+                form, values, types, parameters_type, real_types = \
+                    parameters
+                if form == 'nonbond(9-6)':
+                    lines.append(
+                        '{:6d} {} {} # {} --> {}'.format(
+                            i, values['eps'], values['rmin'], types[0],
+                            real_types[0]
+                        )
                     )
-                )
-            else:
-                lines.append(
-                    '{:6d} {} {} # {} --> {}'.format(
-                        i, values['eps'], values['sigma'], types[0],
-                        real_types[0]
+                else:
+                    lines.append(
+                        '{:6d} {} {} # {} --> {}'.format(
+                            i, values['eps'], values['sigma'], types[0],
+                            real_types[0]
+                        )
                     )
-                )
 
         # bonds
         if 'n_bonds' in eex and eex['n_bonds'] > 0:
@@ -1129,16 +1103,6 @@ class LAMMPS(seamm.Node):
         lines.append('')
         return lines
 
-    def to_lammps_units(self, value):
-        dimensionality = str(value.dimensionality)
-        return value.to(lammps_units[self.lammps_units][dimensionality])
-
-    def magnitude_in_lammps_units(self, value):
-        if isinstance(value, units_class):
-            return self.to_lammps_units(value).magnitude
-        else:
-            return value
-
     def analyze(self, indent='', **kwargs):
         """Analyze the output of the calculation
         """
@@ -1204,7 +1168,9 @@ class LAMMPS(seamm.Node):
 
         # Work out the time step, rather than give the whole vector
         t = data.index
-        dt_fs = t[1] - t[0]
+        dt_fs = lammps_step.from_lammps_units(
+            t[1] - t[0], 'fs', quantity='time'
+        ).magnitude
         dt = dt_fs
         t_units = 'fs'
         len_trj = (len(t) - 1) * dt_fs
