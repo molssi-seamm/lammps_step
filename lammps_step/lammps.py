@@ -516,8 +516,8 @@ class LAMMPS(seamm.Node):
         )
         input_data.append('')
 
-        files = {'molssi.dat': '\n'.join(input_data)}
-        logger.debug('molssi.dat:\n' + files['molssi.dat'])
+        files = {'input.txt': '\n'.join(input_data)}
+        logger.debug('input.txt:\n' + files['input.txt'])
 
         # Get the structure file from the eex
         files['structure.dat'] = '\n'.join(self.structure_data(eex))
@@ -530,9 +530,9 @@ class LAMMPS(seamm.Node):
         local = seamm.ExecLocal()
         return_files = ['summary_*.txt', 'trajectory_*.seamm_trj', 'dump*.txt']
         if use_mpi:
-            cmd = [mpiexec, '-np', str(np), o.lammps_mpi, '-in', 'molssi.dat']
+            cmd = [mpiexec, '-np', str(np), o.lammps_mpi, '-in', 'input.txt']
         else:
-            cmd = [o.lammps_serial, '-in', 'molssi.dat']
+            cmd = [o.lammps_serial, '-in', 'input.txt']
 
         result = local.run(cmd=cmd, files=files, return_files=return_files)
 
@@ -639,15 +639,23 @@ class LAMMPS(seamm.Node):
         lines.append('Atoms')
         lines.append('')
 
-        for i, xyz_index, q in zip(
-            range(1, eex['n_atoms'] + 1), eex['atoms'], eex['charges']
-        ):
-            x, y, z, index = xyz_index
-            lines.append(
-                '{:6d} {:6d} {:6d} {:6.3f} {:12.7f} {:12.7f} {:12.7f}'.format(
-                    i, 1, index, q, x, y, z
+        if 'charges' in eex:
+            for i, xyz_index, q in zip(
+                range(1, eex['n_atoms'] + 1), eex['atoms'], eex['charges']
+            ):
+                x, y, z, index = xyz_index
+                # The '1' is molecule ID ... should correct at some point!
+                lines.append(
+                    f'{i:6d}      1 {index:6d} {q:6.3f} {x:12.7f} {y:12.7f} '
+                    f'{z:12.7f}'
                 )
-            )
+        else:
+            for i, xyz_index in enumerate(eex['atoms']):
+                x, y, z, index = xyz_index
+                lines.append(
+                    f'{i+1:6d} {index:6d} {x:12.7f} {y:12.7f} {z:12.7f}'
+                )
+            pass
         lines.append('')
 
         lines.append('Masses')
@@ -659,28 +667,29 @@ class LAMMPS(seamm.Node):
             lines.append('{:6d} {} # {}'.format(i, mass, itype))
 
         # nonbonds
-        lines.append('')
-        lines.append('Pair Coeffs')
-        lines.append('')
-        for i, parameters in zip(
-            range(1, eex['n_atom_types'] + 1), eex['nonbond parameters']
-        ):
-            form, values, types, parameters_type, real_types = \
-                parameters
-            if form == 'nonbond(9-6)':
-                lines.append(
-                    '{:6d} {} {} # {} --> {}'.format(
-                        i, values['eps'], values['rmin'], types[0],
-                        real_types[0]
+        if 'nonbond_parameters' in eex:
+            lines.append('')
+            lines.append('Pair Coeffs')
+            lines.append('')
+            for i, parameters in zip(
+                range(1, eex['n_atom_types'] + 1), eex['nonbond parameters']
+            ):
+                form, values, types, parameters_type, real_types = \
+                    parameters
+                if form == 'nonbond(9-6)':
+                    lines.append(
+                        '{:6d} {} {} # {} --> {}'.format(
+                            i, values['eps'], values['rmin'], types[0],
+                            real_types[0]
+                        )
                     )
-                )
-            else:
-                lines.append(
-                    '{:6d} {} {} # {} --> {}'.format(
-                        i, values['eps'], values['sigma'], types[0],
-                        real_types[0]
+                else:
+                    lines.append(
+                        '{:6d} {} {} # {} --> {}'.format(
+                            i, values['eps'], values['sigma'], types[0],
+                            real_types[0]
+                        )
                     )
-                )
 
         # bonds
         if 'n_bonds' in eex and eex['n_bonds'] > 0:
@@ -1204,7 +1213,9 @@ class LAMMPS(seamm.Node):
 
         # Work out the time step, rather than give the whole vector
         t = data.index
-        dt_fs = t[1] - t[0]
+        dt_fs = lammps_step.from_lammps_units(
+            t[1] - t[0], 'fs', quantity='time'
+        ).magnitude
         dt = dt_fs
         t_units = 'fs'
         len_trj = (len(t) - 1) * dt_fs
