@@ -629,10 +629,10 @@ class LAMMPS(seamm.Node):
         ):
             mass, itype = parameters
             lines.append('{:6d} {} # {}'.format(i, mass, itype))
-            self._data['masses'].append(mass)
+            self._data['masses'].append(float(mass))
 
         # nonbonds
-        if 'nonbond_parameters' in eex:
+        if 'nonbond parameters' in eex:
             lines.append('')
             lines.append('Pair Coeffs')
             lines.append('')
