@@ -63,7 +63,7 @@ class NVE(lammps_step.Energy):
             __(self.description_text(), **PP, indent=7 * ' ')
         )
 
-        time = P['time'].to('fs').magnitude
+        time = lammps_step.to_lammps_units(P['time'], quantity='time')
         nsteps = round(time / timestep)
 
         thermo_properties = (
@@ -107,7 +107,9 @@ class NVE(lammps_step.Energy):
                 )
             )
         else:
-            sampling = P['sampling'].to('fs').magnitude
+            sampling = lammps_step.to_lammps_units(
+                P['sampling'], quantity='time'
+            )
             nevery = round(sampling / timestep)
             nfreq = int(nsteps / nevery)
             nrepeat = 1
