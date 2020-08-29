@@ -51,11 +51,7 @@ class NVE(lammps_step.Energy):
             context=seamm.flowchart_variables._data
         )
 
-        if P['timestep'] == 'normal':
-            timestep = 1.0
-            P['timestep'] = Q_(timestep, ureg.fs)
-        else:
-            timestep = P['timestep'].to('fs').magnitude
+        timestep, P['timestep'] = self.timestep(P['timestep'])
 
         if extras is not None and 'nsteps' in extras:
                 nsteps = extras['nsteps']
@@ -72,6 +68,9 @@ class NVE(lammps_step.Energy):
         self.description.append(
             __(self.description_text(), **PP, indent=7 * ' ')
         )
+
+        #time = lammps_step.to_lammps_units(P['time'], quantity='time')
+        #nsteps = round(time / timestep)
 
         thermo_properties = (
             'time temp press etotal ke pe ebond '
@@ -114,7 +113,9 @@ class NVE(lammps_step.Energy):
                 )
             )
         else:
-            sampling = P['sampling'].to('fs').magnitude
+            sampling = lammps_step.to_lammps_units(
+                P['sampling'], quantity='time'
+            )
             nevery = round(sampling / timestep)
             nfreq = int(nsteps / nevery)
             nrepeat = 1
@@ -160,3 +161,45 @@ class NVE(lammps_step.Energy):
         lines.append('')
 
         return lines
+
+    def timestep(self, value):
+        """Get the timestep in the correct units.
+
+        This handles the 'normal', 'accurate' and 'coarse' values,
+        which depend on the mass in an empirical fashion.
+
+        Parameters
+        ----------
+        value : str or Pint quantity
+            The desired timestep, which may be a Pint quantity with units
+            or one of 'notmal', 'accurate but slow', or 'coarse but fast'
+
+        Returns
+        -------
+        timestep : float
+            The magnitude of the time step in the appropriate LAMMPS units
+        """
+        masses = self.parent._data['masses']
+        min_mass = min(masses)
+
+        # These are based on masses as a proxy for vibrational frequencies
+        if min_mass < 10:
+            factor = 1
+        elif min_mass < 50:
+            factor = 2
+        else:
+            factor = 4
+
+        if value == 'normal':
+            timestep = 1.0 * factor
+            value = Q_(timestep, ureg.fs)
+        elif value == 'accurate but slow':
+            timestep = 0.5 * factor
+            value = Q_(timestep, ureg.fs)
+        elif value == 'coarse but fast':
+            timestep = 2.0 * factor
+            value = Q_(timestep, ureg.fs)
+
+        timestep = lammps_step.to_lammps_units(value, quantity='time')
+
+        return (timestep, value)

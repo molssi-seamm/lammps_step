@@ -6,6 +6,7 @@ import seamm_ff_util
 import lammps_step
 import logging
 import seamm
+import seamm_util
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
 import seamm_util.smiles
@@ -122,11 +123,18 @@ class Initialization(seamm.Node):
             pprint.pformat(structure)
         )
 
-        # And atom-type if necessary
+        # See what type of forcefield we have amd handle it
         ff = seamm.data.forcefield
+        if ff == 'OpenKIM':
+            lammps_step.set_lammps_unit_system('metal')
+            return self.OpenKIM_input()
+
+        # Valence forcefield...
         ff_name = ff.current_forcefield
         atoms = structure['atoms']
         n_atoms = len(atoms['elements'])
+
+        # And atom-type if necessary
         if 'atom_types' in atoms and ff_name in atoms['atom_types']:
             atom_types = atoms['atom_types'][ff_name]
         else:
@@ -176,7 +184,6 @@ class Initialization(seamm.Node):
             )
 
         lines.append('atom_style          full')
-        lines.append('atom_modify         sort 0 0.0')
         lines.append('newton              on')
         if n_atoms < 20:
             # LAMMPS has problems with bins for small systems
@@ -448,3 +455,91 @@ class Initialization(seamm.Node):
             )
 
         return (lines, eex)
+
+    def OpenKIM_input(self):
+        """Create the initialization input for a calculation using OpenKIM.
+        """
+        structure = seamm.data.structure
+
+        # Get the (simple) energy expression for these systems
+        eex = self.OpenKIM_energy_expression()
+
+        lines = []
+        lines.append('')
+        lines.append('#     initialization of LAMMPS')
+        lines.append('')
+        lines.append('newton              on')
+        lines.append('')
+        lines.append(
+            f'kim_init            {seamm.data.OpenKIM_Potential} metal '
+            'unit_conversion_mode'
+        )
+        lines.append('')
+        periodicity = structure['periodicity']
+        if periodicity == 0:
+            lines.append('boundary            s s s')
+            string = 'Setup for a molecular (non-periodic) system.'
+        elif periodicity == 3:
+            lines.append('boundary            p p p')
+            string = 'Setup for a periodic (crystalline or fluid) system.'
+        else:
+            raise RuntimeError(
+                'The LAMMPS step can only handle 0-'
+                ' or 3-D periodicity at the moment!'
+            )
+        lines.append('')
+        lines.append('read_data           structure.dat')
+        lines.append('')
+        lines.append(f'kim_interactions    {" ".join(eex["atom types"])}')
+
+        # Set up standard variables
+        for variable in thermo_variables:
+            lines.append(
+                'variable            {var} equal {var}'.format(var=variable)
+            )
+
+        self.description.append(__(string, indent=self.indent + 4 * ' '))
+
+        return (lines, eex)
+
+    def OpenKIM_energy_expression(self):
+        """Create the (simple) energy expression for OpenKIM models.
+        """
+        eex = {}
+        structure = seamm.data.structure
+        atoms = structure['atoms']
+        elements = atoms['elements']
+        coordinates = atoms['coordinates']
+
+        # The elements (1-based!) Probably not used...
+        eex['elements'] = ['']
+        eex['elements'].extend(elements)
+
+        # The periodicity & cell parameters
+        periodicity = eex['periodicity'] = structure['periodicity']
+        if periodicity == 3:
+            eex['cell'] = structure['cell']
+
+        result = eex['atoms'] = []
+        atom_types = eex['atom types'] = []
+        masses = eex['masses'] = []
+
+        for element, xyz in zip(elements, coordinates):
+            if element in atom_types:
+                index = atom_types.index(element) + 1
+            else:
+                atom_types.append(element)
+                index = len(atom_types)
+                masses.append(
+                    (
+                        seamm_util.element_data[element]['atomic weight'],
+                        element
+                    )
+                )
+            x, y, z = xyz
+            result.append((x, y, z, index))
+
+        eex['n_atoms'] = len(result)
+        eex['n_atom_types'] = len(atom_types)
+
+        return eex

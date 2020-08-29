@@ -8,6 +8,11 @@ A step for running molecular dynamics using LAMMPS.
 # Bring up the classes so that they appear to be directly in
 # the lammps_step package.
 
+from lammps_step.lammps_units import set_lammps_unit_system  # noqa: F401
+from lammps_step.lammps_units import get_lammps_unit_system  # noqa: F401
+from lammps_step.lammps_units import to_lammps_units  # noqa: F401
+from lammps_step.lammps_units import from_lammps_units  # noqa: F401
+
 from lammps_step.lammps import bond_style  # noqa: F401
 from lammps_step.lammps import angle_style  # noqa: F401
 from lammps_step.lammps import dihedral_style  # noqa: F401

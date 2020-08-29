@@ -226,22 +226,11 @@ class NPT(lammps_step.NVT):
         )
 
         # Fix variables with special cases
-
-        # These need to be based on masses...
-        if P['timestep'] == 'normal':
-            timestep = 1.0
-            P['timestep'] = Q_(timestep, ureg.fs)
-        elif P['timestep'] == 'accurate but slow':
-            timestep = 0.5
-            P['timestep'] = Q_(timestep, ureg.fs)
-        elif P['timestep'] == 'coarse but fast':
-            timestep = 2.0
-            P['timestep'] = Q_(timestep, ureg.fs)
-        else:
-            timestep = P['timestep'].to('fs').magnitude
+        timestep, P['timestep'] = self.timestep(P['timestep'])
 
         if P['seed'] == 'random':
-            P['seed'] = int(random.random() * 2**31)
+            # Apparently the seed must be no larger than 900,000,000
+            P['seed'] = int(random.random() * 899999999)
 
         # Have to fix formatting for printing...
         PP = dict(P)
@@ -253,16 +242,18 @@ class NPT(lammps_step.NVT):
             __(self.description_text(PP), **PP, indent=3 * ' ')
         )
 
-        time = P['time'].to('fs').magnitude
+        time = lammps_step.to_lammps_units(P['time'], quantity='time')
         nsteps = round(time / timestep)
 
-        T0 = P['T0'].to('K').magnitude
-        T1 = P['T1'].to('K').magnitude
-        Tdamp = P['Tdamp'].to('fs').magnitude
+        T0 = lammps_step.to_lammps_units(P['T0'], quantity='temperature')
+        T1 = lammps_step.to_lammps_units(P['T1'], quantity='temperature')
+        Tdamp = lammps_step.to_lammps_units(P['Tdamp'], quantity='time')
 
         barostat = P['barostat']
         if barostat == 'Berendsen':
-            modulus = P['modulus'].to('atm').magnitude
+            modulus = lammps_step.to_lammps_units(
+                P['modulus'], quantity='pressure'
+            )
 
         # Work out the pressure/stress part of the command
         ptext = self.get_pressure_text(P, keep_orthorhombic)
@@ -342,7 +333,9 @@ class NPT(lammps_step.NVT):
         elif P['thermostat'] == 'velocity rescaling':
             frequency = P['frequency']
             nevery = round(nsteps / (frequency / timestep))
-            window = P['window'].to('K').magnitude
+            window = lammps_step.to_lammps_units(
+                P['window'], quantity='temperature'
+            )
             fraction = P['fraction']
             nfixes += 1
             lines.append(
@@ -390,7 +383,9 @@ class NPT(lammps_step.NVT):
                 )
             )
         else:
-            sampling = P['sampling'].to('fs').magnitude
+            sampling = lammps_step.to_lammps_units(
+                P['sampling'], quantity='time'
+            )
             nevery = round(sampling / timestep)
             nfreq = int(nsteps / nevery)
             nrepeat = 1
@@ -516,12 +511,16 @@ class NPT(lammps_step.NVT):
                 else:
                     ptext = ' tri {P0} {P1} {Pdamp}'
 
-            P0 = P['Pinitial'].to('atm').magnitude
+            P0 = lammps_step.to_lammps_units(
+                P['Pinitial'], quantity='pressure'
+            )
             if Panneal:
-                P1 = P['Pfinal'].to('atm').magnitude
+                P1 = lammps_step.to_lammps_units(
+                    P['Pfinal'], quantity='pressure'
+                )
             else:
                 P1 = P0
-            Pdamp = P['Pdamp'].to('fs').magnitude
+            Pdamp = lammps_step.to_lammps_units(P['Pdamp'], quantity='time')
 
             ptext = ptext.format(P0=P0, P1=P1, Pdamp=Pdamp)
         else:
@@ -570,36 +569,72 @@ class NPT(lammps_step.NVT):
                 )
 
             Tmp = {}
-            Tmp['Sxx0'] = P['Sxx,initial'].to('atm').magnitude
-            Tmp['Syy0'] = P['Syy,initial'].to('atm').magnitude
-            Tmp['Szz0'] = P['Szz,initial'].to('atm').magnitude
+            Tmp['Sxx0'] = lammps_step.to_lammps_units(
+                P['Sxx,initial'], quantity='pressure'
+            )
+            Tmp['Syy0'] = lammps_step.to_lammps_units(
+                P['Syy,initial'], quantity='pressure'
+            )
+            Tmp['Szz0'] = lammps_step.to_lammps_units(
+                P['Szz,initial'], quantity='pressure'
+            )
             if Panneal:
-                Tmp['Sxx1'] = P['Sxx,final'].to('atm').magnitude
-                Tmp['Syy1'] = P['Syy,final'].to('atm').magnitude
-                Tmp['Szz1'] = P['Szz,final'].to('atm').magnitude
+                Tmp['Sxx1'] = lammps_step.to_lammps_units(
+                    P['Sxx,final'], quantity='pressure'
+                )
+                Tmp['Syy1'] = lammps_step.to_lammps_units(
+                    P['Syy,final'], quantity='pressure'
+                )
+                Tmp['Szz1'] = lammps_step.to_lammps_units(
+                    P['Szz,final'], quantity='pressure'
+                )
             else:
                 Tmp['Sxx1'] = Tmp['Sxx0']
                 Tmp['Syy1'] = Tmp['Syy0']
                 Tmp['Szz1'] = Tmp['Szz0']
-            Tmp['Dxx'] = P['Sxx damp'].to('fs').magnitude
-            Tmp['Dyy'] = P['Syy damp'].to('fs').magnitude
-            Tmp['Dzz'] = P['Szz damp'].to('fs').magnitude
+            Tmp['Dxx'] = lammps_step.to_lammps_units(
+                P['Sxx damp'], quantity='pressure'
+            )
+            Tmp['Dyy'] = lammps_step.to_lammps_units(
+                P['Syy damp'], quantity='pressure'
+            )
+            Tmp['Dzz'] = lammps_step.to_lammps_units(
+                P['Szz damp'], quantity='pressure'
+            )
 
             if not keep_orthorhombic:
-                Tmp['Sxy0'] = P['Sxy,initial'].to('atm').magnitude
-                Tmp['Sxz0'] = P['Sxz,initial'].to('atm').magnitude
-                Tmp['Syz0'] = P['Syz,initial'].to('atm').magnitude
+                Tmp['Sxy0'] = lammps_step.to_lammps_units(
+                    P['Sxy,initial'], quantity='pressure'
+                )
+                Tmp['Sxz0'] = lammps_step.to_lammps_units(
+                    P['Sxz,initial'], quantity='pressure'
+                )
+                Tmp['Syz0'] = lammps_step.to_lammps_units(
+                    P['Syz,initial'], quantity='pressure'
+                )
                 if Panneal:
-                    Tmp['Sxy1'] = P['Sxy,final'].to('atm').magnitude
-                    Tmp['Sxz1'] = P['Sxz,final'].to('atm').magnitude
-                    Tmp['Syz1'] = P['Syz,final'].to('atm').magnitude
+                    Tmp['Sxy1'] = lammps_step.to_lammps_units(
+                        P['Sxy,final'], quantity='pressure'
+                    )
+                    Tmp['Sxz1'] = lammps_step.to_lammps_units(
+                        P['Sxz,final'], quantity='pressure'
+                    )
+                    Tmp['Syz1'] = lammps_step.to_lammps_units(
+                        P['Syz,final'], quantity='pressure'
+                    )
                 else:
                     Tmp['Sxy1'] = Tmp['Sxy0']
                     Tmp['Sxz1'] = Tmp['Sxz0']
                     Tmp['Syz1'] = Tmp['Syz0']
-                Tmp['Dxy'] = P['Sxy damp'].to('fs').magnitude
-                Tmp['Dxz'] = P['Sxz damp'].to('fs').magnitude
-                Tmp['Dyz'] = P['Syz damp'].to('fs').magnitude
+                Tmp['Dxy'] = lammps_step.to_lammps_units(
+                    P['Sxy damp'], quantity='pressure'
+                )
+                Tmp['Dxz'] = lammps_step.to_lammps_units(
+                    P['Sxz damp'], quantity='pressure'
+                )
+                Tmp['Dyz'] = lammps_step.to_lammps_units(
+                    P['Syz damp'], quantity='pressure'
+                )
 
             ptext = ptext.format(**Tmp)
 
