@@ -200,7 +200,6 @@ class LAMMPS(seamm.Node):
             action='store_true',
             help='whether to write out html files for graphs, etc.'
         )
-
         self.options, self.unknown = self.parser.parse_known_args()
 
         # Set the logging level for this module if requested
@@ -343,7 +342,6 @@ class LAMMPS(seamm.Node):
 
         # Parse the options
         o = self.options
-
         # Whether to run parallel and if so, how many mpi processes
         use_mpi = 'lammps_use_mpi' in o or 'seamm_use_mpi' in o
         if use_mpi:
@@ -367,9 +365,9 @@ class LAMMPS(seamm.Node):
                 use_mpi = False
             else:
                 if 'seamm_mpi_max_np' in o:
-                    max_np = int(o.seamm_mpi_max_np)
+                    max_np = o.seamm_mpi_max_np
                 elif 'lammps_mpi_max_np' in o:
-                    max_np = int(o.lammps_mpi_max_np)
+                    max_np = o.lammps_mpi_max_np
                 else:
                     max_np = 'default'
 
@@ -422,11 +420,20 @@ class LAMMPS(seamm.Node):
 
         os.makedirs(self.directory, exist_ok=True)
 
+        files = {}
+        #files['structure'] = {}
+        #files['input'] = {} 
+
+        #files['structure']['filename'] = None
+        #files['structure']['data']= None
+
+        #files['input']['filename'] = None
+        #files['input']['data'] = None
+
         while node is not None:
 
             if isinstance(node, lammps_step.Initialization):
                 initialization_header, eex = self._get_node_input(node=node, extras={'read_data': True})
-                files = {}
                 files['structure'] = {}
                 files['structure']['filename'] = 'structure.dat'
                 files['structure']['data'] = '\n'.join(self.structure_data(eex))
@@ -465,6 +472,7 @@ class LAMMPS(seamm.Node):
                 else:
 
                     if len(history_nodes) > 0:  # if imcccc
+
                         files = self._prepare_input(files, nodes=history_nodes, read_restart=False, write_restart=True, extras=extras)
 
                         files = self._execute_single_sim(files, use_mpi=use_mpi, options=o)
@@ -540,6 +548,41 @@ class LAMMPS(seamm.Node):
 
             final_node_id = node._id
             node = node.next()
+
+        if len(history_nodes) == 0:
+
+            node_initialization = self.subflowchart.get_node('1').next()
+
+            if node_initialization is None:
+                raise TypeError('The initial node in a LAMMPS workflow should be an initialization node')
+
+            if isinstance(node_initialization, lammps_step.Initialization) is False:
+                raise TypeError('The initial node in a LAMMPS workflow should be an initialization node')
+
+            base = 'lammps_substep_%s_iter_%d' % (
+                node_initialization._id[1], 0)
+            
+            restart = base + '.restart.*'
+            dump = base + '.dump.*'
+            input_file = base + '.dat'
+            new_input_data = []
+            new_input_data.append(
+                f'run          0'
+            )
+            new_input_data.append(
+                f'write_restart          {restart}'
+            )
+
+            new_input_data.append(f'write_dump all custom  {dump} id '
+                                'xu yu zu vx vy vz modify flush yes sort id')
+
+            files['input']['filename'] = input_file 
+            files['input']['data'] += new_input_data
+            files['input']['data'] = '\n'.join(files['input']['data'])
+
+            logger.debug(files['input']['filename'] + ':\n' + files['input']['data'])
+
+            files = self._execute_single_sim(files, use_mpi=use_mpi, options=o)
 
         if len(history_nodes) > 0:
             
@@ -630,7 +673,7 @@ class LAMMPS(seamm.Node):
         if len(restart_filenames) == 0:
             raise FileNotFoundError(
                 'Lammps_step: could not find any file with the pattern %s'
-                % (restart)
+                % (restart_filename)
             )
 
         run_lengths = []
