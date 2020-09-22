@@ -116,50 +116,57 @@ class Initialization(seamm.Node):
         # Fix some things
         P['cutoff'] = P['cutoff'].to('angstrom').magnitude
 
-        # Get the structure
-        structure = seamm.data.structure
-        logger.debug(
-            'Structure in LAMMPS initialization:\n' +
-            pprint.pformat(structure)
-        )
+        # Get the system
+        system = self.get_variable('_system')
 
         # See what type of forcefield we have amd handle it
-        ff = seamm.data.forcefield
+        ff = self.get_variable('_forcefield')
         if ff == 'OpenKIM':
             lammps_step.set_lammps_unit_system('metal')
             return self.OpenKIM_input()
 
         # Valence forcefield...
-        ff_name = ff.current_forcefield
-        atoms = structure['atoms']
-        n_atoms = len(atoms['elements'])
+        ffname = ff.current_forcefield
+        n_atoms = system.n_atoms()
 
         # And atom-type if necessary
-        if 'atom_types' in atoms and ff_name in atoms['atom_types']:
-            atom_types = atoms['atom_types'][ff_name]
-        else:
-            smiles = seamm_util.smiles.from_seamm(structure)
+        key = f'atom_types_{ffname}'
+        if key not in system.atoms:
+            smiles = seamm_util.smiles.from_seamm(system)
             logger.debug('Atom typing -- smiles = ' + smiles)
             ff_assigner = seamm_ff_util.FFAssigner(ff)
             atom_types = ff_assigner.assign(smiles, add_hydrogens=False)
+
             logger.info('Atom types: ' + ', '.join(atom_types))
-            if 'atom_types' not in atoms:
-                atoms['atom_types'] = {}
-            atoms['atom_types'][ff_name] = atom_types
+
+            system.atoms.add_attribute(key, coltype='str')
+            system.atoms[key] = atom_types
+
+            printer.important(
+                __(
+                    f"Assigned the atom types for forcefield '{ffname}' to "
+                    "the system",
+                    indent=self.indent + '    '
+                )
+            )
 
         # Get the energy expression. This creates the charges on the
         # atoms as a side-effect.
-        eex = ff.energy_expression(structure, style='LAMMPS')
+        eex = ff.energy_expression(system, style='LAMMPS')
         logger.debug('energy expression:\n' + pprint.pformat(eex))
 
         # Determine if we have any charges, and if so, if they are sparse
-        charges = atoms['charges'][ff_name]
-        n_charged_atoms = 0
-        smallq = float(P['kspace_smallq'])
-        for charge in charges:
-            if abs(charge) > smallq:
-                n_charged_atoms += 1
-        fraction_charged_atoms = n_charged_atoms / n_atoms
+        key = f'charges_{ffname}'
+        if key in system.atoms:
+            charges = [*system.atoms[key]]
+            n_charged_atoms = 0
+            smallq = float(P['kspace_smallq'])
+            for charge in charges:
+                if abs(charge) > smallq:
+                    n_charged_atoms += 1
+            fraction_charged_atoms = n_charged_atoms / n_atoms
+        else:
+            n_charged_atoms = 0
 
         lines = []
         lines.append('')
@@ -167,7 +174,7 @@ class Initialization(seamm.Node):
         lines.append('')
         lines.append('units               real')
 
-        periodicity = structure['periodicity']
+        periodicity = system.periodicity
         if periodicity == 0:
             lines.append('boundary            s s s')
             tail_correction = 'no'

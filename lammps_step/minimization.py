@@ -4,7 +4,6 @@
 
 import logging
 
-from seamm import data
 from seamm_util import ureg, Q_, units_class  # noqa: F401
 from seamm_util.printing import FormattedText as __
 import lammps_step
@@ -64,7 +63,8 @@ class Minimization(lammps_step.Energy):
             __(self.description_text(PP), **PP, indent=3 * ' ')
         )
 
-        n_atoms = len(data.structure['atoms']['elements'])
+        system = self.get_variable('_system')
+        n_atoms = system.n_atoms()
         nDOF = 3 * n_atoms
 
         lines = []
