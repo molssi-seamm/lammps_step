@@ -9,7 +9,6 @@ import seamm
 import seamm_util
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
-import seamm_util.smiles
 import pprint
 
 logger = logging.getLogger(__name__)
@@ -132,7 +131,7 @@ class Initialization(seamm.Node):
         # And atom-type if necessary
         key = f'atom_types_{ffname}'
         if key not in system.atoms:
-            smiles = seamm_util.smiles.from_seamm(system)
+            smiles = system.to_smiles()
             logger.debug('Atom typing -- smiles = ' + smiles)
             ff_assigner = seamm_ff_util.FFAssigner(ff)
             atom_types = ff_assigner.assign(smiles, add_hydrogens=False)
