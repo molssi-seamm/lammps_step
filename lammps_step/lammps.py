@@ -1241,7 +1241,7 @@ class LAMMPS(seamm.Node):
                     nlags=nlags,
                     alpha=0.05,
                     fft=nlags > 16,
-                    unbiased=False
+                    adjusted=False
                 )
 
             results[column] = mean
