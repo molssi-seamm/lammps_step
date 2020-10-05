@@ -429,7 +429,6 @@ class LAMMPS(seamm.Node):
 
         #files['input']['filename'] = None
         #files['input']['data'] = None
-
         while node is not None:
 
             if isinstance(node, lammps_step.Initialization):
@@ -522,7 +521,8 @@ class LAMMPS(seamm.Node):
                                     ci = t_student.interval(
                                         0.95, dof - 1, loc=0, scale=1
                                     )
-                                    interval = (ci[1] - ci[0])
+                                    interval = (ci[1] - ci[0]) * v['sem']
+                                    print(abs(interval / mean))
                                     if abs(interval / mean) < accuracy:
                                         control_properties[prp][
                                             'enough_accuracy'] = True
