@@ -12,6 +12,7 @@ dependencies:
   - configargparse
   - kim-query
   - matplotlib
+  - openbabel
   - openkim-models
   - py-cpuinfo
   - statsmodels
@@ -27,10 +28,10 @@ dependencies:
   - pip:
     - codecov
     - pillow
-    - seamm-ff-util>=0.9
-    - seamm_util>=0.9
-    - seamm>=0.9
-    - seamm-widgets>=0.9
+    - seamm-ff-util>=2020.9.23
+    - seamm_util>=2020.9.23
+    - seamm>=2020.9.23
+    - seamm-widgets>=2020.8.1
     - packaging
     - pymbar
 

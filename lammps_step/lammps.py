@@ -14,8 +14,7 @@ import logging
 from math import sqrt, exp, degrees, radians, cos, acos
 # import numpy
 import seamm
-from seamm import data
-import seamm_util
+# import seamm_util
 from seamm_util import ureg, Q_, units_class  # noqa: F401
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
@@ -334,7 +333,10 @@ class LAMMPS(seamm.Node):
         """Run a LAMMPS simulation
         """
 
-        if data.structure is None:
+        system = self.get_variable('_system')
+
+        n_atoms = system.n_atoms()
+        if n_atoms == 0:
             logger.error('LAMMPS run(): there is no structure!')
             raise RuntimeError('LAMMPS run(): there is no structure!')
 
@@ -353,8 +355,6 @@ class LAMMPS(seamm.Node):
                 np = 'default'
 
             if np == 'default':
-                atoms = seamm.data.structure['atoms']
-                n_atoms = len(atoms['elements'])
                 np = int(round(n_atoms / o.lammps_atoms_per_core))
                 if np < 1:
                     np = 1
@@ -574,7 +574,7 @@ class LAMMPS(seamm.Node):
             )
 
             new_input_data.append(f'write_dump all custom  {dump} id '
-                                'xu yu zu vx vy vz modify flush yes sort id')
+                                'xu yu zu modify flush yes sort id')
 
             files['input']['filename'] = input_file 
             files['input']['data'] += new_input_data
@@ -633,7 +633,8 @@ class LAMMPS(seamm.Node):
             ]
         else:
             cmd = [options.lammps_serial, '-in', files['input']['filename']]
-      
+        import pdb
+        pdb.set_trace()
         result = local.run(cmd=cmd, files=tmpdict, return_files=return_files)
 
         if result is None:
@@ -653,7 +654,8 @@ class LAMMPS(seamm.Node):
             f = os.path.join(self.directory, 'sstderr.txt')
             with open(f, mode='w') as fd:
                 fd.write(result['stderr'])
-
+        
+       
         for filename in result['files']:
             f = os.path.join(self.directory, filename)
             mode = "wb" if type(result[filename]['data']) is bytes else "w"
@@ -742,7 +744,7 @@ class LAMMPS(seamm.Node):
             )
 
         new_input_data.append(f'write_dump all custom  {dump} id '
-                            'xu yu zu vx vy vz modify flush yes sort id')
+                            'xu yu zu modify flush yes sort id')
 
         files['input']['data'] += new_input_data
 
@@ -1535,7 +1537,7 @@ class LAMMPS(seamm.Node):
                     nlags=nlags,
                     alpha=0.05,
                     fft=nlags > 16,
-                    unbiased=False
+                    adjusted=False
                 )
 
             results[column] = {}
@@ -1810,7 +1812,10 @@ class LAMMPS(seamm.Node):
 
         # Water models
         if P['rigid_waters']:
-            waters = seamm_util.water_models.Water.find_waters(data.structure)
+            # waters = seamm_util.water_models.Water.find_waters(data.structure)  # noqa: E501
+
+            waters = []
+
             if len(waters) > 0:
                 atoms = []
                 for i, j, k in waters:
@@ -1866,15 +1871,15 @@ class LAMMPS(seamm.Node):
         """
         logger.info("Reading dump file '{}'".format(dumpfile))
 
-        system = seamm.data.structure
-        periodicity = system['periodicity']
-        atoms = system['atoms']
-        n_atoms = len(atoms['elements'])
+        system = self.get_variable('_system')
+        periodicity = system.periodicity
+        n_atoms = system.n_atoms()
 
         section = ''
         section_lines = []
-        xyz = []
-        vel = []
+        xs = []
+        ys = []
+        zs = []
         with open(dumpfile, 'r') as fd:
             lineno = 0
             for line in fd:
@@ -1941,9 +1946,10 @@ class LAMMPS(seamm.Node):
                             )
                     elif 'ATOMS' in section:
                         for tmp in section_lines:
-                            id, x, y, z, vx, vy, vz = tmp.split()
-                            xyz.append((float(x), float(y), float(z)))
-                            vel.append((float(vx), float(vy), float(vz)))
+                            id, x, y, z = tmp.split()
+                            xs.append(float(x))
+                            ys.append(float(y))
+                            zs.append(float(z))
                     section = line[6:].strip()
                     section_lines = []
                 else:
@@ -1954,11 +1960,13 @@ class LAMMPS(seamm.Node):
             logger.debug("  processing section '{}'".format(section))
             logger.debug('  handling the atoms')
             for tmp in section_lines:
-                id, x, y, z, vx, vy, vz = tmp.split()
-                xyz.append((float(x), float(y), float(z)))
-                vel.append((float(vx), float(vy), float(vz)))
+                id, x, y, z = tmp.split()
+                xs.append(float(x))
+                ys.append(float(y))
+                zs.append(float(z))
 
         if periodicity == 3:
-            system['cell'] = cell
-        atoms['coordinates'] = xyz
-        atoms['velocities'] = vel
+            system.cell.set_cell(cell)
+        system.atoms['x'][0:] = xs
+        system.atoms['y'][0:] = ys
+        system.atoms['z'][0:] = zs

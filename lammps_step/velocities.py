@@ -11,7 +11,6 @@ ToDo:
 import lammps_step
 import logging
 import seamm
-from seamm import data
 from seamm_util import ureg, Q_, units_class  # noqa: F401
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
@@ -102,7 +101,8 @@ class Velocities(seamm.Node):
         )
         # Fix variables that need attention
         if 'default' in P['remove_momentum']:
-            if data.structure['periodicity'] == 3:
+            system = self.get_variable('_system')
+            if system.periodicity == 3:
                 P['remove_momentum'] = (
                     "remove translational but not rotational momentum"
                 )

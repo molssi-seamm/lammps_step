@@ -1,10 +1,8 @@
 Pmw
 configargparse
-kim-query
-py-cpuinfo
 pymbar
-seamm>=0.9
-seamm-ff-util>=0.9
-seamm-util>=0.9
-seamm-widgets>=0.9
+seamm>=2020.9.23
+seamm-ff-util>=2020.9.23
+seamm-util>=2020.9.23
+seamm-widgets>=2020.8.1
 statsmodels
