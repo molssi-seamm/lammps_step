@@ -429,6 +429,8 @@ class LAMMPS(seamm.Node):
 
         #files['input']['filename'] = None
         #files['input']['data'] = None
+
+        
         while node is not None:
 
             if isinstance(node, lammps_step.Initialization):
@@ -633,8 +635,7 @@ class LAMMPS(seamm.Node):
             ]
         else:
             cmd = [options.lammps_serial, '-in', files['input']['filename']]
-        import pdb
-        pdb.set_trace()
+        
         result = local.run(cmd=cmd, files=tmpdict, return_files=return_files)
 
         if result is None:
@@ -655,7 +656,6 @@ class LAMMPS(seamm.Node):
             with open(f, mode='w') as fd:
                 fd.write(result['stderr'])
         
-       
         for filename in result['files']:
             f = os.path.join(self.directory, filename)
             mode = "wb" if type(result[filename]['data']) is bytes else "w"
@@ -1390,6 +1390,9 @@ class LAMMPS(seamm.Node):
             )
 
             node_data = None
+
+            import pdb
+            pdb.set_trace()
             if 'run_control' in P:
 
                 if P['run_control'] == 'For a fixed length of simulated time.':
@@ -1397,10 +1400,15 @@ class LAMMPS(seamm.Node):
                         'tstep'
                     ]
                 else:
+
+                    if len(P['control_properties']) == 0:
+                        raise KeyError('No physical property selected for automatic equilibration detection')
+
                     control_properties = [
                         prp[0] for prp in P['control_properties']
                     ]
-
+                
+               
                 node_data = self.analyze_trajectory(
                     filename, control_properties=control_properties
                 )
@@ -1480,6 +1488,7 @@ class LAMMPS(seamm.Node):
             divisor = 1000
         dt /= divisor
         t_max = float((len(t) - 1) * dt)
+
 
         for column in data.columns:
             have_warning = False
