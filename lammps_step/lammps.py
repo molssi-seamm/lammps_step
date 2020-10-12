@@ -510,7 +510,6 @@ class LAMMPS(seamm.Node):
     
                         # Analyze the results
                         analysis = self.analyze(nodes=node)
-    
                         node_id = node._id[1]
                         for prp, v in analysis[node_id].items():
                             if v['short_production'] is False:
@@ -1391,8 +1390,7 @@ class LAMMPS(seamm.Node):
 
             node_data = None
 
-            import pdb
-            pdb.set_trace()
+            
             if 'run_control' in P:
 
                 if P['run_control'] == 'For a fixed length of simulated time.':
