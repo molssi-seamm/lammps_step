@@ -341,7 +341,8 @@ class LAMMPS(seamm.Node):
             raise RuntimeError('LAMMPS run(): there is no structure!')
 
         next_node = super().run(printer)
-
+        import pdb
+        pdb.set_trace()
         # Parse the options
         o = self.options
         # Whether to run parallel and if so, how many mpi processes
@@ -384,13 +385,15 @@ class LAMMPS(seamm.Node):
                 if np > max_np:
                     np = max_np
 
-        if use_mpi:
-            if 'lammps_mpiexec' in o:
-                mpiexec = o.lammps_mpiexec
-            elif 'seamm_mpiexec' in o:
-                mpiexec = o.seamm_mpiexec
-            else:
-                use_mpi = False
+        o.np = np
+
+        # if use_mpi:
+        #     if 'lammps_mpiexec' in o:
+        #         mpiexec = o.lammps_mpiexec
+        #     elif 'seamm_mpiexec' in o:
+        #         mpiexec = o.seamm_mpiexec
+        #     else:
+        #         use_mpi = False
 
         # Print headers and get to work
         printer.important(self.header)
@@ -411,7 +414,6 @@ class LAMMPS(seamm.Node):
         # Get the first real node
         node = self.subflowchart.get_node('1').next()
 
-        input_data = []
         extras = {}
 
         history_nodes = []
@@ -421,14 +423,6 @@ class LAMMPS(seamm.Node):
         os.makedirs(self.directory, exist_ok=True)
 
         files = {}
-        #files['structure'] = {}
-        #files['input'] = {}
-
-        #files['structure']['filename'] = None
-        #files['structure']['data']= None
-
-        #files['input']['filename'] = None
-        #files['input']['data'] = None
 
         while node is not None:
 
@@ -576,7 +570,6 @@ class LAMMPS(seamm.Node):
 
                         iteration = iteration + 1
 
-            final_node_id = node._id
             node = node.next()
 
         if len(history_nodes) == 0:
@@ -585,14 +578,16 @@ class LAMMPS(seamm.Node):
 
             if node_initialization is None:
                 raise TypeError(
-                    'The initial node in a LAMMPS workflow should be an initialization node'
+                    "The initial node in a LAMMPS workflow should be an ",
+                    "initialization node"
                 )
 
             if isinstance(
                 node_initialization, lammps_step.Initialization
             ) is False:
                 raise TypeError(
-                    'The initial node in a LAMMPS workflow should be an initialization node'
+                    "The initial node in a LAMMPS workflow should be an ",
+                    "initialization node"
                 )
 
             base = 'lammps_substep_%s_iter_%d' % (
@@ -603,7 +598,7 @@ class LAMMPS(seamm.Node):
             dump = base + '.dump.*'
             input_file = base + '.dat'
             new_input_data = []
-            new_input_data.append(f'run          0')
+            new_input_data.append('run          0')
             new_input_data.append(f'write_restart          {restart}')
 
             new_input_data.append(
@@ -644,7 +639,7 @@ class LAMMPS(seamm.Node):
     def _execute_single_sim(
         self, files, use_mpi=False, options=None, return_files=None
     ):
-        """ 
+        """
         Step #1: Dump input file
         Step #2: Execute input file
         Step #3: Dump stderr
@@ -676,7 +671,8 @@ class LAMMPS(seamm.Node):
         if use_mpi:
             cmd = [
                 options.lammps_mpiexec, '-np',
-                str(np), options.lammps_mpi, '-in', files['input']['filename']
+                str(options.np), options.lammps_mpi, '-in',
+                files['input']['filename']
             ]
         else:
             cmd = [options.lammps_serial, '-in', files['input']['filename']]
@@ -720,7 +716,7 @@ class LAMMPS(seamm.Node):
         if len(restart_filenames) == 0:
             raise FileNotFoundError(
                 'Lammps_step: could not find any file with the pattern %s' %
-                (restart_filename)
+                (filename)
             )
 
         run_lengths = []
@@ -1456,7 +1452,8 @@ class LAMMPS(seamm.Node):
 
                     if len(P['control_properties']) == 0:
                         raise KeyError(
-                            'No physical property selected for automatic equilibration detection'
+                            'No physical property selected for automatic',
+                            'equilibration detection'
                         )
 
                     control_properties = [

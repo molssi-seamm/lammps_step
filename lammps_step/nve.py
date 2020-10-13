@@ -69,8 +69,8 @@ class NVE(lammps_step.Energy):
             __(self.description_text(), **PP, indent=7 * ' ')
         )
 
-        #time = lammps_step.to_lammps_units(P['time'], quantity='time')
-        #nsteps = round(time / timestep)
+        # time = lammps_step.to_lammps_units(P['time'], quantity='time')
+        # nsteps = round(time / timestep)
 
         thermo_properties = (
             'time temp press etotal ke pe ebond '
