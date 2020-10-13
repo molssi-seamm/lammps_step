@@ -341,8 +341,7 @@ class LAMMPS(seamm.Node):
             raise RuntimeError('LAMMPS run(): there is no structure!')
 
         next_node = super().run(printer)
-        import pdb
-        pdb.set_trace()
+
         # Parse the options
         o = self.options
         # Whether to run parallel and if so, how many mpi processes
