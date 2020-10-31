@@ -32,78 +32,6 @@ class NPT(lammps_step.NVT):
             },
     }
 
-    references = {
-        'Shinoda':
-            {
-                'bibtex':
-                    """
-                @article{PhysRevB.69.134103,
-                  title = {Rapid estimation of elastic constants by molecular dynamics simulation under constant stress},
-                  author = {Shinoda, Wataru and Shiga, Motoyuki and Mikami, Masuhiro},
-                  journal = {Phys. Rev. B},
-                  volume = {69},
-                  issue = {13},
-                  pages = {134103},
-                  numpages = {8},
-                  year = {2004},
-                  month = {Apr},
-                  publisher = {American Physical Society},
-                  doi = {10.1103/PhysRevB.69.134103},
-                  url = {https://link.aps.org/doi/10.1103/PhysRevB.69.134103}
-            }"""  # noqa: E501
-            },
-        'Tuckerman':
-            {
-                'bibtex':
-                    """
-                @article{0305-4470-39-19-S18,
-                  author={Mark E Tuckerman and José Alejandre and Roberto López-Rendón and Andrea L Jochim and Glenn J Martyna},
-                  title={A Liouville-operator derived measure-preserving integrator for molecular dynamics simulations in the isothermal–isobaric ensemble},
-                  journal={Journal of Physics A: Mathematical and General},
-                  volume={39},
-                  number={19},
-                  pages={5629},
-                  url={http://stacks.iop.org/0305-4470/39/i=19/a=S18},
-                  year={2006},
-                  abstract={The constant-pressure,
-                  constant-temperature ( NPT ) molecular dynamics
-                  approach is re-examined from the viewpoint of
-                  deriving a new measure-preserving reversible
-                  geometric integrator for the equations of
-                  motion. The underlying concepts of non-Hamiltonian
-                  phase-space analysis, measure-preserving integrators
-                  and the symplectic property for Hamiltonian systems
-                  are briefly reviewed. In addition, current
-                  measure-preserving schemes for the constant-volume,
-                  constant-temperature ensemble are also reviewed. A
-                  new geometric integrator for the NPT method is
-                  presented, is shown to preserve the correct
-                  phase-space volume element and is demonstrated to
-                  perform well in realistic examples. Finally, a
-                  multiple time-step version of the integrator is
-                  presented for treating systems with motion on
-                  several time scales.}
-            }"""  # noqa: E501
-            },
-        'Berendsen':
-            {
-                'bibtex':
-                    """
-                @article{doi:10.1063/1.448118,
-                author = {H. J. C. Berendsen and J. P. M. Postma and W. F. van Gunsteren and A. DiNola and J. R. Haak},
-                title = {Molecular dynamics with coupling to an external bath},
-                journal = {The Journal of Chemical Physics},
-                volume = {81},
-                number = {8},
-                pages = {3684-3690},
-                year = {1984},
-                doi = {10.1063/1.448118},
-                URL = {https://doi.org/10.1063/1.448118},
-                eprint = {https://doi.org/10.1063/1.448118}
-            }"""  # noqa: E501
-            },
-    }
-
     def __init__(self, flowchart=None, title='NPT dynamics', extension=None):
         """Initialize the node"""
 
@@ -291,6 +219,15 @@ class NPT(lammps_step.NVT):
                     'tchain {} '.format(Tchain) + 'tloop {} '.format(Tloop) +
                     'drag {}'.format(drag) + ptext
                 )
+
+                for citation in NPT.methods['Nose-Hoover']['references']:
+                    self.references.cite(
+                        raw=self._bibliography[citation],
+                        alias=citation,
+                        module='lammps_step',
+                        level=1,
+                        note='Citation for NPT barostat.'
+                    )
             else:
                 nfixes += 1
                 lines.append(
@@ -304,6 +241,15 @@ class NPT(lammps_step.NVT):
                     'fix                 {} all '.format(nfixes) +
                     'press/berendsen ' + ptext + ' modulus {}'.format(modulus)
                 )
+
+                for citation in NPT.methods['Berendsen']['references']:
+                    self.references.cite(
+                        raw=self._bibliography[citation],
+                        alias=citation,
+                        module='lammps_step',
+                        level=1,
+                        note='Citation for NPT barostat.'
+                    )
         elif P['thermostat'] == 'Berendsen':
             nfixes += 1
             lines.append(
@@ -358,6 +304,17 @@ class NPT(lammps_step.NVT):
             raise RuntimeError(
                 "Don't recognize temperature control " +
                 "'{}'".format(P['thermostat'])
+            )
+
+        # Add the citation for the thermostat
+        metadata = lammps_step.thermostat_metadata
+        for citation in metadata[P['thermostat']]['references']:
+            self.references.cite(
+                raw=self._bibliography[citation],
+                alias=citation,
+                module='lammps_step',
+                level=1,
+                note='Citation for thermostat.'
             )
 
         # summary output written 10 times during run so we can see progress
