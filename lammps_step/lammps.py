@@ -2,43 +2,36 @@
 
 """A node or step for LAMMPS in a flowchart"""
 
+import calendar
 import copy
-from scipy.stats import t as t_student
-import re
-import argparse
-import configargparse
-import cpuinfo
 import glob
-import lammps_step
 import logging
 from math import sqrt, exp, degrees, radians, cos, acos
-# import numpy
+import os
+import os.path
+import pprint
+import re
+import string
+import sys
+import traceback
+
+import numpy
+import pandas
+import psutil
+from scipy.stats import t as t_student
+import statsmodels.tsa.stattools as stattools
+
+import lammps_step
 import seamm
-# import seamm_util
 from seamm_util import ureg, Q_, units_class  # noqa: F401
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
-import os
-import os.path
-import pandas
-import pprint
-import statsmodels.tsa.stattools as stattools
-import sys
 
 from pymbar import timeseries
 
 logger = logging.getLogger(__name__)
 job = printing.getPrinter()
 printer = printing.getPrinter('lammps')
-
-
-def upcase(string):
-    """Return an uppercase version of the string.
-
-    Used for the type argument in argparse/
-    """
-    return string.upper()
-
 
 bond_style = {
     'quadratic_bond': 'harmonic',
@@ -104,107 +97,6 @@ class LAMMPS(seamm.Node):
         """
         logger.debug('Creating LAMMPS {}'.format(self))
 
-        # Argument/config parsing
-        self.parser = configargparse.ArgParser(
-            auto_env_var_prefix='',
-            default_config_files=[
-                '/etc/seamm/lammps.ini',
-                '/etc/seamm/lammps_step.ini',
-                '/etc/seamm/seamm.ini',
-                '~/.seamm/lammps.ini',
-                '~/.seamm/lammps_step.ini',
-                '~/.seamm/seamm.ini',
-            ]
-        )
-
-        self.parser.add_argument(
-            '--seamm-configfile',
-            is_config_file=True,
-            default=None,
-            help='a configuration file to override others'
-        )
-
-        # Options for this plugin
-        self.parser.add_argument(
-            "--lammps-log-level",
-            default=argparse.SUPPRESS,
-            choices=[
-                'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'
-            ],
-            type=upcase,
-            help="the logging level for the LAMMPS step"
-        )
-
-        # General SEAMM options
-        self.parser.add_argument(
-            '--seamm-use-mpi',
-            action='store_true',
-            help='use mpi if this flag is present'
-        )
-        self.parser.add_argument(
-            '--seamm-mpi-np',
-            default=argparse.SUPPRESS,
-            help='how many mpi processes to use'
-        )
-        self.parser.add_argument(
-            '--seamm-mpi-max-np',
-            default=argparse.SUPPRESS,
-            help='maximum number of mpi processes to use'
-        )
-        self.parser.add_argument(
-            '--seamm-mpiexec',
-            default=argparse.SUPPRESS,
-            help='the mpiexec command to use'
-        )
-
-        # LAMMPS specific options
-        self.parser.add_argument(
-            '--lammps-use-mpi',
-            action='store_true',
-            help='whether to use mpi for LAMMPS'
-        )
-        self.parser.add_argument(
-            '--lammps-mpi-np',
-            default=argparse.SUPPRESS,
-            help='how many mpi processes to use for LAMMPS'
-        )
-        self.parser.add_argument(
-            '--lammps-mpi-max-np',
-            default=argparse.SUPPRESS,
-            help='maximum number of mpi processes to use for LAMMPS'
-        )
-        self.parser.add_argument(
-            '--lammps-mpiexec',
-            default=argparse.SUPPRESS,
-            help='the mpiexec command to use for LAMMPS'
-        )
-        self.parser.add_argument(
-            '--lammps-serial',
-            default='lmp_serial',
-            help='the serial version of LAMMPS'
-        )
-        self.parser.add_argument(
-            '--lammps-mpi',
-            default='lmp_mpi',
-            help='the mpi version of LAMMPS'
-        )
-        self.parser.add_argument(
-            '--lammps-atoms-per-core',
-            type=int,
-            default='1000',
-            help='the optimal number of atoms per core for LAMMPS'
-        )
-        self.parser.add_argument(
-            '--lammps-html',
-            action='store_true',
-            help='whether to write out html files for graphs, etc.'
-        )
-        self.options, self.unknown = self.parser.parse_known_args()
-
-        # Set the logging level for this module if requested
-        if 'lammps_log_level' in self.options:
-            logger.setLevel(self.options.lammps_log_level)
-
         # The subflowchart
         self.subflowchart = seamm.Flowchart(
             parent=self, name='LAMMPS', namespace=namespace
@@ -217,7 +109,10 @@ class LAMMPS(seamm.Node):
         self.maxlags = 100
 
         super().__init__(
-            flowchart=flowchart, title='LAMMPS', extension=extension
+            flowchart=flowchart,
+            title='LAMMPS',
+            extension=extension,
+            logger=logger
         )
 
     @property
@@ -271,6 +166,66 @@ class LAMMPS(seamm.Node):
 
         return (lx, ly, lz, xy, xz, yz)
 
+    def create_parser(self):
+        """Setup the command-line / config file parser
+        """
+        parser_name = self.step_type
+        parser = seamm.getParser()
+
+        # Remember if the parser exists ... this type of step may have been
+        # found before
+        parser_exists = parser.exists(parser_name)
+
+        # Create the standard options, e.g. log-level
+        result = super().create_parser(name=parser_name)
+
+        if parser_exists:
+            return result
+
+        # LAMMPS specific options
+        parser.add_argument(
+            parser_name,
+            '--lammps-serial',
+            default='lmp_serial',
+            help='the serial version of LAMMPS'
+        )
+        parser.add_argument(
+            parser_name,
+            '--mpi-exe',
+            default='mpiexec',
+            help='the mpi executable'
+        )
+        parser.add_argument(
+            parser_name,
+            '--lammps-mpi',
+            default='lmp_mpi',
+            help='the mpi version of LAMMPS'
+        )
+        parser.add_argument(
+            parser_name,
+            '--ncores',
+            default='available',
+            help=(
+                'The maximum number of cores to use for LAMMPS. '
+                'Default: all available cores.'
+            )
+        )
+        parser.add_argument(
+            parser_name,
+            '--atoms-per-core',
+            type=int,
+            default='1000',
+            help='the optimal number of atoms per core for LAMMPS'
+        )
+        parser.add_argument(
+            parser_name,
+            '--html',
+            action='store_true',
+            help='whether to write out html files for graphs, etc.'
+        )
+
+        return result
+
     def set_id(self, node_id):
         """Set the id for node to a given tuple"""
         self._id = node_id
@@ -308,7 +263,7 @@ class LAMMPS(seamm.Node):
                         str(e), str(node)
                     )
                 )
-                logger.critical(
+                self.logger.critical(
                     'Error describing LAMMPS flowchart: {} in {}'.format(
                         str(e), str(node)
                     )
@@ -319,7 +274,7 @@ class LAMMPS(seamm.Node):
                     "Unexpected error describing LAMMPS flowchart: {} in {}"
                     .format(sys.exc_info()[0], str(node))
                 )
-                logger.critical(
+                self.logger.critical(
                     "Unexpected error describing LAMMPS flowchart: {} in {}"
                     .format(sys.exc_info()[0], str(node))
                 )
@@ -332,79 +287,76 @@ class LAMMPS(seamm.Node):
     def run(self):
         """Run a LAMMPS simulation
         """
+        # Add a citation for this plug-in
+        try:
+            template = string.Template(self._bibliography['lammps_step'])
+
+            version = seamm.__version__
+            year, month = version.split('.')[0:2]
+            month = calendar.month_abbr[int(month)].lower()
+            citation = template.substitute(
+                month=month, version=version, year=year
+            )
+
+            self.references.cite(
+                raw=citation,
+                alias='lammps_step',
+                module='lammps_step',
+                level=2,
+                note='The principle citation for the LAMMPS step in SEAMM.'
+            )
+
+        except Exception as e:
+            printer.important(f'Exception in citation {type(e)}: {e}')
+            printer.important(traceback.format_exc())
 
         system = self.get_variable('_system')
 
         n_atoms = system.n_atoms()
         if n_atoms == 0:
-            logger.error('LAMMPS run(): there is no structure!')
+            self.logger.error('LAMMPS run(): there is no structure!')
             raise RuntimeError('LAMMPS run(): there is no structure!')
 
         next_node = super().run(printer)
 
-        # Parse the options
+        # Get the options
         o = self.options
-        # Whether to run parallel and if so, how many mpi processes
-        use_mpi = 'lammps_use_mpi' in o or 'seamm_use_mpi' in o
-        if use_mpi:
-            if 'seamm_mpi_np' in o:
-                np = o.seamm_mpi_np
-            elif 'lammps_mpi_np' in o:
-                np = o.lammps_mpi_np
-            else:
-                np = 'default'
+        global_options = self.global_options
 
-            if np == 'default':
-                np = int(round(n_atoms / o.lammps_atoms_per_core))
+        # Whether to run parallel and if so, how many mpi processes
+        if global_options['parallelism'] in ('any', 'mpi'):
+            np = o['ncores']
+            if np == 'available':
+                np = global_options['ncores']
+
+            if np == 'available':
+                np = int(round(n_atoms / o['atoms_per_core']))
                 if np < 1:
                     np = 1
+
+                # How many processors does this node have?
+                n_cores = psutil.cpu_count(logical=False)
+                self.logger.info('The number of cores is {}'.format(n_cores))
+
+                if np > n_cores:
+                    self.logger.info(
+                        f'LAMMPS could use {np} cores, but only {n_cores} are '
+                        'available'
+                    )
+                    np = n_cores
             else:
                 np = int(np)
-
-            if np == 1:
-                use_mpi = False
-            else:
-                if 'seamm_mpi_max_np' in o:
-                    max_np = o.seamm_mpi_max_np
-                elif 'lammps_mpi_max_np' in o:
-                    max_np = o.lammps_mpi_max_np
-                else:
-                    max_np = 'default'
-
-                if max_np == 'default':
-                    # How many processors does this node have?
-                    info = cpuinfo.get_cpu_info()
-                    max_np = info['count']
-                    # Account for Intel hyperthreading
-                    if info['arch'][0:3] == 'X86':
-                        max_np = int(max_np / 2)
-                logger.info(
-                    'The maximum number of cores to use is {}'.format(max_np)
-                )
-                if np > max_np:
-                    np = max_np
-
-        o.np = np
-
-        # if use_mpi:
-        #     if 'lammps_mpiexec' in o:
-        #         mpiexec = o.lammps_mpiexec
-        #     elif 'seamm_mpiexec' in o:
-        #         mpiexec = o.seamm_mpiexec
-        #     else:
-        #         use_mpi = False
+        else:
+            np = 1
 
         # Print headers and get to work
         printer.important(self.header)
-        if use_mpi:
+        if np > 1:
             printer.important(
                 '    LAMMPS using MPI with {} processes.\n'.format(np)
             )
         else:
             printer.important('   LAMMPS using the serial version.\n')
-
-        logger.info('\n' + 80 * '-' + '\n' + self.parser.format_help())
-        logger.info('\n' + 80 * '-' + '\n' + self.parser.format_values())
 
         self.subflowchart.root_directory = self.flowchart.root_directory
 
@@ -441,7 +393,7 @@ class LAMMPS(seamm.Node):
                 with open(f, mode='w') as fd:
                     fd.write(files['structure']['data'])
 
-                logger.debug(
+                self.logger.debug(
                     files['structure']['filename'] + ": " +
                     files['structure']['data']
                 )
@@ -483,9 +435,7 @@ class LAMMPS(seamm.Node):
                             extras=extras
                         )
 
-                        files = self._execute_single_sim(
-                            files, use_mpi=use_mpi, options=o
-                        )
+                        files = self._execute_single_sim(files, np=np)
 
                         self.analyze(nodes=history_nodes)
 
@@ -522,9 +472,7 @@ class LAMMPS(seamm.Node):
                             extras=extras
                         )
 
-                        files = self._execute_single_sim(
-                            files, use_mpi=use_mpi, options=o
-                        )
+                        files = self._execute_single_sim(files, np=np)
 
                         # Analyze the results
                         analysis = self.analyze(nodes=node)
@@ -609,11 +557,11 @@ class LAMMPS(seamm.Node):
             files['input']['data'] += new_input_data
             files['input']['data'] = '\n'.join(files['input']['data'])
 
-            logger.debug(
+            self.logger.debug(
                 files['input']['filename'] + ':\n' + files['input']['data']
             )
 
-            files = self._execute_single_sim(files, use_mpi=use_mpi, options=o)
+            files = self._execute_single_sim(files, np=np)
 
         if len(history_nodes) > 0:
 
@@ -625,7 +573,7 @@ class LAMMPS(seamm.Node):
                 extras=extras
             )
 
-            files = self._execute_single_sim(files, use_mpi=use_mpi, options=o)
+            files = self._execute_single_sim(files, np=np)
 
             self.analyze(nodes=history_nodes)
 
@@ -635,16 +583,13 @@ class LAMMPS(seamm.Node):
 
         return next_node
 
-    def _execute_single_sim(
-        self, files, use_mpi=False, options=None, return_files=None
-    ):
+    def _execute_single_sim(self, files, np=1, return_files=None):
         """
         Step #1: Dump input file
         Step #2: Execute input file
         Step #3: Dump stderr
         Step #4: Dump output files
         """
-
         tmpdict = {}
         for k, v in files.items():
 
@@ -667,31 +612,37 @@ class LAMMPS(seamm.Node):
 
         local = seamm.ExecLocal()
 
-        if use_mpi:
+        if np > 1:
             cmd = [
-                options.lammps_mpiexec, '-np',
-                str(options.np), options.lammps_mpi, '-in',
+                self.options['mpi_exe'], '-np',
+                str(np), self.options['lammps_mpi'], '-in',
                 files['input']['filename']
             ]
         else:
-            cmd = [options.lammps_serial, '-in', files['input']['filename']]
+            cmd = [
+                self.options['lammps_serial'], '-in',
+                files['input']['filename']
+            ]
 
         result = local.run(cmd=cmd, files=tmpdict, return_files=return_files)
 
         if result is None:
-            logger.error('There was an error running LAMMPS')
+            self.logger.error('There was an error running LAMMPS')
             return None
 
-        logger.debug('\n' + pprint.pformat(result))
+        self.logger.debug('\n' + pprint.pformat(result))
 
-        logger.debug('stdout:\n' + result['stdout'])
+        self.logger.debug('stdout:\n' + result['stdout'])
 
         f = os.path.join(self.directory, 'stdout.txt')
         with open(f, mode='w') as fd:
             fd.write(result['stdout'])
 
+        # Add the citations, gettign the version from stdout
+        self._add_lammps_citations(result['stdout'])
+
         if result['stderr'] != '':
-            logger.warning('stderr:\n' + result['stderr'])
+            self.logger.warning('stderr:\n' + result['stderr'])
             f = os.path.join(self.directory, 'sstderr.txt')
             with open(f, mode='w') as fd:
                 fd.write(result['stderr'])
@@ -797,7 +748,7 @@ class LAMMPS(seamm.Node):
 
         files['input']['filename'] = input_file
         files['input']['data'] = '\n'.join(files['input']['data'])
-        logger.debug(
+        self.logger.debug(
             files['input']['filename'] + ':\n' + files['input']['data']
         )
 
@@ -813,7 +764,7 @@ class LAMMPS(seamm.Node):
                     str(e), str(node)
                 )
             )
-            logger.critical(
+            self.logger.critical(
                 'Error running LAMMPS flowchart: {} in {}'.format(
                     str(e), str(node)
                 )
@@ -825,7 +776,7 @@ class LAMMPS(seamm.Node):
                     sys.exc_info()[0], str(node)
                 )
             )
-            logger.critical(
+            self.logger.critical(
                 "Unexpected error running LAMMPS flowchart: {} in {}".format(
                     sys.exc_info()[0], str(node)
                 )
@@ -1427,10 +1378,11 @@ class LAMMPS(seamm.Node):
                 )
             )
 
-            filenames.sort(
-                key=lambda x:
-                int(re.search(r'iter_\d+', x).group().split('_')[1])
-            )
+            if len(filenames) > 1:
+                filenames.sort(
+                    key=lambda x:
+                    int(re.search(r'iter_\d+', x).group().split('_')[1])
+                )
 
             if len(filenames) > 0:
                 filename = filenames[-1]
@@ -1447,6 +1399,8 @@ class LAMMPS(seamm.Node):
                     control_properties = lambda x: x not in [  # noqa: E731
                         'tstep'
                     ]
+                    # Reset the trajectory data so doesn't carry over
+                    self._trajectory = []
                 else:
 
                     if len(P['control_properties']) == 0:
@@ -1474,9 +1428,7 @@ class LAMMPS(seamm.Node):
         """Read a trajectory file and do the statistical analysis
         """
 
-        write_html = (
-            'lammps_html' in self.options and self.options.lammps_html
-        )
+        write_html = ('html' in self.options and self.options['html'])
 
         rootname = os.path.splitext(filename)[0]
 
@@ -1506,8 +1458,8 @@ class LAMMPS(seamm.Node):
         data = data.reset_index(drop=True)
         data.index *= dt
 
-        logger.debug('Columns: {}'.format(data.columns))
-        logger.debug('  Types:\n{}'.format(data.dtypes))
+        self.logger.debug('Columns: {}'.format(data.columns))
+        self.logger.debug('  Types:\n{}'.format(data.dtypes))
 
         printer.normal(
             '       Analysis of ' + os.path.basename(filename) + '\n'
@@ -1544,120 +1496,140 @@ class LAMMPS(seamm.Node):
             have_acf_warning = False
             y = data[column]
 
-            logger.info('Analyzing {}, nsamples = {}'.format(column, len(y)))
+            self.logger.info(
+                'Analyzing {}, nsamples = {}'.format(column, len(y))
+            )
 
             # compute indices of uncorrelated timeseries using pymbar
             yy = y.to_numpy()
             conv, inefficiency, Neff_max = timeseries.detectEquilibration(yy)
 
-            logger.info(
+            self.logger.info(
                 '  converged in {} steps, inefficiency = {}, Neff_max = {}'
                 .format(conv, inefficiency, Neff_max)
             )
-            tau = dt_fs * (inefficiency - 1) / 2
-            if tau < dt_fs / 2:
-                tau = dt_fs / 2
-            t0 = conv * dt_fs
-            y_t_equil = yy[conv:]
-            indices = timeseries.subsampleCorrelatedData(
-                y_t_equil, g=inefficiency
-            )
 
-            if len(indices) == 0:
-                print('Problem with column ' + column)
-                print('yy')
-                print(yy)
-                print('y_t_equil')
-                print(y_t_equil)
-                print('indices')
-                print(indices)
-                continue
+            if numpy.isnan(inefficiency) or numpy.isnan(Neff_max):
+                # Apparently didn't converge!
+                printer.normal(
+                    __(
+                        '{column:>23s} did not converge to a stationary state',
+                        column=column,
+                        indent=7 * ' ',
+                        wrap=False,
+                        dedent=False
+                    )
+                )
 
-            y_n = y_t_equil[indices]
-            n_samples = len(y_n)
-            mean = y_n.mean()
-            std = y_n.std()
-            sem = std / sqrt(n_samples)
-
-            # Get the autocorrelation function
-            if len(y_t_equil) < 8:
                 have_acf = False
-                have_acf_warning = True
-                acf_warning = '^'
+                is_converged = False
             else:
-                have_acf = True
-                acf_warning = ' '
-                nlags = 4 * int(round(inefficiency + 0.5))
-                if nlags > int(len(y_t_equil) / 2):
-                    nlags = int(len(y_t_equil) / 2)
-                acf, confidence = stattools.acf(
-                    y_t_equil,
-                    nlags=nlags,
-                    alpha=0.05,
-                    fft=nlags > 16,
-                    adjusted=False
+                is_converged = True
+                tau = dt_fs * (inefficiency - 1) / 2
+                if tau < dt_fs / 2:
+                    tau = dt_fs / 2
+                t0 = conv * dt_fs
+                y_t_equil = yy[conv:]
+                indices = timeseries.subsampleCorrelatedData(
+                    y_t_equil, g=inefficiency
                 )
 
-            results[column] = {}
-            results[column]['mean'] = mean
-            results[column]['sem'] = sem
-            results[column]['n_sample'] = n_samples
-            results[column]['short_production'] = have_acf_warning
+                if len(indices) == 0:
+                    print('Problem with column ' + column)
+                    print('yy')
+                    print(yy)
+                    print('y_t_equil')
+                    print(y_t_equil)
+                    print('indices')
+                    print(indices)
+                    continue
 
-            # Work out units on convergence time
-            conv_units = 'fs'
-            t_conv = t0
-            if t0 >= 1000000000:
-                conv_units = 'ms'
-                t_conv = t0 / 1000000000
-            elif t0 >= 1000000:
-                conv_units = 'ns'
-                t_conv = t0 / 1000000
-            elif t0 >= 1000:
-                conv_units = 'ps'
-                t_conv = t0 / 1000
+                y_n = y_t_equil[indices]
+                n_samples = len(y_n)
+                mean = y_n.mean()
+                std = y_n.std()
+                sem = std / sqrt(n_samples)
 
-            # Work out units on autocorrelation time
-            tau_units = 'fs'
-            t_tau = tau
-            if tau >= 1000000000:
-                tau_units = 'ms'
-                t_tau = tau / 1000000000
-            elif tau >= 1000000:
-                tau_units = 'ns'
-                t_tau = tau / 1000000
-            elif tau >= 1000:
-                tau_units = 'ps'
-                t_tau = tau / 1000
+                # Get the autocorrelation function
+                if len(y_t_equil) < 8:
+                    have_acf = False
+                    have_acf_warning = True
+                    acf_warning = '^'
+                else:
+                    have_acf = True
+                    acf_warning = ' '
+                    nlags = 4 * int(round(inefficiency + 0.5))
+                    if nlags > int(len(y_t_equil) / 2):
+                        nlags = int(len(y_t_equil) / 2)
+                    acf, confidence = stattools.acf(
+                        y_t_equil,
+                        nlags=nlags,
+                        alpha=0.05,
+                        fft=nlags > 16,
+                        adjusted=False
+                    )
 
-            if n_samples < 100:
-                have_warning = True
-                warn = '*'
-            else:
-                warn = ' '
+                results[column] = {}
+                results[column]['mean'] = mean
+                results[column]['sem'] = sem
+                results[column]['n_sample'] = n_samples
+                results[column]['short_production'] = have_acf_warning
 
-            results[column]['few_neff'] = have_warning
+                # Work out units on convergence time
+                conv_units = 'fs'
+                t_conv = t0
+                if t0 >= 1000000000:
+                    conv_units = 'ms'
+                    t_conv = t0 / 1000000000
+                elif t0 >= 1000000:
+                    conv_units = 'ns'
+                    t_conv = t0 / 1000000
+                elif t0 >= 1000:
+                    conv_units = 'ps'
+                    t_conv = t0 / 1000
 
-            printer.normal(
-                __(
-                    '{column:>23s} = {value:9.3f} ± {stderr:7.3f}{warn}'
-                    ' {t0:8.2f} {conv_units} {tau:8.1f} {tau_units}{acf} '
-                    '{inefficiency:9.1f}',
-                    column=column,
-                    value=mean,
-                    stderr=sem,
-                    warn=warn,
-                    t0=t_conv,
-                    conv_units=conv_units,
-                    tau=t_tau,
-                    tau_units=tau_units,
-                    acf=acf_warning,
-                    inefficiency=inefficiency,
-                    indent=7 * ' ',
-                    wrap=False,
-                    dedent=False
+                # Work out units on autocorrelation time
+                tau_units = 'fs'
+                t_tau = tau
+                if tau >= 1000000000:
+                    tau_units = 'ms'
+                    t_tau = tau / 1000000000
+                elif tau >= 1000000:
+                    tau_units = 'ns'
+                    t_tau = tau / 1000000
+                elif tau >= 1000:
+                    tau_units = 'ps'
+                    t_tau = tau / 1000
+
+                if n_samples < 100:
+                    have_warning = True
+                    warn = '*'
+                else:
+                    warn = ' '
+
+                results[column]['few_neff'] = have_warning
+
+                printer.normal(
+                    __(
+                        '{column:>23s} = {value:9.3f} ± {stderr:7.3f}{warn}'
+                        ' {t0:8.2f} {conv_units} {tau:8.1f} {tau_units}{acf} '
+                        '{inefficiency:9.1f}',
+                        column=column,
+                        value=mean,
+                        stderr=sem,
+                        warn=warn,
+                        t0=t_conv,
+                        conv_units=conv_units,
+                        tau=t_tau,
+                        tau_units=tau_units,
+                        acf=acf_warning,
+                        inefficiency=inefficiency,
+                        indent=7 * ' ',
+                        wrap=False,
+                        dedent=False
+                    )
                 )
-            )
+
             # Create graphs of the property
             figure = self.create_figure(
                 module_path=(self.__module__.split('.')[0], 'seamm'),
@@ -1784,36 +1756,37 @@ class LAMMPS(seamm.Node):
                 color='#4dbd74'
             )
 
-            # the partly transparent error band
-            t_min = t0 / divisor
-            plot.add_trace(
-                x_axis=x_axis,
-                y_axis=y_axis,
-                name='sem',
-                x=[t_min, t_max, t_max, t_min],
-                xlabel='t',
-                xunits=t_units,
-                y=[mean + sem, mean + sem, mean - sem, mean - sem],
-                ylabel='sem',
-                yunits=LAMMPS.display_units[column],
-                showlegend='false',
-                color='rgba(211,211,211,0.5)',
-                fill='toself',
-            )
+            if is_converged:
+                # the partly transparent error band
+                t_min = t0 / divisor
+                plot.add_trace(
+                    x_axis=x_axis,
+                    y_axis=y_axis,
+                    name='sem',
+                    x=[t_min, t_max, t_max, t_min],
+                    xlabel='t',
+                    xunits=t_units,
+                    y=[mean + sem, mean + sem, mean - sem, mean - sem],
+                    ylabel='sem',
+                    yunits=LAMMPS.display_units[column],
+                    showlegend='false',
+                    color='rgba(211,211,211,0.5)',
+                    fill='toself',
+                )
 
-            # and finally the median value so it is on top
-            plot.add_trace(
-                x_axis=x_axis,
-                y_axis=y_axis,
-                name='average',
-                x=[t_min, t_max],
-                xlabel='t',
-                xunits=t_units,
-                y=[mean, mean],
-                ylabel='average',
-                yunits=LAMMPS.display_units[column],
-                color='black'
-            )
+                # and finally the median value so it is on top
+                plot.add_trace(
+                    x_axis=x_axis,
+                    y_axis=y_axis,
+                    name='average',
+                    x=[t_min, t_max],
+                    xlabel='t',
+                    xunits=t_units,
+                    y=[mean, mean],
+                    ylabel='average',
+                    yunits=LAMMPS.display_units[column],
+                    color='black'
+                )
 
             if have_acf:
                 figure.grid_plots('trj - acf')
@@ -1927,7 +1900,7 @@ class LAMMPS(seamm.Node):
         dumpfile : str
             The filename (or path) to the dumpfile.
         """
-        logger.info("Reading dump file '{}'".format(dumpfile))
+        self.logger.info("Reading dump file '{}'".format(dumpfile))
 
         system = self.get_variable('_system')
         periodicity = system.periodicity
@@ -1951,12 +1924,14 @@ class LAMMPS(seamm.Node):
                         )
                     section = line[6:].strip()
                     section_lines = []
-                    logger.debug('   section = ' + section)
+                    self.logger.debug('   section = ' + section)
                     continue
 
                 if line[0:5] == 'ITEM:':
                     # end a section
-                    logger.debug("  processing section '{}'".format(section))
+                    self.logger.debug(
+                        "  processing section '{}'".format(section)
+                    )
                     if 'BOX BOUNDS' in section:
                         if len(section.split()) == 8:
                             xlo_bound, xhi_bound, xy = section_lines[0].split()
@@ -2015,8 +1990,8 @@ class LAMMPS(seamm.Node):
 
         # Clean up the last section
         if 'ATOMS' in section:
-            logger.debug("  processing section '{}'".format(section))
-            logger.debug('  handling the atoms')
+            self.logger.debug("  processing section '{}'".format(section))
+            self.logger.debug('  handling the atoms')
             for tmp in section_lines:
                 id, x, y, z = tmp.split()
                 xs.append(float(x))
@@ -2028,3 +2003,60 @@ class LAMMPS(seamm.Node):
         system.atoms['x'][0:] = xs
         system.atoms['y'][0:] = ys
         system.atoms['z'][0:] = zs
+
+    def _add_lammps_citations(self, text):
+        """Add the two main citations for LAMMPS, getting the version from stdout
+        text.
+
+        Parameters
+        ----------
+        text : str
+            The standard output from LAMMPS
+
+        Returns
+        -------
+        None
+        """
+        # Add the JCP paper
+        self.references.cite(
+            raw=self._bibliography['PLIMPTON19951'],
+            alias='lammps-jcp',
+            module='lammps_step',
+            level=1,
+            note='The principle LAMMPS citation.'
+        )
+
+        # And the citation to the LAMMPS code itself
+        lines = text.splitlines()
+
+        if len(lines) == 0:
+            return
+
+        line = lines[0]
+        tmp = line.split(' ')
+        if len(tmp) != 4:
+            self.logger.info(f"Cannot get LAMMPS version: '{line}'")
+            return
+
+        month = tmp[2]
+        year = tmp[3].rstrip(')')
+        version = ' '.join(tmp[1:])
+
+        try:
+            template = string.Template(self._bibliography['lammps'])
+
+            citation = template.substitute(
+                month=month, version=version, year=year
+            )
+
+            self.references.cite(
+                raw=citation,
+                alias='lammps-exe',
+                module='lammps_step',
+                level=1,
+                note='The principle citation for the LAMMPS executable.'
+            )
+
+        except Exception as e:
+            printer.important(f'Exception in citation {type(e)}: {e}')
+            printer.important(traceback.format_exc())
