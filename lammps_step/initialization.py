@@ -467,7 +467,8 @@ class Initialization(seamm.Node):
     def OpenKIM_input(self):
         """Create the initialization input for a calculation using OpenKIM.
         """
-        structure = seamm.data.structure
+        # Get the system
+        system = self.get_variable('_system')
 
         # Get the (simple) energy expression for these systems
         eex = self.OpenKIM_energy_expression()
@@ -478,12 +479,13 @@ class Initialization(seamm.Node):
         lines.append('')
         lines.append('newton              on')
         lines.append('')
+        potential = self.get_variable('_OpenKIM_Potential')
         lines.append(
-            f'kim_init            {seamm.data.OpenKIM_Potential} metal '
+            f'kim_init            {potential} metal '
             'unit_conversion_mode'
         )
         lines.append('')
-        periodicity = structure['periodicity']
+        periodicity = system.periodicity
         if periodicity == 0:
             lines.append('boundary            s s s')
             string = 'Setup for a molecular (non-periodic) system.'
@@ -514,24 +516,26 @@ class Initialization(seamm.Node):
         """Create the (simple) energy expression for OpenKIM models.
         """
         eex = {}
-        structure = seamm.data.structure
-        atoms = structure['atoms']
-        elements = atoms['elements']
-        coordinates = atoms['coordinates']
+
+        # Get the system
+        system = self.get_variable('_system')
+        atoms = system.atoms
 
         # The elements (1-based!) Probably not used...
+        elements = atoms.symbols()
         eex['elements'] = ['']
         eex['elements'].extend(elements)
 
         # The periodicity & cell parameters
-        periodicity = eex['periodicity'] = structure['periodicity']
+        periodicity = eex['periodicity'] = system.periodicity
         if periodicity == 3:
-            eex['cell'] = structure['cell']
+            eex['cell'] = system['cell'].cell().parameters
 
         result = eex['atoms'] = []
         atom_types = eex['atom types'] = []
         masses = eex['masses'] = []
 
+        coordinates = atoms.coordinates(fractionals=False)
         for element, xyz in zip(elements, coordinates):
             if element in atom_types:
                 index = atom_types.index(element) + 1
