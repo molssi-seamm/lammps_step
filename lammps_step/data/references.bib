@@ -1,0 +1,171 @@
+This is an initial library of BibTex references for the lammps_step plug-in for SEAMM,
+generated automatically by the cookiecutter. You may wish to edit the first entry to correct some
+of the information.
+
+Add other references to the end of the file and add code in the plug-in to cite the references as
+appropriate. This is done with code like this:
+
+        self.references.cite(
+            raw=self._bibliography['doi:10.1002/jcc.21224'],
+            alias='packmol',
+            module='packmol_step',
+            level=1,
+            note='The principle PACKMOL citation.'
+        )
+
+which is typically in the run() method of the plug-in.
+
+The base node class in SEAMM automatically reads this list of references into a dictionary in
+self._bibliography with the key being the key of the BibTex entry -- usually the name on the
+first line of the entry after the 'article' or 'misc' (for software) keyword.
+
+See the documentation for the Reference Handler for the other arguments to cite().
+
+# End of initial comments #
+
+@Misc{ lammps_step,
+	author = {Eliseo Marin-Rimoldi, Paul Saxe},
+	title = {LAMMPS plug-in for SEAMM},
+	month = {$month},
+	year = {$year},
+	organization = {The Molecular Sciences Software Institute (MolSSI)},
+	url = {https://github.com/molssi-seamm/lammps_step},
+	address = {Virginia Tech, Blacksburg, VA, USA},
+	version = {$version}
+}
+                  
+@Misc{ lammps,
+	author = {Steve Plimpton, et al.},
+	title = {LAMMPS: Large-scale Atomic/Molecular Massively Parallel Simulator},
+	month = {$month},
+	year = {$year},
+	organization = {Sandia National Laboratories},
+	url = {https://lammps.sandia.gov/},
+	address = {Albuquerque, NM, USA},
+	version = {$version}
+}
+
+@article{PLIMPTON19951,
+    title = "Fast Parallel Algorithms for Short-Range Molecular Dynamics",
+    journal = "Journal of Computational Physics",
+    volume = "117",
+    number = "1",
+    pages = "1 - 19",
+    year = "1995",
+    issn = "0021-9991",
+    doi = "https://doi.org/10.1006/jcph.1995.1039",
+    url = "http://www.sciencedirect.com/science/article/pii/S002199918571039X",
+    author = "Steve Plimpton",
+    abstract = "Three parallel algorithms for classical molecular dynamics are presented. The first assigns each processor a fixed subset of atoms; the second assigns each a fixed subset of inter-atomic forces to compute; the third assigns each a fixed spatial region. The algorithms are suitable for molecular dynamics models which can be difficult to parallelize efficiently—those with short-range forces where the neighbors of each atom change rapidly. They can be implemented on any distributed-memory parallel machine which allows for message-passing of data between independently executing processors. The algorithms are tested on a standard Lennard-Jones benchmark problem for system sizes ranging from 500 to 100,000,000 atoms on several parallel supercomputers--the nCUBE 2, Intel iPSC/860 and Paragon, and Cray T3D. Comparing the results to the fastest reported vectorized Cray Y-MP and C90 algorithm shows that the current generation of parallel machines is competitive with conventional vector supercomputers even for small problems. For large problems, the spatial algorithm achieves parallel efficiencies of 90% and a 1840-node Intel Paragon performs up to 165 faster than a single Cray C9O processor. Trade-offs between the three algorithms and guidelines for adapting them to more complex molecular dynamics simulations are also discussed."
+}
+
+@article{Shinoda,
+     title = {Rapid estimation of elastic constants by molecular dynamics simulation under constant stress},
+     author = {Shinoda, Wataru and Shiga, Motoyuki and Mikami, Masuhiro},
+     journal = {Phys. Rev. B},
+     volume = {69},
+     issue = {13},
+     pages = {134103},
+     numpages = {8},
+     year = {2004},
+     month = {Apr},
+     publisher = {American Physical Society},
+     doi = {10.1103/PhysRevB.69.134103},
+     url = {https://link.aps.org/doi/10.1103/PhysRevB.69.134103}
+}
+
+@article{Tuckerman,
+     author={Mark E Tuckerman and José Alejandre and Roberto López-Rendón and
+                  Andrea L Jochim and Glenn J Martyna},
+     title={A Liouville-operator derived measure-preserving integrator for
+                  molecular dynamics simulations in the isothermal–isobaric
+                  ensemble},
+     journal={Journal of Physics A: Mathematical and General},
+     volume={39},
+     number={19},
+     pages={5629},
+     url={http://stacks.iop.org/0305-4470/39/i=19/a=S18},
+     year={2006},
+     doi={10.1088/0305-4470/39/19/S18},
+     abstract={The constant-pressure, constant-temperature ( NPT ) molecular
+                  dynamics approach is re-examined from the viewpoint of
+                  deriving a new measure-preserving reversible geometric
+                  integrator for the equations of motion. The underlying
+                  concepts of non-Hamiltonian phase-space analysis,
+                  measure-preserving integrators and the symplectic property for
+                  Hamiltonian systems are briefly reviewed. In addition, current
+                  measure-preserving schemes for the constant-volume,
+                  constant-temperature ensemble are also reviewed. A new
+                  geometric integrator for the NPT method is presented, is shown
+                  to preserve the correct phase-space volume element and is
+                  demonstrated to perform well in realistic examples. Finally, a
+                  multiple time-step version of the integrator is presented for
+                  treating systems with motion on several time scales.}
+}
+
+@article{Berendsen,
+    author = {H. J. C. Berendsen and J. P. M. Postma and W. F. van Gunsteren and
+                  A. DiNola and J. R. Haak},
+    title = {Molecular dynamics with coupling to an external bath},
+    journal = {The Journal of Chemical Physics},
+    volume = {81},
+    number = {8},
+    pages = {3684-3690},
+    year = {1984},
+    doi = {10.1063/1.448118},
+    URL = {https://doi.org/10.1063/1.448118},
+    eprint = {https://doi.org/10.1063/1.448118}
+}
+@article{Bussi1,
+    author = {Giovanni Bussi and Davide Donadio and Michele Parrinello},
+    title = {Canonical sampling through velocity rescaling},
+    journal = {The Journal of Chemical Physics},
+    volume = {126},
+    number = {1},
+    pages = {014101},
+    year = {2007},
+    doi = {10.1063/1.2408420},
+    URL = {https://doi.org/10.1063/1.2408420},
+    eprint = {https://doi.org/10.1063/1.2408420}
+}
+@article{Bussi2,
+    title = {Accurate sampling using Langevin dynamics},
+    author = {Bussi, Giovanni and Parrinello, Michele},
+    journal = {Phys. Rev. E},
+    volume = {75},
+    issue = {5},
+    pages = {056707},
+    numpages = {7},
+    year = {2007},
+    month = {May},
+    publisher = {American Physical Society},
+    doi = {10.1103/PhysRevE.75.056707},
+    url = {https://link.aps.org/doi/10.1103/PhysRevE.75.056707}
+}
+@article{Schneider,
+    title = {Molecular-dynamics study of a three-dimensional one-component model for distortive phase transitions},
+    author = {Schneider, T. and Stoll, E.},
+    journal = {Phys. Rev. B},
+    volume = {17},
+    issue = {3},
+    pages = {1302--1322},
+    numpages = {0},
+    year = {1978},
+    month = {Feb},
+    publisher = {American Physical Society},
+    doi = {10.1103/PhysRevB.17.1302},
+    url = {https://link.aps.org/doi/10.1103/PhysRevB.17.1302}
+ }
+@article{Dunweg,
+    author = {Dünweg, Burkhard and Paul, Wolfgang},
+    title = {Brownian dynamics simulations without gaussian random numbers},
+    journal = {International Journal of Modern Physics C},
+    volume = {02},
+    number = {03},
+    pages = {817-827},
+    year = {1991},
+    month = {Sep},
+    doi = {10.1142/S0129183191001037},
+    URL = {http://www.worldscientific.com/doi/abs/10.1142/S0129183191001037},
+    eprint = {http://www.worldscientific.com/doi/pdf/10.1142/S0129183191001037}
+}
