@@ -14,191 +14,43 @@ logger = logging.getLogger(__name__)
 job = printing.getPrinter()
 printer = printing.getPrinter('lammps')
 
+thermostat_metadata = {
+    'Nose-Hoover':
+        {
+            'documentation': 'http://lammps.sandia.gov/doc/fix_nvt.html',
+            'references': ['Shinoda', 'Tuckerman'],
+        },
+    'Berendsen':
+        {
+            'documentation':
+                'http://lammps.sandia.gov/doc/fix_temp_berendsen.html',
+            'references': ['Berendsen'],
+        },
+    'canonical sampling, velocity rescaling (csvr)':
+        {
+            'documentation': 'http://lammps.sandia.gov/doc/fix_temp_csvr.html',
+            'references': ['Bussi1'],
+        },
+    'canonical sampling, langevin dynamics (csld)':
+        {
+            'documentation': 'http://lammps.sandia.gov/doc/fix_temp_csvr.html',
+            'references': ['Bussi2'],
+        },
+    'velocity rescaling':
+        {
+            'documentation':
+                'http://lammps.sandia.gov/doc/fix_temp_rescale.html',
+            'references': [],
+        },
+    'Langevin':
+        {
+            'documentation': 'http://lammps.sandia.gov/doc/fix_langevin.html',
+            'references': ['Schneider', 'Dunweg']
+        },
+}
+
 
 class NVT(lammps_step.NVE):
-
-    methods = {
-        'Nose-Hoover':
-            {
-                'documentation': 'http://lammps.sandia.gov/doc/fix_nvt.html',
-                'references': ['Shinoda', 'Tuckerman'],
-            },
-        'Berendsen':
-            {
-                'documentation':
-                    'http://lammps.sandia.gov/doc/fix_temp_berendsen.html',  # noqa: E501
-                'references': ['Berendsen'],
-            },
-        'canonical sampling, velocity rescaling (csvr)':
-            {
-                'documentation':
-                    'http://lammps.sandia.gov/doc/fix_temp_csvr.html',  # noqa: E501
-                'references': ['Bussi1'],
-            },
-        'canonical sampling, langevin dynamics (csld)':
-            {
-                'documentation':
-                    'http://lammps.sandia.gov/doc/fix_temp_csvr.html',  # noqa: E501
-                'references': ['Bussi2'],
-            },
-        'velocity rescaling':
-            {
-                'documentation':
-                    'http://lammps.sandia.gov/doc/fix_temp_rescale.html',  # noqa: E501
-                'references': [],
-            },
-        'Langevin':
-            {
-                'documentation':
-                    'http://lammps.sandia.gov/doc/fix_langevin.html',
-                'references': ['Schneider', 'Dunweg']
-            },
-    }
-
-    references = {
-        'Shinoda':
-            {
-                'bibtex':
-                    """
-                @article{PhysRevB.69.134103,
-                  title = {Rapid estimation of elastic constants by molecular dynamics simulation under constant stress},
-                  author = {Shinoda, Wataru and Shiga, Motoyuki and Mikami, Masuhiro},
-                  journal = {Phys. Rev. B},
-                  volume = {69},
-                  issue = {13},
-                  pages = {134103},
-                  numpages = {8},
-                  year = {2004},
-                  month = {Apr},
-                  publisher = {American Physical Society},
-                  doi = {10.1103/PhysRevB.69.134103},
-                  url = {https://link.aps.org/doi/10.1103/PhysRevB.69.134103}
-            }"""  # noqa: E501
-            },
-        'Tuckerman':
-            {
-                'bibtex':
-                    """
-                @article{0305-4470-39-19-S18,
-                  author={Mark E Tuckerman and José Alejandre and Roberto López-Rendón and Andrea L Jochim and Glenn J Martyna},
-                  title={A Liouville-operator derived measure-preserving integrator for molecular dynamics simulations in the isothermal–isobaric ensemble},
-                  journal={Journal of Physics A: Mathematical and General},
-                  volume={39},
-                  number={19},
-                  pages={5629},
-                  url={http://stacks.iop.org/0305-4470/39/i=19/a=S18},
-                  year={2006},
-                  abstract={The constant-pressure,
-                  constant-temperature ( NPT ) molecular dynamics
-                  approach is re-examined from the viewpoint of
-                  deriving a new measure-preserving reversible
-                  geometric integrator for the equations of
-                  motion. The underlying concepts of non-Hamiltonian
-                  phase-space analysis, measure-preserving integrators
-                  and the symplectic property for Hamiltonian systems
-                  are briefly reviewed. In addition, current
-                  measure-preserving schemes for the constant-volume,
-                  constant-temperature ensemble are also reviewed. A
-                  new geometric integrator for the NPT method is
-                  presented, is shown to preserve the correct
-                  phase-space volume element and is demonstrated to
-                  perform well in realistic examples. Finally, a
-                  multiple time-step version of the integrator is
-                  presented for treating systems with motion on
-                  several time scales.}
-            }"""  # noqa: E501
-            },
-        'Berendsen':
-            {
-                'bibtex':
-                    """
-                @article{doi:10.1063/1.448118,
-                author = {H. J. C. Berendsen and J. P. M. Postma and W. F. van Gunsteren and A. DiNola and J. R. Haak},
-                title = {Molecular dynamics with coupling to an external bath},
-                journal = {The Journal of Chemical Physics},
-                volume = {81},
-                number = {8},
-                pages = {3684-3690},
-                year = {1984},
-                doi = {10.1063/1.448118},
-                URL = {https://doi.org/10.1063/1.448118},
-                eprint = {https://doi.org/10.1063/1.448118}
-            }"""  # noqa: E501
-            },
-        'Bussi1':
-            {
-                'bibtex':
-                    """
-                @article{doi:10.1063/1.2408420,
-                author = {Giovanni Bussi and Davide Donadio and Michele Parrinello},
-                title = {Canonical sampling through velocity rescaling},
-                journal = {The Journal of Chemical Physics},
-                volume = {126},
-                number = {1},
-                pages = {014101},
-                year = {2007},
-                doi = {10.1063/1.2408420},
-                URL = {https://doi.org/10.1063/1.2408420},
-                eprint = {https://doi.org/10.1063/1.2408420}
-            }"""  # noqa: E501
-            },
-        'Bussi2':
-            {
-                'bibtex':
-                    """
-                @article{PhysRevE.75.056707,
-                title = {Accurate sampling using Langevin dynamics},
-                author = {Bussi, Giovanni and Parrinello, Michele},
-                journal = {Phys. Rev. E},
-                volume = {75},
-                issue = {5},
-                pages = {056707},
-                numpages = {7},
-                year = {2007},
-                month = {May},
-                publisher = {American Physical Society},
-                doi = {10.1103/PhysRevE.75.056707},
-                url = {https://link.aps.org/doi/10.1103/PhysRevE.75.056707}
-            }"""
-            },
-        'Schneider':
-            {
-                'bibtex':
-                    """
-                @article{PhysRevB.17.1302,
-                  title = {Molecular-dynamics study of a three-dimensional one-component model for distortive phase transitions},
-                  author = {Schneider, T. and Stoll, E.},
-                  journal = {Phys. Rev. B},
-                  volume = {17},
-                  issue = {3},
-                  pages = {1302--1322},
-                  numpages = {0},
-                  year = {1978},
-                  month = {Feb},
-                  publisher = {American Physical Society},
-                  doi = {10.1103/PhysRevB.17.1302},
-                  url = {https://link.aps.org/doi/10.1103/PhysRevB.17.1302}
-            }"""  # noqa: E501
-            },
-        'Dunweg':
-            {
-                'bibtex':
-                    """
-                @article{doi:10.1142/S0129183191001037,
-                author = {DÜNWEG, BURKHARD and PAUL, WOLFGANG},
-                title = {BROWNIAN DYNAMICS SIMULATIONS WITHOUT GAUSSIAN RANDOM NUMBERS},
-                journal = {International Journal of Modern Physics C},
-                volume = {02},
-                number = {03},
-                pages = {817-827},
-                year = {1991},
-                doi = {10.1142/S0129183191001037},
-
-                URL = {http://www.worldscientific.com/doi/abs/10.1142/S0129183191001037},
-                eprint = {http://www.worldscientific.com/doi/pdf/10.1142/S0129183191001037}
-            }"""  # noqa: E501
-            },
-    }
 
     def __init__(self, flowchart=None, title='NVT dynamics', extension=None):
         """Initialize the node"""
@@ -434,6 +286,16 @@ class NVT(lammps_step.NVE):
             raise RuntimeError(
                 "Don't recognize temperature control " +
                 "'{}'".format(P['thermostat'])
+            )
+
+        # Add the citation for the thermostat
+        for citation in thermostat_metadata[P['thermostat']]['references']:
+            self.references.cite(
+                raw=self._bibliography[citation],
+                alias=citation,
+                module='lammps_step',
+                level=1,
+                note='Citation for thermostat.'
             )
 
         # summary output written 10 times during run so we can see progress
