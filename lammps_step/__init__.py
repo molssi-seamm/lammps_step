@@ -52,6 +52,7 @@ from lammps_step.nve_step import NVEStep  # noqa: F401
 from lammps_step.tk_nve import TkNVE  # noqa: F401
 
 from lammps_step.nvt import NVT  # noqa: F401
+from lammps_step.nvt import thermostat_metadata  # noqa: F401
 from lammps_step.nvt_parameters import NVT_Parameters  # noqa: F401
 from lammps_step.nvt_step import NVTStep  # noqa: F401
 from lammps_step.tk_nvt import TkNVT  # noqa: F401
