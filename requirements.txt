@@ -1,5 +1,8 @@
+numpy
+pandas
 Pmw==2.0.1
-configargparse==1.2.3
+psutil
+scipy
 pymbar==3.0.5
 seamm>=2020.9.23
 seamm-ff-util>=2020.9.23
