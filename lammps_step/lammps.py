@@ -15,6 +15,7 @@ import string
 import sys
 import traceback
 
+import bibtexparser
 import numpy
 import pandas
 import psutil
@@ -101,12 +102,9 @@ class LAMMPS(seamm.Node):
         self.subflowchart = seamm.Flowchart(
             parent=self, name='LAMMPS', namespace=namespace
         )
-        self.lammps_units = 'real'
         self._initialization_node = None
         self._trajectory = []
         self._data = {}
-
-        self.maxlags = 100
 
         super().__init__(
             flowchart=flowchart,
@@ -608,7 +606,9 @@ class LAMMPS(seamm.Node):
             'trajectory_*.seamm_trj',
             '*.restart.*',
             '*.dump.*',
-        ]
+            '*.log',
+            'log.cite'
+        ]  # yapf: disable
 
         local = seamm.ExecLocal()
 
@@ -638,8 +638,13 @@ class LAMMPS(seamm.Node):
         with open(f, mode='w') as fd:
             fd.write(result['stdout'])
 
-        # Add the citations, gettign the version from stdout
-        self._add_lammps_citations(result['stdout'])
+        # Add the citations, getting the version from stdout and any citations
+        if 'log.cite' in result:
+            self._add_lammps_citations(
+                result['stdout'], cite=result['log.cite']['data']
+            )
+        else:
+            self._add_lammps_citations(result['stdout'])
 
         if result['stderr'] != '':
             self.logger.warning('stderr:\n' + result['stderr'])
@@ -2004,7 +2009,7 @@ class LAMMPS(seamm.Node):
         system.atoms['y'][0:] = ys
         system.atoms['z'][0:] = zs
 
-    def _add_lammps_citations(self, text):
+    def _add_lammps_citations(self, text, cite=None):
         """Add the two main citations for LAMMPS, getting the version from stdout
         text.
 
@@ -2060,3 +2065,27 @@ class LAMMPS(seamm.Node):
         except Exception as e:
             printer.important(f'Exception in citation {type(e)}: {e}')
             printer.important(traceback.format_exc())
+
+        # If there is a log.cite file, process it
+        if cite is not None:
+            self.logger.warning('log.cite\n' + cite + '\n')
+            bibliography = {}
+            tmp = bibtexparser.loads(cite).entries_dict
+            writer = bibtexparser.bwriter.BibTexWriter()
+            for key, data in tmp.items():
+                self.logger.warning(f'      {key}')
+                bibliography[key] = writer._entry_to_bibtex(data)
+            self.logger.warning(
+                'Bibliography\n' + pprint.pformat(bibliography)
+            )
+
+            for entry in bibliography:
+                if entry.lower() in ('commment',):
+                    continue
+                self.references.cite(
+                    raw=bibliography[entry],
+                    alias=entry,
+                    module='lammps_step',
+                    level=2,
+                    note='LAMMPS citations from log.cite.'
+                )
