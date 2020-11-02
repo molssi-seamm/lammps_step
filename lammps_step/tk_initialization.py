@@ -2,7 +2,6 @@
 
 """The graphical part of a LAMMPS Initialization step"""
 
-import configargparse
 import logging
 import seamm
 import tkinter as tk
@@ -29,45 +28,14 @@ class TkInitialization(seamm.TkNode):
         Keyword arguments:
         """
 
-        # Argument/config parsing
-        self.parser = configargparse.ArgParser(
-            auto_env_var_prefix='',
-            default_config_files=[
-                '/etc/seamm/lammps_tk_initialization.ini',
-                '/etc/seamm/seamm.ini',
-                '~/.seamm/lammps_tk_initialization.ini',
-                '~/.seamm/seamm.ini',
-            ]
-        )
-
-        self.parser.add_argument(
-            '--seamm-configfile',
-            is_config_file=True,
-            default=None,
-            help='a configuration file to override others'
-        )
-
-        # Options for this plugin
-        self.parser.add_argument(
-            "--lammps-tk-initialization-log-level",
-            default=configargparse.SUPPRESS,
-            choices=[
-                'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'
-            ],
-            type=lambda string: string.upper(),
-            help="the logging level for the LAMMPS Tk_energy step"
-        )
-
-        self.options, self.unknown = self.parser.parse_known_args()
-
-        # Set the logging level for this module if requested
-        if 'lammps_tk_initialization_log_level' in self.options:
-            logger.setLevel(self.options.lammps_tk_initialization_log_level)
-            logger.critical(
-                'Set log level to {}'.format(
-                    self.options.lammps_tk_initialization_log_level
-                )
-            )
+        # # Set the logging level for this module if requested
+        # if 'lammps_tk_initialization_log_level' in self.options:
+        #     logger.setLevel(self.options.lammps_tk_initialization_log_level)
+        #     logger.critical(
+        #         'Set log level to {}'.format(
+        #             self.options.lammps_tk_initialization_log_level
+        #         )
+        #     )
 
         super().__init__(
             tk_flowchart=tk_flowchart,
