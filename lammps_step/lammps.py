@@ -285,28 +285,6 @@ class LAMMPS(seamm.Node):
     def run(self):
         """Run a LAMMPS simulation
         """
-        # Add a citation for this plug-in
-        try:
-            template = string.Template(self._bibliography['lammps_step'])
-
-            version = seamm.__version__
-            year, month = version.split('.')[0:2]
-            month = calendar.month_abbr[int(month)].lower()
-            citation = template.substitute(
-                month=month, version=version, year=year
-            )
-
-            self.references.cite(
-                raw=citation,
-                alias='lammps_step',
-                module='lammps_step',
-                level=2,
-                note='The principle citation for the LAMMPS step in SEAMM.'
-            )
-
-        except Exception as e:
-            printer.important(f'Exception in citation {type(e)}: {e}')
-            printer.important(traceback.format_exc())
 
         system = self.get_variable('_system')
 
@@ -578,6 +556,8 @@ class LAMMPS(seamm.Node):
             self._trajectory = []
 
         self.read_dump(os.path.join(self.directory, files['dump']['filename']))
+
+        printer.normal('')
 
         return next_node
 
@@ -1421,7 +1401,9 @@ class LAMMPS(seamm.Node):
                 node_data = self.analyze_trajectory(
                     filename, control_properties=control_properties
                 )
-                node.analyze(data=node_data)
+                # Get just the values from the node data
+                values = {k: v['mean'] for k, v in node_data.items()}
+                node.analyze(data=values)
 
             ret[node._id[1]] = node_data
 
@@ -1994,20 +1976,17 @@ class LAMMPS(seamm.Node):
                     section_lines.append(line)
 
         # Clean up the last section
+        xyz = []
         if 'ATOMS' in section:
             self.logger.debug("  processing section '{}'".format(section))
             self.logger.debug('  handling the atoms')
             for tmp in section_lines:
                 id, x, y, z = tmp.split()
-                xs.append(float(x))
-                ys.append(float(y))
-                zs.append(float(z))
+                xyz.append([float(x), float(y), float(z)])
 
         if periodicity == 3:
             system.cell.set_cell(cell)
-        system.atoms['x'][0:] = xs
-        system.atoms['y'][0:] = ys
-        system.atoms['z'][0:] = zs
+        system.atoms.set_coordinates(xyz, fractionals=False)
 
     def _add_lammps_citations(self, text, cite=None):
         """Add the two main citations for LAMMPS, getting the version from stdout
@@ -2068,16 +2047,14 @@ class LAMMPS(seamm.Node):
 
         # If there is a log.cite file, process it
         if cite is not None:
-            self.logger.warning('log.cite\n' + cite + '\n')
+            self.logger.debug('log.cite\n' + cite + '\n')
             bibliography = {}
             tmp = bibtexparser.loads(cite).entries_dict
             writer = bibtexparser.bwriter.BibTexWriter()
             for key, data in tmp.items():
-                self.logger.warning(f'      {key}')
+                self.logger.info(f'      {key}')
                 bibliography[key] = writer._entry_to_bibtex(data)
-            self.logger.warning(
-                'Bibliography\n' + pprint.pformat(bibliography)
-            )
+            self.logger.debug('Bibliography\n' + pprint.pformat(bibliography))
 
             for entry in bibliography:
                 if entry.lower() in ('commment',):
@@ -2086,6 +2063,6 @@ class LAMMPS(seamm.Node):
                     raw=bibliography[entry],
                     alias=entry,
                     module='lammps_step',
-                    level=2,
+                    level=1,
                     note='LAMMPS citations from log.cite.'
                 )
