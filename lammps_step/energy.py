@@ -81,3 +81,20 @@ class Energy(seamm.Node):
         lines.append('run                 0')
 
         return lines
+
+    def analyze(self, indent='', data={}):
+        """Parse the output and generating the text output and store the
+        data in variables for other stages to access
+        """
+
+        # printer.normal(self._long_header)
+
+        # Put any requested results into variables or tables
+        self.store_results(
+            data=data,
+            properties=lammps_step.properties,
+            results=self.parameters['results'].value,
+            create_tables=self.parameters['create tables'].get()
+        )
+
+        # printer.normal('\n')
