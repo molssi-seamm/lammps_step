@@ -2,7 +2,6 @@
 
 """A node or step for LAMMPS in a flowchart"""
 
-import calendar
 import copy
 import glob
 import logging
