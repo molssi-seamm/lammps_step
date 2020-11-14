@@ -640,7 +640,7 @@ class LAMMPS(seamm.Node):
                 else:
                     fd.write(result[filename]['exception'])
 
-        base = os.path.basename(files['input']['filename']).split('.')[0]
+        base = os.path.basename(files['input']['filename'][0:-4])
         restart_file = base + '.restart.*'
         dump_file = base + '.dump.*'
         filename = os.path.join(self.directory, restart_file)
