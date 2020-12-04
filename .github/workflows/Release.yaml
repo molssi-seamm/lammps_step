@@ -56,7 +56,7 @@ jobs:
       shell: bash -l {0}
 
       run: |
-        flake8 control_parameters_step tests
+        flake8 lammps_step tests
         yapf --diff --recursive lammps_step tests
       
   test:
