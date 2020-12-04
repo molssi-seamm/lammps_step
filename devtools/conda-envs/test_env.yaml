@@ -2,38 +2,37 @@ name: test
 
 channels:
   - rdkit
-  - default
   - conda-forge
+
 dependencies:
-    # Base depends
+  # Base depends
   - python
   - pip
-  - rdkit
-  - configargparse
+
+  # SEAMM
+  - kim-query
   - kim-query
   - matplotlib
+  # molsystem requires, and only available via Conda.
   - openbabel
   - openkim-models
-  - py-cpuinfo
+  - psutil
+  - rdkit
   - statsmodels
 
-    # Testing
-  - coverage
+  # Testing
+  - codecov
   - flake8
   - pytest
   - pytest-cov
-  - pytest-runner
 
   # Pip-only installs
   - pip:
-    - codecov
-    - pillow
-    - seamm-ff-util>=2020.9.23
-    - seamm_util>=2020.9.23
-    - seamm>=2020.9.23
-    - seamm-widgets>=2020.8.1
-    - packaging
     - pymbar
+    - seamm
+    - seamm-ff-util
+    - seamm-widgets
+    - seamm_util
 
       # Testing
     - yapf

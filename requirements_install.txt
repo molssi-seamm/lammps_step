@@ -1,11 +1,8 @@
-numpy
-pandas
-Pmw
+kim-query
 psutil
 pymbar
-scipy
-seamm>=2020.9.23
-seamm-ff-util>=2020.9.23
-seamm-util>=2020.9.23
-seamm-widgets>=2020.8.1
+seamm
+seamm-ff-util
+seamm-util
+seamm-widgets
 statsmodels
