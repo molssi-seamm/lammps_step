@@ -31,8 +31,12 @@ dependencies:
     - pymbar
     - seamm
     - seamm-ff-util
-    - seamm-widgets
-    - seamm_util
 
       # Testing
     - yapf
+
+    # Documentation
+    - rinohtype
+    - pygments
+    - sphinx-rtd-theme
+    - pystemmer
