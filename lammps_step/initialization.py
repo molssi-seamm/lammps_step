@@ -554,6 +554,7 @@ class Initialization(seamm.Node):
         """Create the (simple) energy expression for OpenKIM models.
         """
         eex = {}
+        eex['terms'] = {'OpenKIM': []}
 
         # Get the configuration
         system_db = self.get_variable('_system_db')
@@ -561,7 +562,7 @@ class Initialization(seamm.Node):
         atoms = configuration.atoms
 
         # The elements (1-based!) Probably not used...
-        elements = atoms.symbols()
+        elements = atoms.symbols
         eex['elements'] = ['']
         eex['elements'].extend(elements)
 
@@ -574,7 +575,7 @@ class Initialization(seamm.Node):
         atom_types = eex['atom types'] = []
         masses = eex['masses'] = []
 
-        coordinates = atoms.coordinates(fractionals=False)
+        coordinates = atoms.get_coordinates(fractionals=False)
         for element, xyz in zip(elements, coordinates):
             if element in atom_types:
                 index = atom_types.index(element) + 1
