@@ -11,7 +11,7 @@ import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
 import pprint
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('lammps')
 job = printing.getPrinter()
 printer = printing.getPrinter('lammps')
 
@@ -116,7 +116,8 @@ class Initialization(seamm.Node):
         P['cutoff'] = P['cutoff'].to('angstrom').magnitude
 
         # Get the system
-        system = self.get_variable('_system')
+        system_db = self.get_variable('_system_db')
+        configuration = system_db.system.configuration
 
         # See what type of forcefield we have amd handle it
         ff = self.get_variable('_forcefield')
@@ -126,20 +127,21 @@ class Initialization(seamm.Node):
 
         # Valence forcefield...
         ffname = ff.current_forcefield
-        n_atoms = system.n_atoms()
+        n_atoms = configuration.n_atoms
 
         # And atom-type if necessary
         key = f'atom_types_{ffname}'
-        if key not in system.atoms:
-            smiles = system.to_smiles()
+        if key not in configuration.atoms:
+            smiles = configuration.to_smiles(hydrogens=True)
             logger.debug('Atom typing -- smiles = ' + smiles)
             ff_assigner = seamm_ff_util.FFAssigner(ff)
             atom_types = ff_assigner.assign(smiles, add_hydrogens=False)
 
             logger.info('Atom types: ' + ', '.join(atom_types))
 
-            system.atoms.add_attribute(key, coltype='str')
-            system.atoms[key] = atom_types
+            configuration.atoms.add_attribute(
+                key, coltype='str', values=atom_types
+            )
 
             printer.important(
                 __(
@@ -149,15 +151,50 @@ class Initialization(seamm.Node):
                 )
             )
 
-        # Get the energy expression. This creates the charges on the
-        # atoms as a side-effect.
-        eex = ff.energy_expression(system, style='LAMMPS')
+            # Now get the charges if forcefield has them.
+            terms = ff.terms
+            if 'bond charge increment' in terms:
+                logger.debug('Getting the charges for the system')
+                neighbors = configuration.bonded_neighbors(as_indices=True)
+
+                charges = []
+                total_q = 0.0
+                for i in range(configuration.n_atoms):
+                    itype = atom_types[i]
+                    parameters = ff.charges(itype)[3]
+                    q = float(parameters['Q'])
+                    for j in neighbors[i]:
+                        jtype = atom_types[j]
+                        parameters = ff.bond_increments(itype, jtype)[3]
+                        q += float(parameters['deltaij'])
+                    charges.append(q)
+                    total_q += q
+                if abs(total_q) > 0.0001:
+                    logger.warning(f'Total charge is not zero: {total_q:.4f}')
+                    logger.info(
+                        'Charges from increments and charges:\n' +
+                        pprint.pformat(charges)
+                    )
+                else:
+                    logger.debug(
+                        'Charges from increments:\n' + pprint.pformat(charges)
+                    )
+
+                key = f'charges_{ffname}'
+                if key not in configuration.atoms:
+                    configuration.atoms.add_attribute(key, coltype='float')
+                charge_column = configuration.atoms.get_column(key)
+                charge_column[0:] = charges
+                logger.debug(f"Set column '{key}' to the charges")
+
+        # Get the energy expression.
+        eex = ff.energy_expression(configuration, style='LAMMPS')
         logger.debug('energy expression:\n' + pprint.pformat(eex))
 
         # Determine if we have any charges, and if so, if they are sparse
         key = f'charges_{ffname}'
-        if key in system.atoms:
-            charges = [*system.atoms[key]]
+        if key in configuration.atoms:
+            charges = [*configuration.atoms[key]]
             n_charged_atoms = 0
             smallq = float(P['kspace_smallq'])
             for charge in charges:
@@ -173,7 +210,7 @@ class Initialization(seamm.Node):
         lines.append('')
         lines.append('units               real')
 
-        periodicity = system.periodicity
+        periodicity = configuration.periodicity
         if periodicity == 0:
             lines.append('boundary            s s s')
             tail_correction = 'no'
@@ -467,8 +504,9 @@ class Initialization(seamm.Node):
     def OpenKIM_input(self):
         """Create the initialization input for a calculation using OpenKIM.
         """
-        # Get the system
-        system = self.get_variable('_system')
+        # Get the configuration
+        system_db = self.get_variable('_system_db')
+        configuration = system_db.system.configuration
 
         # Get the (simple) energy expression for these systems
         eex = self.OpenKIM_energy_expression()
@@ -485,7 +523,7 @@ class Initialization(seamm.Node):
             'unit_conversion_mode'
         )
         lines.append('')
-        periodicity = system.periodicity
+        periodicity = configuration.periodicity
         if periodicity == 0:
             lines.append('boundary            s s s')
             string = 'Setup for a molecular (non-periodic) system.'
@@ -517,9 +555,10 @@ class Initialization(seamm.Node):
         """
         eex = {}
 
-        # Get the system
-        system = self.get_variable('_system')
-        atoms = system.atoms
+        # Get the configuration
+        system_db = self.get_variable('_system_db')
+        configuration = system_db.system.configuration
+        atoms = configuration.atoms
 
         # The elements (1-based!) Probably not used...
         elements = atoms.symbols()
@@ -527,9 +566,9 @@ class Initialization(seamm.Node):
         eex['elements'].extend(elements)
 
         # The periodicity & cell parameters
-        periodicity = eex['periodicity'] = system.periodicity
+        periodicity = eex['periodicity'] = configuration.periodicity
         if periodicity == 3:
-            eex['cell'] = system['cell'].cell().parameters
+            eex['cell'] = configuration.cell.parameters
 
         result = eex['atoms'] = []
         atom_types = eex['atom types'] = []
