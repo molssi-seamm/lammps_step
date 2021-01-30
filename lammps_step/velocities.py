@@ -101,8 +101,9 @@ class Velocities(seamm.Node):
         )
         # Fix variables that need attention
         if 'default' in P['remove_momentum']:
-            system = self.get_variable('_system')
-            if system.periodicity == 3:
+            system_db = self.get_variable('_system_db')
+            configuration = system_db.system.configuration
+            if configuration.periodicity == 3:
                 P['remove_momentum'] = (
                     "remove translational but not rotational momentum"
                 )
