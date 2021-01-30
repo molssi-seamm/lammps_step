@@ -63,8 +63,9 @@ class Minimization(lammps_step.Energy):
             __(self.description_text(PP), **PP, indent=3 * ' ')
         )
 
-        system = self.get_variable('_system')
-        n_atoms = system.n_atoms()
+        system_db = self.get_variable('_system_db')
+        configuration = system_db.system.configuration
+        n_atoms = configuration.n_atoms
         nDOF = 3 * n_atoms
 
         lines = []
