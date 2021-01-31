@@ -1,0 +1,1463 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>lammps_step package &mdash; LAMMPS Step 2020.12.4+2.ga27c9e6 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Contributing" href="contributing.html" />
+    <link rel="prev" title="lammps_step" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> LAMMPS Step
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2020.12.4+2.ga27c9e6
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../user/index.html">User Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="modules.html">lammps_step</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">lammps_step package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html">Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../history.html">History</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://molssi-seamm.github.io">Main SEAMM documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">LAMMPS Step</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Developer Documentation</a> &raquo;</li>
+        
+          <li><a href="modules.html">lammps_step</a> &raquo;</li>
+        
+      <li>lammps_step package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/developer/lammps_step.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="lammps-step-package">
+<h1>lammps_step package<a class="headerlink" href="#lammps-step-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-lammps_step.custom">
+<span id="lammps-step-custom-module"></span><h2>lammps_step.custom module<a class="headerlink" href="#module-lammps_step.custom" title="Permalink to this headline">¶</a></h2>
+<p>A custom script for LAMMPS</p>
+<dl class="py class">
+<dt id="lammps_step.custom.Custom">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.custom.</code><code class="sig-name descname">Custom</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">'Custom'</span></em>, <em class="sig-param"><span class="n">extension</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/custom.html#Custom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.custom.Custom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">seamm.node.Node</span></code></p>
+<dl class="py method">
+<dt id="lammps_step.custom.Custom.get_input">
+<code class="sig-name descname">get_input</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">extras</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/custom.html#Custom.get_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.custom.Custom.get_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the custom input for LAMMPS</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.custom_step">
+<span id="lammps-step-custom-step-module"></span><h2>lammps_step.custom_step module<a class="headerlink" href="#module-lammps_step.custom_step" title="Permalink to this headline">¶</a></h2>
+<p>Main module.</p>
+<dl class="py class">
+<dt id="lammps_step.custom_step.CustomStep">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.custom_step.</code><code class="sig-name descname">CustomStep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gui</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/custom_step.html#CustomStep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.custom_step.CustomStep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="lammps_step.custom_step.CustomStep.create_node">
+<code class="sig-name descname">create_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/custom_step.html#CustomStep.create_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.custom_step.CustomStep.create_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the new node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.custom_step.CustomStep.create_tk_node">
+<code class="sig-name descname">create_tk_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">canvas</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/custom_step.html#CustomStep.create_tk_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.custom_step.CustomStep.create_tk_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the graphical Tk node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.custom_step.CustomStep.description">
+<code class="sig-name descname">description</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/custom_step.html#CustomStep.description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.custom_step.CustomStep.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a description of what this extension does</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lammps_step.custom_step.CustomStep.my_description">
+<code class="sig-name descname">my_description</code><em class="property"> = {'description': 'A custom step for LAMMPS, where the user types in LAMMPS commmands directly', 'group': 'Customize', 'name': 'Custom'}</em><a class="headerlink" href="#lammps_step.custom_step.CustomStep.my_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.energy">
+<span id="lammps-step-energy-module"></span><h2>lammps_step.energy module<a class="headerlink" href="#module-lammps_step.energy" title="Permalink to this headline">¶</a></h2>
+<p>A single-point energy in LAMMPS</p>
+<dl class="py class">
+<dt id="lammps_step.energy.Energy">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.energy.</code><code class="sig-name descname">Energy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">'Energy'</span></em>, <em class="sig-param"><span class="n">extension</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/energy.html#Energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.energy.Energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">seamm.node.Node</span></code></p>
+<p>Handle a singlepoint energy calculation in LAMMPS</p>
+<dl class="py method">
+<dt id="lammps_step.energy.Energy.analyze">
+<code class="sig-name descname">analyze</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">indent</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/energy.html#Energy.analyze"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.energy.Energy.analyze" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the output and generating the text output and store the
+data in variables for other stages to access</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.energy.Energy.description_text">
+<code class="sig-name descname">description_text</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">P</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/energy.html#Energy.description_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.energy.Energy.description_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the text description of what this step will do.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.energy.Energy.get_input">
+<code class="sig-name descname">get_input</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">extras</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/energy.html#Energy.get_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.energy.Energy.get_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the input for an energy calculation for LAMMPS</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.energy.Energy.git_revision">
+<em class="property">property </em><code class="sig-name descname">git_revision</code><a class="headerlink" href="#lammps_step.energy.Energy.git_revision" title="Permalink to this definition">¶</a></dt>
+<dd><p>The git version of this module.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.energy.Energy.header">
+<em class="property">property </em><code class="sig-name descname">header</code><a class="headerlink" href="#lammps_step.energy.Energy.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>A printable header for this section of output</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.energy.Energy.version">
+<em class="property">property </em><code class="sig-name descname">version</code><a class="headerlink" href="#lammps_step.energy.Energy.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>The semantic version of this module.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.energy_parameters">
+<span id="lammps-step-energy-parameters-module"></span><h2>lammps_step.energy_parameters module<a class="headerlink" href="#module-lammps_step.energy_parameters" title="Permalink to this headline">¶</a></h2>
+<p>Control parameters for a single-point energy (SPE) in LAMMPS</p>
+<dl class="py class">
+<dt id="lammps_step.energy_parameters.EnergyParameters">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.energy_parameters.</code><code class="sig-name descname">EnergyParameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">defaults</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/energy_parameters.html#EnergyParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.energy_parameters.EnergyParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">seamm.parameters.Parameters</span></code></p>
+<p>The control parameters for Energy dynamics in LAMMPS</p>
+<dl class="py attribute">
+<dt id="lammps_step.energy_parameters.EnergyParameters.parameters">
+<code class="sig-name descname">parameters</code><em class="property"> = {'create tables': {'default': 'yes', 'default_units': None, 'description': 'Create tables as needed:', 'enumeration': ('yes', 'no'), 'format_string': '', 'help_text': 'Whether to create tables as needed for results being saved into tables.', 'kind': 'boolean'}, 'results': {'default': {}, 'default_units': None, 'description': 'results', 'enumeration': (), 'format_string': '', 'help_text': 'The results to save to variables or in tables. ', 'kind': 'dictionary'}}</em><a class="headerlink" href="#lammps_step.energy_parameters.EnergyParameters.parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.energy_step">
+<span id="lammps-step-energy-step-module"></span><h2>lammps_step.energy_step module<a class="headerlink" href="#module-lammps_step.energy_step" title="Permalink to this headline">¶</a></h2>
+<p>Main module.</p>
+<dl class="py class">
+<dt id="lammps_step.energy_step.EnergyStep">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.energy_step.</code><code class="sig-name descname">EnergyStep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gui</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/energy_step.html#EnergyStep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.energy_step.EnergyStep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="lammps_step.energy_step.EnergyStep.create_node">
+<code class="sig-name descname">create_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/energy_step.html#EnergyStep.create_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.energy_step.EnergyStep.create_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the new node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.energy_step.EnergyStep.create_tk_node">
+<code class="sig-name descname">create_tk_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">canvas</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/energy_step.html#EnergyStep.create_tk_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.energy_step.EnergyStep.create_tk_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the graphical Tk node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.energy_step.EnergyStep.description">
+<code class="sig-name descname">description</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/energy_step.html#EnergyStep.description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.energy_step.EnergyStep.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a description of what this extension does</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lammps_step.energy_step.EnergyStep.my_description">
+<code class="sig-name descname">my_description</code><em class="property"> = {'description': 'A single-point energy calculation', 'group': 'Calculations', 'name': 'Energy'}</em><a class="headerlink" href="#lammps_step.energy_step.EnergyStep.my_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.initialization">
+<span id="lammps-step-initialization-module"></span><h2>lammps_step.initialization module<a class="headerlink" href="#module-lammps_step.initialization" title="Permalink to this headline">¶</a></h2>
+<p>A single-point initialization in LAMMPS</p>
+<dl class="py class">
+<dt id="lammps_step.initialization.Initialization">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.initialization.</code><code class="sig-name descname">Initialization</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">'Initialization'</span></em>, <em class="sig-param"><span class="n">extension</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/initialization.html#Initialization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.initialization.Initialization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">seamm.node.Node</span></code></p>
+<dl class="py method">
+<dt id="lammps_step.initialization.Initialization.OpenKIM_energy_expression">
+<code class="sig-name descname">OpenKIM_energy_expression</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/initialization.html#Initialization.OpenKIM_energy_expression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.initialization.Initialization.OpenKIM_energy_expression" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the (simple) energy expression for OpenKIM models.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.initialization.Initialization.OpenKIM_input">
+<code class="sig-name descname">OpenKIM_input</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/initialization.html#Initialization.OpenKIM_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.initialization.Initialization.OpenKIM_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the initialization input for a calculation using OpenKIM.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.initialization.Initialization.description_text">
+<code class="sig-name descname">description_text</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">P</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/initialization.html#Initialization.description_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.initialization.Initialization.description_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a short description of this step.</p>
+<p>Return a nicely formatted string describing what this step will
+do.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><p><strong>P</strong> – a dictionary of parameter values, which may be variables
+or final values. If None, then the parameters values will
+be used as is.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.initialization.Initialization.get_input">
+<code class="sig-name descname">get_input</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">extras</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/initialization.html#Initialization.get_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.initialization.Initialization.get_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the input for the initialization of LAMMPS</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.initialization.Initialization.git_revision">
+<em class="property">property </em><code class="sig-name descname">git_revision</code><a class="headerlink" href="#lammps_step.initialization.Initialization.git_revision" title="Permalink to this definition">¶</a></dt>
+<dd><p>The git version of this module.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.initialization.Initialization.header">
+<em class="property">property </em><code class="sig-name descname">header</code><a class="headerlink" href="#lammps_step.initialization.Initialization.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>A printable header for this section of output</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.initialization.Initialization.kspace_methods">
+<em class="property">property </em><code class="sig-name descname">kspace_methods</code><a class="headerlink" href="#lammps_step.initialization.Initialization.kspace_methods" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of avilable methods</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.initialization.Initialization.version">
+<em class="property">property </em><code class="sig-name descname">version</code><a class="headerlink" href="#lammps_step.initialization.Initialization.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>The semantic version of this module.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.initialization_parameters">
+<span id="lammps-step-initialization-parameters-module"></span><h2>lammps_step.initialization_parameters module<a class="headerlink" href="#module-lammps_step.initialization_parameters" title="Permalink to this headline">¶</a></h2>
+<p>Control parameters for the initialization in LAMMPS</p>
+<dl class="py class">
+<dt id="lammps_step.initialization_parameters.InitializationParameters">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.initialization_parameters.</code><code class="sig-name descname">InitializationParameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">defaults</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/initialization_parameters.html#InitializationParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.initialization_parameters.InitializationParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">seamm.parameters.Parameters</span></code></p>
+<p>The control parameters for the initialization in LAMMPS</p>
+<dl class="py attribute">
+<dt id="lammps_step.initialization_parameters.InitializationParameters.parameters">
+<code class="sig-name descname">parameters</code><em class="property"> = {'charged_atom_fraction_cutoff': {'default': 0.1, 'default_units': '', 'description': 'Cutoff for charged atoms:', 'enumeration': (), 'format_string': '.2f', 'help_text': 'The upper limit of the fraction of charged atoms for using methods that exploit sparsity of charges.', 'kind': 'float'}, 'cutoff': {'default': 10.0, 'default_units': 'Å', 'description': 'Cutoff:', 'enumeration': (), 'format_string': '.1f', 'help_text': 'The cutoff used for non-bonded and similar interactions.', 'kind': 'float'}, 'ewald_atom_cutoff': {'default': 1000, 'default_units': '', 'description': 'Atom limit for using Ewald summations:', 'enumeration': (), 'format_string': 'd', 'help_text': 'The upper limit of the number of atoms for using Ewald summations by default.', 'kind': 'integer'}, 'fix_XH_bond_lengths': {'default': 'none', 'default_units': '', 'description': 'Fix X-H bond lengths', 'enumeration': ('none', 'all', 'CH'), 'format_string': '', 'help_text': 'Fix the bond lengths for H bonded to X.', 'kind': 'enumeration'}, 'kspace_accuracy': {'default': 1e-05, 'default_units': '', 'description': 'K-space accuracy:', 'enumeration': (), 'format_string': '.2e', 'help_text': 'The target accuracy for the k-space method.', 'kind': 'float'}, 'kspace_method': {'default': 'automatic', 'default_units': '', 'description': 'K-space method:', 'enumeration': ('automatic', 'none', 'Ewald summation method', 'PPPM (Particle-particle particle-mesh) method', 'PPPM method for few charged atoms', 'PPPM method with a staggered mesh', 'PPPM method including dispersion terms', 'MSM (Multilevel summation method)', 'MSM method for few charged atoms'), 'format_string': '', 'help_text': 'The method for handling long-range interactions.', 'kind': 'enumeration'}, 'kspace_smallq': {'default': 1e-05, 'default_units': '', 'description': 'K-space negligable charge:', 'enumeration': (), 'format_string': '.1e', 'help_text': 'The cutoff for the charge on an atom to be considered not zero.', 'kind': 'float'}, 'msm_atom_cutoff': {'default': 5000, 'default_units': '', 'description': 'Lower atom limit for using the MSM method:', 'enumeration': (), 'format_string': 'd', 'help_text': 'The lower limit of the number of atoms for using the MSM method by default.', 'kind': 'integer'}, 'rigid_waters': {'default': 'yes', 'description': 'Keep the internal geometry of water molecules fixed', 'enumeration': ('no', 'yes'), 'format_string': 's', 'help_text': 'Use shake or rattle, as appropriate, to keep the water molecules rigid.', 'kind': 'boolean'}, 'shift_nonbond': {'default': 'no', 'description': 'Shift nonbonded interactions to zero at the cutoff', 'enumeration': ('no', 'yes'), 'format_string': 's', 'help_text': 'Shift the nonbonded interactions to zero at the cutoff distance to avoid energy jumps.', 'kind': 'boolean'}, 'tail_correction': {'default': 'yes', 'description': 'Add tail corrections', 'enumeration': ('no', 'yes'), 'format_string': 's', 'help_text': 'Add tail corrections for neglected long-range van der Waals terms.', 'kind': 'boolean'}}</em><a class="headerlink" href="#lammps_step.initialization_parameters.InitializationParameters.parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.initialization_step">
+<span id="lammps-step-initialization-step-module"></span><h2>lammps_step.initialization_step module<a class="headerlink" href="#module-lammps_step.initialization_step" title="Permalink to this headline">¶</a></h2>
+<p>Main module.</p>
+<dl class="py class">
+<dt id="lammps_step.initialization_step.InitializationStep">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.initialization_step.</code><code class="sig-name descname">InitializationStep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gui</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/initialization_step.html#InitializationStep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.initialization_step.InitializationStep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="lammps_step.initialization_step.InitializationStep.create_node">
+<code class="sig-name descname">create_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/initialization_step.html#InitializationStep.create_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.initialization_step.InitializationStep.create_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the new node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.initialization_step.InitializationStep.create_tk_node">
+<code class="sig-name descname">create_tk_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">canvas</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/initialization_step.html#InitializationStep.create_tk_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.initialization_step.InitializationStep.create_tk_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the graphical Tk node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.initialization_step.InitializationStep.description">
+<code class="sig-name descname">description</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/initialization_step.html#InitializationStep.description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.initialization_step.InitializationStep.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a description of what this extension does</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lammps_step.initialization_step.InitializationStep.my_description">
+<code class="sig-name descname">my_description</code><em class="property"> = {'description': 'The initialization of LAMMPS, specifying e.g. nonbond methods and cutoffs', 'group': 'Calculations', 'name': 'Initialization'}</em><a class="headerlink" href="#lammps_step.initialization_step.InitializationStep.my_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.lammps">
+<span id="lammps-step-lammps-module"></span><h2>lammps_step.lammps module<a class="headerlink" href="#module-lammps_step.lammps" title="Permalink to this headline">¶</a></h2>
+<p>A node or step for LAMMPS in a flowchart</p>
+<dl class="py class">
+<dt id="lammps_step.lammps.LAMMPS">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.lammps.</code><code class="sig-name descname">LAMMPS</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">namespace</span><span class="o">=</span><span class="default_value">'org.molssi.seamm.lammps'</span></em>, <em class="sig-param"><span class="n">extension</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">seamm.node.Node</span></code></p>
+<dl class="py method">
+<dt id="lammps_step.lammps.LAMMPS.analyze">
+<code class="sig-name descname">analyze</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">indent</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">nodes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.analyze"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.analyze" title="Permalink to this definition">¶</a></dt>
+<dd><p>Analyze the output of the calculation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.lammps.LAMMPS.analyze_trajectory">
+<code class="sig-name descname">analyze_trajectory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">sampling_rate</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">control_properties</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.analyze_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.analyze_trajectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a trajectory file and do the statistical analysis</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.lammps.LAMMPS.box_to_cell">
+<em class="property">static </em><code class="sig-name descname">box_to_cell</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lx</span></em>, <em class="sig-param"><span class="n">ly</span></em>, <em class="sig-param"><span class="n">lz</span></em>, <em class="sig-param"><span class="n">xy</span></em>, <em class="sig-param"><span class="n">xz</span></em>, <em class="sig-param"><span class="n">yz</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.box_to_cell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.box_to_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the LAMMPS box definition to cell parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.lammps.LAMMPS.cell_to_box">
+<em class="property">static </em><code class="sig-name descname">cell_to_box</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">b</span></em>, <em class="sig-param"><span class="n">c</span></em>, <em class="sig-param"><span class="n">alpha</span></em>, <em class="sig-param"><span class="n">beta</span></em>, <em class="sig-param"><span class="n">gamma</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.cell_to_box"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.cell_to_box" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert cell parameters to the LAMMPS box.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.lammps.LAMMPS.create_parser">
+<code class="sig-name descname">create_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.create_parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.create_parser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup the command-line / config file parser</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.lammps.LAMMPS.description_text">
+<code class="sig-name descname">description_text</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">P</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.description_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.description_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a short description of this step.</p>
+<p>Return a nicely formatted string describing what this step will
+do.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><p><strong>P</strong> – a dictionary of parameter values, which may be variables
+or final values. If None, then the parameters values will
+be used as is.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lammps_step.lammps.LAMMPS.display_title">
+<code class="sig-name descname">display_title</code><em class="property"> = {'Eke': 'Kinetic Energy', 'Emol': 'Molecular Energy, Valence Terms', 'Epair': 'Pair (Nonbond) Energy', 'Epe': 'Potential Energy', 'Etot': 'Total Energy', 'P': 'Pressure', 'T': 'Temperature', 'a': 'a lattice parameter', 'b': 'b lattice parameter', 'c': 'c lattice parameter', 'density': 'Density', 't': 'Time'}</em><a class="headerlink" href="#lammps_step.lammps.LAMMPS.display_title" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="lammps_step.lammps.LAMMPS.display_units">
+<code class="sig-name descname">display_units</code><em class="property"> = {'Eke': 'kcal/mol', 'Emol': 'kcal/mol', 'Epair': 'kcal/mol', 'Epe': 'kcal/mol', 'Etot': 'kcal/mol', 'P': 'atm', 'T': 'K', 'a': 'Å', 'b': 'Å', 'c': 'Å', 'density': 'g/mL', 't': 'fs'}</em><a class="headerlink" href="#lammps_step.lammps.LAMMPS.display_units" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.lammps.LAMMPS.git_revision">
+<em class="property">property </em><code class="sig-name descname">git_revision</code><a class="headerlink" href="#lammps_step.lammps.LAMMPS.git_revision" title="Permalink to this definition">¶</a></dt>
+<dd><p>The git version of this module.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.lammps.LAMMPS.read_dump">
+<code class="sig-name descname">read_dump</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dumpfile</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.read_dump"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.read_dump" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the LAMMPS dumpfile and update the system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dumpfile</strong> (<em>str</em>) – The filename (or path) to the dumpfile.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.lammps.LAMMPS.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a LAMMPS simulation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.lammps.LAMMPS.set_id">
+<code class="sig-name descname">set_id</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_id</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.set_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.set_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the id for node to a given tuple</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.lammps.LAMMPS.shake_fix">
+<code class="sig-name descname">shake_fix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">P</span></em>, <em class="sig-param"><span class="n">eex</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.shake_fix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.shake_fix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the ‘fix shake’ line needed for handling waters and X-H.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>P</strong> (<em>dict</em>) – The parameters for the initialization step as a dict.</p></li>
+<li><p><strong>eex</strong> (<em>dict</em>) – The energy expression for this calculation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>line</strong> – The correct fix line for LAMMPS</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.lammps.LAMMPS.structure_data">
+<code class="sig-name descname">structure_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">eex</span></em>, <em class="sig-param"><span class="n">triclinic</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.structure_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.structure_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the LAMMPS structure file from the energy expression</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.lammps.LAMMPS.version">
+<em class="property">property </em><code class="sig-name descname">version</code><a class="headerlink" href="#lammps_step.lammps.LAMMPS.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>The semantic version of this module.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.lammps_step">
+<span id="lammps-step-lammps-step-module"></span><h2>lammps_step.lammps_step module<a class="headerlink" href="#module-lammps_step.lammps_step" title="Permalink to this headline">¶</a></h2>
+<p>Helper class needed for the stevedore integration. Needs to provide
+a description() method that returns a dict containing a description of
+this node, and a factory() method for creating the graphical and non-graphical
+nodes.</p>
+<dl class="py class">
+<dt id="lammps_step.lammps_step.LAMMPSStep">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.lammps_step.</code><code class="sig-name descname">LAMMPSStep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gui</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps_step.html#LAMMPSStep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps_step.LAMMPSStep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="lammps_step.lammps_step.LAMMPSStep.create_node">
+<code class="sig-name descname">create_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps_step.html#LAMMPSStep.create_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps_step.LAMMPSStep.create_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the new node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.lammps_step.LAMMPSStep.create_tk_node">
+<code class="sig-name descname">create_tk_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">canvas</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps_step.html#LAMMPSStep.create_tk_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps_step.LAMMPSStep.create_tk_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the graphical Tk node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.lammps_step.LAMMPSStep.description">
+<code class="sig-name descname">description</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps_step.html#LAMMPSStep.description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps_step.LAMMPSStep.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a description of what this extension does</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lammps_step.lammps_step.LAMMPSStep.my_description">
+<code class="sig-name descname">my_description</code><em class="property"> = {'description': 'An interface for the LAMMPS molecular dynamics code', 'group': 'Simulations', 'name': 'LAMMPS'}</em><a class="headerlink" href="#lammps_step.lammps_step.LAMMPSStep.my_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.lammps_units">
+<span id="lammps-step-lammps-units-module"></span><h2>lammps_step.lammps_units module<a class="headerlink" href="#module-lammps_step.lammps_units" title="Permalink to this headline">¶</a></h2>
+<p>Definition of unit systems in LAMMPS.</p>
+<dl class="py function">
+<dt id="lammps_step.lammps_units.from_lammps_units">
+<code class="sig-prename descclassname">lammps_step.lammps_units.</code><code class="sig-name descname">from_lammps_units</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">units</span></em>, <em class="sig-param"><span class="n">quantity</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">unit_system</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps_units.html#from_lammps_units"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps_units.from_lammps_units" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the scalar value from LAMMPS units to requested units</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="lammps_step.lammps_units.get_lammps_unit_system">
+<code class="sig-prename descclassname">lammps_step.lammps_units.</code><code class="sig-name descname">get_lammps_unit_system</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps_units.html#get_lammps_unit_system"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps_units.get_lammps_unit_system" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the default unit system for LAMMPS.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="lammps_step.lammps_units.set_lammps_unit_system">
+<code class="sig-prename descclassname">lammps_step.lammps_units.</code><code class="sig-name descname">set_lammps_unit_system</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps_units.html#set_lammps_unit_system"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps_units.set_lammps_unit_system" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the default unit system for LAMMPS.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="lammps_step.lammps_units.to_lammps_units">
+<code class="sig-prename descclassname">lammps_step.lammps_units.</code><code class="sig-name descname">to_lammps_units</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">quantity</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">unit_system</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps_units.html#to_lammps_units"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.lammps_units.to_lammps_units" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the value with units to the current LAMMPS units.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.minimization">
+<span id="lammps-step-minimization-module"></span><h2>lammps_step.minimization module<a class="headerlink" href="#module-lammps_step.minimization" title="Permalink to this headline">¶</a></h2>
+<p>Minimization step in LAMMPS</p>
+<dl class="py class">
+<dt id="lammps_step.minimization.Minimization">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.minimization.</code><code class="sig-name descname">Minimization</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">'Minimization'</span></em>, <em class="sig-param"><span class="n">extension</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/minimization.html#Minimization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.minimization.Minimization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lammps_step.energy.Energy" title="lammps_step.energy.Energy"><code class="xref py py-class docutils literal notranslate"><span class="pre">lammps_step.energy.Energy</span></code></a></p>
+<dl class="py method">
+<dt id="lammps_step.minimization.Minimization.description_text">
+<code class="sig-name descname">description_text</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">P</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/minimization.html#Minimization.description_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.minimization.Minimization.description_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the text description of what this step will do.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.minimization.Minimization.get_input">
+<code class="sig-name descname">get_input</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">extras</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/minimization.html#Minimization.get_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.minimization.Minimization.get_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the input for a minimization in LAMMPS</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.minimization_step">
+<span id="lammps-step-minimization-step-module"></span><h2>lammps_step.minimization_step module<a class="headerlink" href="#module-lammps_step.minimization_step" title="Permalink to this headline">¶</a></h2>
+<p>Main module.</p>
+<dl class="py class">
+<dt id="lammps_step.minimization_step.MinimizationStep">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.minimization_step.</code><code class="sig-name descname">MinimizationStep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gui</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/minimization_step.html#MinimizationStep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.minimization_step.MinimizationStep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="lammps_step.minimization_step.MinimizationStep.create_node">
+<code class="sig-name descname">create_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/minimization_step.html#MinimizationStep.create_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.minimization_step.MinimizationStep.create_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the new node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.minimization_step.MinimizationStep.create_tk_node">
+<code class="sig-name descname">create_tk_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">canvas</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/minimization_step.html#MinimizationStep.create_tk_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.minimization_step.MinimizationStep.create_tk_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the graphical Tk node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.minimization_step.MinimizationStep.description">
+<code class="sig-name descname">description</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/minimization_step.html#MinimizationStep.description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.minimization_step.MinimizationStep.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a description of what this extension does</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lammps_step.minimization_step.MinimizationStep.my_description">
+<code class="sig-name descname">my_description</code><em class="property"> = {'description': 'Minimization', 'group': 'Calculations', 'name': 'Minimization'}</em><a class="headerlink" href="#lammps_step.minimization_step.MinimizationStep.my_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.npt">
+<span id="lammps-step-npt-module"></span><h2>lammps_step.npt module<a class="headerlink" href="#module-lammps_step.npt" title="Permalink to this headline">¶</a></h2>
+<p>NPT (canonical) dynamics in LAMMPS</p>
+<dl class="py class">
+<dt id="lammps_step.npt.NPT">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.npt.</code><code class="sig-name descname">NPT</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">'NPT dynamics'</span></em>, <em class="sig-param"><span class="n">extension</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/npt.html#NPT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.npt.NPT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lammps_step.nvt.NVT" title="lammps_step.nvt.NVT"><code class="xref py py-class docutils literal notranslate"><span class="pre">lammps_step.nvt.NVT</span></code></a></p>
+<dl class="py method">
+<dt id="lammps_step.npt.NPT.describe">
+<code class="sig-name descname">describe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">indent</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">json_dict</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/npt.html#NPT.describe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.npt.NPT.describe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write out information about what this node will do
+If json_dict is passed in, add information to that dictionary
+so that it can be written out by the controller as appropriate.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.npt.NPT.description_text">
+<code class="sig-name descname">description_text</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">P</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/npt.html#NPT.description_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.npt.NPT.description_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the text description of what this step will do.
+The dictionary of control values is passed in as P so that
+the code can test values, etc.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.npt.NPT.get_input">
+<code class="sig-name descname">get_input</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">extras</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/npt.html#NPT.get_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.npt.NPT.get_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the input for an NPT dynamics run in LAMMPS</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.npt.NPT.get_pressure_text">
+<code class="sig-name descname">get_pressure_text</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">P</span></em>, <em class="sig-param"><span class="n">keep_orthorhombic</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/npt.html#NPT.get_pressure_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.npt.NPT.get_pressure_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Work out and return the pressure/stress part of the
+‘fix npt’ or ‘fix berendsen’ in LAMMPS</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lammps_step.npt.NPT.methods">
+<code class="sig-name descname">methods</code><em class="property"> = {'Berendsen': {'documentation': 'https://lammps.sandia.gov/doc/fix_press_berendsen.html', 'references': ['Berendsen']}, 'Nose-Hoover': {'documentation': 'https://lammps.sandia.gov/doc/fix_nh.html#fix-npt-command', 'references': ['Shinoda', 'Tuckerman']}}</em><a class="headerlink" href="#lammps_step.npt.NPT.methods" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.npt_parameters">
+<span id="lammps-step-npt-parameters-module"></span><h2>lammps_step.npt_parameters module<a class="headerlink" href="#module-lammps_step.npt_parameters" title="Permalink to this headline">¶</a></h2>
+<p>Control parameters for NPT (canonical) dynamics</p>
+<dl class="py class">
+<dt id="lammps_step.npt_parameters.NPT_Parameters">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.npt_parameters.</code><code class="sig-name descname">NPT_Parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">defaults</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/npt_parameters.html#NPT_Parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.npt_parameters.NPT_Parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lammps_step.nvt_parameters.NVT_Parameters" title="lammps_step.nvt_parameters.NVT_Parameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">lammps_step.nvt_parameters.NVT_Parameters</span></code></a></p>
+<p>The control parameters for NPT dynamics in LAMMPS</p>
+<dl class="py attribute">
+<dt id="lammps_step.npt_parameters.NPT_Parameters.parameters">
+<code class="sig-name descname">parameters</code><em class="property"> = {'Panneal': {'default': 'no', 'description': 'Change pressure with time', 'enumeration': ('no', 'yes'), 'format_string': 's', 'help_text': 'Change the pressure linearly with time during the run, i.e. anneal the system.', 'kind': 'boolean'}, 'Pdamp': {'default': 1000.0, 'default_units': 'fs', 'description': 'Damping time:', 'format_string': '.1f', 'help_text': 'The damping time constant for the barostat. Typically a value around 1000 timesteps works well.', 'kind': 'float'}, 'Pfinal': {'default': 1.0, 'default_units': 'atm', 'description': 'Final pressure:', 'enumeration': (), 'format_string': '.2f', 'help_text': 'The final pressure.', 'kind': 'float'}, 'Pinitial': {'default': 1.0, 'default_units': 'atm', 'description': 'Initial pressure:', 'enumeration': (), 'format_string': '.2f', 'help_text': 'The initial pressure.', 'kind': 'float'}, 'Sxx damp': {'default': 1000.0, 'default_units': 'fs', 'description': 'Sxx damping time:', 'format_string': '.1f', 'help_text': 'The damping time constant for the barostat. Typically a value around 1000 timesteps works well.', 'kind': 'float'}, 'Sxx,final': {'default': 1.0, 'default_units': 'atm', 'description': 'Sxx final:', 'format_string': '.2f', 'help_text': 'The final components of the stress tensor.', 'kind': 'float'}, 'Sxx,initial': {'default': 1.0, 'default_units': 'atm', 'description': 'Sxx initial:', 'format_string': '.2f', 'help_text': 'The initial components of the stress tensor.', 'kind': 'float'}, 'Sxy damp': {'default': 1000.0, 'default_units': 'fs', 'description': 'Sxy damping time:', 'format_string': '.1f', 'help_text': 'The damping time constant for the barostat. Typically a value around 1000 timesteps works well.', 'kind': 'float'}, 'Sxy,final': {'default': 0.0, 'default_units': 'atm', 'description': 'Sxy final:', 'format_string': '.2f', 'help_text': 'The final components of the stress tensor.', 'kind': 'float'}, 'Sxy,initial': {'default': 0.0, 'default_units': 'atm', 'description': 'Sxy initial:', 'format_string': '.2f', 'help_text': 'The initial components of the stress tensor.', 'kind': 'float'}, 'Sxz damp': {'default': 1000.0, 'default_units': 'fs', 'description': 'Sxz damping time:', 'format_string': '.1f', 'help_text': 'The damping time constant for the barostat. Typically a value around 1000 timesteps works well.', 'kind': 'float'}, 'Sxz,final': {'default': 0.0, 'default_units': 'atm', 'description': 'Sxz final:', 'format_string': '.2f', 'help_text': 'The final components of the stress tensor.', 'kind': 'float'}, 'Sxz,initial': {'default': 0.0, 'default_units': 'atm', 'description': 'Sxz initial:', 'format_string': '.2f', 'help_text': 'The initial components of the stress tensor.', 'kind': 'float'}, 'Syy damp': {'default': 1000.0, 'default_units': 'fs', 'description': 'Syy damping time:', 'format_string': '.1f', 'help_text': 'The damping time constant for the barostat. Typically a value around 1000 timesteps works well.', 'kind': 'float'}, 'Syy,final': {'default': 1.0, 'default_units': 'atm', 'description': 'Syy final:', 'format_string': '.2f', 'help_text': 'The final components of the stress tensor.', 'kind': 'float'}, 'Syy,initial': {'default': 1.0, 'default_units': 'atm', 'description': 'Syy initial:', 'format_string': '.2f', 'help_text': 'The initial components of the stress tensor.', 'kind': 'float'}, 'Syz damp': {'default': 1000.0, 'default_units': 'fs', 'description': 'Syz damping time:', 'format_string': '.1f', 'help_text': 'The damping time constant for the barostat. Typically a value around 1000 timesteps works well.', 'kind': 'float'}, 'Syz,final': {'default': 0.0, 'default_units': 'atm', 'description': 'Syz final:', 'format_string': '.2f', 'help_text': 'The final components of the stress tensor.', 'kind': 'float'}, 'Syz,initial': {'default': 0.0, 'default_units': 'atm', 'description': 'Syz initial:', 'format_string': '.2f', 'help_text': 'The initial components of the stress tensor.', 'kind': 'float'}, 'Szz damp': {'default': 1000.0, 'default_units': 'fs', 'description': 'Szz damping time:', 'format_string': '.1f', 'help_text': 'The damping time constant for the barostat. Typically a value around 1000 timesteps works well.', 'kind': 'float'}, 'Szz,final': {'default': 1.0, 'default_units': 'atm', 'description': 'Szz final:', 'format_string': '.2f', 'help_text': 'The final components of the stress tensor.', 'kind': 'float'}, 'Szz,initial': {'default': 1.0, 'default_units': 'atm', 'description': 'Szz initial:', 'format_string': '.2f', 'help_text': 'The initial components of the stress tensor.', 'kind': 'float'}, 'barostat': {'default': 'Nose-Hoover', 'description': 'Barostat:', 'enumeration': ('Nose-Hoover', 'Berendsen'), 'format_string': 's', 'help_text': 'The barostat used to control the pressure', 'kind': 'string'}, 'couple': {'default': 'x, y and z', 'description': 'Directions to couple:', 'enumeration': ('x, y and z', 'x and y', 'x and z', 'y and z', 'none'), 'format_string': 's', 'help_text': 'The stress in these directions will be averaged and the cell dilated in fixed proportions in these directions.', 'kind': 'enumeration'}, 'modulus': {'default': 50.0, 'default_units': 'GPa', 'description': 'Bulk modulus:', 'enumeration': (), 'format_string': '.2f', 'help_text': 'The bulk modulus. For liquids a typical modulus ranges from a fraction of a GPa to a few GPa. For crystalline solids, 25-500 GPa is a reasonable range.', 'kind': 'float'}, 'mtk': {'default': 'yes', 'description': 'Use corrected Hoover barostat', 'enumeration': ('no', 'yes'), 'format_string': 's', 'help_text': 'Include the correction terms due to Martyna, Tuckerman, and Klein in the equations of motion. If not, the original Hoover barostat is used, whose volume probability distribution function differs from the true NPT and NPH ensembles by a factor of 1/V. By default the correct equations are used, but in many cases the difference is negligible.', 'kind': 'boolean'}, 'nreset': {'default': 'never', 'default_units': None, 'description': 'Frequency to reset reference cell:', 'enumeration': ('never',), 'format_string': 'd', 'help_text': 'How often, in number of steps, to reset the reference cell for the strain energy.', 'kind': 'integer'}, 'system type': {'default': 'fluid', 'description': 'Type of system:', 'enumeration': ('fluid', 'solid'), 'format_string': 's', 'help_text': 'Whether the system is a fluid, which flows under shear stress, or a solid, which can resist small shear stresses.', 'kind': 'string'}, 'use_stress': {'default': 'isotropic pressure', 'description': 'Apply', 'enumeration': ('isotropic pressure', 'general stress'), 'format_string': 's', 'help_text': 'Specify whether to apply (isotropic) pressure to the system or explicit stresses for each different direction.', 'kind': 'enumeration'}}</em><a class="headerlink" href="#lammps_step.npt_parameters.NPT_Parameters.parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.npt_step">
+<span id="lammps-step-npt-step-module"></span><h2>lammps_step.npt_step module<a class="headerlink" href="#module-lammps_step.npt_step" title="Permalink to this headline">¶</a></h2>
+<p>Main module.</p>
+<dl class="py class">
+<dt id="lammps_step.npt_step.NPTStep">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.npt_step.</code><code class="sig-name descname">NPTStep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gui</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/npt_step.html#NPTStep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.npt_step.NPTStep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="lammps_step.npt_step.NPTStep.create_node">
+<code class="sig-name descname">create_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/npt_step.html#NPTStep.create_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.npt_step.NPTStep.create_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the new node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.npt_step.NPTStep.create_tk_node">
+<code class="sig-name descname">create_tk_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">canvas</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/npt_step.html#NPTStep.create_tk_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.npt_step.NPTStep.create_tk_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the graphical Tk node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.npt_step.NPTStep.description">
+<code class="sig-name descname">description</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/npt_step.html#NPTStep.description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.npt_step.NPTStep.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a description of what this extension does</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lammps_step.npt_step.NPTStep.my_description">
+<code class="sig-name descname">my_description</code><em class="property"> = {'description': 'NPT (isothermal–isobaric) dynamics', 'group': 'Calculations', 'name': 'NPT dynamics'}</em><a class="headerlink" href="#lammps_step.npt_step.NPTStep.my_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.nve">
+<span id="lammps-step-nve-module"></span><h2>lammps_step.nve module<a class="headerlink" href="#module-lammps_step.nve" title="Permalink to this headline">¶</a></h2>
+<p>NVE (microcanonical) dynamics in LAMMPS</p>
+<dl class="py class">
+<dt id="lammps_step.nve.NVE">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.nve.</code><code class="sig-name descname">NVE</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">'NVE dynamics'</span></em>, <em class="sig-param"><span class="n">extension</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve.html#NVE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nve.NVE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lammps_step.energy.Energy" title="lammps_step.energy.Energy"><code class="xref py py-class docutils literal notranslate"><span class="pre">lammps_step.energy.Energy</span></code></a></p>
+<dl class="py method">
+<dt id="lammps_step.nve.NVE.description_text">
+<code class="sig-name descname">description_text</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve.html#NVE.description_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nve.NVE.description_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the text description of what this step will do.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.nve.NVE.get_input">
+<code class="sig-name descname">get_input</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">extras</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve.html#NVE.get_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nve.NVE.get_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the input for an NVE dynamics run in LAMMPS</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.nve.NVE.timestep">
+<code class="sig-name descname">timestep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve.html#NVE.timestep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nve.NVE.timestep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the timestep in the correct units.</p>
+<p>This handles the ‘normal’, ‘accurate’ and ‘coarse’ values,
+which depend on the mass in an empirical fashion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>str</em><em> or </em><em>Pint quantity</em>) – The desired timestep, which may be a Pint quantity with units
+or one of ‘notmal’, ‘accurate but slow’, or ‘coarse but fast’</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>timestep</strong> – The magnitude of the time step in the appropriate LAMMPS units</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.nve_parameters">
+<span id="lammps-step-nve-parameters-module"></span><h2>lammps_step.nve_parameters module<a class="headerlink" href="#module-lammps_step.nve_parameters" title="Permalink to this headline">¶</a></h2>
+<p>Control parameters for NVE (microcanonical) dynamics</p>
+<dl class="py class">
+<dt id="lammps_step.nve_parameters.NVE_Parameters">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.nve_parameters.</code><code class="sig-name descname">NVE_Parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">defaults</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve_parameters.html#NVE_Parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nve_parameters.NVE_Parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lammps_step.energy_parameters.EnergyParameters" title="lammps_step.energy_parameters.EnergyParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">lammps_step.energy_parameters.EnergyParameters</span></code></a></p>
+<p>The control parameters for NVE dynamics in LAMMPS</p>
+<dl class="py attribute">
+<dt id="lammps_step.nve_parameters.NVE_Parameters.parameters">
+<code class="sig-name descname">parameters</code><em class="property"> = {'control_properties': {'default': {}, 'default_units': None, 'description': 'Convergence properties', 'enumeration': (), 'format_string': '', 'help_text': 'The properties to converge when controlling the run automatically.', 'kind': 'special', 'widget': 'seamm_widgets.PropertyTable'}, 'maximum_time': {'default': 1.0, 'default_units': 'ns', 'description': 'Maximum simulation time:', 'format_string': '.1f', 'help_text': 'The maximum time to simulate when converging properties.', 'kind': 'float'}, 'run_control': {'default': 'Until properties converge to the requested accuracy.', 'default_units': None, 'description': 'How long to run? ', 'enumeration': ('Until properties converge to the requested accuracy.', 'For a fixed length of simulated time.'), 'format_string': '', 'help_text': 'How to determine when to stop the simulation. You can give a fixed length of simulation time, e.g. 15 ps, or you can ask to run long enough to determine one or more properties to a given accuracy.', 'kind': 'enumeration'}, 'sampling': {'default': '50', 'default_units': 'fs', 'description': 'Sampling frequency:', 'enumeration': ('none',), 'format_string': '.1f', 'help_text': 'How often to sample the energy, temperature, etc. during the dynamics run. This controls writing to the trajectory files. Faster gives more fidelity to a point, but increases the file size and slows the calculation down.\nYou can ask for no sampling, give a specific interval, or allow the system the choose for you.', 'kind': 'float'}, 'time': {'default': 100.0, 'default_units': 'ps', 'description': 'Simulation time:', 'format_string': '.1f', 'help_text': 'The time to simulate in the dynamics run.', 'kind': 'float'}, 'timestep': {'default': 'normal', 'default_units': 'fs', 'description': 'Timestep:', 'enumeration': ('normal', 'accurate but slow', 'coarse but fast'), 'format_string': '.1f', 'help_text': 'The time step for the numerical integration in the dynamics. 1 fs is safe for most systems, except perhaps at high temperatures. For systems without hydrogen, helium, lithium or other light elements, 2-4 fs steps are reasonable. The timestep needs to be less than 1/10 the highest frequency. 10^14 Hz is a period if 10 fs, and corresponds to a frequency of 3,300 wavenumbers or a wavelength of 3 micrometers.\nYou can enter a value or use the choices, which pick a reasonable timestep based on the calculation.', 'kind': 'float'}}</em><a class="headerlink" href="#lammps_step.nve_parameters.NVE_Parameters.parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.nve_step">
+<span id="lammps-step-nve-step-module"></span><h2>lammps_step.nve_step module<a class="headerlink" href="#module-lammps_step.nve_step" title="Permalink to this headline">¶</a></h2>
+<p>Main module.</p>
+<dl class="py class">
+<dt id="lammps_step.nve_step.NVEStep">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.nve_step.</code><code class="sig-name descname">NVEStep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gui</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve_step.html#NVEStep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nve_step.NVEStep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="lammps_step.nve_step.NVEStep.create_node">
+<code class="sig-name descname">create_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve_step.html#NVEStep.create_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nve_step.NVEStep.create_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the new node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.nve_step.NVEStep.create_tk_node">
+<code class="sig-name descname">create_tk_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">canvas</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve_step.html#NVEStep.create_tk_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nve_step.NVEStep.create_tk_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the graphical Tk node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.nve_step.NVEStep.description">
+<code class="sig-name descname">description</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve_step.html#NVEStep.description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nve_step.NVEStep.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a description of what this extension does</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lammps_step.nve_step.NVEStep.my_description">
+<code class="sig-name descname">my_description</code><em class="property"> = {'description': 'NVE (microcanonical) dynamics', 'group': 'Calculations', 'name': 'NVE dynamics'}</em><a class="headerlink" href="#lammps_step.nve_step.NVEStep.my_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.nvt">
+<span id="lammps-step-nvt-module"></span><h2>lammps_step.nvt module<a class="headerlink" href="#module-lammps_step.nvt" title="Permalink to this headline">¶</a></h2>
+<p>NVT (canonical) dynamics in LAMMPS</p>
+<dl class="py class">
+<dt id="lammps_step.nvt.NVT">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.nvt.</code><code class="sig-name descname">NVT</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">'NVT dynamics'</span></em>, <em class="sig-param"><span class="n">extension</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nvt.html#NVT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nvt.NVT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lammps_step.nve.NVE" title="lammps_step.nve.NVE"><code class="xref py py-class docutils literal notranslate"><span class="pre">lammps_step.nve.NVE</span></code></a></p>
+<dl class="py method">
+<dt id="lammps_step.nvt.NVT.describe">
+<code class="sig-name descname">describe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">indent</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">json_dict</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nvt.html#NVT.describe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nvt.NVT.describe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write out information about what this node will do
+If json_dict is passed in, add information to that dictionary
+so that it can be written out by the controller as appropriate.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.nvt.NVT.description_text">
+<code class="sig-name descname">description_text</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">P</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nvt.html#NVT.description_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nvt.NVT.description_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a short description of this step.</p>
+<p>Return a nicely formatted string describing what this step will
+do.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><p><strong>P</strong> – a dictionary of parameter values, which may be variables
+or final values. If None, then the parameters values will
+be used as is.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.nvt.NVT.get_input">
+<code class="sig-name descname">get_input</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">extras</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nvt.html#NVT.get_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nvt.NVT.get_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the input for an NVT dynamics run in LAMMPS</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.nvt_parameters">
+<span id="lammps-step-nvt-parameters-module"></span><h2>lammps_step.nvt_parameters module<a class="headerlink" href="#module-lammps_step.nvt_parameters" title="Permalink to this headline">¶</a></h2>
+<p>Control parameters for NVT (canonical) dynamics</p>
+<dl class="py class">
+<dt id="lammps_step.nvt_parameters.NVT_Parameters">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.nvt_parameters.</code><code class="sig-name descname">NVT_Parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">defaults</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nvt_parameters.html#NVT_Parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nvt_parameters.NVT_Parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lammps_step.nve_parameters.NVE_Parameters" title="lammps_step.nve_parameters.NVE_Parameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">lammps_step.nve_parameters.NVE_Parameters</span></code></a></p>
+<p>The control parameters for NVT dynamics in LAMMPS</p>
+<dl class="py attribute">
+<dt id="lammps_step.nvt_parameters.NVT_Parameters.parameters">
+<code class="sig-name descname">parameters</code><em class="property"> = {'T0': {'default': 298.15, 'default_units': 'K', 'description': 'Temperature:', 'format_string': '.2f', 'help_text': 'The temperature, or initial temperature for simulated annealing.', 'kind': 'float'}, 'T1': {'default': 298.15, 'default_units': 'K', 'description': 'Final temperature:', 'format_string': '.2f', 'help_text': 'The final temperature for simulated annealing.', 'kind': 'float'}, 'Tchain': {'default': 3, 'default_units': None, 'description': 'Thermostat chain:', 'format_string': 'd', 'help_text': 'The number of thermostats in the chain.', 'kind': 'integer'}, 'Tdamp': {'default': 100.0, 'default_units': 'fs', 'description': 'Damping time:', 'format_string': '.1f', 'help_text': 'The damping time constant for thermostat', 'kind': 'float'}, 'Tloop': {'default': 1, 'default_units': None, 'description': 'Thermostat iterations:', 'format_string': 'd', 'help_text': 'The number of sub-iterations for the thermostat.', 'kind': 'integer'}, 'drag': {'default': 0.0, 'default_units': None, 'description': 'Drag:', 'format_string': '.1f', 'help_text': 'The amount of drag to apply on the thermostat and barostat if the pressure is controlled. Typically a value of 0.2 - 2.0 is appropriate.', 'kind': 'float'}, 'fraction': {'default': 1.0, 'default_units': None, 'description': 'Fraction to scale:', 'format_string': '.1f', 'help_text': 'The fraction of the temperature difference to correct by scaling the velocities.', 'kind': 'float'}, 'frequency': {'default': 100.0, 'default_units': 'fs', 'description': 'Rescaling frequency:', 'format_string': '.1f', 'help_text': 'The frequency (in time units) for the thermostat to operate.', 'kind': 'float'}, 'seed': {'default': 'random', 'default_units': None, 'description': 'Random seed:', 'enumeration': ('random',), 'format_string': '', 'help_text': &quot;The seed for the random number generator.'random' means to generate a random integer as the seed.&quot;, 'kind': 'integer'}, 'thermostat': {'default': 'Nose-Hoover', 'description': 'Thermostat:', 'enumeration': ('Nose-Hoover', 'Berendsen', 'canonical sampling, velocity rescaling (csvr)', 'canonical sampling, langevin dynamics (csld)', 'velocity rescaling', 'Langevin'), 'format_string': 's', 'help_text': 'The thermostat used to control the temperature.', 'kind': 'string'}, 'window': {'default': 20.0, 'default_units': 'K', 'description': 'Temperature window:', 'format_string': '.1f', 'help_text': 'The temperature window to use when rescaling.When the instantaneous temperature is outside the temperature window, the velocities will be rescaled.', 'kind': 'float'}}</em><a class="headerlink" href="#lammps_step.nvt_parameters.NVT_Parameters.parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.nvt_step">
+<span id="lammps-step-nvt-step-module"></span><h2>lammps_step.nvt_step module<a class="headerlink" href="#module-lammps_step.nvt_step" title="Permalink to this headline">¶</a></h2>
+<p>Main module.</p>
+<dl class="py class">
+<dt id="lammps_step.nvt_step.NVTStep">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.nvt_step.</code><code class="sig-name descname">NVTStep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gui</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nvt_step.html#NVTStep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nvt_step.NVTStep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="lammps_step.nvt_step.NVTStep.create_node">
+<code class="sig-name descname">create_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nvt_step.html#NVTStep.create_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nvt_step.NVTStep.create_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the new node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.nvt_step.NVTStep.create_tk_node">
+<code class="sig-name descname">create_tk_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">canvas</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nvt_step.html#NVTStep.create_tk_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nvt_step.NVTStep.create_tk_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the graphical Tk node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.nvt_step.NVTStep.description">
+<code class="sig-name descname">description</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nvt_step.html#NVTStep.description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.nvt_step.NVTStep.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a description of what this extension does</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lammps_step.nvt_step.NVTStep.my_description">
+<code class="sig-name descname">my_description</code><em class="property"> = {'description': 'NVT (canonical) dynamics', 'group': 'Calculations', 'name': 'NVT dynamics'}</em><a class="headerlink" href="#lammps_step.nvt_step.NVTStep.my_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.tk_custom">
+<span id="lammps-step-tk-custom-module"></span><h2>lammps_step.tk_custom module<a class="headerlink" href="#module-lammps_step.tk_custom" title="Permalink to this headline">¶</a></h2>
+<p>The graphical part of a LAMMPS Custom step</p>
+<dl class="py class">
+<dt id="lammps_step.tk_custom.TkCustom">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.tk_custom.</code><code class="sig-name descname">TkCustom</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tk_flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">node</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">canvas</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">x</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">y</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">w</span><span class="o">=</span><span class="default_value">200</span></em>, <em class="sig-param"><span class="n">h</span><span class="o">=</span><span class="default_value">50</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_custom.html#TkCustom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_custom.TkCustom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">seamm.tk_node.TkNode</span></code></p>
+<dl class="py method">
+<dt id="lammps_step.tk_custom.TkCustom.create_dialog">
+<code class="sig-name descname">create_dialog</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_custom.html#TkCustom.create_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_custom.TkCustom.create_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the dialog!</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_custom.TkCustom.handle_dialog">
+<code class="sig-name descname">handle_dialog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">result</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_custom.html#TkCustom.handle_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_custom.TkCustom.handle_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the right thing when the dialog is closed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_custom.TkCustom.right_click">
+<code class="sig-name descname">right_click</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">event</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_custom.html#TkCustom.right_click"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_custom.TkCustom.right_click" title="Permalink to this definition">¶</a></dt>
+<dd><p>Probably need to add our dialog…</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.tk_energy">
+<span id="lammps-step-tk-energy-module"></span><h2>lammps_step.tk_energy module<a class="headerlink" href="#module-lammps_step.tk_energy" title="Permalink to this headline">¶</a></h2>
+<p>The graphical part of a LAMMPS Energy step</p>
+<dl class="py class">
+<dt id="lammps_step.tk_energy.TkEnergy">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.tk_energy.</code><code class="sig-name descname">TkEnergy</code><span class="sig-paren">(</span><em class="sig-param">tk_flowchart=None</em>, <em class="sig-param">node=None</em>, <em class="sig-param">canvas=None</em>, <em class="sig-param">x=None</em>, <em class="sig-param">y=None</em>, <em class="sig-param">w=200</em>, <em class="sig-param">h=50</em>, <em class="sig-param">my_logger=&lt;Logger lammps_step.tk_energy (WARNING)&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_energy.html#TkEnergy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_energy.TkEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">seamm.tk_node.TkNode</span></code></p>
+<dl class="py method">
+<dt id="lammps_step.tk_energy.TkEnergy.create_dialog">
+<code class="sig-name descname">create_dialog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">'Edit LAMMPS Energy Step'</span></em>, <em class="sig-param"><span class="n">calculation</span><span class="o">=</span><span class="default_value">'energy'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_energy.html#TkEnergy.create_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_energy.TkEnergy.create_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the dialog!</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_energy.TkEnergy.right_click">
+<code class="sig-name descname">right_click</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">event</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_energy.html#TkEnergy.right_click"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_energy.TkEnergy.right_click" title="Permalink to this definition">¶</a></dt>
+<dd><p>Probably need to add our dialog…</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.tk_initialization">
+<span id="lammps-step-tk-initialization-module"></span><h2>lammps_step.tk_initialization module<a class="headerlink" href="#module-lammps_step.tk_initialization" title="Permalink to this headline">¶</a></h2>
+<p>The graphical part of a LAMMPS Initialization step</p>
+<dl class="py class">
+<dt id="lammps_step.tk_initialization.TkInitialization">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.tk_initialization.</code><code class="sig-name descname">TkInitialization</code><span class="sig-paren">(</span><em class="sig-param">tk_flowchart=None</em>, <em class="sig-param">node=None</em>, <em class="sig-param">canvas=None</em>, <em class="sig-param">x=None</em>, <em class="sig-param">y=None</em>, <em class="sig-param">w=200</em>, <em class="sig-param">h=50</em>, <em class="sig-param">my_logger=&lt;Logger lammps_step.tk_initialization (WARNING)&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_initialization.html#TkInitialization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_initialization.TkInitialization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">seamm.tk_node.TkNode</span></code></p>
+<dl class="py method">
+<dt id="lammps_step.tk_initialization.TkInitialization.create_dialog">
+<code class="sig-name descname">create_dialog</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_initialization.html#TkInitialization.create_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_initialization.TkInitialization.create_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the dialog!</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_initialization.TkInitialization.kspace_method_cb">
+<code class="sig-name descname">kspace_method_cb</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">event</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_initialization.html#TkInitialization.kspace_method_cb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_initialization.TkInitialization.kspace_method_cb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grid the widgets into the dialog, depending on the current values
+of key variables. This provides a dyamic presentation to the user.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_initialization.TkInitialization.right_click">
+<code class="sig-name descname">right_click</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">event</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_initialization.html#TkInitialization.right_click"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_initialization.TkInitialization.right_click" title="Permalink to this definition">¶</a></dt>
+<dd><p>Probably need to add our dialog…</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.tk_lammps">
+<span id="lammps-step-tk-lammps-module"></span><h2>lammps_step.tk_lammps module<a class="headerlink" href="#module-lammps_step.tk_lammps" title="Permalink to this headline">¶</a></h2>
+<p>The graphical part of a LAMMPS step</p>
+<dl class="py class">
+<dt id="lammps_step.tk_lammps.TkLAMMPS">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.tk_lammps.</code><code class="sig-name descname">TkLAMMPS</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tk_flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">node</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">namespace</span><span class="o">=</span><span class="default_value">'org.molssi.seamm.lammps.tk'</span></em>, <em class="sig-param"><span class="n">canvas</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">x</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">y</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">w</span><span class="o">=</span><span class="default_value">200</span></em>, <em class="sig-param"><span class="n">h</span><span class="o">=</span><span class="default_value">50</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_lammps.html#TkLAMMPS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_lammps.TkLAMMPS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">seamm.tk_node.TkNode</span></code></p>
+<p>The node_class is the class of the ‘real’ node that this
+class is the Tk graphics partner for</p>
+<dl class="py method">
+<dt id="lammps_step.tk_lammps.TkLAMMPS.create_dialog">
+<code class="sig-name descname">create_dialog</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_lammps.html#TkLAMMPS.create_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_lammps.TkLAMMPS.create_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the dialog!</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_lammps.TkLAMMPS.from_flowchart">
+<code class="sig-name descname">from_flowchart</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tk_flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_lammps.html#TkLAMMPS.from_flowchart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_lammps.TkLAMMPS.from_flowchart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recreate the graphics from the non-graphical flowchart.
+Only used in nodes that contain flowchart</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lammps_step.tk_lammps.TkLAMMPS.node_class">
+<code class="sig-name descname">node_class</code><a class="headerlink" href="#lammps_step.tk_lammps.TkLAMMPS.node_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#lammps_step.lammps.LAMMPS" title="lammps_step.lammps.LAMMPS"><code class="xref py py-class docutils literal notranslate"><span class="pre">lammps_step.lammps.LAMMPS</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_lammps.TkLAMMPS.right_click">
+<code class="sig-name descname">right_click</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">event</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_lammps.html#TkLAMMPS.right_click"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_lammps.TkLAMMPS.right_click" title="Permalink to this definition">¶</a></dt>
+<dd><p>Probably need to add our dialog…</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_lammps.TkLAMMPS.update_flowchart">
+<code class="sig-name descname">update_flowchart</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tk_flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_lammps.html#TkLAMMPS.update_flowchart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_lammps.TkLAMMPS.update_flowchart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the nongraphical flowchart. Only used in nodes that contain
+flowcharts</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.tk_minimization">
+<span id="lammps-step-tk-minimization-module"></span><h2>lammps_step.tk_minimization module<a class="headerlink" href="#module-lammps_step.tk_minimization" title="Permalink to this headline">¶</a></h2>
+<p>The graphical part of a LAMMPS minimization step</p>
+<dl class="py class">
+<dt id="lammps_step.tk_minimization.TkMinimization">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.tk_minimization.</code><code class="sig-name descname">TkMinimization</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tk_flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">node</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">canvas</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">x</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">y</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">w</span><span class="o">=</span><span class="default_value">200</span></em>, <em class="sig-param"><span class="n">h</span><span class="o">=</span><span class="default_value">50</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_minimization.html#TkMinimization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_minimization.TkMinimization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lammps_step.tk_energy.TkEnergy" title="lammps_step.tk_energy.TkEnergy"><code class="xref py py-class docutils literal notranslate"><span class="pre">lammps_step.tk_energy.TkEnergy</span></code></a></p>
+<dl class="py method">
+<dt id="lammps_step.tk_minimization.TkMinimization.create_dialog">
+<code class="sig-name descname">create_dialog</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_minimization.html#TkMinimization.create_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_minimization.TkMinimization.create_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the dialog!</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_minimization.TkMinimization.handle_dialog">
+<code class="sig-name descname">handle_dialog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">result</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_minimization.html#TkMinimization.handle_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_minimization.TkMinimization.handle_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the right thing when the dialog is closed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_minimization.TkMinimization.reset_dialog">
+<code class="sig-name descname">reset_dialog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">widget</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_minimization.html#TkMinimization.reset_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_minimization.TkMinimization.reset_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Layout the widgets as needed for the current state</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.tk_npt">
+<span id="lammps-step-tk-npt-module"></span><h2>lammps_step.tk_npt module<a class="headerlink" href="#module-lammps_step.tk_npt" title="Permalink to this headline">¶</a></h2>
+<p>The graphical part of a LAMMPS Energy step</p>
+<dl class="py class">
+<dt id="lammps_step.tk_npt.TkNPT">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.tk_npt.</code><code class="sig-name descname">TkNPT</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tk_flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">node</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">canvas</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">x</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">y</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">w</span><span class="o">=</span><span class="default_value">200</span></em>, <em class="sig-param"><span class="n">h</span><span class="o">=</span><span class="default_value">50</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_npt.html#TkNPT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_npt.TkNPT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lammps_step.tk_nvt.TkNVT" title="lammps_step.tk_nvt.TkNVT"><code class="xref py py-class docutils literal notranslate"><span class="pre">lammps_step.tk_nvt.TkNVT</span></code></a></p>
+<dl class="py method">
+<dt id="lammps_step.tk_npt.TkNPT.create_dialog">
+<code class="sig-name descname">create_dialog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">'Edit NPT dynamics parameters'</span></em>, <em class="sig-param"><span class="n">calculation</span><span class="o">=</span><span class="default_value">'npt'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_npt.html#TkNPT.create_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_npt.TkNPT.create_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the edit dialog!</p>
+<p>This is reasonably complicated, so a bit of description
+is in order. The superclasses NVT and NVE create the dialog
+along with the basic runtime and timestep (from NVE) and
+the setting the temperature and thermostat (NVT).</p>
+<p>This method adds a third frame with the pressure and barostat.</p>
+<p>The layout is handled in part by the NVT superclass, which
+handles the temperature frame. Our part is handled by three
+methods:</p>
+<ul class="simple">
+<li><p>reset_dialog does the general layout of the large blocks</p></li>
+<li><p>reset_pressure_frame handles the layout of the pressure
+section except for the detail of the actual pressure/stress
+which is handled by…</p></li>
+<li><p>reset_stress_frame which does the detailed layout of their
+stress or pressure terms, depending on whether we are annealing,
+and the coupling between directions.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_npt.TkNPT.handle_dialog">
+<code class="sig-name descname">handle_dialog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">result</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_npt.html#TkNPT.handle_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_npt.TkNPT.handle_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle when the user clicks a button on the dialog,
+which can either be ‘Cancel’, ‘Help’ or ‘OK’, or they can
+close the dialog with the ‘x’ button == ‘Cancel’</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_npt.TkNPT.reset_dialog">
+<code class="sig-name descname">reset_dialog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">widget</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_npt.html#TkNPT.reset_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_npt.TkNPT.reset_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Layout the widgets as needed for the current state</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_npt.TkNPT.reset_pressure_frame">
+<code class="sig-name descname">reset_pressure_frame</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">widget</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_npt.html#TkNPT.reset_pressure_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_npt.TkNPT.reset_pressure_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Layout the widgets for the pressure/stress control
+as needed for the current state</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_npt.TkNPT.reset_stress_frame">
+<code class="sig-name descname">reset_stress_frame</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">widget</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_npt.html#TkNPT.reset_stress_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_npt.TkNPT.reset_stress_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Layout the widgets for the pressure/stress
+as needed for the current state.</p>
+<p>We use labels across the top and left side of the
+table of stresses, then hide the labels and units
+of all the entries, except for the last entry in the
+row, which displays the units too.</p>
+<p>It is a bit tricky getting the column labels to lign
+up for the last item in the row because it is wider
+with the units displaying. The weird stuff with the
+columnspan=3 and setting the ‘uniform’ attribute of
+the columns does this. There might be better ways, but
+this works … just be careful changing it :-).</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.tk_nve">
+<span id="lammps-step-tk-nve-module"></span><h2>lammps_step.tk_nve module<a class="headerlink" href="#module-lammps_step.tk_nve" title="Permalink to this headline">¶</a></h2>
+<p>The graphical part of a LAMMPS Energy step</p>
+<dl class="py class">
+<dt id="lammps_step.tk_nve.TkNVE">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.tk_nve.</code><code class="sig-name descname">TkNVE</code><span class="sig-paren">(</span><em class="sig-param">tk_flowchart=None</em>, <em class="sig-param">node=None</em>, <em class="sig-param">canvas=None</em>, <em class="sig-param">x=None</em>, <em class="sig-param">y=None</em>, <em class="sig-param">w=200</em>, <em class="sig-param">h=50</em>, <em class="sig-param">my_logger=&lt;Logger lammps_step.tk_nve (WARNING)&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_nve.html#TkNVE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_nve.TkNVE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lammps_step.tk_energy.TkEnergy" title="lammps_step.tk_energy.TkEnergy"><code class="xref py py-class docutils literal notranslate"><span class="pre">lammps_step.tk_energy.TkEnergy</span></code></a></p>
+<dl class="py method">
+<dt id="lammps_step.tk_nve.TkNVE.create_dialog">
+<code class="sig-name descname">create_dialog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">'Edit NVE dynamics parameters'</span></em>, <em class="sig-param"><span class="n">calculation</span><span class="o">=</span><span class="default_value">'nve'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_nve.html#TkNVE.create_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_nve.TkNVE.create_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the dialog!</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_nve.TkNVE.handle_dialog">
+<code class="sig-name descname">handle_dialog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">result</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_nve.html#TkNVE.handle_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_nve.TkNVE.handle_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the right thing when the dialog is closed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_nve.TkNVE.reset_control_frame">
+<code class="sig-name descname">reset_control_frame</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">widget</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_nve.html#TkNVE.reset_control_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_nve.TkNVE.reset_control_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Layout the control widgets as needed for the current state</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_nve.TkNVE.reset_dialog">
+<code class="sig-name descname">reset_dialog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">widget</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_nve.html#TkNVE.reset_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_nve.TkNVE.reset_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Layout the widgets as needed for the current state</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.tk_nvt">
+<span id="lammps-step-tk-nvt-module"></span><h2>lammps_step.tk_nvt module<a class="headerlink" href="#module-lammps_step.tk_nvt" title="Permalink to this headline">¶</a></h2>
+<p>The graphical part of a LAMMPS NVT dynamics step</p>
+<dl class="py class">
+<dt id="lammps_step.tk_nvt.TkNVT">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.tk_nvt.</code><code class="sig-name descname">TkNVT</code><span class="sig-paren">(</span><em class="sig-param">tk_flowchart=None</em>, <em class="sig-param">node=None</em>, <em class="sig-param">canvas=None</em>, <em class="sig-param">x=None</em>, <em class="sig-param">y=None</em>, <em class="sig-param">w=200</em>, <em class="sig-param">h=50</em>, <em class="sig-param">my_logger=&lt;Logger lammps_step.tk_nvt (WARNING)&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_nvt.html#TkNVT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_nvt.TkNVT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lammps_step.tk_nve.TkNVE" title="lammps_step.tk_nve.TkNVE"><code class="xref py py-class docutils literal notranslate"><span class="pre">lammps_step.tk_nve.TkNVE</span></code></a></p>
+<dl class="py method">
+<dt id="lammps_step.tk_nvt.TkNVT.create_dialog">
+<code class="sig-name descname">create_dialog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">'Edit NVT dynamics parameters'</span></em>, <em class="sig-param"><span class="n">calculation</span><span class="o">=</span><span class="default_value">'nvt'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_nvt.html#TkNVT.create_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_nvt.TkNVT.create_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the edit dialog!</p>
+<p>This is reasonably complicated, so a bit of description
+is in order. The superclass NVE creates the dialog
+along with the basic runtime and timestep.</p>
+<p>This method adds a second frame for setting the temperature and
+thermostat (this is the T part of NVT).</p>
+<p>The layout is handled in part by the NVT superclass, which
+handles the temperature frame. Our part is handled by two
+methods:</p>
+<ul class="simple">
+<li><p>reset_dialog does the general layout of the large blocks</p></li>
+<li><p>reset_temperature_frame handles the layout of the temperature
+section except</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_nvt.TkNVT.handle_dialog">
+<code class="sig-name descname">handle_dialog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">result</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_nvt.html#TkNVT.handle_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_nvt.TkNVT.handle_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the user cancelling, closing or OK’ing the dialog.</p>
+<p>If the user cancels or closes the dialog with the x button,
+revert the widgets to their previous state.</p>
+<p>If the user clocks ‘OK’, save the changes to both the control
+parameters and the results requested.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_nvt.TkNVT.reset_dialog">
+<code class="sig-name descname">reset_dialog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">widget</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_nvt.html#TkNVT.reset_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_nvt.TkNVT.reset_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Layout the widgets as needed for the current state</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_nvt.TkNVT.reset_temperature_frame">
+<code class="sig-name descname">reset_temperature_frame</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">widget</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_nvt.html#TkNVT.reset_temperature_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_nvt.TkNVT.reset_temperature_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Layout the widgets in the temperature frame
+as needed for the current state</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.tk_velocities">
+<span id="lammps-step-tk-velocities-module"></span><h2>lammps_step.tk_velocities module<a class="headerlink" href="#module-lammps_step.tk_velocities" title="Permalink to this headline">¶</a></h2>
+<p>The graphical part of a LAMMPS velocities step</p>
+<dl class="py class">
+<dt id="lammps_step.tk_velocities.TkVelocities">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.tk_velocities.</code><code class="sig-name descname">TkVelocities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tk_flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">node</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">canvas</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">x</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">y</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">w</span><span class="o">=</span><span class="default_value">200</span></em>, <em class="sig-param"><span class="n">h</span><span class="o">=</span><span class="default_value">50</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_velocities.html#TkVelocities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_velocities.TkVelocities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">seamm.tk_node.TkNode</span></code></p>
+<dl class="py method">
+<dt id="lammps_step.tk_velocities.TkVelocities.create_dialog">
+<code class="sig-name descname">create_dialog</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_velocities.html#TkVelocities.create_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_velocities.TkVelocities.create_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the dialog!</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_velocities.TkVelocities.reset_dialog">
+<code class="sig-name descname">reset_dialog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">widget</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_velocities.html#TkVelocities.reset_dialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_velocities.TkVelocities.reset_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lay out the widgets given the current state</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.tk_velocities.TkVelocities.right_click">
+<code class="sig-name descname">right_click</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">event</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/tk_velocities.html#TkVelocities.right_click"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.tk_velocities.TkVelocities.right_click" title="Permalink to this definition">¶</a></dt>
+<dd><p>Probably need to add our dialog…</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.velocities">
+<span id="lammps-step-velocities-module"></span><h2>lammps_step.velocities module<a class="headerlink" href="#module-lammps_step.velocities" title="Permalink to this headline">¶</a></h2>
+<p>Set the velocities on the atoms</p>
+<dl class="py class">
+<dt id="lammps_step.velocities.Velocities">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.velocities.</code><code class="sig-name descname">Velocities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">'Velocities'</span></em>, <em class="sig-param"><span class="n">extension</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/velocities.html#Velocities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.velocities.Velocities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">seamm.node.Node</span></code></p>
+<dl class="py method">
+<dt id="lammps_step.velocities.Velocities.description_text">
+<code class="sig-name descname">description_text</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">P</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/velocities.html#Velocities.description_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.velocities.Velocities.description_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a short description of this step.</p>
+<p>Return a nicely formatted string describing what this step will
+do.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><p><strong>P</strong> – a dictionary of parameter values, which may be variables
+or final values. If None, then the parameters values will
+be used as is.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.velocities.Velocities.get_input">
+<code class="sig-name descname">get_input</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">extras</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/velocities.html#Velocities.get_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.velocities.Velocities.get_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the input for setting the velocities in LAMMPS</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.velocities.Velocities.git_revision">
+<em class="property">property </em><code class="sig-name descname">git_revision</code><a class="headerlink" href="#lammps_step.velocities.Velocities.git_revision" title="Permalink to this definition">¶</a></dt>
+<dd><p>The git version of this module.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.velocities.Velocities.header">
+<em class="property">property </em><code class="sig-name descname">header</code><a class="headerlink" href="#lammps_step.velocities.Velocities.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>A printable header for this section of output</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.velocities.Velocities.version">
+<em class="property">property </em><code class="sig-name descname">version</code><a class="headerlink" href="#lammps_step.velocities.Velocities.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>The semantic version of this module.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.velocities_parameters">
+<span id="lammps-step-velocities-parameters-module"></span><h2>lammps_step.velocities_parameters module<a class="headerlink" href="#module-lammps_step.velocities_parameters" title="Permalink to this headline">¶</a></h2>
+<p>Control parameters for NVT (canonical) dynamics</p>
+<dl class="py class">
+<dt id="lammps_step.velocities_parameters.VelocitiesParameters">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.velocities_parameters.</code><code class="sig-name descname">VelocitiesParameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">defaults</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/velocities_parameters.html#VelocitiesParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.velocities_parameters.VelocitiesParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">seamm.parameters.Parameters</span></code></p>
+<p>The control parameters for NVT dynamics in LAMMPS</p>
+<dl class="py attribute">
+<dt id="lammps_step.velocities_parameters.VelocitiesParameters.parameters">
+<code class="sig-name descname">parameters</code><em class="property"> = {'T': {'default': 298.15, 'default_units': 'K', 'description': 'Temperature:', 'format_string': '.2f', 'help_text': 'The temperature corresponding to the velocities.', 'kind': 'float'}, 'method': {'default': 'using a random distribution', 'description': 'Set the temperature', 'enumeration': ('using a random distribution', 'scaling current velocities'), 'format_string': 's', 'help_text': 'The method to use to adjuust the velocities and hence the temperature.', 'kind': 'enumeration'}, 'remove_momentum': {'default': 'remove any translational and, for molecular systems, rotational momentum (default).', 'description': 'Momentum:', 'enumeration': ('remove any translational and, for molecular systems, rotational momentum (default)', 'remove translational but not rotational momentum', 'remove rotational but not translational momentum', 'remove both translational and rotational momentum', 'remove neither translational nor rotational momentum'), 'format_string': 's', 'help_text': 'Ensure that there is no overall linear momentum so the system does not translate.', 'kind': 'enumeration'}, 'seed': {'default': 'random', 'default_units': None, 'description': 'Random seed:', 'enumeration': ('random',), 'format_string': '', 'help_text': &quot;The seed for the random number generator.'random' means to generate a random integer as the seed.&quot;, 'kind': 'integer'}}</em><a class="headerlink" href="#lammps_step.velocities_parameters.VelocitiesParameters.parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step.velocities_step">
+<span id="lammps-step-velocities-step-module"></span><h2>lammps_step.velocities_step module<a class="headerlink" href="#module-lammps_step.velocities_step" title="Permalink to this headline">¶</a></h2>
+<p>Main module.</p>
+<dl class="py class">
+<dt id="lammps_step.velocities_step.VelocitiesStep">
+<em class="property">class </em><code class="sig-prename descclassname">lammps_step.velocities_step.</code><code class="sig-name descname">VelocitiesStep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gui</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/velocities_step.html#VelocitiesStep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.velocities_step.VelocitiesStep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="lammps_step.velocities_step.VelocitiesStep.create_node">
+<code class="sig-name descname">create_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flowchart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/velocities_step.html#VelocitiesStep.create_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.velocities_step.VelocitiesStep.create_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the new node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.velocities_step.VelocitiesStep.create_tk_node">
+<code class="sig-name descname">create_tk_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">canvas</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/velocities_step.html#VelocitiesStep.create_tk_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.velocities_step.VelocitiesStep.create_tk_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the graphical Tk node object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lammps_step.velocities_step.VelocitiesStep.description">
+<code class="sig-name descname">description</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/velocities_step.html#VelocitiesStep.description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammps_step.velocities_step.VelocitiesStep.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a description of what this extension does</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lammps_step.velocities_step.VelocitiesStep.my_description">
+<code class="sig-name descname">my_description</code><em class="property"> = {'description': 'Set the velocities in preparation for MD', 'group': 'Calculations', 'name': 'Velocities'}</em><a class="headerlink" href="#lammps_step.velocities_step.VelocitiesStep.my_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lammps_step">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-lammps_step" title="Permalink to this headline">¶</a></h2>
+<p>lammps_step
+A step for running molecular dynamics using LAMMPS.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="contributing.html" class="btn btn-neutral float-right" title="Contributing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="modules.html" class="btn btn-neutral float-left" title="lammps_step" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+
+    </p>
+  </div>
+
+<p>
+<div class="row">
+  <div class="column_left">
+    <a href="https://molssi.org/" target="_blank" title="Go to MolSSI in a new tab">
+      <img src="/_images/MolSSI.jpg" alt="The MolSSI" style="border:0;">
+    </a>
+  </div>
+  <div class="column">
+    &copy; Copyright 2020, the Molecular Sciences Software Institute,
+    which receives funding from the National Science Foundation under award ACI-1547580
+  </div>
+  <div class="column_right">
+    <a href="https://nsf.gov/" target="_blank" title="Go to the NSF in a new tab">
+      <img src="/_images/NSF_4-Color_bitmap_Logo.png" alt="The NSF" style="border:0;">
+    </a>
+  </div>
+</div>
+
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
