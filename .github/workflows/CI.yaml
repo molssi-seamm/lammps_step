@@ -1,16 +1,11 @@
 name: CI
 
 on:
-  # GitHub has started calling new repo's first branch "main" https://github.com/github/renaming
-  # Existing codes likely still have "master" as the primary branch
-  # Both are tracked here to keep legacy and new codes working
   push:
     branches:
-      - "master"
       - "main"
   pull_request:
     branches:
-      - "master"
       - "main"
   schedule:
     # Run on master by default Sunday morning at 3:30:
@@ -19,14 +14,14 @@ on:
     - cron: "30 3 * * 0"
 
 jobs:
-  lint-docs:
-    name: Lint-Docs ubuntu-latest Py3.8
+  lint:
+    name: Lint ubuntu-latest Py3.8
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
       with:
-        # This gets all branches (1 = only current branch)
-        fetch-depth: 0
+        # This gets the current branches (1 = only current branch)
+        fetch-depth: 1
     - name: Additional info about the build
       shell: bash
       run: |
@@ -53,20 +48,14 @@ jobs:
       run: |
         flake8 lammps_step tests
         yapf --diff --recursive lammps_step tests
-    - name: Build documentation
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      shell: bash -l {0}
-      run: |
-        docs/buildDocs.sh
 
   test:
     name: Test ${{ matrix.os }} Py${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
-    needs: lint-docs
+    needs: lint
     strategy:
       matrix:
-        os: [macOS-latest, ubuntu-latest]
+        os: [macOS-latest, ubuntu-latest, windows-latest]
         python-version: [3.7, 3.8]
     steps:
     - uses: actions/checkout@v1
