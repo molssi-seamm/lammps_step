@@ -50,8 +50,8 @@ class Energy(seamm.Node):
         """Create the text description of what this step will do.
         """
 
-        if not P:
-            P = self.parameters.values_to_dict()
+        # if not P:
+        #     P = self.parameters.values_to_dict()
 
         text = "Single-point energy calculation."
 
