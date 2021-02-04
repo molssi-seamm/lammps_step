@@ -4,6 +4,6 @@ Pmw==2.0.1
 psutil
 scipy
 pymbar==3.0.5
-seamm>=2020.9.23
-seamm-ff-util>=2020.9.23
+seamm>=2021.2.2
+seamm-ff-util>=2021.2.2
 statsmodels==0.11.1
