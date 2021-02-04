@@ -23,7 +23,6 @@ import statsmodels.tsa.stattools as stattools
 
 import lammps_step
 import seamm
-from seamm_util import ureg, Q_, units_class  # noqa: F401
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
 
@@ -860,7 +859,6 @@ class LAMMPS(seamm.Node):
                 lines.append(
                     f'{i+1:6d} {index:6d} {x:12.7f} {y:12.7f} {z:12.7f}'
                 )
-            pass
         lines.append('')
 
         lines.append('Masses')
@@ -1847,14 +1845,14 @@ class LAMMPS(seamm.Node):
                     atoms.append(i)
                     atoms.append(j)
                     atoms.append(k)
-                    if 'n_bonds' in eex and eex['n_bonds'] > 0:
-                        for i, j, index in eex['bonds']:
-                            if i in atoms and j in atoms:
-                                bond_types[index] = 1
-                    if 'n_angles' in eex and eex['n_angles'] > 0:
-                        for i, j, k, index in eex['angles']:
-                            if i in atoms and j in atoms and k in atoms:
-                                angle_types[index] = 1
+                if 'n_bonds' in eex and eex['n_bonds'] > 0:
+                    for i, j, index in eex['bonds']:
+                        if i in atoms and j in atoms:
+                            bond_types[index] = 1
+                if 'n_angles' in eex and eex['n_angles'] > 0:
+                    for i, j, k, index in eex['angles']:
+                        if i in atoms and j in atoms and k in atoms:
+                            angle_types[index] = 1
 
         # Fixing bond lengths of X-H bonds...
         if 'n_bonds' in eex and eex['n_bonds'] > 0:

@@ -25,6 +25,17 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
                           "or a solid, which can resist "
                           "small shear stresses.")
         },
+        "keep orthorhombic": {
+            "default": "yes",
+            "kind": "boolean",
+            "format_string": "s",
+            "enumeration": (
+                "no",
+                "yes"
+            ),
+            "description": "Let cell become non-orthorhombic",
+            "help_text": "Whether the call angles can change from 90 degrees."
+        },
         "barostat": {
             "default": 'Nose-Hoover',
             "kind": "string",

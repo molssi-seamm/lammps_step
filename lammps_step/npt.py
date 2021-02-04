@@ -5,7 +5,7 @@
 import lammps_step
 import logging
 import seamm
-from seamm_util import ureg, Q_, units_class  # noqa: F401
+from seamm_util import units_class
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
 import random

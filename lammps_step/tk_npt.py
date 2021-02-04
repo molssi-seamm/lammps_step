@@ -240,7 +240,7 @@ class TkNPT(lammps_step.TkNVT):
         row = 0
         # and place the needed ones back in
 
-        keep_orthorhombic = True
+        keep_orthorhombic = self['keep orthorhombic'].get()
 
         if use_stress != 'isotropic pressure':
             # Annealing and stresses

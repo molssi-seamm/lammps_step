@@ -4,7 +4,7 @@
 
 import logging
 
-from seamm_util import ureg, Q_, units_class  # noqa: F401
+from seamm_util import Q_, units_class
 from seamm_util.printing import FormattedText as __
 import lammps_step
 
@@ -40,8 +40,8 @@ class Minimization(lammps_step.Energy):
         """Create the text description of what this step will do.
         """
 
-        if not P:
-            P = self.parameters.values_to_dict()
+        # if not P:
+        #     P = self.parameters.values_to_dict()
 
         text = "Structure optimization calculation."
 
