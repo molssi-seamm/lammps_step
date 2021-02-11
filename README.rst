@@ -46,7 +46,8 @@ LAMMPS workflow in the same familiar way that SEAMM uses to represent
 the overall workflow.
 
 * Free software: BSD license
-* Documentation: https://lammps-step.readthedocs.io.
+* Documentation: https://molssi-seamm/lammps_step/index.html
+* Code: https://github.com/molssi-seamm/lammps_step
 
 
 Features

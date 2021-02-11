@@ -19,7 +19,6 @@ Versions of this Documentation
 
    user/index
    developer/index
-   authors
    history
 
 .. toctree::
