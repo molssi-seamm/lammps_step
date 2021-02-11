@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-lammps_step
-A step in SEAMM Flowchart for LAMMPS simulations
+"""lammps_step
+A SEAMM plug-in for LAMMPS, a forcefield-based molecular dynamics code.
 """
 
 import sys
 from setuptools import setup, find_packages
 import versioneer
 
-short_description = __doc__.split("\n")
+short_description = __doc__.splitlines()[1]
 
 # from https://github.com/pytest-dev/pytest-runner#conditional-requirement
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
@@ -29,7 +28,7 @@ setup(
     name='lammps_step',
     author="Paul Saxe",
     author_email='psaxe@molssi.org',
-    description=short_description[1],
+    description=short_description,
     long_description=readme + '\n\n' + history,
     long_description_content_type='text/x-rst',
     version=versioneer.get_version(),
@@ -66,11 +65,12 @@ setup(
 
     # Manual control if final package is compressible or not, set False to
     # prevent the .egg from being made
-    zip_safe=False,
+    zip_safe=True,
 
-    keywords='lammps_step',
+    keywords=['SEAMM', 'plug-in', 'flowchart', 'forcefield', 'EAM', 'OpenKIM',
+              'molecular dynamics', 'atomistic', 'MD'],
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
