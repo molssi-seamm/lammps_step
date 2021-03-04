@@ -1,0 +1,42 @@
+[lammps-step]
+# How many cores to use for LAMMPS.  Set to 1 to use only the serial
+# version of LAMMPS. LAMMPS will try to choose a reasonable number of
+# cores based on the size of the system and other parameters. The
+# option 'lammps-atoms-per-core' can be used to tune this estimate.
+#
+# The default is 'available', meaning use all the cores available to
+# the calculation if that makes sense based on the type of
+# calculation. Otherwise you can give a number here. Note that the
+# [DEFAULT] section may override the default.
+
+# ncores = available
+
+# The optimal number of atoms per core. You may wish to change this if
+# you consistently use expensive potentials, or have e.g. GPUs. The
+# default is 500.
+
+# lammps-atoms-per-core = 500
+
+# Information about where/how the executables are installed
+# installation may be 'user', 'conda' or 'module'. If a module is
+# specified it will be loaded and those executables used.  In this
+# case, any path specified using lammps-path will be ignored.
+
+installation = not installed
+conda-environment =
+module =
+
+# The path to the executables. Can be empty or not present, in which
+# case the default PATH is used.  If a path is given, lmp_serial and
+# lmp_mpi from this location will be used. If mpiexec is also present
+# it will be used; otherwise mpiexec from the normal PATH will be
+# used. If mpiexec or lmp_mpi is not found, only the serial version of
+# LAMMPS will be used. Conversely, if lmp_serial is not present,
+# lmp_mpi will always be used, though possible on just one core for
+# smaller calculations.
+#
+# Ignored if a module is used. The default is to use the PATH
+# environment variable.
+
+lammps-path =
+

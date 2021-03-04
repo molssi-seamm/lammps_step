@@ -79,6 +79,9 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     entry_points={
+        'console_scripts': [
+            'lammps-step-installer=lammps_step.installer:run',
+        ],
         'org.molssi.seamm': [
             'LAMMPS = lammps_step:LAMMPSStep',
         ],

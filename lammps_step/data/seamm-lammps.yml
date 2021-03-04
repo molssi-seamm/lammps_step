@@ -1,0 +1,9 @@
+name: seamm-lammps
+channels:
+  - conda-forge
+dependencies:
+  - python
+    # Executables, etc.
+  - openmpi
+  - lammps
+  - openkim-models
