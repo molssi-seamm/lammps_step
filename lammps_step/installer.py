@@ -196,7 +196,7 @@ class Installer(seamm_installer.InstallerBase):
                         ):
                             lammps_path = conda_path
                             self.configuration.set_value(
-                                'lammps-step', 'lammps-path', conda_path
+                                'lammps-step', 'lammps-path', lammps_path
                             )
                             self.configuration.set_value(
                                 'lammps-step', 'module', ''
@@ -213,7 +213,7 @@ class Installer(seamm_installer.InstallerBase):
                         ):
                             lammps_path = conda_path
                             self.configuration.set_value(
-                                'lammps-step', 'lammps-path', conda_path
+                                'lammps-step', 'lammps-path', lammps_path
                             )
                             self.configuration.set_value(
                                 'lammps-step', 'module', ''
@@ -291,7 +291,6 @@ class Installer(seamm_installer.InstallerBase):
                         "Use them?",
                         default='yes'
                     ):
-                        installation = 'user'
                         self.configuration.set_value(
                             'lammps-step', 'installation', 'user'
                         )
@@ -488,7 +487,6 @@ class Installer(seamm_installer.InstallerBase):
             else:
                 print("LAMMPS is not configured to run.")
         else:
-            conf_path = None
             print("LAMMPS is not configured to run.")
 
         # Look in the PATH, but only record if not same as in the conf file
