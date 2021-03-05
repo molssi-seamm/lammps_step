@@ -213,7 +213,6 @@ class Initialization(seamm.Node):
         periodicity = configuration.periodicity
         if periodicity == 0:
             lines.append('boundary            s s s')
-            tail_correction = 'no'
             string = 'Setup for a molecular (non-periodic) system.'
         elif periodicity == 3:
             lines.append('boundary            p p p')
