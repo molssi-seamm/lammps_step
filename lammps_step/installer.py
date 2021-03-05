@@ -429,7 +429,7 @@ class Installer(seamm_installer.InstallerBase):
             conf_path = Path(data['lammps-path']).expanduser().resolve()
             if (conf_path / 'lmp_serial').exists():
                 serial = conf_path / 'lmp_serial'
-                serial_version = self.version(serial)
+                serial_version = self.lammps_version(serial)
             if (conf_path / 'mpiexec').exists():
                 mpiexec = conf_path / 'mpiexec'
             else:
@@ -439,35 +439,52 @@ class Installer(seamm_installer.InstallerBase):
                 if mpiexec is None:
                     mpi_version = 'unknown'
                 else:
-                    mpi_version = self.version(mpi, mpiexec)
+                    mpi_version = self.lammps_version(mpi, mpiexec)
+
+            extra = f"from path {conf_path}."
+            if 'installation' in data:
+                installation = data['installation']
+                if installation == 'conda':
+                    if (
+                        'conda-environment' in data and
+                        data['conda-environment'] != ''
+                    ):
+                        extra = (
+                            "from Conda environment "
+                            f"{data['conda-environment']}."
+                        )
+                    else:
+                        extra = "from an unknown Conda environment."
+                elif installation == 'module':
+                    if 'module' in data and data['module'] != '':
+                        extra = f"from module(s) {data['module']}."
+                    else:
+                        extra = "from unknown modules."
+                elif installation == 'user':
+                    extra = f"from user-defined path {conf_path}."
 
             if serial is not None:
                 if mpi is not None:
                     if serial_version == mpi_version:
                         print(
                             "LAMMPS serial and mpi executables, version "
-                            f"'{serial_version}', are configured:\n"
-                            f"    {conf_path}"
+                            f"'{serial_version}'"
                         )
                     else:
                         print(
                             "LAMMPS serial executable, version "
                             f"'{serial_version}', and mpi executable, "
-                            f"version {mpi_version}, are configured:\n"
-                            f"    {conf_path}"
+                            f"version {mpi_version}"
                         )
+                    print(extra)
                 else:
                     print(
-                        f"LAMMPS serial executable, version {serial_version}, "
-                        "is configured:\n"
-                        f"    {conf_path}"
+                        f"LAMMPS serial executable, version {serial_version}"
                     )
+                    print(extra)
             elif mpi is not None:
-                print(
-                    f"LAMMPS mpi executable, version {mpi_version}, is "
-                    "configured:\n"
-                    f"    {conf_path}"
-                )
+                print(f"LAMMPS mpi executable, version {mpi_version}")
+                print(extra)
             else:
                 print("LAMMPS is not configured to run.")
         else:
@@ -479,7 +496,7 @@ class Installer(seamm_installer.InstallerBase):
         if tmp is not None:
             tmp = Path(tmp).expanduser().resolve()
             if serial is not None and serial != tmp:
-                version = self.version(tmp)
+                version = self.lammps_version(tmp)
                 print(
                     f"Another serial executable of LAMMPS (version {version}) "
                     "is in the PATH:\n"
@@ -492,7 +509,7 @@ class Installer(seamm_installer.InstallerBase):
                 if mpiexec is None:
                     version = 'unknown'
                 else:
-                    version = self.version(tmp, mpiexec)
+                    version = self.lammps_version(tmp, mpiexec)
                 print(
                     f"Another mpi executable of LAMMPS (version {version}) "
                     "is in the PATH:\n"
@@ -559,7 +576,7 @@ class Installer(seamm_installer.InstallerBase):
                 "Conda"
             )
 
-    def version(self, path, mpiexec=None):
+    def lammps_version(self, path, mpiexec=None):
         """Get the version of the LAMMPS executable.
 
         Parameters
@@ -570,12 +587,12 @@ class Installer(seamm_installer.InstallerBase):
         Returns
         -------
         str
-            The version reported by LAMMPS, or 'unkown'.
+            The version reported by LAMMPS, or 'unknown'.
         """
         if mpiexec is not None:
             try:
                 result = subprocess.run(
-                    [mpiexec, str(path)],
+                    [mpiexec, str(path), '-log', 'none'],
                     stdin=subprocess.DEVNULL,
                     capture_output=True,
                     text=True
@@ -592,7 +609,7 @@ class Installer(seamm_installer.InstallerBase):
         else:
             try:
                 result = subprocess.run(
-                    [str(path)],
+                    [str(path), '-log', 'none'],
                     stdin=subprocess.DEVNULL,
                     capture_output=True,
                     text=True
