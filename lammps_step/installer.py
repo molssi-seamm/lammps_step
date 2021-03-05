@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """Installer for the LAMMPS plug-in.
@@ -16,19 +15,6 @@ import subprocess
 import seamm_installer
 
 logger = logging.getLogger(__name__)
-
-
-def run():
-    """Handle the extra installation needed.
-
-    * Find and/or install the LAMMPS executables.
-    * Add or update information in the SEAMM.ini file for LAMMPS
-    """
-
-    # print('The is the installer for the LAMMPS step.')
-    # Create an installer object
-    installer = Installer()
-    installer.run()
 
 
 class Installer(seamm_installer.InstallerBase):

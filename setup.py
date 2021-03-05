@@ -80,7 +80,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'lammps-step-installer=lammps_step.installer:run',
+            'lammps-step=lammps_step.__main__:run',
         ],
         'org.molssi.seamm': [
             'LAMMPS = lammps_step:LAMMPSStep',
