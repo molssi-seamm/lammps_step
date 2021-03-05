@@ -261,7 +261,6 @@ class Installer(seamm_installer.InstallerBase):
                         ):
                             conda_environment = tmp
                             lammps_path = tmp_path
-                            installation = 'conda'
                             self.configuration.set_value(
                                 'lammps-step', 'lammps-path', lammps_path
                             )
