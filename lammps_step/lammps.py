@@ -6,10 +6,12 @@ import copy
 import glob
 import logging
 from math import sqrt, exp, degrees, radians, cos, acos
+from pathlib import Path
 import os
 import os.path
 import pprint
 import re
+import shutil
 import string
 import sys
 import traceback
@@ -181,24 +183,6 @@ class LAMMPS(seamm.Node):
         # LAMMPS specific options
         parser.add_argument(
             parser_name,
-            '--lammps-serial',
-            default='lmp_serial',
-            help='the serial version of LAMMPS'
-        )
-        parser.add_argument(
-            parser_name,
-            '--mpi-exe',
-            default='mpiexec',
-            help='the mpi executable'
-        )
-        parser.add_argument(
-            parser_name,
-            '--lammps-mpi',
-            default='lmp_mpi',
-            help='the mpi version of LAMMPS'
-        )
-        parser.add_argument(
-            parser_name,
             '--ncores',
             default='available',
             help=(
@@ -218,6 +202,37 @@ class LAMMPS(seamm.Node):
             '--html',
             action='store_true',
             help='whether to write out html files for graphs, etc.'
+        )
+        parser.add_argument(
+            parser_name,
+            '--modules',
+            nargs='*',
+            default=None,
+            help='the environment modules to load for LAMMPS'
+        )
+        parser.add_argument(
+            parser_name,
+            '--lammps-path',
+            default=None,
+            help='the path to the LAMMPS executables'
+        )
+        parser.add_argument(
+            parser_name,
+            '--lammps-serial',
+            default='lmp_serial',
+            help='the serial version of LAMMPS'
+        )
+        parser.add_argument(
+            parser_name,
+            '--lammps-mpi',
+            default='lmp_mpi',
+            help='the mpi version of LAMMPS'
+        )
+        parser.add_argument(
+            parser_name,
+            '--mpiexec',
+            default='mpiexec',
+            help='the mpi executable'
         )
 
         return result
@@ -591,17 +606,35 @@ class LAMMPS(seamm.Node):
 
         local = seamm.ExecLocal()
 
-        if np > 1:
-            cmd = [
-                self.options['mpi_exe'], '-np',
-                str(np), self.options['lammps_mpi'], '-in',
-                files['input']['filename']
-            ]
+        # Find the executables and if they exist.
+        lammps_path = Path(self.options['lammps_path']).expanduser().resolve()
+        lmp_serial = lammps_path / self.options['lammps_serial']
+        lmp_serial = lmp_serial.expanduser().resolve()
+        if not lmp_serial.exists():
+            lmp_serial = None
+
+        lmp_mpi = lammps_path / self.options['lammps_mpi']
+        lmp_mpi = lmp_mpi.expanduser().resolve()
+        if lmp_mpi.exists():
+            mpiexec = lammps_path / self.options['mpiexec']
+            mpiexec = mpiexec.expanduser().resolve()
+            if not mpiexec.exists():
+                # See if it is in the path
+                mpiexec = shutil.which(self.options['mpiexec'])
+                if mpiexec is None:
+                    lmp_mpi = None
+                else:
+                    mpiexec = Path(mpiexec).expanduser().resolve()
         else:
-            cmd = [
-                self.options['lammps_serial'], '-in',
-                files['input']['filename']
-            ]
+            lmp_mpi = None
+
+        # Use the parallel executable if the serial does not exist, and vice
+        # versa
+        if lmp_mpi is not None and (np > 1 or lmp_serial is None):
+            cmd = [str(mpiexec), '-np', str(np), str(lmp_mpi)]
+        else:
+            cmd = [str(lmp_serial)]
+        cmd.extend(['-in', files['input']['filename']])
 
         result = local.run(cmd=cmd, files=tmpdict, return_files=return_files)
 
