@@ -13,9 +13,14 @@
 
 # The optimal number of atoms per core. You may wish to change this if
 # you consistently use expensive potentials, or have e.g. GPUs. The
-# default is 500.
+# default is 1000.
 
-# lammps-atoms-per-core = 500
+# lammps-atoms-per-core = 1000
+
+# Whether to write local HTML files for the graphs, etc. generated so
+# they can be viewed without the SEAMM Dashboard.
+
+# html = False
 
 # Information about where/how the executables are installed
 # installation may be 'user', 'conda' or 'module'. If a module is
@@ -24,7 +29,7 @@
 
 installation = not installed
 conda-environment =
-module =
+modules = 
 
 # The path to the executables. Can be empty or not present, in which
 # case the default PATH is used.  If a path is given, lmp_serial and
@@ -39,4 +44,15 @@ module =
 # environment variable.
 
 lammps-path =
+
+# The various LAMMPS executables. You should leave these as their default
+# values unless you have a special need. These values are combined with
+# lammps-path to get the location of the executables.
+#
+# The LAMMPS installer does not handle these variables! They are here
+# just in case!
+
+# lammps-serial = lmp_serial
+# lammps-mpi = lmp_mpi
+# mpiexec = mpiexec
 
