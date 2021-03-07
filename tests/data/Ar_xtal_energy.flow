@@ -1,0 +1,403 @@
+#!/usr/bin/env run_flowchart
+!MolSSI flowchart 1.0
+{
+    "item": "object",
+    "module": "seamm.flowchart",
+    "class": "Flowchart",
+    "extension": null,
+    "nodes": [
+        {
+            "item": "object",
+            "module": "seamm.start_node",
+            "class": "StartNode",
+            "extension": null,
+            "attributes": {
+                "_uuid": 1,
+                "_title": "Start",
+                "extension": null,
+                "parameters": null,
+                "x": 150.0,
+                "y": 35.0,
+                "w": 200,
+                "h": 50
+            }
+        },
+        {
+            "item": "object",
+            "module": "forcefield_step.forcefield",
+            "class": "Forcefield",
+            "extension": "Forcefield",
+            "attributes": {
+                "_uuid": 162495534757302507913796227743801371367,
+                "_title": "Forcefield",
+                "extension": "Forcefield",
+                "parameters": {
+                    "__class__": "ForcefieldParameters",
+                    "__module__": "forcefield_step.forcefield_parameters",
+                    "task": {
+                        "value": "setup forcefield",
+                        "units": null
+                    },
+                    "forcefield_file": {
+                        "value": "pcff2018.frc",
+                        "units": null
+                    },
+                    "forcefield": {
+                        "value": "default",
+                        "units": null
+                    },
+                    "elements": {
+                        "value": [],
+                        "units": null
+                    },
+                    "potentials": {
+                        "value": "",
+                        "units": null
+                    }
+                },
+                "x": 150.0,
+                "y": 105.0,
+                "w": 200,
+                "h": 50
+            }
+        },
+        {
+            "item": "object",
+            "module": "crystal_builder_step.crystal_builder",
+            "class": "CrystalBuilder",
+            "extension": "Crystal Builder",
+            "attributes": {
+                "_uuid": 5943867039313720087980859840048026165,
+                "_title": "Crystal Builder",
+                "extension": "Crystal Builder",
+                "parameters": {
+                    "__class__": "CrystalBuilderParameters",
+                    "__module__": "crystal_builder_step.crystal_builder_parameters",
+                    "prototype_group": {
+                        "value": "common",
+                        "units": null
+                    },
+                    "n_sites": {
+                        "value": "any",
+                        "units": null
+                    },
+                    "prototype": {
+                        "value": "face-centered cubic (FCC)",
+                        "units": null
+                    },
+                    "AFLOW prototype": {
+                        "value": "A_cF4_225_a",
+                        "units": null
+                    },
+                    "elements": {
+                        "value": [
+                            "Ar"
+                        ],
+                        "units": null
+                    },
+                    "a": {
+                        "value": "5.256",
+                        "units": "\u00c5"
+                    },
+                    "b": {
+                        "value": "10.0",
+                        "units": "\u00c5"
+                    },
+                    "c": {
+                        "value": "10.0",
+                        "units": "\u00c5"
+                    },
+                    "alpha": {
+                        "value": "90.0",
+                        "units": "degree"
+                    },
+                    "beta": {
+                        "value": "90.0",
+                        "units": "degree"
+                    },
+                    "gamma": {
+                        "value": "90.0",
+                        "units": "degree"
+                    }
+                },
+                "x": 150.0,
+                "y": 175.0,
+                "w": 200,
+                "h": 50
+            }
+        },
+        {
+            "item": "object",
+            "module": "supercell_step.supercell",
+            "class": "Supercell",
+            "extension": "Supercell",
+            "attributes": {
+                "_uuid": 323471220188530906722901842995537936614,
+                "_title": "Supercell",
+                "extension": "Supercell",
+                "parameters": {
+                    "__class__": "SupercellParameters",
+                    "__module__": "supercell_step.supercell_parameters",
+                    "na": {
+                        "value": "5",
+                        "units": null
+                    },
+                    "nb": {
+                        "value": "5",
+                        "units": null
+                    },
+                    "nc": {
+                        "value": "5",
+                        "units": null
+                    }
+                },
+                "x": 150.0,
+                "y": 245.0,
+                "w": 200,
+                "h": 50
+            }
+        },
+        {
+            "item": "object",
+            "module": "lammps_step.lammps",
+            "class": "LAMMPS",
+            "extension": "LAMMPS",
+            "attributes": {
+                "_uuid": 295820613808012309328102386314083724653,
+                "_title": "LAMMPS",
+                "extension": "LAMMPS",
+                "parameters": null,
+                "x": 150.0,
+                "y": 315.0,
+                "w": 200,
+                "h": 50
+            },
+            "subflowchart": {
+                "item": "object",
+                "module": "seamm.flowchart",
+                "class": "Flowchart",
+                "extension": null,
+                "nodes": [
+                    {
+                        "item": "object",
+                        "module": "seamm.start_node",
+                        "class": "StartNode",
+                        "extension": null,
+                        "attributes": {
+                            "_uuid": 1,
+                            "_title": "Start",
+                            "extension": null,
+                            "parameters": null,
+                            "x": 150.0,
+                            "y": 35.0,
+                            "w": 200,
+                            "h": 50
+                        }
+                    },
+                    {
+                        "item": "object",
+                        "module": "lammps_step.initialization",
+                        "class": "Initialization",
+                        "extension": "Initialization",
+                        "attributes": {
+                            "_uuid": 308779691229893753587354875929561816366,
+                            "_title": "Initialization",
+                            "extension": "Initialization",
+                            "parameters": {
+                                "__class__": "InitializationParameters",
+                                "__module__": "lammps_step.initialization_parameters",
+                                "cutoff": {
+                                    "value": "10.0",
+                                    "units": "\u00c5"
+                                },
+                                "kspace_method": {
+                                    "value": "automatic",
+                                    "units": null
+                                },
+                                "kspace_accuracy": {
+                                    "value": "1e-5",
+                                    "units": null
+                                },
+                                "kspace_smallq": {
+                                    "value": "1e-5",
+                                    "units": null
+                                },
+                                "charged_atom_fraction_cutoff": {
+                                    "value": 0.1,
+                                    "units": null
+                                },
+                                "ewald_atom_cutoff": {
+                                    "value": 1000,
+                                    "units": null
+                                },
+                                "msm_atom_cutoff": {
+                                    "value": 5000,
+                                    "units": null
+                                },
+                                "tail_correction": {
+                                    "value": "yes",
+                                    "units": null
+                                },
+                                "shift_nonbond": {
+                                    "value": "no",
+                                    "units": null
+                                },
+                                "rigid_waters": {
+                                    "value": "yes",
+                                    "units": null
+                                },
+                                "fix_XH_bond_lengths": {
+                                    "value": "none",
+                                    "units": null
+                                }
+                            },
+                            "x": 150.0,
+                            "y": 105.0,
+                            "w": 200,
+                            "h": 50
+                        }
+                    },
+                    {
+                        "item": "object",
+                        "module": "lammps_step.energy",
+                        "class": "Energy",
+                        "extension": "Energy",
+                        "attributes": {
+                            "_uuid": 171989177379518306032877898168660828819,
+                            "_title": "Energy",
+                            "extension": "Energy",
+                            "parameters": {
+                                "__class__": "EnergyParameters",
+                                "__module__": "lammps_step.energy_parameters",
+                                "results": {
+                                    "value": {},
+                                    "units": null
+                                },
+                                "create tables": {
+                                    "value": "yes",
+                                    "units": null
+                                }
+                            },
+                            "x": 150.0,
+                            "y": 175.0,
+                            "w": 200,
+                            "h": 50
+                        }
+                    }
+                ],
+                "edges": [
+                    {
+                        "item": "edge",
+                        "node1": 1,
+                        "node2": 308779691229893753587354875929561816366,
+                        "edge_type": "execution",
+                        "edge_subtype": "next",
+                        "attributes": {
+                            "anchor1": "s",
+                            "anchor2": "n",
+                            "coords": [
+                                150,
+                                60,
+                                150,
+                                80
+                            ],
+                            "arrow_id": 79
+                        }
+                    },
+                    {
+                        "item": "edge",
+                        "node1": 308779691229893753587354875929561816366,
+                        "node2": 171989177379518306032877898168660828819,
+                        "edge_type": "execution",
+                        "edge_subtype": "next",
+                        "attributes": {
+                            "anchor1": "s",
+                            "anchor2": "n",
+                            "coords": [
+                                150,
+                                130,
+                                150,
+                                150
+                            ],
+                            "arrow_id": 83
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "edges": [
+        {
+            "item": "edge",
+            "node1": 1,
+            "node2": 162495534757302507913796227743801371367,
+            "edge_type": "execution",
+            "edge_subtype": "next",
+            "attributes": {
+                "arrow_id": 86,
+                "anchor1": "s",
+                "anchor2": "n",
+                "coords": [
+                    150,
+                    60,
+                    150,
+                    80
+                ]
+            }
+        },
+        {
+            "item": "edge",
+            "node1": 162495534757302507913796227743801371367,
+            "node2": 5943867039313720087980859840048026165,
+            "edge_type": "execution",
+            "edge_subtype": "next",
+            "attributes": {
+                "arrow_id": 90,
+                "anchor1": "s",
+                "anchor2": "n",
+                "coords": [
+                    150,
+                    130,
+                    150,
+                    150
+                ]
+            }
+        },
+        {
+            "item": "edge",
+            "node1": 5943867039313720087980859840048026165,
+            "node2": 323471220188530906722901842995537936614,
+            "edge_type": "execution",
+            "edge_subtype": "next",
+            "attributes": {
+                "anchor1": "s",
+                "anchor2": "n",
+                "coords": [
+                    150,
+                    200,
+                    150,
+                    220
+                ],
+                "arrow_id": 94
+            }
+        },
+        {
+            "item": "edge",
+            "node1": 323471220188530906722901842995537936614,
+            "node2": 295820613808012309328102386314083724653,
+            "edge_type": "execution",
+            "edge_subtype": "next",
+            "attributes": {
+                "anchor1": "s",
+                "anchor2": "n",
+                "coords": [
+                    150,
+                    270,
+                    150,
+                    290
+                ],
+                "arrow_id": 117
+            }
+        }
+    ]
+}
