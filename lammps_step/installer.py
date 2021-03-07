@@ -83,14 +83,14 @@ class Installer(seamm_installer.InstallerBase):
         The information in the configuration file is:
 
             installation
-                How LAMMPS is installed. One of `user`, `module` or `conda`
+                How LAMMPS is installed. One of `user`, `modules` or `conda`
             conda-environment
                 The Conda environment if and only if `installation` = `conda`
-            module
-                The environment module if and only if `installation` = `module`
+            modules
+                The environment modules if `installation` = `modules`
             lammps-path
                 The path where the LAMMPS executables are. Automatically
-                defined if `installation` is `conda` or `module`, but given
+                defined if `installation` is `conda` or `modules`, but given
                 by the user is it is `user`.
 
         Returns
@@ -125,10 +125,10 @@ class Installer(seamm_installer.InstallerBase):
             initial_conda_environment = data['conda-environment']
         else:
             initial_conda_environment = None
-        if 'module' in data and data['module'] != '':
-            initial_module = data['module']
+        if 'modules' in data and data['modules'] != '':
+            initial_modules = data['modules']
         else:
-            initial_module = None
+            initial_modules = None
 
         # Is there a valid lammps-path?
         if (
@@ -140,7 +140,7 @@ class Installer(seamm_installer.InstallerBase):
             lammps_path = initial_lammps_path
 
         # Is there an installation indicated?
-        if initial_installation in ('user', 'conda', 'module'):
+        if initial_installation in ('user', 'conda', 'modules'):
             installation = initial_installation
         else:
             installation = None
@@ -174,7 +174,7 @@ class Installer(seamm_installer.InstallerBase):
                                 conda_environment
                             )
                             self.configuration.set_value(
-                                'lammps-step', 'module', ''
+                                'lammps-step', 'modules', ''
                             )
                             self.configuration.save()
                             print(
@@ -199,7 +199,7 @@ class Installer(seamm_installer.InstallerBase):
                                 'lammps-step', 'lammps-path', lammps_path
                             )
                             self.configuration.set_value(
-                                'lammps-step', 'module', ''
+                                'lammps-step', 'modules', ''
                             )
                             self.configuration.save()
                             print(f"Set the lammps-path to {conda_path}")
@@ -216,15 +216,15 @@ class Installer(seamm_installer.InstallerBase):
                                 'lammps-step', 'lammps-path', lammps_path
                             )
                             self.configuration.set_value(
-                                'lammps-step', 'module', ''
+                                'lammps-step', 'modules', ''
                             )
                             self.configuration.save()
                             print(f"Changed the lammps-path to {conda_path}")
                     else:
                         # Everything is fine!
                         pass
-        elif installation == 'module':
-            print(f"Can't check the actual modules {initial_module} yet")
+        elif installation == 'modules':
+            print(f"Can't check the actual modules {initial_modules} yet")
             if initial_conda_environment is not None:
                 if self.options.yes or self.ask_yes_no(
                     "A Conda environment is given: "
@@ -272,7 +272,7 @@ class Installer(seamm_installer.InstallerBase):
                                 conda_environment
                             )
                             self.configuration.set_value(
-                                'lammps-step', 'module', ''
+                                'lammps-step', 'modules', ''
                             )
                             self.configuration.save()
                             print(
@@ -297,7 +297,7 @@ class Installer(seamm_installer.InstallerBase):
                             'lammps-step', 'conda-environment', ''
                         )
                         self.configuration.set_value(
-                            'lammps-step', 'module', ''
+                            'lammps-step', 'modules', ''
                         )
                         self.configuration.save()
                         print("Using the LAMMPS executables at {lammps_path}")
@@ -328,7 +328,7 @@ class Installer(seamm_installer.InstallerBase):
                             'lammps-step', 'conda-environment', ''
                         )
                         self.configuration.set_value(
-                            'lammps-step', 'module', ''
+                            'lammps-step', 'modules', ''
                         )
                         self.configuration.save()
                         print(
@@ -401,7 +401,7 @@ class Installer(seamm_installer.InstallerBase):
         self.configuration.set_value(
             'lammps-step', 'conda-environment', self.environment
         )
-        self.configuration.set_value('lammps-step', 'module', '')
+        self.configuration.set_value('lammps-step', 'modules', '')
         self.configuration.save()
         print('Done!\n')
 
@@ -453,9 +453,9 @@ class Installer(seamm_installer.InstallerBase):
                         )
                     else:
                         extra = "from an unknown Conda environment."
-                elif installation == 'module':
-                    if 'module' in data and data['module'] != '':
-                        extra = f"from module(s) {data['module']}."
+                elif installation == 'modules':
+                    if 'modules' in data and data['modules'] != '':
+                        extra = f"from module(s) {data['modules']}."
                     else:
                         extra = "from unknown modules."
                 elif installation == 'user':
@@ -528,7 +528,7 @@ class Installer(seamm_installer.InstallerBase):
             self.conda.remove_environment(environment)
             # Update the configuration file.
             self.configuration.set_value('lammps-step', 'lammps-path', '')
-            self.configuration.set_value('lammps-step', 'module', '')
+            self.configuration.set_value('lammps-step', 'modules', '')
             self.configuration.set_value(
                 'lammps-step', 'installation', 'not installed'
             )
@@ -564,7 +564,7 @@ class Installer(seamm_installer.InstallerBase):
             self.configuration.set_value(
                 'lammps-step', 'conda-environment', environment
             )
-            self.configuration.set_value('lammps-step', 'module', '')
+            self.configuration.set_value('lammps-step', 'modules', '')
             self.configuration.save()
             print('Done!\n')
         else:
