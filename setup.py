@@ -26,8 +26,8 @@ with open('requirements_install.txt') as fd:
 
 setup(
     name='lammps_step',
-    author="Paul Saxe",
-    author_email='psaxe@molssi.org',
+    author="MolSSI @ Virginia Tech",
+    author_email='seamm@molssi.org',
     description=short_description,
     long_description=readme + '\n\n' + history,
     long_description_content_type='text/x-rst',
@@ -80,7 +80,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'lammps-step=lammps_step.__main__:run',
+            'lammps-step-installer=lammps_step.__main__:run',
         ],
         'org.molssi.seamm': [
             'LAMMPS = lammps_step:LAMMPSStep',
