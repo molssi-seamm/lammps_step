@@ -74,7 +74,7 @@ class Installer(seamm_installer.InstallerBase):
         self.environment_file = path / 'seamm-lammps.yml'
 
     def check(self):
-        """Check the installation and fix errors if reqiested.
+        """Check the installation and fix errors if requested.
 
         If the option `yes` is present and True, this method will attempt to
         correct any errors in the configuration file. Use `--yes` on the
@@ -99,6 +99,7 @@ class Installer(seamm_installer.InstallerBase):
             True if everything is OK, False otherwise. If `yes` is given as an
             option, the return value is after fixing the configuration.
         """
+        self.logger.debug('Entering check method.')
         if not self.configuration.section_exists('lammps-step'):
             if self.options.yes or self.ask_yes_no(
                 "There is no section for the LAMMPS step in the configuration "
@@ -131,6 +132,10 @@ class Installer(seamm_installer.InstallerBase):
             initial_modules = None
 
         # Is there a valid lammps-path?
+        self.logger.debug(
+            "Checking for executables in the initial lammps-path "
+            f"{initial_lammps_path}."
+        )
         if (
             initial_lammps_path is None or
             not self.have_executables(initial_lammps_path)
@@ -138,12 +143,14 @@ class Installer(seamm_installer.InstallerBase):
             lammps_path = None
         else:
             lammps_path = initial_lammps_path
+        self.logger.debug(f"initial-lammps-path = {initial_lammps_path}.")
 
         # Is there an installation indicated?
         if initial_installation in ('user', 'conda', 'modules'):
             installation = initial_installation
         else:
             installation = None
+        self.logger.debug(f"initial-installation = {initial_installation}.")
 
         if installation == 'conda':
             # Is there a conda environment?
@@ -183,7 +190,10 @@ class Installer(seamm_installer.InstallerBase):
                             )
             else:
                 # Have a Conda environment!
-                conda_path = self.conda.path(initial_conda_environment)
+                conda_path = self.conda.path(initial_conda_environment) / 'bin'
+                self.logger.debug(
+                    f"Checking for executables in conda-path: {conda_path}."
+                )
                 if self.have_executables(conda_path):
                     # All is good!
                     conda_environment = initial_conda_environment
@@ -223,7 +233,7 @@ class Installer(seamm_installer.InstallerBase):
                     else:
                         # Everything is fine!
                         pass
-        elif installation == 'modules':
+        if installation == 'modules':
             print(f"Can't check the actual modules {initial_modules} yet")
             if initial_conda_environment is not None:
                 if self.options.yes or self.ask_yes_no(
@@ -335,6 +345,8 @@ class Installer(seamm_installer.InstallerBase):
                             "Since no LAMMPS executables were found, cleared "
                             "the configuration."
                         )
+            else:
+                print('The check completed successfully.')
 
     def check_configuration_file(self):
         """Checks that the lammps-step section is in the configuration file.
@@ -365,7 +377,9 @@ class Installer(seamm_installer.InstallerBase):
         for executable in self.executables:
             tmp_path = path / executable
             if tmp_path.exists():
+                self.logger.debug(f"Found executables in {path}")
                 return True
+        self.logger.debug(f"Did not find executables in {path}")
         return False
 
     def executables_in_path(self):
