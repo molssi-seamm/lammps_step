@@ -119,8 +119,6 @@ class Initialization(seamm.Node):
         system_db = self.get_variable('_system_db')
         configuration = system_db.system.configuration
 
-
-
         # Retrieve the atom typing engine
         atomtyping_engine = self.get_variable('_atomtyping_engine')
 #        if ff == 'OpenKIM':
@@ -190,7 +188,7 @@ class Initialization(seamm.Node):
         #        logger.debug(f"Set column '{key}' to the charges")
 
         # Get the energy expression.
-        eex = seamm.energy_expression(configuration=configuration, atomtyping_engine=atomtyping_engine, style='LAMMPS')
+        eex = seamm.EnergyExpression(system=system_db, configuration=configuration, atomtyping_engine=atomtyping_engine, style='LAMMPS')
         logger.debug('energy expression:\n' + pprint.pformat(eex))
 
         # Determine if we have any charges, and if so, if they are sparse
