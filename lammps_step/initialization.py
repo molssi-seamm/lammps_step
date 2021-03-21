@@ -2,7 +2,6 @@
 
 """A single-point initialization in LAMMPS"""
 
-import seamm_ff_util
 import lammps_step
 import logging
 import seamm
@@ -125,7 +124,7 @@ class Initialization(seamm.Node):
 #            lammps_step.set_lammps_unit_system('metal')
 #            return self.OpenKIM_input()
 
-
+        n_atoms = system_db.systems[0].configuration.n_atoms
 
         #n_atoms = configuration.n_atoms
 
@@ -188,7 +187,8 @@ class Initialization(seamm.Node):
         #        logger.debug(f"Set column '{key}' to the charges")
 
         # Get the energy expression.
-        eex = seamm.EnergyExpression(system=system_db, configuration=configuration, atomtyping_engine=atomtyping_engine, style='LAMMPS')
+
+        eex = seamm.EnergyExpression(system=system_db, configuration=configuration, atomtyping_engine=atomtyping_engine, style='LAMMPS').eex
         logger.debug('energy expression:\n' + pprint.pformat(eex))
 
         # Determine if we have any charges, and if so, if they are sparse
@@ -235,7 +235,7 @@ class Initialization(seamm.Node):
         lines.append('#    define the style of forcefield')
         lines.append('')
 
-        terms = ff.ff['terms']
+        terms = atomtyping_engine.forcefield.ff['terms']
 
         logging.debug(
             'LAMMPS initialization, terms = \n' + pprint.pformat(terms)
