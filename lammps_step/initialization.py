@@ -188,7 +188,7 @@ class Initialization(seamm.Node):
 
         # Get the energy expression.
 
-        eex = seamm.EnergyExpression(system=system_db, configuration=configuration, atomtyping_engine=atomtyping_engine, style='LAMMPS').eex
+        eex = seamm.EnergyExpression(configuration=configuration, atomtyping_engine=atomtyping_engine, style='LAMMPS').eex
         logger.debug('energy expression:\n' + pprint.pformat(eex))
 
         # Determine if we have any charges, and if so, if they are sparse
