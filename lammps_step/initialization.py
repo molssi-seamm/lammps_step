@@ -120,6 +120,7 @@ class Initialization(seamm.Node):
 
         # Retrieve the atom typing engine
         atomtyping_engine = self.get_variable('_atomtyping_engine')
+        
 #        if ff == 'OpenKIM':
 #            lammps_step.set_lammps_unit_system('metal')
 #            return self.OpenKIM_input()
@@ -192,7 +193,7 @@ class Initialization(seamm.Node):
         logger.debug('energy expression:\n' + pprint.pformat(eex))
 
         # Determine if we have any charges, and if so, if they are sparse
-        key = f'charges_{ffname}'
+        key = f'charges_{atomtyping_engine.name}'
         if key in configuration.atoms:
             charges = [*configuration.atoms[key]]
             n_charged_atoms = 0
