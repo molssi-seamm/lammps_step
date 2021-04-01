@@ -192,17 +192,17 @@ class Initialization(seamm.Node):
         logger.debug('energy expression:\n' + pprint.pformat(eex))
 
         # Determine if we have any charges, and if so, if they are sparse
-        #key = f'charges_{ffname}'
-        #if key in configuration.atoms:
-        #    charges = [*configuration.atoms[key]]
-        #    n_charged_atoms = 0
-        #    smallq = float(P['kspace_smallq'])
-        #    for charge in charges:
-        #        if abs(charge) > smallq:
-        #            n_charged_atoms += 1
-        #    fraction_charged_atoms = n_charged_atoms / n_atoms
-        #else:
-        #    n_charged_atoms = 0
+        key = f'charges_{ffname}'
+        if key in configuration.atoms:
+            charges = [*configuration.atoms[key]]
+            n_charged_atoms = 0
+            smallq = float(P['kspace_smallq'])
+            for charge in charges:
+                if abs(charge) > smallq:
+                    n_charged_atoms += 1
+            fraction_charged_atoms = n_charged_atoms / n_atoms
+        else:
+            n_charged_atoms = 0
 
         lines = []
         lines.append('')
@@ -258,7 +258,6 @@ class Initialization(seamm.Node):
         elif nonbond_term == 'nonbond(12-6)':
             pair_style_base = 'lj/cut'
             # What type of mixing rule?
-            import pdb; pdb.set_trace()
             modifiers = atomtyping_engine.forcefield.ff['modifiers']['nonbond(12-6)']
             mixing = ''
             for section in modifiers:
