@@ -258,7 +258,8 @@ class Initialization(seamm.Node):
         elif nonbond_term == 'nonbond(12-6)':
             pair_style_base = 'lj/cut'
             # What type of mixing rule?
-            modifiers = ff.ff['modifiers']['nonbond(12-6)']
+            import pdb; pdb.set_trace()
+            modifiers = atomtyping_engine.ff['modifiers']['nonbond(12-6)']
             mixing = ''
             for section in modifiers:
                 for item in modifiers[section]:
