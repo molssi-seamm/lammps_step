@@ -259,7 +259,7 @@ class Initialization(seamm.Node):
             pair_style_base = 'lj/cut'
             # What type of mixing rule?
             import pdb; pdb.set_trace()
-            modifiers = atomtyping_engine.ff['modifiers']['nonbond(12-6)']
+            modifiers = atomtyping_engine.forcefield.ff['modifiers']['nonbond(12-6)']
             mixing = ''
             for section in modifiers:
                 for item in modifiers[section]:
