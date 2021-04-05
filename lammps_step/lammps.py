@@ -918,14 +918,13 @@ class LAMMPS(seamm.Node):
             for counter, parameters in zip(
                 range(1, eex['n_bond_types'] + 1), eex['bond parameters']
             ):
-                import pdb; pdb.set_trace()
                 form, values, types, parameters_type, real_types = \
                     parameters
                 if form == 'quadratic_bond':
                     function = 'harmonic' if use_hybrid else ''
                     line = (
                         f"{counter:6d} {function} "
-                        f"{values['K2']} {values['R0']}"
+                        f"{values['terms'][0]['K2']} {values['terms'][0]['R0']}"
                     )
                 elif form == 'quartic_bond':
                     function = 'class2' if use_hybrid else ''
@@ -972,7 +971,7 @@ class LAMMPS(seamm.Node):
                     function = 'harmonic' if use_hybrid else ''
                     line = (
                         f"{counter:6d} {function} "
-                        f"{values['K2']} {values['Theta0']}"
+                        f"{values['terms'][0]['K2']} {values['terms'][0]['Theta0']}"
                     )
                 elif form == 'quartic_angle':
                     function = quartic_function if use_hybrid else ''
@@ -1075,9 +1074,9 @@ class LAMMPS(seamm.Node):
                 form, values, types, parameters_type, real_types = \
                     parameters
                 if form == 'torsion_1':
-                    KPhi = values['KPhi']
-                    n = values['n']
-                    Phi0 = values['Phi0']
+                    KPhi = values['terms'][0]['KPhi']
+                    n = values['terms'][0]['n']
+                    Phi0 = values['terms'][0]['Phi0']
 
                     # Discover form is
                     #  KPhi * [1 + cos(n*Phi - Phi0)]
