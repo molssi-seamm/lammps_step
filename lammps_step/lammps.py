@@ -359,7 +359,7 @@ class LAMMPS(seamm.Node):
                 files['structure'] = {}
                 files['structure']['filename'] = 'structure.dat'
                 files['structure']['data'] = '\n'.join(
-                    self.structure_data(eex)
+                    self.structure_data(eex, configuration)
                 )
 
                 f = os.path.join(
@@ -768,7 +768,7 @@ class LAMMPS(seamm.Node):
             raise
         return ret
 
-    def structure_data(self, eex, triclinic=False):
+    def structure_data(self, eex, configuration, triclinic=False):
         """Create the LAMMPS structure file from the energy expression"""
         lines = []
 
@@ -843,6 +843,8 @@ class LAMMPS(seamm.Node):
         lines.append('Atoms')
         lines.append('')
 
+        molecule_to_atoms = {idx+1:x for idx, x in enumerate(configuration.find_molecules())}
+
         if 'charges' in eex:
             for i, xyz_index, q in zip(
                 range(1, eex['n_atoms'] + 1), eex['atoms'], eex['charges']
@@ -854,10 +856,16 @@ class LAMMPS(seamm.Node):
                     f'{z:12.7f}'
                 )
         else:
-            for i, xyz_index in enumerate(eex['atoms']):
-                x, y, z, index = xyz_index
+
+            for atom_idx, xyz_atomtype in enumerate(eex['atoms']):
+                x, y, z, atomtype = xyz_atomtype
+
+                for molecule_idx, atom_list in molecule_to_atoms.items():
+                    if atom_idx + 1 in atom_list:
+                        break
+
                 lines.append(
-                    f'{i+1:6d} {index:6d} {x:12.7f} {y:12.7f} {z:12.7f}'
+                    f'{atom_idx+1:6d} {molecule_idx:6d} {atomtype:6d} {x:12.7f} {y:12.7f} {z:12.7f}'
                 )
         lines.append('')
 
