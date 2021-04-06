@@ -1075,8 +1075,8 @@ class LAMMPS(seamm.Node):
                     parameters
                 if form == 'torsion_1':
                     KPhi = values['terms'][0]['KPhi']
-                    n = values['terms'][0]['n']
-                    Phi0 = values['terms'][0]['Phi0']
+                    n = int(float(values['terms'][0]['n']))
+                    Phi0 = int(float(values['terms'][0]['Phi0']))
 
                     # Discover form is
                     #  KPhi * [1 + cos(n*Phi - Phi0)]
