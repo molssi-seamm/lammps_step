@@ -127,30 +127,6 @@ class Initialization(seamm.Node):
 
         n_atoms = system_db.systems[0].configuration.n_atoms
 
-        #n_atoms = configuration.n_atoms
-
-        ## And atom-type if necessary
-        #key = f'atom_types_{ffname}'
-        #if key not in configuration.atoms:
-        #    smiles = configuration.to_smiles(hydrogens=True)
-        #    logger.debug('Atom typing -- smiles = ' + smiles)
-        #    ff_assigner = seamm_ff_util.FFAssigner(ff)
-        #    atom_types = ff_assigner.assign(smiles, add_hydrogens=False)
-
-        #    logger.info('Atom types: ' + ', '.join(atom_types))
-
-        #    configuration.atoms.add_attribute(
-        #        key, coltype='str', values=atom_types
-        #    )
-
-        #    printer.important(
-        #        __(
-        #            f"Assigned the atom types for forcefield '{ffname}' to "
-        #            "the system",
-        #            indent=self.indent + '    '
-        #        )
-        #    )
-
         #    # Now get the charges if forcefield has them.
         #    terms = ff.terms
         #    if 'bond charge increment' in terms:
