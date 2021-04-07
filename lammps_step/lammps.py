@@ -845,16 +845,17 @@ class LAMMPS(seamm.Node):
 
         molecule_to_atoms = {idx+1:x for idx, x in enumerate(configuration.find_molecules())}
 
-        atomtyping_engine= self.get_variable('_atomtyping_engine')
+        atom_idx = configuration.atoms.get_ids()
 
+        atomtyping_engine= self.get_variable('_atomtyping_engine')
         key = f'charges_{atomtyping_engine.name}'
         if key not in configuration.atoms:
 
-            for atom_idx, xyz_atomtype in enumerate(eex['atoms']):
+            for idx, xyz_atomtype in zip(atom_idx, eex['atoms']):
                 x, y, z, atomtype = xyz_atomtype
 
                 for molecule_idx, atom_list in molecule_to_atoms.items():
-                    if atom_idx + 1 in atom_list:
+                    if idx + 1 in atom_list:
                         break
 
                 lines.append(
@@ -865,17 +866,17 @@ class LAMMPS(seamm.Node):
 
             charges = [*configuration.atoms[key]]
 
-            for atom_idx, xyz_atomtype, atom_q in zip(
-                range(1, eex['n_atoms'] + 1), eex['atoms'], charges 
+            for idx, xyz_atomtype, atom_q in zip(
+               atom_idx , eex['atoms'], charges 
             ):
                 x, y, z, atomtype = xyz_atomtype
 
                 for molecule_idx, atom_list in molecule_to_atoms.items():
-                    if atom_idx + 1 in atom_list:
+                    if idx + 1 in atom_list:
                         break
 
                 lines.append(
-                    f'{atom_idx:6d} {molecule_idx:6d} {atomtype:6d} {atom_q:6.3f} {x:12.7f} {y:12.7f} '
+                    f'{idx:6d} {molecule_idx:6d} {atomtype:6d} {atom_q:6.3f} {x:12.7f} {y:12.7f} '
                     f'{z:12.7f}'
                 )
 
