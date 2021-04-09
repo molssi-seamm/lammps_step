@@ -848,7 +848,7 @@ class LAMMPS(seamm.Node):
         atom_idx = configuration.atoms.get_ids()
 
         atomtyping_engine= self.get_variable('_atomtyping_engine')
-        key = f'charges_{atomtyping_engine.name}'
+        key = f'charges_{atomtyping_engine.selected_forcefield}'
         if key not in configuration.atoms:
 
             for idx, xyz_atomtype in zip(atom_idx, eex['atoms']):

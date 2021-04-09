@@ -133,7 +133,7 @@ class Initialization(seamm.Node):
         logger.debug('energy expression:\n' + pprint.pformat(eex))
 
         # Determine if we have any charges, and if so, if they are sparse
-        key = f'charges_{atomtyping_engine.name}'
+        key = f'charges_{atomtyping_engine.selected_forcefield}'
         if key in configuration.atoms:
             charges = [*configuration.atoms[key]]
             n_charged_atoms = 0
