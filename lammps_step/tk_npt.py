@@ -9,43 +9,27 @@ import tkinter.ttk as ttk
 
 
 class TkNPT(lammps_step.TkNVT):
-
     def __init__(
-        self,
-        tk_flowchart=None,
-        node=None,
-        canvas=None,
-        x=None,
-        y=None,
-        w=200,
-        h=50
+        self, tk_flowchart=None, node=None, canvas=None, x=None, y=None, w=200, h=50
     ):
-        '''Initialize a node
+        """Initialize a node
 
         Keyword arguments:
-        '''
+        """
 
         super().__init__(
-            tk_flowchart=tk_flowchart,
-            node=node,
-            canvas=canvas,
-            x=x,
-            y=y,
-            w=w,
-            h=h
+            tk_flowchart=tk_flowchart, node=node, canvas=canvas, x=x, y=y, w=w, h=h
         )
 
         # Overwrite the property metadata
         self.property_metadata = {}
         for item, data in lammps_step.properties.items():
-            if ',' in item:
+            if "," in item:
                 continue
-            if 'npt' in data["calculation"]:
+            if "npt" in data["calculation"]:
                 self.property_metadata[item] = data
 
-    def create_dialog(
-        self, title='Edit NPT dynamics parameters', calculation='npt'
-    ):
+    def create_dialog(self, title="Edit NPT dynamics parameters", calculation="npt"):
         """Create the edit dialog!
 
         This is reasonably complicated, so a bit of description
@@ -75,57 +59,67 @@ class TkNPT(lammps_step.TkNVT):
         P = self.node.parameters
 
         # Pressure/stress controls -- create frame for them
-        p_frame = self['pressure_frame'] = ttk.LabelFrame(
-            self['frame'],
+        p_frame = self["pressure_frame"] = ttk.LabelFrame(
+            self["frame"],
             borderwidth=4,
-            relief='sunken',
-            text='Pressure',
-            labelanchor='n',
-            padding=10
+            relief="sunken",
+            text="Pressure",
+            labelanchor="n",
+            padding=10,
         )
 
         # Create the widgets
         for key in (
-            'system type', 'barostat', 'Panneal', 'use_stress', 'couple',
-            'nreset', 'mtk', 'modulus'
+            "system type",
+            "barostat",
+            "Panneal",
+            "use_stress",
+            "couple",
+            "nreset",
+            "mtk",
+            "modulus",
         ):
             self[key] = P[key].widget(p_frame)
 
         # The stress/pressure section is quite complicated due to
         # couplings, etc. so put in its own subsection
-        s_frame = self['stress_frame'] = ttk.Frame(
-            p_frame, borderwidth=4, relief='sunken'
+        s_frame = self["stress_frame"] = ttk.Frame(
+            p_frame, borderwidth=4, relief="sunken"
         )
 
         # The last widgets
         for key in lammps_step.NPT_Parameters.parameters:
             if key not in self:
-                if key[0] == 'S':
+                if key[0] == "S":
                     self[key] = P[key].widget(s_frame, width=8, unitswidth=6)
                 else:
                     self[key] = P[key].widget(s_frame)
 
         # and labels for the directions, couplings, etc.
         for text in (
-            'XX', 'YY', 'ZZ', 'XY', 'XZ', 'YZ', 'XX+YY', 'XX+ZZ', 'YY+ZZ',
-            'XX+YY+ZZ'
+            "XX",
+            "YY",
+            "ZZ",
+            "XY",
+            "XZ",
+            "YZ",
+            "XX+YY",
+            "XX+ZZ",
+            "YY+ZZ",
+            "XX+YY+ZZ",
         ):
             self[text] = ttk.Label(s_frame, text=text)
 
-        self['stress'] = ttk.Label(s_frame, text="Stress:")
-        self['initial stress'] = ttk.Label(s_frame, text="Initial stress:")
-        self['final stress'] = ttk.Label(s_frame, text="Final stress:")
-        self['damping'] = ttk.Label(s_frame, text="Damping:")
+        self["stress"] = ttk.Label(s_frame, text="Stress:")
+        self["initial stress"] = ttk.Label(s_frame, text="Initial stress:")
+        self["final stress"] = ttk.Label(s_frame, text="Final stress:")
+        self["damping"] = ttk.Label(s_frame, text="Damping:")
 
         # and adding bindings for appropriate widgets
-        for key in ('system type', 'barostat'):
-            self[key].combobox.bind(
-                "<<ComboboxSelected>>", self.reset_pressure_frame
-            )
-        for key in ('Panneal', 'use_stress', 'couple'):
-            self[key].combobox.bind(
-                "<<ComboboxSelected>>", self.reset_stress_frame
-            )
+        for key in ("system type", "barostat"):
+            self[key].combobox.bind("<<ComboboxSelected>>", self.reset_pressure_frame)
+        for key in ("Panneal", "use_stress", "couple"):
+            self[key].combobox.bind("<<ComboboxSelected>>", self.reset_stress_frame)
 
     def reset_dialog(self, widget=None):
         """Layout the widgets as needed for the current state"""
@@ -133,16 +127,12 @@ class TkNPT(lammps_step.TkNVT):
         row = super().reset_dialog()
 
         # Reset the trajectory frame to span 2 columns
-        self['control_frame'].grid(row=0, column=0, columnspan=2)
+        self["control_frame"].grid(row=0, column=0, columnspan=2)
 
-        self['temperature_frame'].grid(
-            row=row, column=0, sticky=tk.N, padx=10, pady=10
-        )
+        self["temperature_frame"].grid(row=row, column=0, sticky=tk.N, padx=10, pady=10)
         self.reset_temperature_frame()
 
-        self['pressure_frame'].grid(
-            row=row, column=1, sticky=tk.N, padx=10, pady=10
-        )
+        self["pressure_frame"].grid(row=row, column=1, sticky=tk.N, padx=10, pady=10)
         self.reset_pressure_frame()
 
         return 2
@@ -152,54 +142,55 @@ class TkNPT(lammps_step.TkNVT):
         as needed for the current state"""
 
         # Get the values that control the layout
-        barostat = self['barostat'].get()
-        system_type = self['system type'].get()
+        barostat = self["barostat"].get()
+        system_type = self["system type"].get()
 
         # Remove all the current widgets
-        p_frame = self['pressure_frame']
+        p_frame = self["pressure_frame"]
         for slave in p_frame.grid_slaves():
             slave.grid_forget()
 
         row = 0
 
         # and place the needed ones back in
-        self['system type'].grid(row=row, column=0, sticky=tk.W)
+        self["system type"].grid(row=row, column=0, sticky=tk.W)
         row += 1
 
-        self['barostat'].grid(row=row, column=0, sticky=tk.W)
+        self["barostat"].grid(row=row, column=0, sticky=tk.W)
         row += 1
 
-        self['Panneal'].grid(row=row, column=0, sticky=tk.W)
+        self["Panneal"].grid(row=row, column=0, sticky=tk.W)
         row += 1
 
-        if system_type == 'fluid':
-            sw.align_labels(
-                (self['system type'], self['barostat'], self['Panneal'])
-            )
+        if system_type == "fluid":
+            sw.align_labels((self["system type"], self["barostat"], self["Panneal"]))
         else:
-            self['use_stress'].grid(row=row, column=0, sticky=tk.W)
+            self["use_stress"].grid(row=row, column=0, sticky=tk.W)
             row += 1
 
-            self['couple'].grid(row=row, column=0, sticky=tk.W)
+            self["couple"].grid(row=row, column=0, sticky=tk.W)
             row += 1
 
             sw.align_labels(
                 (
-                    self['system type'], self['barostat'], self['Panneal'],
-                    self['use_stress'], self['couple']
+                    self["system type"],
+                    self["barostat"],
+                    self["Panneal"],
+                    self["use_stress"],
+                    self["couple"],
                 )
             )
 
-        self['stress_frame'].grid(row=row, column=0, sticky=tk.W)
+        self["stress_frame"].grid(row=row, column=0, sticky=tk.W)
         row += 1
 
-        if barostat == 'Nose-Hoover':
-            self['nreset'].grid(row=row, column=0, sticky=tk.W)
+        if barostat == "Nose-Hoover":
+            self["nreset"].grid(row=row, column=0, sticky=tk.W)
             row += 1
-            self['mtk'].grid(row=row, column=0, sticky=tk.W)
-            sw.align_labels((self['nreset'], self['mtk']))
+            self["mtk"].grid(row=row, column=0, sticky=tk.W)
+            sw.align_labels((self["nreset"], self["mtk"]))
         else:
-            self['modulus'].grid(row=row, column=0, sticky=tk.W)
+            self["modulus"].grid(row=row, column=0, sticky=tk.W)
 
         # and lay out the pressure or stress terms
         self.reset_stress_frame()
@@ -222,522 +213,522 @@ class TkNPT(lammps_step.TkNVT):
         """
 
         # Get the values that control the layout
-        system_type = self['system type'].get()
-        barostat = self['barostat'].get()
-        Panneal = self['Panneal'].get()
-        if system_type == 'fluid':
-            use_stress = 'isotropic pressure'
-            couple = 'x, y and z'
+        system_type = self["system type"].get()
+        barostat = self["barostat"].get()
+        Panneal = self["Panneal"].get()
+        if system_type == "fluid":
+            use_stress = "isotropic pressure"
+            couple = "x, y and z"
         else:
-            use_stress = self['use_stress'].get()
-            couple = self['couple'].get()
+            use_stress = self["use_stress"].get()
+            couple = self["couple"].get()
 
         # Remove all the current widgets
-        frame = self['stress_frame']
+        frame = self["stress_frame"]
         for slave in frame.grid_slaves():
             slave.grid_forget()
 
         row = 0
         # and place the needed ones back in
 
-        keep_orthorhombic = self['keep orthorhombic'].get()
+        keep_orthorhombic = self["keep orthorhombic"].get()
 
-        if use_stress != 'isotropic pressure':
+        if use_stress != "isotropic pressure":
             # Annealing and stresses
-            if couple == 'x, y and z':
+            if couple == "x, y and z":
                 # all stresses
-                self['XX+YY+ZZ'].grid(row=row, column=1)
+                self["XX+YY+ZZ"].grid(row=row, column=1)
                 if not keep_orthorhombic:
-                    self['XY'].grid(row=row, column=2)
-                    self['XZ'].grid(row=row, column=3)
-                    self['YZ'].grid(row=row, column=4)
+                    self["XY"].grid(row=row, column=2)
+                    self["XZ"].grid(row=row, column=3)
+                    self["YZ"].grid(row=row, column=4)
 
                 row += 1
 
-                self['initial stress'].grid(row=row, column=0, sticky=tk.E)
+                self["initial stress"].grid(row=row, column=0, sticky=tk.E)
                 if keep_orthorhombic:
-                    self['Sxx,initial'].grid(
+                    self["Sxx,initial"].grid(
                         row=row, column=1, columnspan=3, sticky=tk.W
                     )
-                    self['Sxx,initial'].show('entry', 'units')
-                    frame.columnconfigure(1, weight=1, uniform='b')
-                    frame.columnconfigure(2, weight=1, uniform='b')
+                    self["Sxx,initial"].show("entry", "units")
+                    frame.columnconfigure(1, weight=1, uniform="b")
+                    frame.columnconfigure(2, weight=1, uniform="b")
                 else:
-                    self['Sxx,initial'].grid(row=row, column=1)
-                    self['Sxx,initial'].show('entry')
+                    self["Sxx,initial"].grid(row=row, column=1)
+                    self["Sxx,initial"].show("entry")
 
-                    self['Sxy,initial'].grid(row=row, column=2)
-                    self['Sxz,initial'].grid(row=row, column=3)
-                    self['Syz,initial'].grid(
+                    self["Sxy,initial"].grid(row=row, column=2)
+                    self["Sxz,initial"].grid(row=row, column=3)
+                    self["Syz,initial"].grid(
                         row=row, column=4, columnspan=3, sticky=tk.W
                     )
 
-                    self['Sxy,initial'].show('entry')
-                    self['Sxz,initial'].show('entry')
-                    self['Syz,initial'].show('entry', 'units')
+                    self["Sxy,initial"].show("entry")
+                    self["Sxz,initial"].show("entry")
+                    self["Syz,initial"].show("entry", "units")
 
-                    frame.columnconfigure(1, weight=1, uniform='b')
-                    frame.columnconfigure(2, weight=1, uniform='b')
-                    frame.columnconfigure(3, weight=1, uniform='b')
-                    frame.columnconfigure(4, weight=1, uniform='b')
-                    frame.columnconfigure(5, weight=1, uniform='b')
-                    frame.columnconfigure(6, weight=1, uniform='b')
+                    frame.columnconfigure(1, weight=1, uniform="b")
+                    frame.columnconfigure(2, weight=1, uniform="b")
+                    frame.columnconfigure(3, weight=1, uniform="b")
+                    frame.columnconfigure(4, weight=1, uniform="b")
+                    frame.columnconfigure(5, weight=1, uniform="b")
+                    frame.columnconfigure(6, weight=1, uniform="b")
                 row += 1
 
-                if Panneal != 'no':
-                    self['final stress'].grid(row=row, column=0, sticky=tk.E)
+                if Panneal != "no":
+                    self["final stress"].grid(row=row, column=0, sticky=tk.E)
                     if keep_orthorhombic:
-                        self['Sxx,final'].grid(
+                        self["Sxx,final"].grid(
                             row=row, column=1, columnspan=3, sticky=tk.W
                         )
-                        self['Sxx,final'].show('entry', 'units')
+                        self["Sxx,final"].show("entry", "units")
                     else:
-                        self['Sxx,final'].grid(row=row, column=1)
-                        self['Sxx,final'].show('entry')
+                        self["Sxx,final"].grid(row=row, column=1)
+                        self["Sxx,final"].show("entry")
 
-                        self['Sxy,final'].grid(row=row, column=2)
-                        self['Sxz,final'].grid(row=row, column=3)
-                        self['Syz,final'].grid(
+                        self["Sxy,final"].grid(row=row, column=2)
+                        self["Sxz,final"].grid(row=row, column=3)
+                        self["Syz,final"].grid(
                             row=row, column=4, columnspan=3, sticky=tk.W
                         )
 
-                        self['Sxy,final'].show('entry')
-                        self['Sxz,final'].show('entry')
-                        self['Syz,final'].show('entry', 'units')
+                        self["Sxy,final"].show("entry")
+                        self["Sxz,final"].show("entry")
+                        self["Syz,final"].show("entry", "units")
 
                     row += 1
 
-                if barostat == 'Nose-Hoover':
-                    self['damping'].grid(row=row, column=0, sticky=tk.E)
+                if barostat == "Nose-Hoover":
+                    self["damping"].grid(row=row, column=0, sticky=tk.E)
                     if keep_orthorhombic:
-                        self['Sxx damp'].grid(
+                        self["Sxx damp"].grid(
                             row=row, column=1, columnspan=3, sticky=tk.W
                         )
-                        self['Sxx damp'].show('entry', 'units')
+                        self["Sxx damp"].show("entry", "units")
                     else:
-                        self['Sxx damp'].grid(row=row, column=1)
-                        self['Sxx damp'].show('entry')
+                        self["Sxx damp"].grid(row=row, column=1)
+                        self["Sxx damp"].show("entry")
 
-                        self['Sxy damp'].grid(row=row, column=2)
-                        self['Sxz damp'].grid(row=row, column=3)
-                        self['Syz damp'].grid(
+                        self["Sxy damp"].grid(row=row, column=2)
+                        self["Sxz damp"].grid(row=row, column=3)
+                        self["Syz damp"].grid(
                             row=row, column=4, columnspan=3, sticky=tk.W
                         )
 
-                        self['Sxy damp'].show('entry')
-                        self['Sxz damp'].show('entry')
-                        self['Syz damp'].show('entry', 'units')
-            elif couple == 'x and y':
+                        self["Sxy damp"].show("entry")
+                        self["Sxz damp"].show("entry")
+                        self["Syz damp"].show("entry", "units")
+            elif couple == "x and y":
                 # couple xx and yy
-                self['XX+YY'].grid(row=row, column=1)
-                self['ZZ'].grid(row=row, column=2)
+                self["XX+YY"].grid(row=row, column=1)
+                self["ZZ"].grid(row=row, column=2)
                 if not keep_orthorhombic:
-                    self['XY'].grid(row=row, column=3)
-                    self['XZ'].grid(row=row, column=4)
-                    self['YZ'].grid(row=row, column=5)
+                    self["XY"].grid(row=row, column=3)
+                    self["XZ"].grid(row=row, column=4)
+                    self["YZ"].grid(row=row, column=5)
 
                 row += 1
 
-                if Panneal != 'no':
-                    self['initial stress'].grid(row=row, column=0, sticky=tk.E)
+                if Panneal != "no":
+                    self["initial stress"].grid(row=row, column=0, sticky=tk.E)
                 else:
-                    self['stress'].grid(row=row, column=0, sticky=tk.E)
-                self['Sxx,initial'].grid(row=row, column=1)
+                    self["stress"].grid(row=row, column=0, sticky=tk.E)
+                self["Sxx,initial"].grid(row=row, column=1)
 
-                self['Sxx,initial'].show('entry')
+                self["Sxx,initial"].show("entry")
                 if keep_orthorhombic:
-                    self['Szz,initial'].grid(
+                    self["Szz,initial"].grid(
                         row=row, column=2, columnspan=3, sticky=tk.W
                     )
-                    self['Szz,initial'].show('entry', 'units')
-                    frame.columnconfigure(1, weight=1, uniform='c')
-                    frame.columnconfigure(2, weight=1, uniform='c')
-                    frame.columnconfigure(3, weight=1, uniform='c')
+                    self["Szz,initial"].show("entry", "units")
+                    frame.columnconfigure(1, weight=1, uniform="c")
+                    frame.columnconfigure(2, weight=1, uniform="c")
+                    frame.columnconfigure(3, weight=1, uniform="c")
                 else:
-                    self['Szz,initial'].show('entry')
+                    self["Szz,initial"].show("entry")
 
-                    self['Sxy,initial'].grid(row=row, column=3)
-                    self['Sxz,initial'].grid(row=row, column=4)
-                    self['Syz,initial'].grid(
+                    self["Sxy,initial"].grid(row=row, column=3)
+                    self["Sxz,initial"].grid(row=row, column=4)
+                    self["Syz,initial"].grid(
                         row=row, column=5, columnspan=3, sticky=tk.W
                     )
 
-                    self['Sxy,initial'].show('entry')
-                    self['Sxz,initial'].show('entry')
-                    self['Syz,initial'].show('entry', 'units')
+                    self["Sxy,initial"].show("entry")
+                    self["Sxz,initial"].show("entry")
+                    self["Syz,initial"].show("entry", "units")
 
-                    frame.columnconfigure(1, weight=1, uniform='c')
-                    frame.columnconfigure(2, weight=1, uniform='c')
-                    frame.columnconfigure(3, weight=1, uniform='c')
-                    frame.columnconfigure(4, weight=1, uniform='c')
-                    frame.columnconfigure(5, weight=1, uniform='c')
-                    frame.columnconfigure(6, weight=1, uniform='c')
+                    frame.columnconfigure(1, weight=1, uniform="c")
+                    frame.columnconfigure(2, weight=1, uniform="c")
+                    frame.columnconfigure(3, weight=1, uniform="c")
+                    frame.columnconfigure(4, weight=1, uniform="c")
+                    frame.columnconfigure(5, weight=1, uniform="c")
+                    frame.columnconfigure(6, weight=1, uniform="c")
                 row += 1
 
-                if Panneal != 'no':
-                    self['final stress'].grid(row=row, column=0, sticky=tk.E)
-                    self['Sxx,final'].grid(row=row, column=1)
+                if Panneal != "no":
+                    self["final stress"].grid(row=row, column=0, sticky=tk.E)
+                    self["Sxx,final"].grid(row=row, column=1)
 
-                    self['Sxx,final'].show('entry')
+                    self["Sxx,final"].show("entry")
                     if keep_orthorhombic:
-                        self['Szz,final'].grid(
+                        self["Szz,final"].grid(
                             row=row, column=2, columnspan=3, sticky=tk.W
                         )
-                        self['Szz,final'].show('entry', 'units')
+                        self["Szz,final"].show("entry", "units")
                     else:
-                        self['Szz,final'].grid(row=row, column=2)
-                        self['Szz,final'].show('entry')
+                        self["Szz,final"].grid(row=row, column=2)
+                        self["Szz,final"].show("entry")
 
-                        self['Sxy,final'].grid(row=row, column=3)
-                        self['Sxz,final'].grid(row=row, column=4)
-                        self['Syz,final'].grid(
+                        self["Sxy,final"].grid(row=row, column=3)
+                        self["Sxz,final"].grid(row=row, column=4)
+                        self["Syz,final"].grid(
                             row=row, column=5, columnspan=3, sticky=tk.W
                         )
 
-                        self['Sxy,final'].show('entry')
-                        self['Sxz,final'].show('entry')
-                        self['Syz,final'].show('entry', 'units')
+                        self["Sxy,final"].show("entry")
+                        self["Sxz,final"].show("entry")
+                        self["Syz,final"].show("entry", "units")
 
                     row += 1
 
-                if barostat == 'Nose-Hoover':
-                    self['damping'].grid(row=row, column=0, sticky=tk.E)
-                    self['Sxx damp'].grid(row=row, column=1)
+                if barostat == "Nose-Hoover":
+                    self["damping"].grid(row=row, column=0, sticky=tk.E)
+                    self["Sxx damp"].grid(row=row, column=1)
 
-                    self['Sxx damp'].show('entry')
+                    self["Sxx damp"].show("entry")
                     if keep_orthorhombic:
-                        self['Szz damp'].grid(
+                        self["Szz damp"].grid(
                             row=row, column=2, columnspan=3, sticky=tk.W
                         )
-                        self['Szz damp'].show('entry', 'units')
+                        self["Szz damp"].show("entry", "units")
                     else:
-                        self['Szz damp'].grid(row=row, column=2)
-                        self['Szz damp'].show('entry')
+                        self["Szz damp"].grid(row=row, column=2)
+                        self["Szz damp"].show("entry")
 
-                        self['Sxy damp'].grid(row=row, column=3)
-                        self['Sxz damp'].grid(row=row, column=4)
-                        self['Syz damp'].grid(
+                        self["Sxy damp"].grid(row=row, column=3)
+                        self["Sxz damp"].grid(row=row, column=4)
+                        self["Syz damp"].grid(
                             row=row, column=5, columnspan=3, sticky=tk.W
                         )
 
-                        self['Sxy damp'].show('entry')
-                        self['Sxz damp'].show('entry')
-                        self['Syz damp'].show('entry', 'units')
-            elif couple == 'x and z':
+                        self["Sxy damp"].show("entry")
+                        self["Sxz damp"].show("entry")
+                        self["Syz damp"].show("entry", "units")
+            elif couple == "x and z":
                 # couple xx and zz
-                self['XX+ZZ'].grid(row=row, column=1)
-                self['YY'].grid(row=row, column=2)
+                self["XX+ZZ"].grid(row=row, column=1)
+                self["YY"].grid(row=row, column=2)
                 if not keep_orthorhombic:
-                    self['XY'].grid(row=row, column=3)
-                    self['XZ'].grid(row=row, column=4)
-                    self['YZ'].grid(row=row, column=5)
+                    self["XY"].grid(row=row, column=3)
+                    self["XZ"].grid(row=row, column=4)
+                    self["YZ"].grid(row=row, column=5)
 
                 row += 1
 
-                if Panneal != 'no':
-                    self['initial stress'].grid(row=row, column=0, sticky=tk.E)
+                if Panneal != "no":
+                    self["initial stress"].grid(row=row, column=0, sticky=tk.E)
                 else:
-                    self['stress'].grid(row=row, column=0, sticky=tk.E)
-                self['Sxx,initial'].grid(row=row, column=1)
+                    self["stress"].grid(row=row, column=0, sticky=tk.E)
+                self["Sxx,initial"].grid(row=row, column=1)
 
-                self['Sxx,initial'].show('entry')
+                self["Sxx,initial"].show("entry")
                 if keep_orthorhombic:
-                    self['Syy,initial'].grid(
+                    self["Syy,initial"].grid(
                         row=row, column=2, columnspan=3, sticky=tk.W
                     )
-                    self['Syy,initial'].show('entry', 'units')
-                    frame.columnconfigure(1, weight=1, uniform='d')
-                    frame.columnconfigure(2, weight=1, uniform='d')
-                    frame.columnconfigure(3, weight=1, uniform='d')
+                    self["Syy,initial"].show("entry", "units")
+                    frame.columnconfigure(1, weight=1, uniform="d")
+                    frame.columnconfigure(2, weight=1, uniform="d")
+                    frame.columnconfigure(3, weight=1, uniform="d")
                 else:
-                    self['Syy,initial'].grid(row=row, column=2)
-                    self['Syy,initial'].show('entry')
+                    self["Syy,initial"].grid(row=row, column=2)
+                    self["Syy,initial"].show("entry")
 
-                    self['Sxy,initial'].grid(row=row, column=3)
-                    self['Sxz,initial'].grid(row=row, column=4)
-                    self['Syz,initial'].grid(
+                    self["Sxy,initial"].grid(row=row, column=3)
+                    self["Sxz,initial"].grid(row=row, column=4)
+                    self["Syz,initial"].grid(
                         row=row, column=5, columnspan=3, sticky=tk.W
                     )
 
-                    self['Sxy,initial'].show('entry')
-                    self['Sxz,initial'].show('entry')
-                    self['Syz,initial'].show('entry', 'units')
+                    self["Sxy,initial"].show("entry")
+                    self["Sxz,initial"].show("entry")
+                    self["Syz,initial"].show("entry", "units")
 
-                    frame.columnconfigure(1, weight=1, uniform='d')
-                    frame.columnconfigure(2, weight=1, uniform='d')
-                    frame.columnconfigure(3, weight=1, uniform='d')
-                    frame.columnconfigure(4, weight=1, uniform='d')
-                    frame.columnconfigure(5, weight=1, uniform='d')
-                    frame.columnconfigure(6, weight=1, uniform='d')
+                    frame.columnconfigure(1, weight=1, uniform="d")
+                    frame.columnconfigure(2, weight=1, uniform="d")
+                    frame.columnconfigure(3, weight=1, uniform="d")
+                    frame.columnconfigure(4, weight=1, uniform="d")
+                    frame.columnconfigure(5, weight=1, uniform="d")
+                    frame.columnconfigure(6, weight=1, uniform="d")
                 row += 1
 
-                if Panneal != 'no':
-                    self['final stress'].grid(row=row, column=0, sticky=tk.E)
-                    self['Sxx,final'].grid(row=row, column=1)
+                if Panneal != "no":
+                    self["final stress"].grid(row=row, column=0, sticky=tk.E)
+                    self["Sxx,final"].grid(row=row, column=1)
 
-                    self['Sxx,final'].show('entry')
+                    self["Sxx,final"].show("entry")
                     if keep_orthorhombic:
-                        self['Syy,final'].grid(
+                        self["Syy,final"].grid(
                             row=row, column=2, columnspan=3, sticky=tk.W
                         )
-                        self['Syy,final'].show('entry', 'units')
+                        self["Syy,final"].show("entry", "units")
                     else:
-                        self['Syy,final'].grid(row=row, column=2)
-                        self['Syy,final'].show('entry')
+                        self["Syy,final"].grid(row=row, column=2)
+                        self["Syy,final"].show("entry")
 
-                        self['Sxy,final'].grid(row=row, column=3)
-                        self['Sxz,final'].grid(row=row, column=4)
-                        self['Syz,final'].grid(
+                        self["Sxy,final"].grid(row=row, column=3)
+                        self["Sxz,final"].grid(row=row, column=4)
+                        self["Syz,final"].grid(
                             row=row, column=5, columnspan=3, sticky=tk.W
                         )
 
-                        self['Sxy,final'].show('entry')
-                        self['Sxz,final'].show('entry')
-                        self['Syz,final'].show('entry', 'units')
+                        self["Sxy,final"].show("entry")
+                        self["Sxz,final"].show("entry")
+                        self["Syz,final"].show("entry", "units")
                     row += 1
 
-                if barostat == 'Nose-Hoover':
-                    self['damping'].grid(row=row, column=0, sticky=tk.E)
-                    self['Sxx damp'].grid(row=row, column=1)
+                if barostat == "Nose-Hoover":
+                    self["damping"].grid(row=row, column=0, sticky=tk.E)
+                    self["Sxx damp"].grid(row=row, column=1)
 
-                    self['Sxx damp'].show('entry')
+                    self["Sxx damp"].show("entry")
                     if keep_orthorhombic:
-                        self['Syy damp'].grid(
+                        self["Syy damp"].grid(
                             row=row, column=2, columnspan=3, sticky=tk.W
                         )
-                        self['Syy damp'].show('entry', 'units')
+                        self["Syy damp"].show("entry", "units")
                     else:
-                        self['Syy damp'].grid(row=row, column=2)
-                        self['Syy damp'].show('entry')
+                        self["Syy damp"].grid(row=row, column=2)
+                        self["Syy damp"].show("entry")
 
-                        self['Sxy damp'].grid(row=row, column=3)
-                        self['Sxz damp'].grid(row=row, column=4)
-                        self['Syz damp'].grid(row=row, column=5)
+                        self["Sxy damp"].grid(row=row, column=3)
+                        self["Sxz damp"].grid(row=row, column=4)
+                        self["Syz damp"].grid(row=row, column=5)
 
-                        self['Sxy damp'].show('entry')
-                        self['Sxz damp'].show('entry')
-                        self['Syz damp'].show('entry', 'units')
-            elif couple == 'y and z':
+                        self["Sxy damp"].show("entry")
+                        self["Sxz damp"].show("entry")
+                        self["Syz damp"].show("entry", "units")
+            elif couple == "y and z":
                 # couple yy and zz
-                self['XX'].grid(row=row, column=1)
-                self['YY+ZZ'].grid(row=row, column=2)
+                self["XX"].grid(row=row, column=1)
+                self["YY+ZZ"].grid(row=row, column=2)
                 if not keep_orthorhombic:
-                    self['XY'].grid(row=row, column=3)
-                    self['XZ'].grid(row=row, column=4)
-                    self['YZ'].grid(row=row, column=5)
+                    self["XY"].grid(row=row, column=3)
+                    self["XZ"].grid(row=row, column=4)
+                    self["YZ"].grid(row=row, column=5)
 
                 row += 1
 
-                if Panneal != 'no':
-                    self['initial stress'].grid(row=row, column=0, sticky=tk.E)
+                if Panneal != "no":
+                    self["initial stress"].grid(row=row, column=0, sticky=tk.E)
                 else:
-                    self['stress'].grid(row=row, column=0, sticky=tk.E)
-                self['Sxx,initial'].grid(row=row, column=1)
+                    self["stress"].grid(row=row, column=0, sticky=tk.E)
+                self["Sxx,initial"].grid(row=row, column=1)
 
-                self['Sxx,initial'].show('entry')
+                self["Sxx,initial"].show("entry")
                 if keep_orthorhombic:
-                    self['Syy,initial'].grid(
+                    self["Syy,initial"].grid(
                         row=row, column=2, columnspan=3, sticky=tk.W
                     )
-                    self['Syy,initial'].show('entry', 'units')
-                    frame.columnconfigure(1, weight=1, uniform='e')
-                    frame.columnconfigure(2, weight=1, uniform='e')
-                    frame.columnconfigure(3, weight=1, uniform='e')
+                    self["Syy,initial"].show("entry", "units")
+                    frame.columnconfigure(1, weight=1, uniform="e")
+                    frame.columnconfigure(2, weight=1, uniform="e")
+                    frame.columnconfigure(3, weight=1, uniform="e")
                 else:
-                    self['Syy,initial'].grid(row=row, column=2)
-                    self['Syy,initial'].show('entry')
+                    self["Syy,initial"].grid(row=row, column=2)
+                    self["Syy,initial"].show("entry")
 
-                    self['Sxy,initial'].grid(row=row, column=3)
-                    self['Sxz,initial'].grid(row=row, column=4)
-                    self['Syz,initial'].grid(row=row, column=5)
+                    self["Sxy,initial"].grid(row=row, column=3)
+                    self["Sxz,initial"].grid(row=row, column=4)
+                    self["Syz,initial"].grid(row=row, column=5)
 
-                    self['Sxy,initial'].show('entry')
-                    self['Sxz,initial'].show('entry')
-                    self['Syz,initial'].show('entry', 'units')
+                    self["Sxy,initial"].show("entry")
+                    self["Sxz,initial"].show("entry")
+                    self["Syz,initial"].show("entry", "units")
 
-                    frame.columnconfigure(1, weight=1, uniform='e')
-                    frame.columnconfigure(2, weight=1, uniform='e')
-                    frame.columnconfigure(3, weight=1, uniform='e')
-                    frame.columnconfigure(4, weight=1, uniform='e')
-                    frame.columnconfigure(5, weight=1, uniform='e')
-                    frame.columnconfigure(6, weight=1, uniform='e')
+                    frame.columnconfigure(1, weight=1, uniform="e")
+                    frame.columnconfigure(2, weight=1, uniform="e")
+                    frame.columnconfigure(3, weight=1, uniform="e")
+                    frame.columnconfigure(4, weight=1, uniform="e")
+                    frame.columnconfigure(5, weight=1, uniform="e")
+                    frame.columnconfigure(6, weight=1, uniform="e")
                 row += 1
 
-                if Panneal != 'no':
-                    self['final stress'].grid(row=row, column=0, sticky=tk.E)
-                    self['Sxx,final'].grid(row=row, column=1)
+                if Panneal != "no":
+                    self["final stress"].grid(row=row, column=0, sticky=tk.E)
+                    self["Sxx,final"].grid(row=row, column=1)
 
-                    self['Sxx,final'].show('entry')
+                    self["Sxx,final"].show("entry")
                     if keep_orthorhombic:
-                        self['Syy,final'].grid(
+                        self["Syy,final"].grid(
                             row=row, column=2, columnspan=3, sticky=tk.W
                         )
-                        self['Syy,final'].show('entry', 'units')
+                        self["Syy,final"].show("entry", "units")
                     else:
-                        self['Syy,final'].grid(row=row, column=2)
-                        self['Syy,final'].show('entry')
+                        self["Syy,final"].grid(row=row, column=2)
+                        self["Syy,final"].show("entry")
 
-                        self['Sxy,final'].grid(row=row, column=3)
-                        self['Sxz,final'].grid(row=row, column=4)
-                        self['Syz,final'].grid(
+                        self["Sxy,final"].grid(row=row, column=3)
+                        self["Sxz,final"].grid(row=row, column=4)
+                        self["Syz,final"].grid(
                             row=row, column=5, columnspan=3, sticky=tk.W
                         )
 
-                        self['Sxy,final'].show('entry')
-                        self['Sxz,final'].show('entry')
-                        self['Syz,final'].show('entry', 'units')
+                        self["Sxy,final"].show("entry")
+                        self["Sxz,final"].show("entry")
+                        self["Syz,final"].show("entry", "units")
 
                     row += 1
 
-                if barostat == 'Nose-Hoover':
-                    self['damping'].grid(row=row, column=0, sticky=tk.E)
-                    self['Sxx damp'].grid(row=row, column=1)
+                if barostat == "Nose-Hoover":
+                    self["damping"].grid(row=row, column=0, sticky=tk.E)
+                    self["Sxx damp"].grid(row=row, column=1)
 
-                    self['Sxx damp'].show('entry')
+                    self["Sxx damp"].show("entry")
                     if keep_orthorhombic:
-                        self['Syy damp'].grid(
+                        self["Syy damp"].grid(
                             row=row, column=2, columnspan=3, sticky=tk.W
                         )
-                        self['Syy damp'].show('entry', 'units')
+                        self["Syy damp"].show("entry", "units")
                     else:
-                        self['Syy damp'].grid(row=row, column=2)
-                        self['Syy damp'].show('entry')
+                        self["Syy damp"].grid(row=row, column=2)
+                        self["Syy damp"].show("entry")
 
-                        self['Sxy damp'].grid(row=row, column=3)
-                        self['Sxz damp'].grid(row=row, column=4)
-                        self['Syz damp'].grid(
+                        self["Sxy damp"].grid(row=row, column=3)
+                        self["Sxz damp"].grid(row=row, column=4)
+                        self["Syz damp"].grid(
                             row=row, column=5, columnspan=3, sticky=tk.W
                         )
 
-                        self['Sxy damp'].show('entry')
-                        self['Sxz damp'].show('entry')
-                        self['Syz damp'].show('entry', 'units')
+                        self["Sxy damp"].show("entry")
+                        self["Sxz damp"].show("entry")
+                        self["Syz damp"].show("entry", "units")
             else:
                 # if couple == 'none':
                 # all stresses
-                self['XX'].grid(row=row, column=1)
-                self['YY'].grid(row=row, column=2)
-                self['ZZ'].grid(row=row, column=3)
+                self["XX"].grid(row=row, column=1)
+                self["YY"].grid(row=row, column=2)
+                self["ZZ"].grid(row=row, column=3)
                 if not keep_orthorhombic:
-                    self['XY'].grid(row=row, column=4)
-                    self['XZ'].grid(row=row, column=5)
-                    self['YZ'].grid(row=row, column=6)
+                    self["XY"].grid(row=row, column=4)
+                    self["XZ"].grid(row=row, column=5)
+                    self["YZ"].grid(row=row, column=6)
 
                 row += 1
 
-                if Panneal != 'no':
-                    self['initial stress'].grid(row=row, column=0, sticky=tk.E)
+                if Panneal != "no":
+                    self["initial stress"].grid(row=row, column=0, sticky=tk.E)
                 else:
-                    self['stress'].grid(row=row, column=0, sticky=tk.E)
-                self['Sxx,initial'].grid(row=row, column=1)
-                self['Syy,initial'].grid(row=row, column=2)
+                    self["stress"].grid(row=row, column=0, sticky=tk.E)
+                self["Sxx,initial"].grid(row=row, column=1)
+                self["Syy,initial"].grid(row=row, column=2)
 
-                self['Sxx,initial'].show('entry')
-                self['Syy,initial'].show('entry')
+                self["Sxx,initial"].show("entry")
+                self["Syy,initial"].show("entry")
                 if keep_orthorhombic:
-                    self['Szz,initial'].grid(
+                    self["Szz,initial"].grid(
                         row=row, column=3, columnspan=3, sticky=tk.W
                     )
-                    self['Szz,initial'].show('entry', 'units')
-                    frame.columnconfigure(1, weight=1, uniform='a')
-                    frame.columnconfigure(2, weight=1, uniform='a')
-                    frame.columnconfigure(3, weight=1, uniform='a')
-                    frame.columnconfigure(4, weight=1, uniform='a')
+                    self["Szz,initial"].show("entry", "units")
+                    frame.columnconfigure(1, weight=1, uniform="a")
+                    frame.columnconfigure(2, weight=1, uniform="a")
+                    frame.columnconfigure(3, weight=1, uniform="a")
+                    frame.columnconfigure(4, weight=1, uniform="a")
                 else:
-                    self['Szz,initial'].grid(row=row, column=3)
-                    self['Szz,initial'].show('entry')
+                    self["Szz,initial"].grid(row=row, column=3)
+                    self["Szz,initial"].show("entry")
 
-                    self['Sxy,initial'].grid(row=row, column=4)
-                    self['Sxz,initial'].grid(row=row, column=5)
-                    self['Syz,initial'].grid(
+                    self["Sxy,initial"].grid(row=row, column=4)
+                    self["Sxz,initial"].grid(row=row, column=5)
+                    self["Syz,initial"].grid(
                         row=row, column=6, columnspan=3, sticky=tk.W
                     )
 
-                    self['Sxy,initial'].show('entry')
-                    self['Sxz,initial'].show('entry')
-                    self['Syz,initial'].show('entry', 'units')
+                    self["Sxy,initial"].show("entry")
+                    self["Sxz,initial"].show("entry")
+                    self["Syz,initial"].show("entry", "units")
 
-                    frame.columnconfigure(1, weight=1, uniform='a')
-                    frame.columnconfigure(2, weight=1, uniform='a')
-                    frame.columnconfigure(3, weight=1, uniform='a')
-                    frame.columnconfigure(4, weight=1, uniform='a')
-                    frame.columnconfigure(5, weight=1, uniform='a')
-                    frame.columnconfigure(6, weight=1, uniform='a')
-                    frame.columnconfigure(7, weight=1, uniform='a')
+                    frame.columnconfigure(1, weight=1, uniform="a")
+                    frame.columnconfigure(2, weight=1, uniform="a")
+                    frame.columnconfigure(3, weight=1, uniform="a")
+                    frame.columnconfigure(4, weight=1, uniform="a")
+                    frame.columnconfigure(5, weight=1, uniform="a")
+                    frame.columnconfigure(6, weight=1, uniform="a")
+                    frame.columnconfigure(7, weight=1, uniform="a")
                 row += 1
 
-                if Panneal != 'no':
-                    self['final stress'].grid(row=row, column=0, sticky=tk.E)
-                    self['Sxx,final'].grid(row=row, column=1)
-                    self['Syy,final'].grid(row=row, column=2)
+                if Panneal != "no":
+                    self["final stress"].grid(row=row, column=0, sticky=tk.E)
+                    self["Sxx,final"].grid(row=row, column=1)
+                    self["Syy,final"].grid(row=row, column=2)
 
-                    self['Sxx,final'].show('entry')
-                    self['Syy,final'].show('entry')
+                    self["Sxx,final"].show("entry")
+                    self["Syy,final"].show("entry")
 
                     if keep_orthorhombic:
-                        self['Szz,final'].grid(
+                        self["Szz,final"].grid(
                             row=row, column=3, columnspan=3, sticky=tk.W
                         )
-                        self['Szz,final'].show('entry', 'units')
+                        self["Szz,final"].show("entry", "units")
                     else:
-                        self['Szz,final'].grid(row=row, column=3)
-                        self['Szz,final'].show('entry')
+                        self["Szz,final"].grid(row=row, column=3)
+                        self["Szz,final"].show("entry")
 
-                        self['Sxy,final'].grid(row=row, column=4)
-                        self['Sxz,final'].grid(row=row, column=5)
-                        self['Syz,final'].grid(
+                        self["Sxy,final"].grid(row=row, column=4)
+                        self["Sxz,final"].grid(row=row, column=5)
+                        self["Syz,final"].grid(
                             row=row, column=6, columnspan=3, sticky=tk.W
                         )
 
-                        self['Sxy,final'].show('entry')
-                        self['Sxz,final'].show('entry')
-                        self['Syz,final'].show('entry', 'units')
+                        self["Sxy,final"].show("entry")
+                        self["Sxz,final"].show("entry")
+                        self["Syz,final"].show("entry", "units")
                     row += 1
 
-                if barostat == 'Nose-Hoover':
-                    self['damping'].grid(row=row, column=0, sticky=tk.E)
-                    self['Sxx damp'].grid(row=row, column=1)
-                    self['Syy damp'].grid(row=row, column=2)
-                    self['Szz damp'].grid(row=row, column=3)
+                if barostat == "Nose-Hoover":
+                    self["damping"].grid(row=row, column=0, sticky=tk.E)
+                    self["Sxx damp"].grid(row=row, column=1)
+                    self["Syy damp"].grid(row=row, column=2)
+                    self["Szz damp"].grid(row=row, column=3)
 
-                    self['Sxx damp'].show('entry')
-                    self['Syy damp'].show('entry')
+                    self["Sxx damp"].show("entry")
+                    self["Syy damp"].show("entry")
                     if keep_orthorhombic:
-                        self['Szz damp'].grid(
+                        self["Szz damp"].grid(
                             row=row, column=3, columnspan=3, sticky=tk.W
                         )
-                        self['Szz damp'].show('entry', 'units')
+                        self["Szz damp"].show("entry", "units")
                     else:
-                        self['Szz damp'].grid(row=row, column=3)
-                        self['Szz damp'].show('entry')
+                        self["Szz damp"].grid(row=row, column=3)
+                        self["Szz damp"].show("entry")
 
-                        self['Sxy damp'].grid(row=row, column=4)
-                        self['Sxz damp'].grid(row=row, column=5)
-                        self['Syz damp'].grid(
+                        self["Sxy damp"].grid(row=row, column=4)
+                        self["Sxz damp"].grid(row=row, column=5)
+                        self["Syz damp"].grid(
                             row=row, column=6, columnspan=3, sticky=tk.W
                         )
 
-                        self['Sxy damp'].show('entry')
-                        self['Sxz damp'].show('entry')
-                        self['Syz damp'].show('entry', 'units')
+                        self["Sxy damp"].show("entry")
+                        self["Sxz damp"].show("entry")
+                        self["Syz damp"].show("entry", "units")
         else:
             widgets = []
-            if Panneal != 'no':
-                self['Pinitial'].label.configure(text='Initial pressure:')
+            if Panneal != "no":
+                self["Pinitial"].label.configure(text="Initial pressure:")
             else:
-                self['Pinitial'].label.configure(text='Pressure:')
-            self['Pinitial'].grid(row=row, column=0, sticky=tk.W)
-            widgets.append(self['Pinitial'])
+                self["Pinitial"].label.configure(text="Pressure:")
+            self["Pinitial"].grid(row=row, column=0, sticky=tk.W)
+            widgets.append(self["Pinitial"])
             row += 1
 
-            if Panneal != 'no':
-                self['Pfinal'].grid(row=row, column=0, sticky=tk.W)
-                widgets.append(self['Pfinal'])
+            if Panneal != "no":
+                self["Pfinal"].grid(row=row, column=0, sticky=tk.W)
+                widgets.append(self["Pfinal"])
                 row += 1
 
-            if barostat == 'Nose-Hoover':
-                self['Pdamp'].grid(row=row, column=0, sticky=tk.W)
-                widgets.append(self['Pdamp'])
+            if barostat == "Nose-Hoover":
+                self["Pdamp"].grid(row=row, column=0, sticky=tk.W)
+                widgets.append(self["Pdamp"])
                 row += 1
             sw.align_labels(widgets)
 
@@ -746,14 +737,14 @@ class TkNPT(lammps_step.TkNVT):
         which can either be 'Cancel', 'Help' or 'OK', or they can
         close the dialog with the 'x' button == 'Cancel'"""
 
-        if result == 'OK':
+        if result == "OK":
             # Shortcut for parameters
             P = self.node.parameters
 
             # Gather all the parameters. It maybe a bit of an overkill,
             # but it is easy.
             for key in lammps_step.NPT_Parameters.parameters:
-                if key not in ('results', 'create table'):
+                if key not in ("results", "create table"):
                     P[key].set_from_widget()
 
         # Let base classes reap their parameters

@@ -10,9 +10,9 @@ import lammps_step
 
 class LAMMPSStep(object):
     my_description = {
-        'description': 'An interface for the LAMMPS molecular dynamics code',
-        'group': 'Simulations',
-        'name': 'LAMMPS'
+        "description": "An interface for the LAMMPS molecular dynamics code",
+        "group": "Simulations",
+        "name": "LAMMPS",
     }
 
     def __init__(self, flowchart=None, gui=None):
@@ -23,8 +23,7 @@ class LAMMPSStep(object):
         pass
 
     def description(self):
-        """Return a description of what this extension does
-        """
+        """Return a description of what this extension does"""
         return LAMMPSStep.my_description
 
     def create_node(self, flowchart=None, **kwargs):

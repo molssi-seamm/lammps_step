@@ -12,56 +12,47 @@ import random
 
 logger = logging.getLogger(__name__)
 job = printing.getPrinter()
-printer = printing.getPrinter('lammps')
+printer = printing.getPrinter("lammps")
 
 thermostat_metadata = {
-    'Nose-Hoover':
-        {
-            'documentation': 'http://lammps.sandia.gov/doc/fix_nvt.html',
-            'references': ['Shinoda', 'Tuckerman'],
-        },
-    'Berendsen':
-        {
-            'documentation':
-                'http://lammps.sandia.gov/doc/fix_temp_berendsen.html',
-            'references': ['Berendsen'],
-        },
-    'canonical sampling, velocity rescaling (csvr)':
-        {
-            'documentation': 'http://lammps.sandia.gov/doc/fix_temp_csvr.html',
-            'references': ['Bussi1'],
-        },
-    'canonical sampling, langevin dynamics (csld)':
-        {
-            'documentation': 'http://lammps.sandia.gov/doc/fix_temp_csvr.html',
-            'references': ['Bussi2'],
-        },
-    'velocity rescaling':
-        {
-            'documentation':
-                'http://lammps.sandia.gov/doc/fix_temp_rescale.html',
-            'references': [],
-        },
-    'Langevin':
-        {
-            'documentation': 'http://lammps.sandia.gov/doc/fix_langevin.html',
-            'references': ['Schneider', 'Dunweg']
-        },
+    "Nose-Hoover": {
+        "documentation": "http://lammps.sandia.gov/doc/fix_nvt.html",
+        "references": ["Shinoda", "Tuckerman"],
+    },
+    "Berendsen": {
+        "documentation": "http://lammps.sandia.gov/doc/fix_temp_berendsen.html",
+        "references": ["Berendsen"],
+    },
+    "canonical sampling, velocity rescaling (csvr)": {
+        "documentation": "http://lammps.sandia.gov/doc/fix_temp_csvr.html",
+        "references": ["Bussi1"],
+    },
+    "canonical sampling, langevin dynamics (csld)": {
+        "documentation": "http://lammps.sandia.gov/doc/fix_temp_csvr.html",
+        "references": ["Bussi2"],
+    },
+    "velocity rescaling": {
+        "documentation": "http://lammps.sandia.gov/doc/fix_temp_rescale.html",
+        "references": [],
+    },
+    "Langevin": {
+        "documentation": "http://lammps.sandia.gov/doc/fix_langevin.html",
+        "references": ["Schneider", "Dunweg"],
+    },
 }
 
 
 class NVT(lammps_step.NVE):
-
-    def __init__(self, flowchart=None, title='NVT dynamics', extension=None):
+    def __init__(self, flowchart=None, title="NVT dynamics", extension=None):
         """Initialize the node"""
 
-        logger.debug('Creating NVT {}'.format(self))
+        logger.debug("Creating NVT {}".format(self))
 
         super().__init__(flowchart=flowchart, title=title, extension=extension)
 
-        logger.debug('NVT after super init, {}'.format(self))
+        logger.debug("NVT after super init, {}".format(self))
 
-        self.description = 'NVT dynamics step in LAMMPS'
+        self.description = "NVT dynamics step in LAMMPS"
 
         logger.debug("NVT.init() creating NVT_Parameters object")
 
@@ -86,17 +77,17 @@ class NVT(lammps_step.NVE):
 
         # What will we do?
 
-        if P['T0'] == P['T1']:
+        if P["T0"] == P["T1"]:
             text = "{time} of canonical (NVT) dynamics at {T0} "
         else:
             text = (
                 "{time} of canonical (NVT) dynamics starting "
                 " at {T0}, going to {T1}, "
             )
-        if P['thermostat'] == 'Nose-Hoover':
+        if P["thermostat"] == "Nose-Hoover":
             text += "using a Nose-Hoover thermostat."
-            if P['Tchain'] != '3':
-                if P['Tloop'] != '1':
+            if P["Tchain"] != "3":
+                if P["Tloop"] != "1":
                     text += (
                         " The thermostat will use a chain of {Tchain} "
                         "thermostats with {Tloop} subcycles and a "
@@ -106,50 +97,47 @@ class NVT(lammps_step.NVE):
                         " The thermostat will use a chain of {Tchain} "
                         "thermostats and a "
                     )
-            elif P['Tloop'] != '1':
+            elif P["Tloop"] != "1":
                 text += " The thermostat will use {Tloop} subcycles and a "
             else:
                 text += " The thermostat will use a "
             text += "drag factor of {drag}."
-        elif P['thermostat'] == 'Berendsen':
-            text += (
-                "using a Berendsen thermostat with a damping time "
-                "of {Tdamp}"
-            )
-        elif 'csvr' in P['thermostat']:
+        elif P["thermostat"] == "Berendsen":
+            text += "using a Berendsen thermostat with a damping time " "of {Tdamp}"
+        elif "csvr" in P["thermostat"]:
             text += (
                 "using a canonical sampling thermostat using velocity "
                 "rescaling (CSVR) with a damping time of {Tdamp} and "
                 "a {seed}."
             )
-        elif 'csld' in P['thermostat']:
+        elif "csld" in P["thermostat"]:
             text += (
                 "using a canonical sampling thermostat using Langevin "
                 "dynamics (CSLD) with a damping time of {Tdamp} and "
                 "a {seed}."
             )
-        elif P['thermostat'] == 'velocity rescaling':
+        elif P["thermostat"] == "velocity rescaling":
             text += (
                 "using velocity rescaling every {frequency} with a "
                 "temperature window of {window}."
             )
-            if P['fraction'] != 1.0:
+            if P["fraction"] != 1.0:
                 text += (
                     " The velocities will only be scaled a fraction "
                     "({fraction}) of the amount needed to fully correct "
                     "the temperature."
                 )
-        elif P['thermostat'] == 'Langevin':
+        elif P["thermostat"] == "Langevin":
             text += (
                 "using a Langevin thermostat with a damping time "
                 "of {Tdamp} and a {seed}"
             )
         else:
-            text += ("using the thermostat given by {thermostat}")
+            text += "using the thermostat given by {thermostat}"
 
-        return self.header + '\n' + __(text, **P, indent=4 * ' ').__str__()
+        return self.header + "\n" + __(text, **P, indent=4 * " ").__str__()
 
-    def describe(self, indent='', json_dict=None):
+    def describe(self, indent="", json_dict=None):
         """Write out information about what this node will do
         If json_dict is passed in, add information to that dictionary
         so that it can be written out by the controller as appropriate.
@@ -157,14 +145,14 @@ class NVT(lammps_step.NVE):
 
         # Can't call super() because it will print too much
         self.visited = True
-        job.job('\n' + self.indent + self.header)
+        job.job("\n" + self.indent + self.header)
         next_node = self.next()
 
         # Local copies of variables in a dictionary
 
         P = self.parameters.values_to_dict()
         text = self.description_text(P)
-        job.job(__(text, indent=self.indent + '    ', **P))
+        job.job(__(text, indent=self.indent + "    ", **P))
 
         return next_node
 
@@ -178,124 +166,124 @@ class NVT(lammps_step.NVE):
         )
 
         # Fix variables with special cases
-        timestep, P['timestep'] = self.timestep(P['timestep'])
+        timestep, P["timestep"] = self.timestep(P["timestep"])
 
-        if P['seed'] == 'random':
+        if P["seed"] == "random":
             # Apparently the seed must be no larger than 900,000,000
-            P['seed'] = int(random.random() * 899999999)
+            P["seed"] = int(random.random() * 899999999)
 
         # Have to fix formatting for printing...
         PP = dict(P)
         for key in PP:
             if isinstance(PP[key], units_class):
-                PP[key] = '{:~P}'.format(PP[key])
+                PP[key] = "{:~P}".format(PP[key])
 
         self.description.append(
-            __(self.description_text(PP), **PP, indent=3 * ' ').__str__()
+            __(self.description_text(PP), **PP, indent=3 * " ").__str__()
         )
 
-        time = lammps_step.to_lammps_units(P['time'], quantity='time')
+        time = lammps_step.to_lammps_units(P["time"], quantity="time")
         nsteps = round(time / timestep)
 
-        T0 = lammps_step.to_lammps_units(P['T0'], quantity='temperature')
-        T1 = lammps_step.to_lammps_units(P['T1'], quantity='temperature')
-        Tdamp = lammps_step.to_lammps_units(P['Tdamp'], quantity='time')
+        T0 = lammps_step.to_lammps_units(P["T0"], quantity="temperature")
+        T1 = lammps_step.to_lammps_units(P["T1"], quantity="temperature")
+        Tdamp = lammps_step.to_lammps_units(P["Tdamp"], quantity="time")
 
         thermo_properties = (
-            'time temp press etotal ke pe ebond '
-            'eangle edihed eimp evdwl etail ecoul elong'
+            "time temp press etotal ke pe ebond "
+            "eangle edihed eimp evdwl etail ecoul elong"
         )
-        properties = 'v_time v_temp v_press v_etotal v_ke v_pe v_epair'
-        title2 = 'tstep t T P Etot Eke Epe Epair'
+        properties = "v_time v_temp v_press v_etotal v_ke v_pe v_epair"
+        title2 = "tstep t T P Etot Eke Epe Epair"
 
         lines = []
-        lines.append('')
-        lines.append('#     NVT dynamics')
-        lines.append('')
-        lines.append('reset_timestep      0')
-        lines.append('timestep            {}'.format(timestep))
-        lines.append('thermo_style        custom {}'.format(thermo_properties))
-        lines.append('thermo              {}'.format(int(nsteps / 100)))
+        lines.append("")
+        lines.append("#     NVT dynamics")
+        lines.append("")
+        lines.append("reset_timestep      0")
+        lines.append("timestep            {}".format(timestep))
+        lines.append("thermo_style        custom {}".format(thermo_properties))
+        lines.append("thermo              {}".format(int(nsteps / 100)))
 
         nfixes = 0
-        if P['thermostat'] == 'Nose-Hoover':
-            Tchain = P['Tchain']
-            Tloop = P['Tloop']
-            drag = P['drag']
+        if P["thermostat"] == "Nose-Hoover":
+            Tchain = P["Tchain"]
+            Tloop = P["Tloop"]
+            drag = P["drag"]
             nfixes += 1
             lines.append(
-                'fix                 {} all nvt '.format(nfixes) +
-                'temp {} {} {} '.format(T0, T1, Tdamp) +
-                'tchain {} '.format(Tchain) + 'tloop {} '.format(Tloop) +
-                'drag {}'.format(drag)
+                "fix                 {} all nvt ".format(nfixes)
+                + "temp {} {} {} ".format(T0, T1, Tdamp)
+                + "tchain {} ".format(Tchain)
+                + "tloop {} ".format(Tloop)
+                + "drag {}".format(drag)
             )
-        elif P['thermostat'] == 'Berendsen':
+        elif P["thermostat"] == "Berendsen":
             nfixes += 1
             lines.append(
-                'fix                 {} '.format(nfixes) +
-                'all temp/berendsen ' + ' {} {} {}'.format(T0, T1, Tdamp)
+                "fix                 {} ".format(nfixes)
+                + "all temp/berendsen "
+                + " {} {} {}".format(T0, T1, Tdamp)
             )
             nfixes += 1
-            lines.append('fix                 {} '.format(nfixes) + 'all nve')
-        elif 'csvr' in P['thermostat']:
-            seed = P['seed']
+            lines.append("fix                 {} ".format(nfixes) + "all nve")
+        elif "csvr" in P["thermostat"]:
+            seed = P["seed"]
             nfixes += 1
             lines.append(
-                'fix                 {} '.format(nfixes) + 'all temp/csvr ' +
-                ' {} {} {} {}'.format(T0, T1, Tdamp, seed)
+                "fix                 {} ".format(nfixes)
+                + "all temp/csvr "
+                + " {} {} {} {}".format(T0, T1, Tdamp, seed)
             )
             nfixes += 1
-            lines.append('fix                 {} '.format(nfixes) + 'all nve')
-        elif 'csld' in P['thermostat']:
-            seed = P['seed']
+            lines.append("fix                 {} ".format(nfixes) + "all nve")
+        elif "csld" in P["thermostat"]:
+            seed = P["seed"]
             nfixes += 1
             lines.append(
-                'fix                 {} '.format(nfixes) + 'all temp/csld ' +
-                ' {} {} {} {}'.format(T0, T1, Tdamp, seed)
+                "fix                 {} ".format(nfixes)
+                + "all temp/csld "
+                + " {} {} {} {}".format(T0, T1, Tdamp, seed)
             )
             nfixes += 1
-            lines.append('fix                 {} '.format(nfixes) + 'all nve')
-        elif P['thermostat'] == 'velocity rescaling':
-            frequency = lammps_step.to_lammps_units(
-                P['frequency'], quantity='time'
-            )
+            lines.append("fix                 {} ".format(nfixes) + "all nve")
+        elif P["thermostat"] == "velocity rescaling":
+            frequency = lammps_step.to_lammps_units(P["frequency"], quantity="time")
 
             nevery = round(nsteps / (frequency / timestep))
-            window = lammps_step.to_lammps_units(
-                P['window'], quantity='temperature'
-            )
-            fraction = P['fraction']
+            window = lammps_step.to_lammps_units(P["window"], quantity="temperature")
+            fraction = P["fraction"]
             nfixes += 1
             lines.append(
-                'fix                 {} '.format(nfixes) +
-                'all temp/rescale ' +
-                '{} {} {} {} {}'.format(nevery, T0, T1, window, fraction)
+                "fix                 {} ".format(nfixes)
+                + "all temp/rescale "
+                + "{} {} {} {} {}".format(nevery, T0, T1, window, fraction)
             )
             nfixes += 1
-            lines.append('fix                 {} '.format(nfixes) + 'all nve')
-        elif P['thermostat'] == 'Langevin':
-            seed = P['seed']
+            lines.append("fix                 {} ".format(nfixes) + "all nve")
+        elif P["thermostat"] == "Langevin":
+            seed = P["seed"]
             nfixes += 1
             lines.append(
-                'fix                 {} '.format(nfixes) + 'all langevin ' +
-                '{} {} {} {} '.format(T0, T1, Tdamp, seed)
+                "fix                 {} ".format(nfixes)
+                + "all langevin "
+                + "{} {} {} {} ".format(T0, T1, Tdamp, seed)
             )
             nfixes += 1
-            lines.append('fix                 {} '.format(nfixes) + 'all nve')
+            lines.append("fix                 {} ".format(nfixes) + "all nve")
         else:
             raise RuntimeError(
-                "Don't recognize temperature control " +
-                "'{}'".format(P['thermostat'])
+                "Don't recognize temperature control " + "'{}'".format(P["thermostat"])
             )
 
         # Add the citation for the thermostat
-        for citation in thermostat_metadata[P['thermostat']]['references']:
+        for citation in thermostat_metadata[P["thermostat"]]["references"]:
             self.references.cite(
                 raw=self._bibliography[citation],
                 alias=citation,
-                module='lammps_step',
+                module="lammps_step",
                 level=1,
-                note='Citation for thermostat.'
+                note="Citation for thermostat.",
             )
 
         # summary output written 10 times during run so we can see progress
@@ -309,23 +297,26 @@ class NVT(lammps_step.NVE):
                 "fix                 {} all ave/time {} {} {} {} off 2 "
                 "title2 '{}' file summary_nvt_{}.txt"
             ).format(
-                nfixes, nevery, nrepeat, nfreq, properties, title2,
-                '_'.join(str(e) for e in self._id)
+                nfixes,
+                nevery,
+                nrepeat,
+                nfreq,
+                properties,
+                title2,
+                "_".join(str(e) for e in self._id),
             )
         )
         # instantaneous output written for averaging
-        if P['sampling'] == 'none':
+        if P["sampling"] == "none":
             self.description.append(
                 __(
                     "The run will be {nsteps:n} steps of dynamics.",
                     nsteps=nsteps,
-                    indent=7 * ' '
+                    indent=7 * " ",
                 )
             )
         else:
-            sampling = lammps_step.to_lammps_units(
-                P['sampling'], quantity='time'
-            )
+            sampling = lammps_step.to_lammps_units(P["sampling"], quantity="time")
             nevery = round(sampling / timestep)
             nrepeat = 1
             nfreq = nevery * nrepeat
@@ -333,21 +324,25 @@ class NVT(lammps_step.NVE):
 
             if T0 == T1:
                 title1 = (
-                    '!MolSSI trajectory 1.0 LAMMPS, NVT {} steps of {} fs, '
-                    'T={} K'
+                    "!MolSSI trajectory 1.0 LAMMPS, NVT {} steps of {} fs, " "T={} K"
                 ).format(int(nsteps / nevery), timestep * nevery, T0)
             else:
                 title1 = (
-                    '!MolSSI trajectory 1.0 LAMMPS, NVT {} steps of {} fs, '
-                    'T={}-{} K'
+                    "!MolSSI trajectory 1.0 LAMMPS, NVT {} steps of {} fs, " "T={}-{} K"
                 ).format(nsteps, timestep, T0, T1)
             lines.append(
                 (
                     "fix                 {} all ave/time {} {} {} {} off 2"
                     " title1 '{}' title2 '{}' file trajectory_nvt_{}.seamm_trj"
                 ).format(
-                    nfixes, nevery, nrepeat, nfreq, properties, title1, title2,
-                    '_'.join(str(e) for e in self._id)
+                    nfixes,
+                    nevery,
+                    nrepeat,
+                    nfreq,
+                    properties,
+                    title1,
+                    title2,
+                    "_".join(str(e) for e in self._id),
                 )
             )
             self.description.append(
@@ -358,20 +353,20 @@ class NVT(lammps_step.NVE):
                     ),
                     nsteps=nsteps,
                     nevery=nevery,
-                    indent=7 * ' '
+                    indent=7 * " ",
                 )
             )
 
-        if extras is not None and 'shake' in extras:
+        if extras is not None and "shake" in extras:
             nfixes += 1
-            lines.append(extras['shake'].format(nfixes))
+            lines.append(extras["shake"].format(nfixes))
 
-        lines.append('')
-        lines.append('run                 {}'.format(nsteps))
-        lines.append('')
+        lines.append("")
+        lines.append("run                 {}".format(nsteps))
+        lines.append("")
 
         for fix in range(1, nfixes + 1):
-            lines.append('unfix               {}'.format(fix))
-        lines.append('')
+            lines.append("unfix               {}".format(fix))
+        lines.append("")
 
         return lines

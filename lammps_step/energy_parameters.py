@@ -18,18 +18,19 @@ class EnergyParameters(seamm.Parameters):
             "enumeration": tuple(),
             "format_string": "",
             "description": "results",
-            "help_text": ("The results to save to variables or in "
-                          "tables. ")
+            "help_text": ("The results to save to variables or in " "tables. "),
         },
         "create tables": {
             "default": "yes",
             "kind": "boolean",
             "default_units": None,
-            "enumeration": ('yes', 'no'),
+            "enumeration": ("yes", "no"),
             "format_string": "",
             "description": "Create tables as needed:",
-            "help_text": ("Whether to create tables as needed for "
-                          "results being saved into tables.")
+            "help_text": (
+                "Whether to create tables as needed for "
+                "results being saved into tables."
+            ),
         },
     }
 
@@ -38,6 +39,5 @@ class EnergyParameters(seamm.Parameters):
         parameters given in the class"""
 
         super().__init__(
-            defaults={**EnergyParameters.parameters, **defaults},
-            data=data
+            defaults={**EnergyParameters.parameters, **defaults}, data=data
         )
