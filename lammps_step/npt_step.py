@@ -7,9 +7,9 @@ import lammps_step
 
 class NPTStep(object):
     my_description = {
-        'description': 'NPT (isothermal–isobaric) dynamics',
-        'group': 'Calculations',
-        'name': 'NPT dynamics'
+        "description": "NPT (isothermal–isobaric) dynamics",
+        "group": "Calculations",
+        "name": "NPT dynamics",
     }
 
     def __init__(self, flowchart=None, gui=None):
@@ -20,8 +20,7 @@ class NPTStep(object):
         pass
 
     def description(self):
-        """Return a description of what this extension does
-        """
+        """Return a description of what this extension does"""
         return NPTStep.my_description
 
     def create_node(self, flowchart=None, **kwargs):

@@ -30,29 +30,29 @@ from seamm_util.printing import FormattedText as __
 
 from pymbar import timeseries
 
-logger = logging.getLogger('lammps')
+logger = logging.getLogger("lammps")
 job = printing.getPrinter()
-printer = printing.getPrinter('lammps')
+printer = printing.getPrinter("lammps")
 
 bond_style = {
-    'quadratic_bond': 'harmonic',
-    'quartic_bond': 'class2',
-    'fene': 'fene',
-    'morse': 'morse',
+    "quadratic_bond": "harmonic",
+    "quartic_bond": "class2",
+    "fene": "fene",
+    "morse": "morse",
 }
 
 angle_style = {
-    'quadratic_angle': 'harmonic',
-    'quartic_angle': 'class2',
+    "quadratic_angle": "harmonic",
+    "quartic_angle": "class2",
 }
 
 dihedral_style = {
-    'torsion_1': 'harmonic',
-    'torsion_3': 'class2',
+    "torsion_1": "harmonic",
+    "torsion_3": "class2",
 }
 
 improper_style = {
-    'wilson_out_of_plane': 'class2',
+    "wilson_out_of_plane": "class2",
 }
 
 
@@ -87,48 +87,39 @@ class LAMMPS(seamm.Node):
     }
 
     def __init__(
-        self,
-        flowchart=None,
-        namespace='org.molssi.seamm.lammps',
-        extension=None
+        self, flowchart=None, namespace="org.molssi.seamm.lammps", extension=None
     ):
         """Setup the main LAMMPS step
 
         Keyword arguments:
         """
-        logger.debug('Creating LAMMPS {}'.format(self))
+        logger.debug("Creating LAMMPS {}".format(self))
 
         # The subflowchart
         self.subflowchart = seamm.Flowchart(
-            parent=self, name='LAMMPS', namespace=namespace
+            parent=self, name="LAMMPS", namespace=namespace
         )
         self._initialization_node = None
         self._trajectory = []
         self._data = {}
 
         super().__init__(
-            flowchart=flowchart,
-            title='LAMMPS',
-            extension=extension,
-            logger=logger
+            flowchart=flowchart, title="LAMMPS", extension=extension, logger=logger
         )
 
     @property
     def version(self):
-        """The semantic version of this module.
-        """
+        """The semantic version of this module."""
         return lammps_step.__version__
 
     @property
     def git_revision(self):
-        """The git version of this module.
-        """
+        """The git version of this module."""
         return lammps_step.__git_revision__
 
     @staticmethod
     def box_to_cell(lx, ly, lz, xy, xz, yz):
-        """Convert the LAMMPS box definition to cell parameters.
-        """
+        """Convert the LAMMPS box definition to cell parameters."""
         if xy == 0 and xz == 0 and yz == 0:
             a = lx
             b = ly
@@ -138,8 +129,8 @@ class LAMMPS(seamm.Node):
             gamma = 0.0
         else:
             a = lx
-            b = sqrt(ly**2 + xy**2)
-            c = sqrt(lz**2 + xz**2 + yz**2)
+            b = sqrt(ly ** 2 + xy ** 2)
+            c = sqrt(lz ** 2 + xz ** 2 + yz ** 2)
             alpha = degrees(acos((xy * xz + lx * yz) / (b * c)))
             beta = degrees(acos(xz / c))
             gamma = degrees(acos(xy / b))
@@ -158,15 +149,14 @@ class LAMMPS(seamm.Node):
             lx = 0
             xy = b * cos(radians(gamma))
             xz = c * cos(radians(beta))
-            ly = sqrt(b**2 - xy**2)
+            ly = sqrt(b ** 2 - xy ** 2)
             yz = (b * c * cos(radians(alpha)) - xy * xz) / ly
-            lz = sqrt(c**2 - xz**2 - yz**2)
+            lz = sqrt(c ** 2 - xz ** 2 - yz ** 2)
 
         return (lx, ly, lz, xy, xz, yz)
 
     def create_parser(self):
-        """Setup the command-line / config file parser
-        """
+        """Setup the command-line / config file parser"""
         parser_name = self.step_type
         parser = seamm.getParser()
 
@@ -183,56 +173,53 @@ class LAMMPS(seamm.Node):
         # LAMMPS specific options
         parser.add_argument(
             parser_name,
-            '--ncores',
-            default='available',
+            "--ncores",
+            default="available",
             help=(
-                'The maximum number of cores to use for LAMMPS. '
-                'Default: all available cores.'
-            )
+                "The maximum number of cores to use for LAMMPS. "
+                "Default: all available cores."
+            ),
         )
         parser.add_argument(
             parser_name,
-            '--atoms-per-core',
+            "--atoms-per-core",
             type=int,
-            default='1000',
-            help='the optimal number of atoms per core for LAMMPS'
+            default="1000",
+            help="the optimal number of atoms per core for LAMMPS",
         )
         parser.add_argument(
             parser_name,
-            '--html',
-            action='store_true',
-            help='whether to write out html files for graphs, etc.'
+            "--html",
+            action="store_true",
+            help="whether to write out html files for graphs, etc.",
         )
         parser.add_argument(
             parser_name,
-            '--modules',
-            nargs='*',
+            "--modules",
+            nargs="*",
             default=None,
-            help='the environment modules to load for LAMMPS'
+            help="the environment modules to load for LAMMPS",
         )
         parser.add_argument(
             parser_name,
-            '--lammps-path',
+            "--lammps-path",
             default=None,
-            help='the path to the LAMMPS executables'
+            help="the path to the LAMMPS executables",
         )
         parser.add_argument(
             parser_name,
-            '--lammps-serial',
-            default='lmp_serial',
-            help='the serial version of LAMMPS'
+            "--lammps-serial",
+            default="lmp_serial",
+            help="the serial version of LAMMPS",
         )
         parser.add_argument(
             parser_name,
-            '--lammps-mpi',
-            default='lmp_mpi',
-            help='the mpi version of LAMMPS'
+            "--lammps-mpi",
+            default="lmp_mpi",
+            help="the mpi version of LAMMPS",
         )
         parser.add_argument(
-            parser_name,
-            '--mpiexec',
-            default='mpiexec',
-            help='the mpi executable'
+            parser_name, "--mpiexec", default="mpiexec", help="the mpi executable"
         )
 
         return result
@@ -261,51 +248,52 @@ class LAMMPS(seamm.Node):
         self.subflowchart.root_directory = self.flowchart.root_directory
 
         # Get the first real node
-        node = self.subflowchart.get_node('1').next()
+        node = self.subflowchart.get_node("1").next()
 
-        text = self.header + '\n\n'
+        text = self.header + "\n\n"
 
         while node is not None:
             try:
-                text += __(node.description_text(), indent=3 * ' ').__str__()
+                text += __(node.description_text(), indent=3 * " ").__str__()
             except Exception as e:
                 print(
-                    'Error describing LAMMPS flowchart: {} in {}'.format(
+                    "Error describing LAMMPS flowchart: {} in {}".format(
                         str(e), str(node)
                     )
                 )
                 self.logger.critical(
-                    'Error describing LAMMPS flowchart: {} in {}'.format(
+                    "Error describing LAMMPS flowchart: {} in {}".format(
                         str(e), str(node)
                     )
                 )
                 raise
             except:  # noqa: E722
                 print(
-                    "Unexpected error describing LAMMPS flowchart: {} in {}"
-                    .format(sys.exc_info()[0], str(node))
+                    "Unexpected error describing LAMMPS flowchart: {} in {}".format(
+                        sys.exc_info()[0], str(node)
+                    )
                 )
                 self.logger.critical(
-                    "Unexpected error describing LAMMPS flowchart: {} in {}"
-                    .format(sys.exc_info()[0], str(node))
+                    "Unexpected error describing LAMMPS flowchart: {} in {}".format(
+                        sys.exc_info()[0], str(node)
+                    )
                 )
                 raise
-            text += '\n'
+            text += "\n"
             node = node.next()
 
         return text
 
     def run(self):
-        """Run a LAMMPS simulation
-        """
+        """Run a LAMMPS simulation"""
 
-        system_db = self.get_variable('_system_db')
+        system_db = self.get_variable("_system_db")
         configuration = system_db.system.configuration
 
         n_atoms = configuration.n_atoms
         if n_atoms == 0:
-            self.logger.error('LAMMPS run(): there is no structure!')
-            raise RuntimeError('LAMMPS run(): there is no structure!')
+            self.logger.error("LAMMPS run(): there is no structure!")
+            raise RuntimeError("LAMMPS run(): there is no structure!")
 
         next_node = super().run(printer)
 
@@ -314,24 +302,24 @@ class LAMMPS(seamm.Node):
         global_options = self.global_options
 
         # Whether to run parallel and if so, how many mpi processes
-        if global_options['parallelism'] in ('any', 'mpi'):
-            np = o['ncores']
-            if np == 'available':
-                np = global_options['ncores']
+        if global_options["parallelism"] in ("any", "mpi"):
+            np = o["ncores"]
+            if np == "available":
+                np = global_options["ncores"]
 
-            if np == 'available':
-                np = int(round(n_atoms / o['atoms_per_core']))
+            if np == "available":
+                np = int(round(n_atoms / o["atoms_per_core"]))
                 if np < 1:
                     np = 1
 
                 # How many processors does this node have?
                 n_cores = psutil.cpu_count(logical=False)
-                self.logger.info('The number of cores is {}'.format(n_cores))
+                self.logger.info("The number of cores is {}".format(n_cores))
 
                 if np > n_cores:
                     self.logger.info(
-                        f'LAMMPS could use {np} cores, but only {n_cores} are '
-                        'available'
+                        f"LAMMPS could use {np} cores, but only {n_cores} are "
+                        "available"
                     )
                     np = n_cores
             else:
@@ -342,18 +330,16 @@ class LAMMPS(seamm.Node):
         # Print headers and get to work
         printer.important(self.header)
         if np > 1:
-            printer.important(
-                '    LAMMPS using MPI with {} processes.\n'.format(np)
-            )
+            printer.important("    LAMMPS using MPI with {} processes.\n".format(np))
         else:
-            printer.important('   LAMMPS using the serial version.\n')
+            printer.important("   LAMMPS using the serial version.\n")
 
         self.subflowchart.root_directory = self.flowchart.root_directory
 
         files = {}
 
         # Get the first real node
-        node = self.subflowchart.get_node('1').next()
+        node = self.subflowchart.get_node("1").next()
 
         extras = {}
 
@@ -369,30 +355,25 @@ class LAMMPS(seamm.Node):
 
             if isinstance(node, lammps_step.Initialization):
                 initialization_header, eex = self._get_node_input(
-                    node=node, extras={'read_data': True}
+                    node=node, extras={"read_data": True}
                 )
-                files['structure'] = {}
-                files['structure']['filename'] = 'structure.dat'
-                files['structure']['data'] = '\n'.join(
-                    self.structure_data(eex)
-                )
+                files["structure"] = {}
+                files["structure"]["filename"] = "structure.dat"
+                files["structure"]["data"] = "\n".join(self.structure_data(eex))
 
-                f = os.path.join(
-                    self.directory, files['structure']['filename']
-                )
-                with open(f, mode='w') as fd:
-                    fd.write(files['structure']['data'])
+                f = os.path.join(self.directory, files["structure"]["filename"])
+                with open(f, mode="w") as fd:
+                    fd.write(files["structure"]["data"])
 
                 self.logger.debug(
-                    files['structure']['filename'] + ": " +
-                    files['structure']['data']
+                    files["structure"]["filename"] + ": " + files["structure"]["data"]
                 )
 
                 self._initialization_node = node
 
-                files['input'] = {}
-                files['input']['filename'] = None
-                files['input']['data'] = copy.deepcopy(initialization_header)
+                files["input"] = {}
+                files["input"]["filename"] = None
+                files["input"]["data"] = copy.deepcopy(initialization_header)
 
                 # Find the bond & angle types as needed for shake/rattle
                 P = node.parameters.current_values_to_dict(
@@ -400,8 +381,8 @@ class LAMMPS(seamm.Node):
                 )
 
                 shake = self.shake_fix(P, eex)
-                if shake != '':
-                    extras['shake'] = shake
+                if shake != "":
+                    extras["shake"] = shake
 
             else:
 
@@ -409,7 +390,7 @@ class LAMMPS(seamm.Node):
                     context=seamm.flowchart_variables._data
                 )
 
-                if 'run_control' not in P or 'Until' not in P['run_control']:
+                if "run_control" not in P or "Until" not in P["run_control"]:
 
                     history_nodes.append(node)
 
@@ -422,7 +403,7 @@ class LAMMPS(seamm.Node):
                             nodes=history_nodes,
                             read_restart=False,
                             write_restart=True,
-                            extras=extras
+                            extras=extras,
                         )
 
                         files = self._execute_single_sim(files, np=np)
@@ -433,20 +414,20 @@ class LAMMPS(seamm.Node):
 
                     iteration = 0
 
-                    extras['nsteps'] = 666
+                    extras["nsteps"] = 666
 
                     while True:
 
-                        extras['nsteps'] = round(1.5 * extras['nsteps'])
+                        extras["nsteps"] = round(1.5 * extras["nsteps"])
 
                         control_properties = {}
 
-                        for prp in P['control_properties']:
+                        for prp in P["control_properties"]:
                             k = prp[0]
                             control_properties[k] = {
-                                'accuracy': float(prp[1][0].strip('%')),
-                                'units': prp[1][1],
-                                'enough_accuracy': False
+                                "accuracy": float(prp[1][0].strip("%")),
+                                "units": prp[1][1],
+                                "enough_accuracy": False,
                             }
 
                         P = node.parameters.current_values_to_dict(
@@ -459,7 +440,7 @@ class LAMMPS(seamm.Node):
                             iteration=iteration,
                             read_restart=True,
                             write_restart=True,
-                            extras=extras
+                            extras=extras,
                         )
 
                         files = self._execute_single_sim(files, np=np)
@@ -468,24 +449,24 @@ class LAMMPS(seamm.Node):
                         analysis = self.analyze(nodes=node)
                         node_id = node._id[1]
                         for prp, v in analysis[node_id].items():
-                            if v['short_production'] is False:
-                                if v['few_neff'] is False:
+                            if v["short_production"] is False:
+                                if v["few_neff"] is False:
 
-                                    accuracy = control_properties[prp][
-                                        'accuracy'] / 100
-                                    dof = v['n_sample']
-                                    mean = v['mean']
+                                    accuracy = control_properties[prp]["accuracy"] / 100
+                                    dof = v["n_sample"]
+                                    mean = v["mean"]
                                     ci = t_student.interval(
                                         0.95, dof - 1, loc=0, scale=1
                                     )
-                                    interval = (ci[1] - ci[0]) * v['sem']
+                                    interval = (ci[1] - ci[0]) * v["sem"]
                                     print(abs(interval / mean))
                                     if abs(interval / mean) < accuracy:
                                         control_properties[prp][
-                                            'enough_accuracy'] = True
+                                            "enough_accuracy"
+                                        ] = True
 
                         enough_acc = [
-                            v['enough_accuracy']
+                            v["enough_accuracy"]
                             for prp, v in control_properties.items()
                         ]
                         if all(enough_acc) is True:
@@ -493,14 +474,14 @@ class LAMMPS(seamm.Node):
 
                             initialization_header, eex = self._get_node_input(
                                 node=self._initialization_node,
-                                extras={'read_data': False}
+                                extras={"read_data": False},
                             )
-                            files['input']['data'] = copy.deepcopy(
+                            files["input"]["data"] = copy.deepcopy(
                                 initialization_header
                             )
-                            files['input']['data'].append(
-                                "read_restart       %s" %
-                                (os.path.join(files['restart']['filename']))
+                            files["input"]["data"].append(
+                                "read_restart       %s"
+                                % (os.path.join(files["restart"]["filename"]))
                             )
                             self._trajectory = []
                             break
@@ -511,44 +492,39 @@ class LAMMPS(seamm.Node):
 
         if len(history_nodes) == 0:
 
-            node_initialization = self.subflowchart.get_node('1').next()
+            node_initialization = self.subflowchart.get_node("1").next()
 
             if node_initialization is None:
                 raise TypeError(
                     "The initial node in a LAMMPS workflow should be an ",
-                    "initialization node"
+                    "initialization node",
                 )
 
-            if isinstance(
-                node_initialization, lammps_step.Initialization
-            ) is False:
+            if isinstance(node_initialization, lammps_step.Initialization) is False:
                 raise TypeError(
                     "The initial node in a LAMMPS workflow should be an ",
-                    "initialization node"
+                    "initialization node",
                 )
 
-            base = 'lammps_substep_%s_iter_%d' % (
-                node_initialization._id[1], 0
-            )
+            base = "lammps_substep_%s_iter_%d" % (node_initialization._id[1], 0)
 
-            restart = base + '.restart.*'
-            dump = base + '.dump.*'
-            input_file = base + '.dat'
+            restart = base + ".restart.*"
+            dump = base + ".dump.*"
+            input_file = base + ".dat"
             new_input_data = []
-            new_input_data.append('run          0')
-            new_input_data.append(f'write_restart          {restart}')
+            new_input_data.append("run          0")
+            new_input_data.append(f"write_restart          {restart}")
 
             new_input_data.append(
-                f'write_dump all custom  {dump} id '
-                'xu yu zu modify flush yes sort id'
+                f"write_dump all custom  {dump} id " "xu yu zu modify flush yes sort id"
             )
 
-            files['input']['filename'] = input_file
-            files['input']['data'] += new_input_data
-            files['input']['data'] = '\n'.join(files['input']['data'])
+            files["input"]["filename"] = input_file
+            files["input"]["data"] += new_input_data
+            files["input"]["data"] = "\n".join(files["input"]["data"])
 
             self.logger.debug(
-                files['input']['filename'] + ':\n' + files['input']['data']
+                files["input"]["filename"] + ":\n" + files["input"]["data"]
             )
 
             files = self._execute_single_sim(files, np=np)
@@ -560,7 +536,7 @@ class LAMMPS(seamm.Node):
                 nodes=history_nodes,
                 read_restart=False,
                 write_restart=True,
-                extras=extras
+                extras=extras,
             )
 
             files = self._execute_single_sim(files, np=np)
@@ -569,9 +545,9 @@ class LAMMPS(seamm.Node):
 
             self._trajectory = []
 
-        self.read_dump(os.path.join(self.directory, files['dump']['filename']))
+        self.read_dump(os.path.join(self.directory, files["dump"]["filename"]))
 
-        printer.normal('')
+        printer.normal("")
 
         return next_node
 
@@ -585,42 +561,42 @@ class LAMMPS(seamm.Node):
         tmpdict = {}
         for k, v in files.items():
 
-            if v['filename'] is None or v['data'] is None:
+            if v["filename"] is None or v["data"] is None:
                 continue
 
-            filename = os.path.join(self.directory, v['filename'])
-            mode = "w" if type(v['data']) is str else "wb"
+            filename = os.path.join(self.directory, v["filename"])
+            mode = "w" if type(v["data"]) is str else "wb"
             with open(filename, mode=mode) as fd:
-                fd.write(v['data'])
+                fd.write(v["data"])
 
-            tmpdict[v['filename']] = v['data']
+            tmpdict[v["filename"]] = v["data"]
 
         return_files = [
-            'summary_*.txt',
-            'trajectory_*.seamm_trj',
-            '*.restart.*',
-            '*.dump.*',
-            '*.log',
-            'log.cite'
+            "summary_*.txt",
+            "trajectory_*.seamm_trj",
+            "*.restart.*",
+            "*.dump.*",
+            "*.log",
+            "log.cite",
         ]  # yapf: disable
 
         local = seamm.ExecLocal()
 
         # Find the executables and if they exist.
-        lammps_path = Path(self.options['lammps_path']).expanduser().resolve()
-        lmp_serial = lammps_path / self.options['lammps_serial']
+        lammps_path = Path(self.options["lammps_path"]).expanduser().resolve()
+        lmp_serial = lammps_path / self.options["lammps_serial"]
         lmp_serial = lmp_serial.expanduser().resolve()
         if not lmp_serial.exists():
             lmp_serial = None
 
-        lmp_mpi = lammps_path / self.options['lammps_mpi']
+        lmp_mpi = lammps_path / self.options["lammps_mpi"]
         lmp_mpi = lmp_mpi.expanduser().resolve()
         if lmp_mpi.exists():
-            mpiexec = lammps_path / self.options['mpiexec']
+            mpiexec = lammps_path / self.options["mpiexec"]
             mpiexec = mpiexec.expanduser().resolve()
             if not mpiexec.exists():
                 # See if it is in the path
-                mpiexec = shutil.which(self.options['mpiexec'])
+                mpiexec = shutil.which(self.options["mpiexec"])
                 if mpiexec is None:
                     lmp_mpi = None
                 else:
@@ -631,59 +607,58 @@ class LAMMPS(seamm.Node):
         # Use the parallel executable if the serial does not exist, and vice
         # versa
         if lmp_mpi is not None and (np > 1 or lmp_serial is None):
-            cmd = [str(mpiexec), '-np', str(np), str(lmp_mpi)]
+            cmd = [str(mpiexec), "-np", str(np), str(lmp_mpi)]
         else:
             cmd = [str(lmp_serial)]
-        cmd.extend(['-in', files['input']['filename']])
+        cmd.extend(["-in", files["input"]["filename"]])
 
         result = local.run(cmd=cmd, files=tmpdict, return_files=return_files)
 
         if result is None:
-            self.logger.error('There was an error running LAMMPS')
+            self.logger.error("There was an error running LAMMPS")
             return None
 
-        self.logger.debug('\n' + pprint.pformat(result))
+        self.logger.debug("\n" + pprint.pformat(result))
 
-        self.logger.debug('stdout:\n' + result['stdout'])
+        self.logger.debug("stdout:\n" + result["stdout"])
 
-        f = os.path.join(self.directory, 'stdout.txt')
-        with open(f, mode='w') as fd:
-            fd.write(result['stdout'])
+        f = os.path.join(self.directory, "stdout.txt")
+        with open(f, mode="w") as fd:
+            fd.write(result["stdout"])
 
         # Add the citations, getting the version from stdout and any citations
-        if 'log.cite' in result:
+        if "log.cite" in result:
             self._add_lammps_citations(
-                result['stdout'], cite=result['log.cite']['data']
+                result["stdout"], cite=result["log.cite"]["data"]
             )
         else:
-            self._add_lammps_citations(result['stdout'])
+            self._add_lammps_citations(result["stdout"])
 
-        if result['stderr'] != '':
-            self.logger.warning('stderr:\n' + result['stderr'])
-            f = os.path.join(self.directory, 'sstderr.txt')
-            with open(f, mode='w') as fd:
-                fd.write(result['stderr'])
+        if result["stderr"] != "":
+            self.logger.warning("stderr:\n" + result["stderr"])
+            f = os.path.join(self.directory, "sstderr.txt")
+            with open(f, mode="w") as fd:
+                fd.write(result["stderr"])
 
-        for filename in result['files']:
+        for filename in result["files"]:
             f = os.path.join(self.directory, filename)
-            mode = "wb" if type(result[filename]['data']) is bytes else "w"
+            mode = "wb" if type(result[filename]["data"]) is bytes else "w"
             with open(f, mode=mode) as fd:
-                if result[filename]['data'] is not None:
-                    fd.write(result[filename]['data'])
+                if result[filename]["data"] is not None:
+                    fd.write(result[filename]["data"])
                 else:
-                    fd.write(result[filename]['exception'])
+                    fd.write(result[filename]["exception"])
 
-        base = os.path.basename(files['input']['filename'][0:-4])
-        restart_file = base + '.restart.*'
-        dump_file = base + '.dump.*'
+        base = os.path.basename(files["input"]["filename"][0:-4])
+        restart_file = base + ".restart.*"
+        dump_file = base + ".dump.*"
         filename = os.path.join(self.directory, restart_file)
         restart_filenames = glob.glob(filename)
 
         # Probably the step didn't run
         if len(restart_filenames) == 0:
             raise FileNotFoundError(
-                'Lammps_step: could not find any file with the pattern %s' %
-                (filename)
+                "Lammps_step: could not find any file with the pattern %s" % (filename)
             )
 
         run_lengths = []
@@ -691,33 +666,31 @@ class LAMMPS(seamm.Node):
         for f in restart_filenames:
             try:
                 pre, ext = os.path.splitext(f)
-                ext = int(ext.strip('.'))
+                ext = int(ext.strip("."))
             except ValueError:
-                raise Exception(
-                    'Lammps_step: could not extract run length from %s' % f
-                )
+                raise Exception("Lammps_step: could not extract run length from %s" % f)
             run_lengths.append(ext)
 
             last_snapshot = str(max(run_lengths))
 
-        restart_file = restart_file.replace('*', last_snapshot)
-        dump_file = dump_file.replace('*', last_snapshot)
-        files['restart'] = {}
-        files['restart']['filename'] = restart_file
-        files['dump'] = {}
-        files['dump']['filename'] = dump_file
-        files['dump']['data'] = None
+        restart_file = restart_file.replace("*", last_snapshot)
+        dump_file = dump_file.replace("*", last_snapshot)
+        files["restart"] = {}
+        files["restart"]["filename"] = restart_file
+        files["dump"] = {}
+        files["dump"]["filename"] = dump_file
+        files["dump"]["data"] = None
 
         filename = os.path.join(self.directory, restart_file)
-        with open(filename, mode='rb') as fd:
-            files['restart']['data'] = fd.read()
+        with open(filename, mode="rb") as fd:
+            files["restart"]["data"] = fd.read()
 
-        files['input'] = {}
-        files['input']['filename'] = None
+        files["input"] = {}
+        files["input"]["filename"] = None
         initialization_header, eex = self._get_node_input(
-            node=self._initialization_node, extras={'read_data': False}
+            node=self._initialization_node, extras={"read_data": False}
         )
-        files['input']['data'] = copy.deepcopy(initialization_header)
+        files["input"]["data"] = copy.deepcopy(initialization_header)
 
         return files
 
@@ -728,7 +701,7 @@ class LAMMPS(seamm.Node):
         iteration=0,
         read_restart=False,
         write_restart=False,
-        extras=None
+        extras=None,
     ):
 
         if isinstance(nodes, list) is False:
@@ -742,32 +715,29 @@ class LAMMPS(seamm.Node):
                 node_ids.append(n._id[1])
                 new_input_data += self._get_node_input(node=n, extras=extras)
 
-        base = 'lammps_substep_%s_iter_%d' % ('_'.join(node_ids), iteration)
+        base = "lammps_substep_%s_iter_%d" % ("_".join(node_ids), iteration)
 
-        input_file = base + '.dat'
-        restart = base + '.restart.*'
-        dump = base + '.dump.*'
+        input_file = base + ".dat"
+        restart = base + ".restart.*"
+        dump = base + ".dump.*"
 
         if read_restart:
             new_input_data.insert(
-                0, 'read_restart          %s' % (files['restart']['filename'])
+                0, "read_restart          %s" % (files["restart"]["filename"])
             )
 
         if write_restart:
-            new_input_data.append(f'write_restart          {restart}')
+            new_input_data.append(f"write_restart          {restart}")
 
         new_input_data.append(
-            f'write_dump all custom  {dump} id '
-            'xu yu zu modify flush yes sort id'
+            f"write_dump all custom  {dump} id " "xu yu zu modify flush yes sort id"
         )
 
-        files['input']['data'] += new_input_data
+        files["input"]["data"] += new_input_data
 
-        files['input']['filename'] = input_file
-        files['input']['data'] = '\n'.join(files['input']['data'])
-        self.logger.debug(
-            files['input']['filename'] + ':\n' + files['input']['data']
-        )
+        files["input"]["filename"] = input_file
+        files["input"]["data"] = "\n".join(files["input"]["data"])
+        self.logger.debug(files["input"]["filename"] + ":\n" + files["input"]["data"])
 
         return files
 
@@ -776,15 +746,9 @@ class LAMMPS(seamm.Node):
         try:
             ret = node.get_input(extras=extras)
         except Exception as e:
-            print(
-                'Error running LAMMPS flowchart: {} in {}'.format(
-                    str(e), str(node)
-                )
-            )
+            print("Error running LAMMPS flowchart: {} in {}".format(str(e), str(node)))
             self.logger.critical(
-                'Error running LAMMPS flowchart: {} in {}'.format(
-                    str(e), str(node)
-                )
+                "Error running LAMMPS flowchart: {} in {}".format(str(e), str(node))
             )
             raise
         except:  # noqa: E722
@@ -806,52 +770,46 @@ class LAMMPS(seamm.Node):
         lines = []
 
         # The terms in the forcefield, and for each a list of forms
-        terms = eex['terms']
+        terms = eex["terms"]
 
-        lines.append(
-            'Structure file for LAMMPS generated by a MolSSI flowchart'
-        )
-        lines.append('{:10d} atoms'.format(eex['n_atoms']))
-        lines.append('{:10d} atom types'.format(eex['n_atom_types']))
-        if 'n_bonds' in eex and eex['n_bonds'] > 0:
-            lines.append('{:10d} bonds'.format(eex['n_bonds']))
-            lines.append('{:10d} bond types'.format(eex['n_bond_types']))
-        if 'n_angles' in eex and eex['n_angles'] > 0:
-            lines.append('{:10d} angles'.format(eex['n_angles']))
-            lines.append('{:10d} angle types'.format(eex['n_angle_types']))
-        if 'n_torsions' in eex and eex['n_torsions'] > 0:
-            lines.append('{:10d} dihedrals'.format(eex['n_torsions']))
-            lines.append(
-                '{:10d} dihedral types'.format(eex['n_torsion_types'])
-            )
-        if 'n_oops' in eex and eex['n_oops'] > 0:
-            lines.append('{:10d} impropers'.format(eex['n_oops']))
-            lines.append('{:10d} improper types'.format(eex['n_oop_types']))
+        lines.append("Structure file for LAMMPS generated by a MolSSI flowchart")
+        lines.append("{:10d} atoms".format(eex["n_atoms"]))
+        lines.append("{:10d} atom types".format(eex["n_atom_types"]))
+        if "n_bonds" in eex and eex["n_bonds"] > 0:
+            lines.append("{:10d} bonds".format(eex["n_bonds"]))
+            lines.append("{:10d} bond types".format(eex["n_bond_types"]))
+        if "n_angles" in eex and eex["n_angles"] > 0:
+            lines.append("{:10d} angles".format(eex["n_angles"]))
+            lines.append("{:10d} angle types".format(eex["n_angle_types"]))
+        if "n_torsions" in eex and eex["n_torsions"] > 0:
+            lines.append("{:10d} dihedrals".format(eex["n_torsions"]))
+            lines.append("{:10d} dihedral types".format(eex["n_torsion_types"]))
+        if "n_oops" in eex and eex["n_oops"] > 0:
+            lines.append("{:10d} impropers".format(eex["n_oops"]))
+            lines.append("{:10d} improper types".format(eex["n_oop_types"]))
 
         # Find the box limits
-        periodicity = eex['periodicity']
+        periodicity = eex["periodicity"]
         if periodicity == 3:
-            a, b, c, alpha, beta, gamma = eex['cell']
-            lx, ly, lz, xy, xz, yz = LAMMPS.cell_to_box(
-                a, b, c, alpha, beta, gamma
-            )
+            a, b, c, alpha, beta, gamma = eex["cell"]
+            lx, ly, lz, xy, xz, yz = LAMMPS.cell_to_box(a, b, c, alpha, beta, gamma)
 
-            lines.append('{} {} xlo xhi'.format(0.0, lx))
-            lines.append('{} {} ylo yhi'.format(0.0, ly))
-            lines.append('{} {} zlo zhi'.format(0.0, lz))
+            lines.append("{} {} xlo xhi".format(0.0, lx))
+            lines.append("{} {} ylo yhi".format(0.0, ly))
+            lines.append("{} {} zlo zhi".format(0.0, lz))
 
             xy = xy if abs(xy) > 1.0e-06 else 0.0
             xz = xz if abs(xy) > 1.0e-06 else 0.0
             yz = yz if abs(xy) > 1.0e-06 else 0.0
 
             if triclinic or xy > 0.0 or xz > 0.0 or yz > 0.0:
-                lines.append('{} {} {} xy xz yz'.format(xy, xz, yz))
+                lines.append("{} {} {} xy xz yz".format(xy, xz, yz))
         else:
-            x, y, z, index = eex['atoms'][0]
+            x, y, z, index = eex["atoms"][0]
             xlo = xhi = x
             ylo = yhi = y
             zlo = zhi = z
-            for x, y, z, index in eex['atoms']:
+            for x, y, z, index in eex["atoms"]:
                 xlo = x if x < xlo else xlo
                 xhi = x if x > xhi else xlo
                 ylo = y if y < ylo else ylo
@@ -867,147 +825,123 @@ class LAMMPS(seamm.Node):
             zlo -= 10.0
             zhi += 10.0
 
-            lines.append('{} {} xlo xhi'.format(xlo, xhi))
-            lines.append('{} {} ylo yhi'.format(ylo, yhi))
-            lines.append('{} {} zlo zhi'.format(zlo, zhi))
+            lines.append("{} {} xlo xhi".format(xlo, xhi))
+            lines.append("{} {} ylo yhi".format(ylo, yhi))
+            lines.append("{} {} zlo zhi".format(zlo, zhi))
 
         # the atoms and their masses, etc.
-        lines.append('')
-        lines.append('Atoms')
-        lines.append('')
+        lines.append("")
+        lines.append("Atoms")
+        lines.append("")
 
-        if 'charges' in eex:
+        if "charges" in eex:
             for i, xyz_index, q in zip(
-                range(1, eex['n_atoms'] + 1), eex['atoms'], eex['charges']
+                range(1, eex["n_atoms"] + 1), eex["atoms"], eex["charges"]
             ):
                 x, y, z, index = xyz_index
                 # The '1' is molecule ID ... should correct at some point!
                 lines.append(
-                    f'{i:6d}      1 {index:6d} {q:6.3f} {x:12.7f} {y:12.7f} '
-                    f'{z:12.7f}'
+                    f"{i:6d}      1 {index:6d} {q:6.3f} {x:12.7f} {y:12.7f} "
+                    f"{z:12.7f}"
                 )
         else:
-            for i, xyz_index in enumerate(eex['atoms']):
+            for i, xyz_index in enumerate(eex["atoms"]):
                 x, y, z, index = xyz_index
-                lines.append(
-                    f'{i+1:6d} {index:6d} {x:12.7f} {y:12.7f} {z:12.7f}'
-                )
-        lines.append('')
+                lines.append(f"{i+1:6d} {index:6d} {x:12.7f} {y:12.7f} {z:12.7f}")
+        lines.append("")
 
-        lines.append('Masses')
-        lines.append('')
-        self._data['masses'] = []
-        for i, parameters in zip(
-            range(1, eex['n_atom_types'] + 1), eex['masses']
-        ):
+        lines.append("Masses")
+        lines.append("")
+        self._data["masses"] = []
+        for i, parameters in zip(range(1, eex["n_atom_types"] + 1), eex["masses"]):
             mass, itype = parameters
-            lines.append('{:6d} {} # {}'.format(i, mass, itype))
-            self._data['masses'].append(float(mass))
+            lines.append("{:6d} {} # {}".format(i, mass, itype))
+            self._data["masses"].append(float(mass))
 
         # nonbonds
-        if 'nonbond parameters' in eex:
-            lines.append('')
-            lines.append('Pair Coeffs')
-            lines.append('')
+        if "nonbond parameters" in eex:
+            lines.append("")
+            lines.append("Pair Coeffs")
+            lines.append("")
             for i, parameters in zip(
-                range(1, eex['n_atom_types'] + 1), eex['nonbond parameters']
+                range(1, eex["n_atom_types"] + 1), eex["nonbond parameters"]
             ):
-                form, values, types, parameters_type, real_types = \
-                    parameters
-                if form == 'nonbond(9-6)':
+                form, values, types, parameters_type, real_types = parameters
+                if form == "nonbond(9-6)":
                     lines.append(
-                        '{:6d} {} {} # {} --> {}'.format(
-                            i, values['eps'], values['rmin'], types[0],
-                            real_types[0]
+                        "{:6d} {} {} # {} --> {}".format(
+                            i, values["eps"], values["rmin"], types[0], real_types[0]
                         )
                     )
                 else:
                     lines.append(
-                        '{:6d} {} {} # {} --> {}'.format(
-                            i, values['eps'], values['sigma'], types[0],
-                            real_types[0]
+                        "{:6d} {} {} # {} --> {}".format(
+                            i, values["eps"], values["sigma"], types[0], real_types[0]
                         )
                     )
 
         # bonds
-        if 'n_bonds' in eex and eex['n_bonds'] > 0:
-            lines.append('')
-            lines.append('Bonds')
-            lines.append('')
-            for counter, tmp in zip(
-                range(1, eex['n_bonds'] + 1), eex['bonds']
-            ):
+        if "n_bonds" in eex and eex["n_bonds"] > 0:
+            lines.append("")
+            lines.append("Bonds")
+            lines.append("")
+            for counter, tmp in zip(range(1, eex["n_bonds"] + 1), eex["bonds"]):
                 i, j, index = tmp
-                lines.append(
-                    '{:6d} {:6d} {:6d} {:6d}'.format(counter, index, i, j)
-                )
+                lines.append("{:6d} {:6d} {:6d} {:6d}".format(counter, index, i, j))
 
-            lines.append('')
-            lines.append('Bond Coeffs')
-            lines.append('')
+            lines.append("")
+            lines.append("Bond Coeffs")
+            lines.append("")
 
-            use_hybrid = len(terms['bond']) > 1
+            use_hybrid = len(terms["bond"]) > 1
 
             for counter, parameters in zip(
-                range(1, eex['n_bond_types'] + 1), eex['bond parameters']
+                range(1, eex["n_bond_types"] + 1), eex["bond parameters"]
             ):
-                form, values, types, parameters_type, real_types = \
-                    parameters
-                if form == 'quadratic_bond':
-                    function = 'harmonic' if use_hybrid else ''
-                    line = (
-                        f"{counter:6d} {function} "
-                        f"{values['K2']} {values['R0']}"
-                    )
-                elif form == 'quartic_bond':
-                    function = 'class2' if use_hybrid else ''
+                form, values, types, parameters_type, real_types = parameters
+                if form == "quadratic_bond":
+                    function = "harmonic" if use_hybrid else ""
+                    line = f"{counter:6d} {function} " f"{values['K2']} {values['R0']}"
+                elif form == "quartic_bond":
+                    function = "class2" if use_hybrid else ""
                     line = (
                         f"{counter:6d} {function} {values['R0']} "
                         f"{values['K2']} {values['K3']} {values['K4']}"
                     )
                 line += (
-                    f" # {types[0]}-{types[1]}"
-                    f" --> {real_types[0]}_{real_types[1]}"
+                    f" # {types[0]}-{types[1]}" f" --> {real_types[0]}_{real_types[1]}"
                 )
                 lines.append(line)
 
         # angles
-        if 'n_angles' in eex and eex['n_angles'] > 0:
-            lines.append('')
-            lines.append('Angles')
-            lines.append('')
-            for counter, tmp in zip(
-                range(1, eex['n_angles'] + 1), eex['angles']
-            ):
+        if "n_angles" in eex and eex["n_angles"] > 0:
+            lines.append("")
+            lines.append("Angles")
+            lines.append("")
+            for counter, tmp in zip(range(1, eex["n_angles"] + 1), eex["angles"]):
                 i, j, k, index = tmp
                 lines.append(
-                    '{:6d} {:6d} {:6d} {:6d} {:6d}'.format(
-                        counter, index, i, j, k
-                    )
+                    "{:6d} {:6d} {:6d} {:6d} {:6d}".format(counter, index, i, j, k)
                 )
 
-            lines.append('')
-            lines.append('Angle Coeffs')
-            lines.append('')
+            lines.append("")
+            lines.append("Angle Coeffs")
+            lines.append("")
 
-            use_hybrid = len(terms['angle']) > 1
-            quartic_function = (
-                'class2' if 'n_bond-bond_types' in eex else 'quartic'
-            )
+            use_hybrid = len(terms["angle"]) > 1
+            quartic_function = "class2" if "n_bond-bond_types" in eex else "quartic"
 
             for counter, parameters in zip(
-                range(1, eex['n_angle_types'] + 1), eex['angle parameters']
+                range(1, eex["n_angle_types"] + 1), eex["angle parameters"]
             ):
-                form, values, types, parameters_type, real_types = \
-                    parameters
-                if form == 'quadratic_angle':
-                    function = 'harmonic' if use_hybrid else ''
+                form, values, types, parameters_type, real_types = parameters
+                if form == "quadratic_angle":
+                    function = "harmonic" if use_hybrid else ""
                     line = (
-                        f"{counter:6d} {function} "
-                        f"{values['K2']} {values['Theta0']}"
+                        f"{counter:6d} {function} " f"{values['K2']} {values['Theta0']}"
                     )
-                elif form == 'quartic_angle':
-                    function = quartic_function if use_hybrid else ''
+                elif form == "quartic_angle":
+                    function = quartic_function if use_hybrid else ""
                     line = (
                         f"{counter:6d} {function} {values['Theta0']} "
                         f"{values['K2']} {values['K3']} {values['K4']}"
@@ -1019,97 +953,114 @@ class LAMMPS(seamm.Node):
                 lines.append(line)
 
             # bond-bond coefficients, which must match angles in order & number
-            if 'n_bond-bond_types' in eex:
-                lines.append('')
-                lines.append('BondBond Coeffs')
-                lines.append('')
+            if "n_bond-bond_types" in eex:
+                lines.append("")
+                lines.append("BondBond Coeffs")
+                lines.append("")
                 for counter, parameters, angles in zip(
-                    range(1, eex['n_bond-bond_types'] + 1),
-                    eex['bond-bond parameters'], eex['angle parameters']
+                    range(1, eex["n_bond-bond_types"] + 1),
+                    eex["bond-bond parameters"],
+                    eex["angle parameters"],
                 ):
-                    form, values, types, parameters_type, real_types = \
-                        parameters
+                    form, values, types, parameters_type, real_types = parameters
                     angle_form = angles[0]
-                    if angle_form == 'quartic_angle':
+                    if angle_form == "quartic_angle":
                         lines.append(
-                            '{:6d} class2 {} {} {}'.format(
-                                counter, values['K'], values['R10'],
-                                values['R20']
-                            ) + ' # {}-{}-{} --> {}-{}-{}'.format(
-                                types[0], types[1], types[2], real_types[0],
-                                real_types[1], real_types[2]
+                            "{:6d} class2 {} {} {}".format(
+                                counter, values["K"], values["R10"], values["R20"]
+                            )
+                            + " # {}-{}-{} --> {}-{}-{}".format(
+                                types[0],
+                                types[1],
+                                types[2],
+                                real_types[0],
+                                real_types[1],
+                                real_types[2],
                             )
                         )
                     else:
                         lines.append(
-                            '{:6d} skip'.format(counter) +
-                            ' # {}-{}-{} --> {}-{}-{}'.format(
-                                types[0], types[1], types[2], real_types[0],
-                                real_types[1], real_types[2]
+                            "{:6d} skip".format(counter)
+                            + " # {}-{}-{} --> {}-{}-{}".format(
+                                types[0],
+                                types[1],
+                                types[2],
+                                real_types[0],
+                                real_types[1],
+                                real_types[2],
                             )
                         )
 
                 # bond-angles coefficients, which must match angles in order &
                 # number
-                lines.append('')
-                lines.append('BondAngle Coeffs')
-                lines.append('')
+                lines.append("")
+                lines.append("BondAngle Coeffs")
+                lines.append("")
                 for counter, parameters, angles in zip(
-                    range(1, eex['n_bond-angle_types'] + 1),
-                    eex['bond-angle parameters'], eex['angle parameters']
+                    range(1, eex["n_bond-angle_types"] + 1),
+                    eex["bond-angle parameters"],
+                    eex["angle parameters"],
                 ):
-                    form, values, types, parameters_type, real_types = \
-                        parameters
+                    form, values, types, parameters_type, real_types = parameters
                     angle_form = angles[0]
-                    if angle_form == 'quartic_angle':
+                    if angle_form == "quartic_angle":
                         lines.append(
-                            '{:6d} class2 {} {} {} {}'.format(
-                                counter, values['K12'], values['K23'],
-                                values['R10'], values['R20']
-                            ) + ' # {}-{}-{} --> {}-{}-{}'.format(
-                                types[0], types[1], types[2], real_types[0],
-                                real_types[1], real_types[2]
+                            "{:6d} class2 {} {} {} {}".format(
+                                counter,
+                                values["K12"],
+                                values["K23"],
+                                values["R10"],
+                                values["R20"],
+                            )
+                            + " # {}-{}-{} --> {}-{}-{}".format(
+                                types[0],
+                                types[1],
+                                types[2],
+                                real_types[0],
+                                real_types[1],
+                                real_types[2],
                             )
                         )
                     else:
                         lines.append(
-                            '{:6d} skip'.format(counter) +
-                            ' # {}-{}-{} --> {}-{}-{}'.format(
-                                types[0], types[1], types[2], real_types[0],
-                                real_types[1], real_types[2]
+                            "{:6d} skip".format(counter)
+                            + " # {}-{}-{} --> {}-{}-{}".format(
+                                types[0],
+                                types[1],
+                                types[2],
+                                real_types[0],
+                                real_types[1],
+                                real_types[2],
                             )
                         )
 
         # torsions
-        if 'n_torsions' in eex and eex['n_torsions'] > 0:
-            lines.append('')
-            lines.append('Dihedrals')
-            lines.append('')
-            for counter, tmp in zip(
-                range(1, eex['n_torsions'] + 1), eex['torsions']
-            ):
+        if "n_torsions" in eex and eex["n_torsions"] > 0:
+            lines.append("")
+            lines.append("Dihedrals")
+            lines.append("")
+            for counter, tmp in zip(range(1, eex["n_torsions"] + 1), eex["torsions"]):
                 i, j, k, l, index = tmp
                 lines.append(
-                    '{:6d} {:6d} {:6d} {:6d} {:6d} {:6d}'.format(
+                    "{:6d} {:6d} {:6d} {:6d} {:6d} {:6d}".format(
                         counter, index, i, j, k, l
                     )
                 )
 
-            lines.append('')
-            lines.append('Dihedral Coeffs')
-            lines.append('')
+            lines.append("")
+            lines.append("Dihedral Coeffs")
+            lines.append("")
 
-            use_hybrid = len(terms['torsion']) > 1
+            use_hybrid = len(terms["torsion"]) > 1
 
             for counter, parameters in zip(
-                range(1, eex['n_torsion_types'] + 1), eex['torsion parameters']
+                range(1, eex["n_torsion_types"] + 1), eex["torsion parameters"]
             ):
-                form, values, types, parameters_type, real_types = \
-                    parameters
-                if form == 'torsion_1':
-                    KPhi = values['KPhi']
-                    n = values['n']
-                    Phi0 = values['Phi0']
+                form, values, types, parameters_type, real_types = parameters
+                if form == "torsion_1":
+                    KPhi = values["KPhi"]
+                    n = values["n"]
+                    Phi0 = values["Phi0"]
 
                     # Discover form is
                     #  KPhi * [1 + cos(n*Phi - Phi0)]
@@ -1127,17 +1078,17 @@ class LAMMPS(seamm.Node):
                     # Phi0 = 180 ==> d=-1
 
                     if float(Phi0) == 0.0:
-                        d = '-1'
+                        d = "-1"
                     elif float(Phi0) == 180.0:
-                        d = '+1'
+                        d = "+1"
                     else:
                         raise RuntimeError(
-                            'LAMMPS cannot handle Phi0 = {}'.format(Phi0)
+                            "LAMMPS cannot handle Phi0 = {}".format(Phi0)
                         )
-                    function = 'harmonic' if use_hybrid else ''
-                    line = f'{counter:6d} {function} {KPhi} {d} {n}'
-                elif form == 'torsion_3':
-                    function = 'class2' if use_hybrid else ''
+                    function = "harmonic" if use_hybrid else ""
+                    line = f"{counter:6d} {function} {KPhi} {d} {n}"
+                elif form == "torsion_3":
+                    function = "class2" if use_hybrid else ""
                     line = (
                         f"{counter:6d} {function} "
                         f"{values['V1']} {values['Phi0_1']} "
@@ -1145,243 +1096,322 @@ class LAMMPS(seamm.Node):
                         f"{values['V3']} {values['Phi0_3']} "
                     )
                 line += (
-                    f' # {types[0]}-{types[1]}-{types[2]}-{types[3]} '
-                    f'--> {real_types[0]}-{real_types[1]}-'
-                    f'{real_types[2]}-{real_types[3]}'
+                    f" # {types[0]}-{types[1]}-{types[2]}-{types[3]} "
+                    f"--> {real_types[0]}-{real_types[1]}-"
+                    f"{real_types[2]}-{real_types[3]}"
                 )
                 lines.append(line)
 
             # middle bond-torsion_3 coefficients, which must match torsions
             # in order & number
-            if 'n_middle_bond-torsion_3_types' in eex:
-                lines.append('')
-                lines.append('MiddleBondTorsion Coeffs')
-                lines.append('')
+            if "n_middle_bond-torsion_3_types" in eex:
+                lines.append("")
+                lines.append("MiddleBondTorsion Coeffs")
+                lines.append("")
                 for counter, parameters, torsions in zip(
-                    range(1, eex['n_middle_bond-torsion_3_types'] + 1),
-                    eex['middle_bond-torsion_3 parameters'],
-                    eex['torsion parameters']
+                    range(1, eex["n_middle_bond-torsion_3_types"] + 1),
+                    eex["middle_bond-torsion_3 parameters"],
+                    eex["torsion parameters"],
                 ):
-                    form, values, types, parameters_type, real_types = \
-                        parameters
+                    form, values, types, parameters_type, real_types = parameters
                     torsion_form = torsions[0]
-                    if torsion_form == 'torsion_3':
+                    if torsion_form == "torsion_3":
                         lines.append(
-                            '{:6d} class2 {} {} {} {}'.format(
-                                counter, values['V1'], values['V2'],
-                                values['V3'], values['R0']
-                            ) + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
-                                types[0], types[1], types[2], types[3],
-                                real_types[0], real_types[1], real_types[2],
-                                real_types[3]
+                            "{:6d} class2 {} {} {} {}".format(
+                                counter,
+                                values["V1"],
+                                values["V2"],
+                                values["V3"],
+                                values["R0"],
+                            )
+                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
+                                types[0],
+                                types[1],
+                                types[2],
+                                types[3],
+                                real_types[0],
+                                real_types[1],
+                                real_types[2],
+                                real_types[3],
                             )
                         )
                     else:
                         lines.append(
-                            '{:6d} skip'.format(counter) +
-                            ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
-                                types[0], types[1], types[2], types[3],
-                                real_types[0], real_types[1], real_types[2],
-                                real_types[3]
+                            "{:6d} skip".format(counter)
+                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
+                                types[0],
+                                types[1],
+                                types[2],
+                                types[3],
+                                real_types[0],
+                                real_types[1],
+                                real_types[2],
+                                real_types[3],
                             )
                         )
 
                 # end bond-torsion_3 coefficients, which must match torsions
                 # in order & number
-                lines.append('')
-                lines.append('EndBondTorsion Coeffs')
-                lines.append('')
+                lines.append("")
+                lines.append("EndBondTorsion Coeffs")
+                lines.append("")
                 for counter, parameters, torsions in zip(
-                    range(1, eex['n_end_bond-torsion_3_types'] + 1),
-                    eex['end_bond-torsion_3 parameters'],
-                    eex['torsion parameters']
+                    range(1, eex["n_end_bond-torsion_3_types"] + 1),
+                    eex["end_bond-torsion_3 parameters"],
+                    eex["torsion parameters"],
                 ):
-                    form, values, types, parameters_type, real_types = \
-                        parameters
+                    form, values, types, parameters_type, real_types = parameters
                     torsion_form = torsions[0]
-                    if torsion_form == 'torsion_3':
+                    if torsion_form == "torsion_3":
                         lines.append(
-                            '{:6d} class2 {} {} {} {} {} {} {} {}'.format(
-                                counter, values['V1_L'], values['V2_L'],
-                                values['V3_L'], values['V1_R'], values['V2_R'],
-                                values['V3_R'], values['R0_L'], values['R0_R']
-                            ) + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
-                                types[0], types[1], types[2], types[3],
-                                real_types[0], real_types[1], real_types[2],
-                                real_types[3]
+                            "{:6d} class2 {} {} {} {} {} {} {} {}".format(
+                                counter,
+                                values["V1_L"],
+                                values["V2_L"],
+                                values["V3_L"],
+                                values["V1_R"],
+                                values["V2_R"],
+                                values["V3_R"],
+                                values["R0_L"],
+                                values["R0_R"],
+                            )
+                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
+                                types[0],
+                                types[1],
+                                types[2],
+                                types[3],
+                                real_types[0],
+                                real_types[1],
+                                real_types[2],
+                                real_types[3],
                             )
                         )
                     else:
                         lines.append(
-                            '{:6d} skip'.format(counter) +
-                            ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
-                                types[0], types[1], types[2], types[3],
-                                real_types[0], real_types[1], real_types[2],
-                                real_types[3]
+                            "{:6d} skip".format(counter)
+                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
+                                types[0],
+                                types[1],
+                                types[2],
+                                types[3],
+                                real_types[0],
+                                real_types[1],
+                                real_types[2],
+                                real_types[3],
                             )
                         )
 
                 # angle-torsion_3 coefficients, which must match torsions
                 # in order & number
-                lines.append('')
-                lines.append('AngleTorsion Coeffs')
-                lines.append('')
+                lines.append("")
+                lines.append("AngleTorsion Coeffs")
+                lines.append("")
                 for counter, parameters, torsions in zip(
-                    range(1, eex['n_angle-torsion_3_types'] + 1),
-                    eex['angle-torsion_3 parameters'],
-                    eex['torsion parameters']
+                    range(1, eex["n_angle-torsion_3_types"] + 1),
+                    eex["angle-torsion_3 parameters"],
+                    eex["torsion parameters"],
                 ):
-                    form, values, types, parameters_type, real_types = \
-                        parameters
+                    form, values, types, parameters_type, real_types = parameters
                     torsion_form = torsions[0]
-                    if torsion_form == 'torsion_3':
+                    if torsion_form == "torsion_3":
                         lines.append(
-                            '{:6d} class2 {} {} {} {} {} {} {} {}'.format(
-                                counter, values['V1_L'], values['V2_L'],
-                                values['V3_L'], values['V1_R'], values['V2_R'],
-                                values['V3_R'], values['Theta0_L'],
-                                values['Theta0_R']
-                            ) + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
-                                types[0], types[1], types[2], types[3],
-                                real_types[0], real_types[1], real_types[2],
-                                real_types[3]
+                            "{:6d} class2 {} {} {} {} {} {} {} {}".format(
+                                counter,
+                                values["V1_L"],
+                                values["V2_L"],
+                                values["V3_L"],
+                                values["V1_R"],
+                                values["V2_R"],
+                                values["V3_R"],
+                                values["Theta0_L"],
+                                values["Theta0_R"],
+                            )
+                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
+                                types[0],
+                                types[1],
+                                types[2],
+                                types[3],
+                                real_types[0],
+                                real_types[1],
+                                real_types[2],
+                                real_types[3],
                             )
                         )
                     else:
                         lines.append(
-                            '{:6d} skip'.format(counter) +
-                            ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
-                                types[0], types[1], types[2], types[3],
-                                real_types[0], real_types[1], real_types[2],
-                                real_types[3]
+                            "{:6d} skip".format(counter)
+                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
+                                types[0],
+                                types[1],
+                                types[2],
+                                types[3],
+                                real_types[0],
+                                real_types[1],
+                                real_types[2],
+                                real_types[3],
                             )
                         )
 
                 # angle-angle-torsion_1 coefficients, which must match torsions
                 # in order & number
-                lines.append('')
-                lines.append('AngleAngleTorsion Coeffs')
-                lines.append('')
+                lines.append("")
+                lines.append("AngleAngleTorsion Coeffs")
+                lines.append("")
                 for counter, parameters, torsions in zip(
-                    range(1, eex['n_angle-angle-torsion_1_types'] + 1),
-                    eex['angle-angle-torsion_1 parameters'],
-                    eex['torsion parameters']
+                    range(1, eex["n_angle-angle-torsion_1_types"] + 1),
+                    eex["angle-angle-torsion_1 parameters"],
+                    eex["torsion parameters"],
                 ):
-                    form, values, types, parameters_type, real_types = \
-                        parameters
+                    form, values, types, parameters_type, real_types = parameters
                     torsion_form = torsions[0]
-                    if torsion_form == 'torsion_3':
+                    if torsion_form == "torsion_3":
                         lines.append(
-                            '{:6d} class2 {} {} {}'.format(
-                                counter, values['K'], values['Theta0_L'],
-                                values['Theta0_R']
-                            ) + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
-                                types[0], types[1], types[2], types[3],
-                                real_types[0], real_types[1], real_types[2],
-                                real_types[3]
+                            "{:6d} class2 {} {} {}".format(
+                                counter,
+                                values["K"],
+                                values["Theta0_L"],
+                                values["Theta0_R"],
+                            )
+                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
+                                types[0],
+                                types[1],
+                                types[2],
+                                types[3],
+                                real_types[0],
+                                real_types[1],
+                                real_types[2],
+                                real_types[3],
                             )
                         )
                     else:
                         lines.append(
-                            '{:6d} skip'.format(counter) +
-                            ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
-                                types[0], types[1], types[2], types[3],
-                                real_types[0], real_types[1], real_types[2],
-                                real_types[3]
+                            "{:6d} skip".format(counter)
+                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
+                                types[0],
+                                types[1],
+                                types[2],
+                                types[3],
+                                real_types[0],
+                                real_types[1],
+                                real_types[2],
+                                real_types[3],
                             )
                         )
 
                 # bond-bond_1_3 coefficients, which must match torsions
                 # in order & number
-                lines.append('')
-                lines.append('BondBond13 Coeffs')
-                lines.append('')
+                lines.append("")
+                lines.append("BondBond13 Coeffs")
+                lines.append("")
                 for counter, parameters, torsions in zip(
-                    range(1, eex['n_bond-bond_1_3_types'] + 1),
-                    eex['bond-bond_1_3 parameters'], eex['torsion parameters']
+                    range(1, eex["n_bond-bond_1_3_types"] + 1),
+                    eex["bond-bond_1_3 parameters"],
+                    eex["torsion parameters"],
                 ):
-                    form, values, types, parameters_type, real_types = \
-                        parameters
+                    form, values, types, parameters_type, real_types = parameters
                     torsion_form = torsions[0]
-                    if torsion_form == 'torsion_3':
+                    if torsion_form == "torsion_3":
                         lines.append(
-                            '{:6d} class2 {} {} {}'.format(
-                                counter, values['K'], values['R10'],
-                                values['R30']
-                            ) + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
-                                types[0], types[1], types[2], types[3],
-                                real_types[0], real_types[1], real_types[2],
-                                real_types[3]
+                            "{:6d} class2 {} {} {}".format(
+                                counter, values["K"], values["R10"], values["R30"]
+                            )
+                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
+                                types[0],
+                                types[1],
+                                types[2],
+                                types[3],
+                                real_types[0],
+                                real_types[1],
+                                real_types[2],
+                                real_types[3],
                             )
                         )
                     else:
                         lines.append(
-                            '{:6d} skip'.format(counter) +
-                            ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
-                                types[0], types[1], types[2], types[3],
-                                real_types[0], real_types[1], real_types[2],
-                                real_types[3]
+                            "{:6d} skip".format(counter)
+                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
+                                types[0],
+                                types[1],
+                                types[2],
+                                types[3],
+                                real_types[0],
+                                real_types[1],
+                                real_types[2],
+                                real_types[3],
                             )
                         )
 
         # out-of-planes
-        if 'n_oops' in eex and eex['n_oops'] > 0:
-            lines.append('')
-            lines.append('Impropers')
-            lines.append('')
-            for counter, tmp in zip(range(1, eex['n_oops'] + 1), eex['oops']):
+        if "n_oops" in eex and eex["n_oops"] > 0:
+            lines.append("")
+            lines.append("Impropers")
+            lines.append("")
+            for counter, tmp in zip(range(1, eex["n_oops"] + 1), eex["oops"]):
                 i, j, k, l, index = tmp
                 lines.append(
-                    '{:6d} {:6d} {:6d} {:6d} {:6d} {:6d}'.format(
+                    "{:6d} {:6d} {:6d} {:6d} {:6d} {:6d}".format(
                         counter, index, i, j, k, l
                     )
                 )
 
-            lines.append('')
-            lines.append('Improper Coeffs')
-            lines.append('')
+            lines.append("")
+            lines.append("Improper Coeffs")
+            lines.append("")
             for counter, parameters in zip(
-                range(1, eex['n_oop_types'] + 1), eex['oop parameters']
+                range(1, eex["n_oop_types"] + 1), eex["oop parameters"]
             ):
-                form, values, types, parameters_type, real_types = \
-                    parameters
+                form, values, types, parameters_type, real_types = parameters
                 lines.append(
-                    '{:6d} {} {}'.format(counter, values['K'], values['Chi0'])
-                    + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
-                        types[0], types[1], types[2], types[3], real_types[0],
-                        real_types[1], real_types[2], real_types[3]
+                    "{:6d} {} {}".format(counter, values["K"], values["Chi0"])
+                    + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
+                        types[0],
+                        types[1],
+                        types[2],
+                        types[3],
+                        real_types[0],
+                        real_types[1],
+                        real_types[2],
+                        real_types[3],
                     )
                 )
 
             # angle-angle
-            if 'n_angle-angle_types' in eex:
-                lines.append('')
-                lines.append('AngleAngle Coeffs')
-                lines.append('')
+            if "n_angle-angle_types" in eex:
+                lines.append("")
+                lines.append("AngleAngle Coeffs")
+                lines.append("")
                 for counter, parameters in zip(
-                    range(1, eex['n_angle-angle_types'] + 1),
-                    eex['angle-angle parameters']
+                    range(1, eex["n_angle-angle_types"] + 1),
+                    eex["angle-angle parameters"],
                 ):
-                    form, values, types, parameters_type, real_types = \
-                        parameters
+                    form, values, types, parameters_type, real_types = parameters
                     lines.append(
-                        '{:6d} {} {} {} {} {} {}'.format(
-                            counter, values['K1'], values['K2'], values['K3'],
-                            values['Theta10'], values['Theta20'],
-                            values['Theta30']
-                        ) + ' # {}-{}-{}-{} --> {}-{}-{}-{}'.format(
-                            types[0], types[1], types[2], types[3],
-                            real_types[0], real_types[1], real_types[2],
-                            real_types[3]
+                        "{:6d} {} {} {} {} {} {}".format(
+                            counter,
+                            values["K1"],
+                            values["K2"],
+                            values["K3"],
+                            values["Theta10"],
+                            values["Theta20"],
+                            values["Theta30"],
+                        )
+                        + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
+                            types[0],
+                            types[1],
+                            types[2],
+                            types[3],
+                            real_types[0],
+                            real_types[1],
+                            real_types[2],
+                            real_types[3],
                         )
                     )
 
-        lines.append('')
+        lines.append("")
         return lines
 
-    def analyze(self, indent='', nodes=None, **kwargs):
-        """Analyze the output of the calculation
-        """
+    def analyze(self, indent="", nodes=None, **kwargs):
+        """Analyze the output of the calculation"""
         if isinstance(nodes, list) is False:
             nodes = [nodes]
 
@@ -1391,20 +1421,17 @@ class LAMMPS(seamm.Node):
 
             for value in node.description:
                 printer.important(value)
-                printer.important(' ')
+                printer.important(" ")
 
-            id_str = '_'.join(str(e) for e in node._id)
+            id_str = "_".join(str(e) for e in node._id)
 
             filenames = glob.glob(
-                os.path.join(
-                    self.directory, '*trajectory*' + id_str + '*.seamm_trj'
-                )
+                os.path.join(self.directory, "*trajectory*" + id_str + "*.seamm_trj")
             )
 
             if len(filenames) > 1:
                 filenames.sort(
-                    key=lambda x:
-                    int(re.search(r'iter_\d+', x).group().split('_')[1])
+                    key=lambda x: int(re.search(r"iter_\d+", x).group().split("_")[1])
                 )
 
             if len(filenames) > 0:
@@ -1416,64 +1443,55 @@ class LAMMPS(seamm.Node):
 
             node_data = None
 
-            if 'run_control' in P:
+            if "run_control" in P:
 
-                if P['run_control'] == 'For a fixed length of simulated time.':
-                    control_properties = lambda x: x not in [  # noqa: E731
-                        'tstep'
-                    ]
+                if P["run_control"] == "For a fixed length of simulated time.":
+                    control_properties = lambda x: x not in ["tstep"]  # noqa: E731
                     # Reset the trajectory data so doesn't carry over
                     self._trajectory = []
                 else:
 
-                    if len(P['control_properties']) == 0:
+                    if len(P["control_properties"]) == 0:
                         raise KeyError(
-                            'No physical property selected for automatic',
-                            'equilibration detection'
+                            "No physical property selected for automatic",
+                            "equilibration detection",
                         )
 
-                    control_properties = [
-                        prp[0] for prp in P['control_properties']
-                    ]
+                    control_properties = [prp[0] for prp in P["control_properties"]]
 
                 node_data = self.analyze_trajectory(
                     filename, control_properties=control_properties
                 )
                 # Get just the values from the node data
-                values = {k: v['mean'] for k, v in node_data.items()}
+                values = {k: v["mean"] for k, v in node_data.items()}
                 node.analyze(data=values)
 
             ret[node._id[1]] = node_data
 
         return ret
 
-    def analyze_trajectory(
-        self, filename, sampling_rate=20, control_properties=None
-    ):
-        """Read a trajectory file and do the statistical analysis
-        """
+    def analyze_trajectory(self, filename, sampling_rate=20, control_properties=None):
+        """Read a trajectory file and do the statistical analysis"""
 
-        write_html = ('html' in self.options and self.options['html'])
+        write_html = "html" in self.options and self.options["html"]
 
         rootname = os.path.splitext(filename)[0]
 
         results = {}
 
-        if isinstance(
-            control_properties, list
-        ) and 't' not in control_properties:
-            control_properties.append('t')
+        if isinstance(control_properties, list) and "t" not in control_properties:
+            control_properties.append("t")
 
         # Process the trajectory data
 
-        with open(filename, 'r') as fd:
+        with open(filename, "r") as fd:
             file_data = pandas.read_csv(
                 fd,
-                sep=' ',
+                sep=" ",
                 header=0,
-                comment='!',
+                comment="!",
                 usecols=control_properties,
-                index_col='t'
+                index_col="t",
             )
             self._trajectory.append(file_data.iloc[:-1])
 
@@ -1483,35 +1501,33 @@ class LAMMPS(seamm.Node):
         data = data.reset_index(drop=True)
         data.index *= dt
 
-        self.logger.debug('Columns: {}'.format(data.columns))
-        self.logger.debug('  Types:\n{}'.format(data.dtypes))
+        self.logger.debug("Columns: {}".format(data.columns))
+        self.logger.debug("  Types:\n{}".format(data.dtypes))
+
+        printer.normal("       Analysis of " + os.path.basename(filename) + "\n")
 
         printer.normal(
-            '       Analysis of ' + os.path.basename(filename) + '\n'
-        )
-
-        printer.normal(
-            '                                             Std Error  '
-            'Time to\n'
-            '               Property           Value       of mean   '
-            'convergence     tau    inefficiency\n'
-            '          --------------------   ---------  ---------   '
-            '-----------  --------  ------------'
+            "                                             Std Error  "
+            "Time to\n"
+            "               Property           Value       of mean   "
+            "convergence     tau    inefficiency\n"
+            "          --------------------   ---------  ---------   "
+            "-----------  --------  ------------"
         )
 
         # Work out the time step, rather than give the whole vector
         t = data.index
-        t_units = 'fs'
+        t_units = "fs"
         len_trj = (len(t) - 1) * dt_fs
         divisor = 1
         if len_trj >= 4000000000:
-            t_units = 'ms'
+            t_units = "ms"
             divisor = 1000000000
         elif len_trj >= 4000000:
-            t_units = 'ns'
+            t_units = "ns"
             divisor = 1000000
         elif len_trj >= 4000:
-            t_units = 'ps'
+            t_units = "ps"
             divisor = 1000
         dt /= divisor
         t_max = float((len(t) - 1) * dt)
@@ -1521,28 +1537,27 @@ class LAMMPS(seamm.Node):
             have_acf_warning = False
             y = data[column]
 
-            self.logger.info(
-                'Analyzing {}, nsamples = {}'.format(column, len(y))
-            )
+            self.logger.info("Analyzing {}, nsamples = {}".format(column, len(y)))
 
             # compute indices of uncorrelated timeseries using pymbar
             yy = y.to_numpy()
             conv, inefficiency, Neff_max = timeseries.detectEquilibration(yy)
 
             self.logger.info(
-                '  converged in {} steps, inefficiency = {}, Neff_max = {}'
-                .format(conv, inefficiency, Neff_max)
+                "  converged in {} steps, inefficiency = {}, Neff_max = {}".format(
+                    conv, inefficiency, Neff_max
+                )
             )
 
             if numpy.isnan(inefficiency) or numpy.isnan(Neff_max):
                 # Apparently didn't converge!
                 printer.normal(
                     __(
-                        '{column:>23s} did not converge to a stationary state',
+                        "{column:>23s} did not converge to a stationary state",
                         column=column,
-                        indent=7 * ' ',
+                        indent=7 * " ",
                         wrap=False,
-                        dedent=False
+                        dedent=False,
                     )
                 )
 
@@ -1555,17 +1570,15 @@ class LAMMPS(seamm.Node):
                     tau = dt_fs / 2
                 t0 = conv * dt_fs
                 y_t_equil = yy[conv:]
-                indices = timeseries.subsampleCorrelatedData(
-                    y_t_equil, g=inefficiency
-                )
+                indices = timeseries.subsampleCorrelatedData(y_t_equil, g=inefficiency)
 
                 if len(indices) == 0:
-                    print('Problem with column ' + column)
-                    print('yy')
+                    print("Problem with column " + column)
+                    print("yy")
                     print(yy)
-                    print('y_t_equil')
+                    print("y_t_equil")
                     print(y_t_equil)
-                    print('indices')
+                    print("indices")
                     print(indices)
                     continue
 
@@ -1579,10 +1592,10 @@ class LAMMPS(seamm.Node):
                 if len(y_t_equil) < 8:
                     have_acf = False
                     have_acf_warning = True
-                    acf_warning = '^'
+                    acf_warning = "^"
                 else:
                     have_acf = True
-                    acf_warning = ' '
+                    acf_warning = " "
                     nlags = 4 * int(round(inefficiency + 0.5))
                     if nlags > int(len(y_t_equil) / 2):
                         nlags = int(len(y_t_equil) / 2)
@@ -1591,54 +1604,54 @@ class LAMMPS(seamm.Node):
                         nlags=nlags,
                         alpha=0.05,
                         fft=nlags > 16,
-                        adjusted=False
+                        adjusted=False,
                     )
 
                 results[column] = {}
-                results[column]['mean'] = mean
-                results[column]['sem'] = sem
-                results[column]['n_sample'] = n_samples
-                results[column]['short_production'] = have_acf_warning
+                results[column]["mean"] = mean
+                results[column]["sem"] = sem
+                results[column]["n_sample"] = n_samples
+                results[column]["short_production"] = have_acf_warning
 
                 # Work out units on convergence time
-                conv_units = 'fs'
+                conv_units = "fs"
                 t_conv = t0
                 if t0 >= 1000000000:
-                    conv_units = 'ms'
+                    conv_units = "ms"
                     t_conv = t0 / 1000000000
                 elif t0 >= 1000000:
-                    conv_units = 'ns'
+                    conv_units = "ns"
                     t_conv = t0 / 1000000
                 elif t0 >= 1000:
-                    conv_units = 'ps'
+                    conv_units = "ps"
                     t_conv = t0 / 1000
 
                 # Work out units on autocorrelation time
-                tau_units = 'fs'
+                tau_units = "fs"
                 t_tau = tau
                 if tau >= 1000000000:
-                    tau_units = 'ms'
+                    tau_units = "ms"
                     t_tau = tau / 1000000000
                 elif tau >= 1000000:
-                    tau_units = 'ns'
+                    tau_units = "ns"
                     t_tau = tau / 1000000
                 elif tau >= 1000:
-                    tau_units = 'ps'
+                    tau_units = "ps"
                     t_tau = tau / 1000
 
                 if n_samples < 100:
                     have_warning = True
-                    warn = '*'
+                    warn = "*"
                 else:
-                    warn = ' '
+                    warn = " "
 
-                results[column]['few_neff'] = have_warning
+                results[column]["few_neff"] = have_warning
 
                 printer.normal(
                     __(
-                        '{column:>23s} = {value:9.3f} ± {stderr:7.3f}{warn}'
-                        ' {t0:8.2f} {conv_units} {tau:8.1f} {tau_units}{acf} '
-                        '{inefficiency:9.1f}',
+                        "{column:>23s} = {value:9.3f} ± {stderr:7.3f}{warn}"
+                        " {t0:8.2f} {conv_units} {tau:8.1f} {tau_units}{acf} "
+                        "{inefficiency:9.1f}",
                         column=column,
                         value=mean,
                         stderr=sem,
@@ -1649,42 +1662,40 @@ class LAMMPS(seamm.Node):
                         tau_units=tau_units,
                         acf=acf_warning,
                         inefficiency=inefficiency,
-                        indent=7 * ' ',
+                        indent=7 * " ",
                         wrap=False,
-                        dedent=False
+                        dedent=False,
                     )
                 )
 
             # Create graphs of the property
             figure = self.create_figure(
-                module_path=(self.__module__.split('.')[0], 'seamm'),
-                template='line.graph_template',
-                title=LAMMPS.display_title[column]
+                module_path=(self.__module__.split(".")[0], "seamm"),
+                template="line.graph_template",
+                title=LAMMPS.display_title[column],
             )
 
             # The autocorrelation function
             if have_acf:
-                plot_acf = figure.add_plot('acf')
+                plot_acf = figure.add_plot("acf")
 
                 dt_acf = float(dt_fs)
-                t_acf_units = 'fs'
+                t_acf_units = "fs"
                 len_acf = (len(acf) - 1) * dt_fs
                 if len_acf >= 2000000000:
-                    t_acf_units = 'ms'
+                    t_acf_units = "ms"
                     dt_acf /= 1000000000
                 elif len_acf >= 2000000:
-                    t_acf_units = 'ns'
+                    t_acf_units = "ns"
                     dt_acf /= 1000000
                 elif len_acf >= 2000:
-                    t_acf_units = 'ps'
+                    t_acf_units = "ps"
                     dt_acf /= 1000
 
                 x_acf_axis = plot_acf.add_axis(
-                    'x', label='Time ({})'.format(t_acf_units)
+                    "x", label="Time ({})".format(t_acf_units)
                 )
-                y_acf_axis = plot_acf.add_axis(
-                    'y', label='acf', anchor=x_acf_axis
-                )
+                y_acf_axis = plot_acf.add_axis("y", label="acf", anchor=x_acf_axis)
                 x_acf_axis.anchor = y_acf_axis
 
                 # Put the fit to the autocorrelation time in first so the
@@ -1698,15 +1709,15 @@ class LAMMPS(seamm.Node):
                 plot_acf.add_trace(
                     x_axis=x_acf_axis,
                     y_axis=y_acf_axis,
-                    name='fit',
+                    name="fit",
                     x0=0,
                     dx=dt_acf,
-                    xlabel='t',
+                    xlabel="t",
                     xunits=t_acf_units,
                     y=fit,
-                    ylabel='fit',
-                    yunits='',
-                    color='gray'
+                    ylabel="fit",
+                    yunits="",
+                    color="gray",
                 )
 
                 # the partly transparent error band
@@ -1723,44 +1734,44 @@ class LAMMPS(seamm.Node):
                 plot_acf.add_trace(
                     x_axis=x_acf_axis,
                     y_axis=y_acf_axis,
-                    name='stderr',
+                    name="stderr",
                     x=t_acf + t_acf[::-1],
-                    xlabel='t',
+                    xlabel="t",
                     xunits=t_acf_units,
                     y=yplus + yminus[::-1],
-                    ylabel='stderr',
+                    ylabel="stderr",
                     yunits=LAMMPS.display_units[column],
-                    showlegend='false',
-                    color='rgba(211,211,211,0.5)',
-                    fill='toself',
+                    showlegend="false",
+                    color="rgba(211,211,211,0.5)",
+                    fill="toself",
                 )
 
                 # And the acf plot last
                 plot_acf.add_trace(
                     x_axis=x_acf_axis,
                     y_axis=y_acf_axis,
-                    name='acf',
+                    name="acf",
                     x0=0,
                     dx=dt_acf,
-                    xlabel='t',
+                    xlabel="t",
                     xunits=t_acf_units,
                     y=list(acf),
-                    ylabel='acf',
-                    yunits='',
-                    color='red'
+                    ylabel="acf",
+                    yunits="",
+                    color="red",
                 )
 
             # The property data over the trajectory
             y = list(data[column])
 
-            plot = figure.add_plot('trj')
+            plot = figure.add_plot("trj")
 
             ylabel = LAMMPS.display_title[column]
-            if LAMMPS.display_units[column] != '':
-                ylabel += ' ({})'.format(LAMMPS.display_units[column])
+            if LAMMPS.display_units[column] != "":
+                ylabel += " ({})".format(LAMMPS.display_units[column])
 
-            x_axis = plot.add_axis('x', label='Time ({})'.format(t_units))
-            y_axis = plot.add_axis('y', label=ylabel, anchor=x_axis)
+            x_axis = plot.add_axis("x", label="Time ({})".format(t_units))
+            y_axis = plot.add_axis("y", label=ylabel, anchor=x_axis)
             x_axis.anchor = y_axis
 
             # Add the trajectory, error band and median value in that order so
@@ -1773,12 +1784,12 @@ class LAMMPS(seamm.Node):
                 name=column,
                 x0=0,
                 dx=dt,
-                xlabel='t',
+                xlabel="t",
                 xunits=t_units,
                 y=list(y),
                 ylabel=column,
                 yunits=LAMMPS.display_units[column],
-                color='#4dbd74'
+                color="#4dbd74",
             )
 
             if is_converged:
@@ -1787,61 +1798,61 @@ class LAMMPS(seamm.Node):
                 plot.add_trace(
                     x_axis=x_axis,
                     y_axis=y_axis,
-                    name='sem',
+                    name="sem",
                     x=[t_min, t_max, t_max, t_min],
-                    xlabel='t',
+                    xlabel="t",
                     xunits=t_units,
                     y=[mean + sem, mean + sem, mean - sem, mean - sem],
-                    ylabel='sem',
+                    ylabel="sem",
                     yunits=LAMMPS.display_units[column],
-                    showlegend='false',
-                    color='rgba(211,211,211,0.5)',
-                    fill='toself',
+                    showlegend="false",
+                    color="rgba(211,211,211,0.5)",
+                    fill="toself",
                 )
 
                 # and finally the median value so it is on top
                 plot.add_trace(
                     x_axis=x_axis,
                     y_axis=y_axis,
-                    name='average',
+                    name="average",
                     x=[t_min, t_max],
-                    xlabel='t',
+                    xlabel="t",
                     xunits=t_units,
                     y=[mean, mean],
-                    ylabel='average',
+                    ylabel="average",
                     yunits=LAMMPS.display_units[column],
-                    color='black'
+                    color="black",
                 )
 
             if have_acf:
-                figure.grid_plots('trj - acf')
+                figure.grid_plots("trj - acf")
             else:
-                figure.grid_plots('trj')
-            figure.dump('{}_{}.graph'.format(rootname, column))
+                figure.grid_plots("trj")
+            figure.dump("{}_{}.graph".format(rootname, column))
 
             if write_html:
-                figure.template = 'line.html_template'
-                figure.dump('{}_{}.html'.format(rootname, column))
+                figure.template = "line.html_template"
+                figure.dump("{}_{}.html".format(rootname, column))
 
         if have_warning or have_acf_warning:
-            printer.normal('\n')
+            printer.normal("\n")
         if have_warning:
             printer.normal(
                 __(
-                    '          * this property has less than 100 independent '
-                    'samples, so may not be accurate.',
+                    "          * this property has less than 100 independent "
+                    "samples, so may not be accurate.",
                     wrap=False,
-                    dedent=False
+                    dedent=False,
                 )
             )
 
         if have_acf_warning:
             printer.normal(
                 __(
-                    '          ^ there are not enough samples after '
-                    'equilibration to plot the ACF.',
+                    "          ^ there are not enough samples after "
+                    "equilibration to plot the ACF.",
                     wrap=False,
-                    dedent=False
+                    dedent=False,
                 )
             )
 
@@ -1867,7 +1878,7 @@ class LAMMPS(seamm.Node):
         angle_types = {}
 
         # Water models
-        if P['rigid_waters']:
+        if P["rigid_waters"]:
             # waters = seamm_util.water_models.Water.find_waters(data.structure)  # noqa: E501
 
             waters = []
@@ -1878,42 +1889,41 @@ class LAMMPS(seamm.Node):
                     atoms.append(i)
                     atoms.append(j)
                     atoms.append(k)
-                if 'n_bonds' in eex and eex['n_bonds'] > 0:
-                    for i, j, index in eex['bonds']:
+                if "n_bonds" in eex and eex["n_bonds"] > 0:
+                    for i, j, index in eex["bonds"]:
                         if i in atoms and j in atoms:
                             bond_types[index] = 1
-                if 'n_angles' in eex and eex['n_angles'] > 0:
-                    for i, j, k, index in eex['angles']:
+                if "n_angles" in eex and eex["n_angles"] > 0:
+                    for i, j, k, index in eex["angles"]:
                         if i in atoms and j in atoms and k in atoms:
                             angle_types[index] = 1
 
         # Fixing bond lengths of X-H bonds...
-        if 'n_bonds' in eex and eex['n_bonds'] > 0:
-            fix_bonds = P['fix_XH_bond_lengths']
-            elements = eex['elements']
-            if fix_bonds == 'CH':
-                for i, j, index in eex['bonds']:
-                    if (
-                        (elements[i] == 'C' and elements[j] == 'H') or
-                        (elements[i] == 'H' and elements[j] == 'C')
+        if "n_bonds" in eex and eex["n_bonds"] > 0:
+            fix_bonds = P["fix_XH_bond_lengths"]
+            elements = eex["elements"]
+            if fix_bonds == "CH":
+                for i, j, index in eex["bonds"]:
+                    if (elements[i] == "C" and elements[j] == "H") or (
+                        elements[i] == "H" and elements[j] == "C"
                     ):
                         bond_types[index] = 1
-            elif fix_bonds == 'all':
-                for i, j, index in eex['bonds']:
-                    if elements[i] == 'H' or elements[j] == 'H':
+            elif fix_bonds == "all":
+                for i, j, index in eex["bonds"]:
+                    if elements[i] == "H" or elements[j] == "H":
                         bond_types[index] = 1
 
         # And the result is ....
         if len(bond_types) > 0:
-            result = 'fix                 {} all rattle 0.001 20 1000 b '
+            result = "fix                 {} all rattle 0.001 20 1000 b "
             for bond_type in bond_types.keys():
-                result += ' ' + str(bond_type)
+                result += " " + str(bond_type)
             if len(angle_types) > 0:
-                result += ' a '
+                result += " a "
                 for angle_type in angle_types.keys():
-                    result += ' ' + str(angle_type)
+                    result += " " + str(angle_type)
         else:
-            result = ''
+            result = ""
 
         return result
 
@@ -1927,38 +1937,36 @@ class LAMMPS(seamm.Node):
         """
         self.logger.info("Reading dump file '{}'".format(dumpfile))
 
-        system_db = self.get_variable('_system_db')
+        system_db = self.get_variable("_system_db")
         configuration = system_db.system.configuration
         periodicity = configuration.periodicity
         n_atoms = configuration.n_atoms
 
-        section = ''
+        section = ""
         section_lines = []
         xs = []
         ys = []
         zs = []
-        with open(dumpfile, 'r') as fd:
+        with open(dumpfile, "r") as fd:
             lineno = 0
             for line in fd:
                 line = line.strip()
                 lineno += 1
                 if lineno == 1:
-                    if line[0:5] != 'ITEM:':
+                    if line[0:5] != "ITEM:":
                         raise RuntimeError(
                             "Error reading dump file '" + dumpfile + "': The "
                             "first line is incorrect! (" + line + ")"
                         )
                     section = line[6:].strip()
                     section_lines = []
-                    self.logger.debug('   section = ' + section)
+                    self.logger.debug("   section = " + section)
                     continue
 
-                if line[0:5] == 'ITEM:':
+                if line[0:5] == "ITEM:":
                     # end a section
-                    self.logger.debug(
-                        "  processing section '{}'".format(section)
-                    )
-                    if 'BOX BOUNDS' in section:
+                    self.logger.debug("  processing section '{}'".format(section))
+                    if "BOX BOUNDS" in section:
                         if len(section.split()) == 8:
                             xlo_bound, xhi_bound, xy = section_lines[0].split()
                             ylo_bound, yhi_bound, xz = section_lines[1].split()
@@ -1993,17 +2001,15 @@ class LAMMPS(seamm.Node):
                             zlo = float(zlo)
                             zhi = float(zhi)
 
-                            cell = (
-                                xhi - xlo, yhi - ylo, zhi - zlo, 90, 90, 90
-                            )
-                    elif section == 'NUMBER OF ATOMS':
+                            cell = (xhi - xlo, yhi - ylo, zhi - zlo, 90, 90, 90)
+                    elif section == "NUMBER OF ATOMS":
                         if int(section_lines[0]) != n_atoms:
                             raise RuntimeError(
-                                'Number of atoms has changed! {} to {}'.format(
+                                "Number of atoms has changed! {} to {}".format(
                                     n_atoms, section_lines[0]
                                 )
                             )
-                    elif 'ATOMS' in section:
+                    elif "ATOMS" in section:
                         for tmp in section_lines:
                             id, x, y, z = tmp.split()
                             xs.append(float(x))
@@ -2016,15 +2022,15 @@ class LAMMPS(seamm.Node):
 
         # Clean up the last section
         xyz = []
-        if 'ATOMS' in section:
+        if "ATOMS" in section:
             self.logger.debug("  processing section '{}'".format(section))
-            self.logger.debug('  handling the atoms')
+            self.logger.debug("  handling the atoms")
             for tmp in section_lines:
                 id, x, y, z = tmp.split()
                 xyz.append([float(x), float(y), float(z)])
 
         if periodicity == 3:
-            configuration.cell.parameters = (cell)
+            configuration.cell.parameters = cell
         configuration.atoms.set_coordinates(xyz, fractionals=False)
 
     def _add_lammps_citations(self, text, cite=None):
@@ -2042,11 +2048,11 @@ class LAMMPS(seamm.Node):
         """
         # Add the JCP paper
         self.references.cite(
-            raw=self._bibliography['PLIMPTON19951'],
-            alias='lammps-jcp',
-            module='lammps_step',
+            raw=self._bibliography["PLIMPTON19951"],
+            alias="lammps-jcp",
+            module="lammps_step",
             level=1,
-            note='The principle LAMMPS citation.'
+            note="The principle LAMMPS citation.",
         )
 
         # And the citation to the LAMMPS code itself
@@ -2056,52 +2062,50 @@ class LAMMPS(seamm.Node):
             return
 
         line = lines[0]
-        tmp = line.split(' ')
+        tmp = line.split(" ")
         if len(tmp) != 4:
             self.logger.info(f"Cannot get LAMMPS version: '{line}'")
             return
 
         month = tmp[2]
-        year = tmp[3].rstrip(')')
-        version = ' '.join(tmp[1:])
+        year = tmp[3].rstrip(")")
+        version = " ".join(tmp[1:])
 
         try:
-            template = string.Template(self._bibliography['lammps'])
+            template = string.Template(self._bibliography["lammps"])
 
-            citation = template.substitute(
-                month=month, version=version, year=year
-            )
+            citation = template.substitute(month=month, version=version, year=year)
 
             self.references.cite(
                 raw=citation,
-                alias='lammps-exe',
-                module='lammps_step',
+                alias="lammps-exe",
+                module="lammps_step",
                 level=1,
-                note='The principle citation for the LAMMPS executable.'
+                note="The principle citation for the LAMMPS executable.",
             )
 
         except Exception as e:
-            printer.important(f'Exception in citation {type(e)}: {e}')
+            printer.important(f"Exception in citation {type(e)}: {e}")
             printer.important(traceback.format_exc())
 
         # If there is a log.cite file, process it
         if cite is not None:
-            self.logger.debug('log.cite\n' + cite + '\n')
+            self.logger.debug("log.cite\n" + cite + "\n")
             bibliography = {}
             tmp = bibtexparser.loads(cite).entries_dict
             writer = bibtexparser.bwriter.BibTexWriter()
             for key, data in tmp.items():
-                self.logger.info(f'      {key}')
+                self.logger.info(f"      {key}")
                 bibliography[key] = writer._entry_to_bibtex(data)
-            self.logger.debug('Bibliography\n' + pprint.pformat(bibliography))
+            self.logger.debug("Bibliography\n" + pprint.pformat(bibliography))
 
             for entry in bibliography:
-                if entry.lower() in ('commment',):
+                if entry.lower() in ("commment",):
                     continue
                 self.references.cite(
                     raw=bibliography[entry],
                     alias=entry,
-                    module='lammps_step',
+                    module="lammps_step",
                     level=1,
-                    note='LAMMPS citations from log.cite.'
+                    note="LAMMPS citations from log.cite.",
                 )

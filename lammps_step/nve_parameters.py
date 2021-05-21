@@ -18,7 +18,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "format_string": "",
             "enumeration": (
                 "Until properties converge to the requested accuracy.",
-                "For a fixed length of simulated time."
+                "For a fixed length of simulated time.",
             ),
             "description": "How long to run? ",
             "help_text": (
@@ -27,7 +27,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
                 "e.g. 15 ps, or you can ask to run long enough to "
                 "determine one or more properties to a given "
                 "accuracy."
-            )
+            ),
         },
         "time": {
             "default": 100.0,
@@ -35,7 +35,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "default_units": "ps",
             "format_string": ".1f",
             "description": "Simulation time:",
-            "help_text": ("The time to simulate in the dynamics run.")
+            "help_text": ("The time to simulate in the dynamics run."),
         },
         "maximum_time": {
             "default": 1.0,
@@ -43,15 +43,13 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "default_units": "ns",
             "format_string": ".1f",
             "description": "Maximum simulation time:",
-            "help_text": (
-                "The maximum time to simulate when converging properties."
-            )
+            "help_text": ("The maximum time to simulate when converging properties."),
         },
         "timestep": {
             "default": "normal",
             "kind": "float",
             "default_units": "fs",
-            "enumeration": ('normal', 'accurate but slow', 'coarse but fast'),
+            "enumeration": ("normal", "accurate but slow", "coarse but fast"),
             "format_string": ".1f",
             "description": "Timestep:",
             "help_text": (
@@ -66,7 +64,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
                 "a wavelength of 3 micrometers.\n"
                 "You can enter a value or use the choices, which pick a "
                 "reasonable timestep based on the calculation."
-            )
+            ),
         },
         "control_properties": {
             "default": {},
@@ -77,15 +75,14 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "format_string": "",
             "description": "Convergence properties",
             "help_text": (
-                "The properties to converge when controlling the run "
-                "automatically."
-            )
+                "The properties to converge when controlling the run " "automatically."
+            ),
         },
         "sampling": {
-            "default": '50',
+            "default": "50",
             "kind": "float",
             "default_units": "fs",
-            "enumeration": ('none',),
+            "enumeration": ("none",),
             "format_string": ".1f",
             "description": "Sampling frequency:",
             "help_text": (
@@ -96,7 +93,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
                 "file size and slows the calculation down."
                 "\nYou can ask for no sampling, give a specific interval, "
                 "or allow the system the choose for you."
-            )
+            ),
         },
     }
 
@@ -104,7 +101,4 @@ class NVE_Parameters(lammps_step.EnergyParameters):
         """Initialize the instance, by default from the default
         parameters given in the class"""
 
-        super().__init__(
-            defaults={**NVE_Parameters.parameters, **defaults},
-            data=data
-        )
+        super().__init__(defaults={**NVE_Parameters.parameters, **defaults}, data=data)

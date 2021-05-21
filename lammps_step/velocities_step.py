@@ -7,9 +7,9 @@ import lammps_step
 
 class VelocitiesStep(object):
     my_description = {
-        'description': 'Set the velocities in preparation for MD',
-        'group': 'Calculations',
-        'name': 'Velocities'
+        "description": "Set the velocities in preparation for MD",
+        "group": "Calculations",
+        "name": "Velocities",
     }
 
     def __init__(self, flowchart=None, gui=None):
@@ -20,8 +20,7 @@ class VelocitiesStep(object):
         pass
 
     def description(self):
-        """Return a description of what this extension does
-        """
+        """Return a description of what this extension does"""
         return VelocitiesStep.my_description
 
     def create_node(self, flowchart=None, **kwargs):

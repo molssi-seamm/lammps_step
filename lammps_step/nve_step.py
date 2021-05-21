@@ -7,9 +7,9 @@ import lammps_step
 
 class NVEStep(object):
     my_description = {
-        'description': 'NVE (microcanonical) dynamics',
-        'group': 'Calculations',
-        'name': 'NVE dynamics'
+        "description": "NVE (microcanonical) dynamics",
+        "group": "Calculations",
+        "name": "NVE dynamics",
     }
 
     def __init__(self, flowchart=None, gui=None):
@@ -20,8 +20,7 @@ class NVEStep(object):
         pass
 
     def description(self):
-        """Return a description of what this extension does
-        """
+        """Return a description of what this extension does"""
         return NVEStep.my_description
 
     def create_node(self, flowchart=None, **kwargs):

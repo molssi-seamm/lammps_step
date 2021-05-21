@@ -7,9 +7,9 @@ import lammps_step
 
 class NVTStep(object):
     my_description = {
-        'description': 'NVT (canonical) dynamics',
-        'group': 'Calculations',
-        'name': 'NVT dynamics'
+        "description": "NVT (canonical) dynamics",
+        "group": "Calculations",
+        "name": "NVT dynamics",
     }
 
     def __init__(self, flowchart=None, gui=None):
@@ -20,8 +20,7 @@ class NVTStep(object):
         pass
 
     def description(self):
-        """Return a description of what this extension does
-        """
+        """Return a description of what this extension does"""
         return NVTStep.my_description
 
     def create_node(self, flowchart=None, **kwargs):

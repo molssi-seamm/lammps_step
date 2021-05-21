@@ -11,27 +11,25 @@ from seamm_util.printing import FormattedText as __
 
 logger = logging.getLogger(__name__)
 job = printing.getPrinter()
-printer = printing.getPrinter('lammps')
+printer = printing.getPrinter("lammps")
 
 
 class NVE(lammps_step.Energy):
-
-    def __init__(self, flowchart=None, title='NVE dynamics', extension=None):
+    def __init__(self, flowchart=None, title="NVE dynamics", extension=None):
         """Initialize the node"""
 
-        logger.debug('Creating NVE {}'.format(self))
+        logger.debug("Creating NVE {}".format(self))
 
         super().__init__(flowchart=flowchart, title=title, extension=extension)
 
-        self.description = 'NVE dynamics step in LAMMPS'
+        self.description = "NVE dynamics step in LAMMPS"
 
         logger.debug("NVE.init() creating NVE_Parameters object")
 
         self.parameters = lammps_step.NVE_Parameters()
 
     def description_text(self):
-        """Create the text description of what this step will do.
-        """
+        """Create the text description of what this step will do."""
 
         text = (
             "{time} of microcanonical (NVE) dynamics using a "
@@ -45,51 +43,49 @@ class NVE(lammps_step.Energy):
         """Get the input for an NVE dynamics run in LAMMPS"""
 
         self.description = []
-        self.description.append(__(self.header, indent=3 * ' '))
+        self.description.append(__(self.header, indent=3 * " "))
 
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data
         )
 
-        timestep, P['timestep'] = self.timestep(P['timestep'])
+        timestep, P["timestep"] = self.timestep(P["timestep"])
 
-        if extras is not None and 'nsteps' in extras:
-            nsteps = extras['nsteps']
+        if extras is not None and "nsteps" in extras:
+            nsteps = extras["nsteps"]
         else:
-            time = P['time'].to('fs').magnitude
+            time = P["time"].to("fs").magnitude
             nsteps = round(time / timestep)
 
         # Have to fix formatting for printing...
         PP = dict(P)
         for key in PP:
             if isinstance(PP[key], units_class):
-                PP[key] = '{:~P}'.format(PP[key])
+                PP[key] = "{:~P}".format(PP[key])
 
-        self.description.append(
-            __(self.description_text(), **PP, indent=7 * ' ')
-        )
+        self.description.append(__(self.description_text(), **PP, indent=7 * " "))
 
         # time = lammps_step.to_lammps_units(P['time'], quantity='time')
         # nsteps = round(time / timestep)
 
         thermo_properties = (
-            'time temp press etotal ke pe ebond '
-            'eangle edihed eimp evdwl etail ecoul elong'
+            "time temp press etotal ke pe ebond "
+            "eangle edihed eimp evdwl etail ecoul elong"
         )
-        properties = 'v_time v_temp v_press v_etotal v_ke v_pe v_emol v_epair'
-        title2 = 'tstep t T P Etot Eke Epe Emol Epair'
+        properties = "v_time v_temp v_press v_etotal v_ke v_pe v_emol v_epair"
+        title2 = "tstep t T P Etot Eke Epe Emol Epair"
 
         lines = []
         nfixes = 0
-        lines.append('')
-        lines.append('#     NVE dynamics')
-        lines.append('')
-        lines.append('reset_timestep      0')
-        lines.append('timestep            {}'.format(timestep))
-        lines.append('thermo_style        custom {}'.format(thermo_properties))
-        lines.append('thermo              {}'.format(int(nsteps / 100)))
+        lines.append("")
+        lines.append("#     NVE dynamics")
+        lines.append("")
+        lines.append("reset_timestep      0")
+        lines.append("timestep            {}".format(timestep))
+        lines.append("thermo_style        custom {}".format(thermo_properties))
+        lines.append("thermo              {}".format(int(nsteps / 100)))
         nfixes += 1
-        lines.append('fix                 {} all nve'.format(nfixes))
+        lines.append("fix                 {} all nve".format(nfixes))
         # summary output written 10 times during run so we can see progress
         nevery = 10
         nfreq = int(nsteps / 10)
@@ -97,34 +93,29 @@ class NVE(lammps_step.Energy):
         nfreq = nevery * nrepeat
         nfixes += 1
         lines.append(
-            'fix                 {} '.format(nfixes) + 'all  ave/time '
-            '{} {} {} {} file summary_nve_{}_iter_0.txt'.format(
-                nevery, nrepeat, nfreq, properties,
-                '_'.join(str(e) for e in self._id)
+            "fix                 {} ".format(nfixes) + "all  ave/time "
+            "{} {} {} {} file summary_nve_{}_iter_0.txt".format(
+                nevery, nrepeat, nfreq, properties, "_".join(str(e) for e in self._id)
             )
         )
         # instantaneous output written for averaging
-        if P['sampling'] == 'none':
+        if P["sampling"] == "none":
             self.description.append(
                 __(
                     "The run will be {nsteps:n} steps of dynamics.",
                     nsteps=nsteps,
-                    indent=7 * ' '
+                    indent=7 * " ",
                 )
             )
         else:
-            sampling = lammps_step.to_lammps_units(
-                P['sampling'], quantity='time'
-            )
+            sampling = lammps_step.to_lammps_units(P["sampling"], quantity="time")
             nevery = round(sampling / timestep)
             nfreq = int(nsteps / nevery)
             nrepeat = 1
             nfreq = nevery * nrepeat
             nfixes += 1
-            title1 = (
-                '!MolSSI trajectory 1.0 LAMMPS, NVE {} steps of {} fs'.format(
-                    int(nsteps / nevery), timestep * nevery
-                )
+            title1 = "!MolSSI trajectory 1.0 LAMMPS, NVE {} steps of {} fs".format(
+                int(nsteps / nevery), timestep * nevery
             )
             lines.append(
                 (
@@ -132,8 +123,14 @@ class NVE(lammps_step.Energy):
                     "title1 '{}' title2 '{}' file "
                     "trajectory_nve_{}_iter_0.seamm_trj"
                 ).format(
-                    nfixes, nevery, nrepeat, nfreq, properties, title1, title2,
-                    '_'.join(str(e) for e in self._id)
+                    nfixes,
+                    nevery,
+                    nrepeat,
+                    nfreq,
+                    properties,
+                    title1,
+                    title2,
+                    "_".join(str(e) for e in self._id),
                 )
             )
             self.description.append(
@@ -144,21 +141,21 @@ class NVE(lammps_step.Energy):
                     ),
                     nsteps=nsteps,
                     nevery=nevery,
-                    indent=7 * ' '
+                    indent=7 * " ",
                 )
             )
 
-        if extras is not None and 'shake' in extras:
+        if extras is not None and "shake" in extras:
             nfixes += 1
-            lines.append(extras['shake'].format(nfixes))
+            lines.append(extras["shake"].format(nfixes))
 
-        lines.append('')
-        lines.append('run                 {}'.format(nsteps))
-        lines.append('')
+        lines.append("")
+        lines.append("run                 {}".format(nsteps))
+        lines.append("")
 
         for fix in range(1, nfixes + 1):
-            lines.append('unfix               {}'.format(fix))
-        lines.append('')
+            lines.append("unfix               {}".format(fix))
+        lines.append("")
 
         return lines
 
@@ -179,7 +176,7 @@ class NVE(lammps_step.Energy):
         timestep : float
             The magnitude of the time step in the appropriate LAMMPS units
         """
-        masses = self.parent._data['masses']
+        masses = self.parent._data["masses"]
         min_mass = min(masses)
 
         # These are based on masses as a proxy for vibrational frequencies
@@ -190,16 +187,16 @@ class NVE(lammps_step.Energy):
         else:
             factor = 4
 
-        if value == 'normal':
+        if value == "normal":
             timestep = 1.0 * factor
             value = Q_(timestep, ureg.fs)
-        elif value == 'accurate but slow':
+        elif value == "accurate but slow":
             timestep = 0.5 * factor
             value = Q_(timestep, ureg.fs)
-        elif value == 'coarse but fast':
+        elif value == "coarse but fast":
             timestep = 2.0 * factor
             value = Q_(timestep, ureg.fs)
 
-        timestep = lammps_step.to_lammps_units(value, quantity='time')
+        timestep = lammps_step.to_lammps_units(value, quantity="time")
 
         return (timestep, value)

@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 class TkNVT(lammps_step.TkNVE):
-
     def __init__(
         self,
         tk_flowchart=None,
@@ -23,12 +22,12 @@ class TkNVT(lammps_step.TkNVE):
         y=None,
         w=200,
         h=50,
-        my_logger=logger
+        my_logger=logger,
     ):
-        '''Initialize a node
+        """Initialize a node
 
         Keyword arguments:
-        '''
+        """
 
         # Set the logging level for this module if requested
         # if 'lammps_tk_nvt_log_level' in self.options:
@@ -48,20 +47,18 @@ class TkNVT(lammps_step.TkNVE):
             y=y,
             w=w,
             h=h,
-            my_logger=my_logger
+            my_logger=my_logger,
         )
 
         # Overwrite the property metadata
         self.property_metadata = {}
         for item, data in lammps_step.properties.items():
-            if ',' in item:
+            if "," in item:
                 continue
-            if 'nvt' in data["calculation"]:
+            if "nvt" in data["calculation"]:
                 self.property_metadata[item] = data
 
-    def create_dialog(
-        self, title='Edit NVT dynamics parameters', calculation='nvt'
-    ):
+    def create_dialog(self, title="Edit NVT dynamics parameters", calculation="nvt"):
         """Create the edit dialog!
 
         This is reasonably complicated, so a bit of description
@@ -80,7 +77,7 @@ class TkNVT(lammps_step.TkNVE):
           section except
         """
 
-        logger.debug('TkNVT.create_dialog')
+        logger.debug("TkNVT.create_dialog")
 
         # Let parent classes do their thing.
         super().create_dialog(title=title, calculation=calculation)
@@ -88,23 +85,23 @@ class TkNVT(lammps_step.TkNVE):
         # Shortcut for parameters
         P = self.node.parameters
 
-        logger.debug('Parameters:\n{}'.format(pprint.pformat(P.to_dict())))
+        logger.debug("Parameters:\n{}".format(pprint.pformat(P.to_dict())))
 
         # Temperature frame to isolate widgets
-        t_frame = self['temperature_frame'] = ttk.LabelFrame(
-            self['frame'],
+        t_frame = self["temperature_frame"] = ttk.LabelFrame(
+            self["frame"],
             borderwidth=4,
-            relief='sunken',
-            text='Temperature',
-            labelanchor='n',
-            padding=10
+            relief="sunken",
+            text="Temperature",
+            labelanchor="n",
+            padding=10,
         )
 
         for key in lammps_step.NVT_Parameters.parameters:
             self[key] = P[key].widget(t_frame)
 
         # and binding to change as needed
-        self['thermostat'].combobox.bind(
+        self["thermostat"].combobox.bind(
             "<<ComboboxSelected>>", self.reset_temperature_frame
         )
 
@@ -113,9 +110,7 @@ class TkNVT(lammps_step.TkNVE):
 
         row = super().reset_dialog()
 
-        self['temperature_frame'].grid(
-            row=row, column=0, sticky=tk.EW, pady=10
-        )
+        self["temperature_frame"].grid(row=row, column=0, sticky=tk.EW, pady=10)
         row += 1
         self.reset_temperature_frame()
 
@@ -125,66 +120,64 @@ class TkNVT(lammps_step.TkNVE):
         """Layout the widgets in the temperature frame
         as needed for the current state"""
 
-        thermostat = self['thermostat'].get()
+        thermostat = self["thermostat"].get()
 
-        t_frame = self['temperature_frame']
+        t_frame = self["temperature_frame"]
         for slave in t_frame.grid_slaves():
             slave.grid_forget()
 
         row = 0
 
         # Main controls
-        self['T0'].grid(row=row, column=0, columnspan=2, sticky=tk.W)
+        self["T0"].grid(row=row, column=0, columnspan=2, sticky=tk.W)
         row += 1
 
-        self['T1'].grid(row=row, column=0, columnspan=2, sticky=tk.W)
+        self["T1"].grid(row=row, column=0, columnspan=2, sticky=tk.W)
         row += 1
 
-        self['thermostat'].grid(row=row, column=0, columnspan=2, sticky=tk.W)
+        self["thermostat"].grid(row=row, column=0, columnspan=2, sticky=tk.W)
         row += 1
 
-        sw.align_labels((self['T0'], self['T1'], self['thermostat']))
+        sw.align_labels((self["T0"], self["T1"], self["thermostat"]))
 
         # and controls for specific thermostats
-        if thermostat != 'velocity rescaling':
-            self['Tdamp'].grid(row=row, column=1, sticky=tk.W)
+        if thermostat != "velocity rescaling":
+            self["Tdamp"].grid(row=row, column=1, sticky=tk.W)
             row += 1
 
-        if thermostat == 'Nose-Hoover':
-            self['drag'].grid(row=row, column=1, sticky=tk.W)
+        if thermostat == "Nose-Hoover":
+            self["drag"].grid(row=row, column=1, sticky=tk.W)
             row += 1
 
-            self['Tchain'].grid(row=row, column=1, sticky=tk.W)
+            self["Tchain"].grid(row=row, column=1, sticky=tk.W)
             row += 1
 
-            self['Tloop'].grid(row=row, column=1, sticky=tk.W)
+            self["Tloop"].grid(row=row, column=1, sticky=tk.W)
             row += 1
 
             sw.align_labels(
-                (self['Tdamp'], self['Tchain'], self['Tloop'], self['drag'])
+                (self["Tdamp"], self["Tchain"], self["Tloop"], self["drag"])
             )
-        elif thermostat == 'Berendsen':
+        elif thermostat == "Berendsen":
             pass
-        elif 'csvr' in thermostat or 'csld' in thermostat:
-            self['seed'].grid(row=row, column=1, sticky=tk.W)
+        elif "csvr" in thermostat or "csld" in thermostat:
+            self["seed"].grid(row=row, column=1, sticky=tk.W)
             row += 1
-        elif thermostat == 'velocity rescaling':
-            self['frequency'].grid(row=row, column=1, sticky=tk.W)
-            row += 1
-
-            self['window'].grid(row=row, column=1, sticky=tk.W)
+        elif thermostat == "velocity rescaling":
+            self["frequency"].grid(row=row, column=1, sticky=tk.W)
             row += 1
 
-            self['fraction'].grid(row=row, column=1, sticky=tk.W)
+            self["window"].grid(row=row, column=1, sticky=tk.W)
             row += 1
 
-            sw.align_labels(
-                (self['frequency'], self['window'], self['fraction'])
-            )
-        elif thermostat == 'Langevin':
-            self['seed'].grid(row=row, column=1, sticky=tk.W)
+            self["fraction"].grid(row=row, column=1, sticky=tk.W)
             row += 1
-            sw.align_labels((self['Tdamp'], self['seed']))
+
+            sw.align_labels((self["frequency"], self["window"], self["fraction"]))
+        elif thermostat == "Langevin":
+            self["seed"].grid(row=row, column=1, sticky=tk.W)
+            row += 1
+            sw.align_labels((self["Tdamp"], self["seed"]))
         else:
             raise RuntimeError(
                 "Don't recognize thermostat " + "'{}'".format(thermostat)
@@ -201,30 +194,31 @@ class TkNVT(lammps_step.TkNVE):
         If the user clocks 'OK', save the changes to both the control
         parameters and the results requested.
         """
-        if result == 'OK':
+        if result == "OK":
             # Shortcut for parameters
             P = self.node.parameters
 
-            thermostat = self['thermostat'].get()
+            thermostat = self["thermostat"].get()
 
-            P['T0'].set(self['T0'].get())
-            P['T1'].set(self['T1'].get())
-            P['thermostat'].set(thermostat)
+            P["T0"].set(self["T0"].get())
+            P["T1"].set(self["T1"].get())
+            P["thermostat"].set(thermostat)
 
-            if thermostat != 'velocity rescaling':
-                P['Tdamp'].set(self['Tdamp'].get())
+            if thermostat != "velocity rescaling":
+                P["Tdamp"].set(self["Tdamp"].get())
 
-            if thermostat == 'Nose-Hoover':
-                P['Tchain'].set(self['Tchain'].get())
-                P['Tloop'].set(self['Tloop'].get())
-                P['drag'].set(self['drag'].get())
-            elif 'csvr' in thermostat or 'csld' in thermostat or \
-                 thermostat == 'Langevin':
-                P['seed'].set(self['seed'].get())
-            elif thermostat == 'velocity rescaling':
-                P['frequency'].set(self['frequency'].get())
-                P['window'].set(self['window'].get())
-                P['fraction'].set(self['fraction'].get())
+            if thermostat == "Nose-Hoover":
+                P["Tchain"].set(self["Tchain"].get())
+                P["Tloop"].set(self["Tloop"].get())
+                P["drag"].set(self["drag"].get())
+            elif (
+                "csvr" in thermostat or "csld" in thermostat or thermostat == "Langevin"
+            ):
+                P["seed"].set(self["seed"].get())
+            elif thermostat == "velocity rescaling":
+                P["frequency"].set(self["frequency"].get())
+                P["window"].set(self["window"].get())
+                P["fraction"].set(self["fraction"].get())
 
         # Let base classes reap their parameters
         super().handle_dialog(result)

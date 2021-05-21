@@ -46,8 +46,8 @@ jobs:
     - name: Run linters
       shell: bash -l {0}
       run: |
+        black --check --diff lammps_step tests
         flake8 lammps_step tests
-        yapf --diff --recursive lammps_step tests
 
   test:
     name: Test ${{ matrix.os }} Py${{ matrix.python-version }}
