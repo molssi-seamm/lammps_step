@@ -1,3 +1,0 @@
-lammps_step/_version.py
-lammps_step/*_parameters.py
-lammps_step/lammps_units.py
