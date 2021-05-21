@@ -19,6 +19,7 @@ dependencies:
   # Testing
   - black
   - codecov
+  - flake8
   - pytest
   - pytest-cov
 
