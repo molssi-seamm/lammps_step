@@ -47,6 +47,7 @@ angle_style = {
 dihedral_style = {
     'torsion_1': 'harmonic',
     'torsion_3': 'class2',
+    'torsion_4': 'fourier',
 }
 
 improper_style = {
@@ -945,7 +946,7 @@ class LAMMPS(seamm.Node):
                     function = 'harmonic' if use_hybrid else ''
                     line = (
                         f"{counter:6d} {function} "
-                        f"{values['terms'][0]['K2']} {values['terms'][0]['R0']}"
+                        f"{values['K2']} {values['R0']}"
                     )
                 elif form == 'quartic_bond':
                     function = 'class2' if use_hybrid else ''
@@ -992,7 +993,7 @@ class LAMMPS(seamm.Node):
                     function = 'harmonic' if use_hybrid else ''
                     line = (
                         f"{counter:6d} {function} "
-                        f"{values['terms'][0]['K2']} {values['terms'][0]['Theta0']}"
+                        f"{values['K2']} {values['Theta0']}"
                     )
                 elif form == 'quartic_angle':
                     function = quartic_function if use_hybrid else ''
@@ -1095,9 +1096,9 @@ class LAMMPS(seamm.Node):
                 form, values, types, parameters_type, real_types = \
                     parameters
                 if form == 'torsion_1':
-                    KPhi = values['terms'][0]['KPhi']
-                    n = int(float(values['terms'][0]['n']))
-                    Phi0 = int(float(values['terms'][0]['Phi0']))
+                    KPhi = values['KPhi']
+                    n = int(float(values['n']))
+                    Phi0 = int(float(values['Phi0']))
 
                     # Discover form is
                     #  KPhi * [1 + cos(n*Phi - Phi0)]
@@ -1132,6 +1133,16 @@ class LAMMPS(seamm.Node):
                         f"{values['V2']} {values['Phi0_2']} "
                         f"{values['V3']} {values['Phi0_3']} "
                     )
+                elif form == 'torsion_4':
+                    function = 'class2' if use_hybrid else ''
+                    line = (
+                        f"{counter:6d} {function} 4 "
+                        f"{values['V1']} {values['n1']} {values['Phi0_1']} "
+                        f"{values['V2']} {values['n2']} {values['Phi0_2']} "
+                        f"{values['V3']} {values['n3']} {values['Phi0_3']} "
+                        f"{values['V4']} {values['n4']} {values['Phi0_4']} "
+                    )
+
                 line += (
                     f' # {types[0]}-{types[1]}-{types[2]}-{types[3]} '
                     f'--> {real_types[0]}-{real_types[1]}-'
