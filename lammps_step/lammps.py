@@ -25,6 +25,7 @@ import statsmodels.tsa.stattools as stattools
 
 import lammps_step
 import seamm
+import seamm_util
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
 
@@ -158,7 +159,7 @@ class LAMMPS(seamm.Node):
     def create_parser(self):
         """Setup the command-line / config file parser"""
         parser_name = self.step_type
-        parser = seamm.getParser()
+        parser = seamm_util.getParser()
 
         # Remember if the parser exists ... this type of step may have been
         # found before
