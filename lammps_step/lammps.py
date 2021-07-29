@@ -812,11 +812,11 @@ class LAMMPS(seamm.Node):
             zlo = zhi = z
             for x, y, z, index in eex["atoms"]:
                 xlo = x if x < xlo else xlo
-                xhi = x if x > xhi else xlo
+                xhi = x if x > xhi else xhi
                 ylo = y if y < ylo else ylo
-                yhi = y if y > yhi else ylo
+                yhi = y if y > yhi else yhi
                 zlo = z if z < zlo else zlo
-                zhi = z if z > zhi else zlo
+                zhi = z if z > zhi else zhi
 
             # Some extra space....
             xlo -= 10.0
