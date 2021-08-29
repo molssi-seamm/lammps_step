@@ -172,7 +172,6 @@ class Initialization(seamm.Node):
         # See what type of forcefield we have amd handle it
         ff = self.get_variable("_forcefield")
         if ff == "OpenKIM":
-            lammps_step.set_lammps_unit_system("metal")
             return self.OpenKIM_input()
 
         # Valence forcefield...
@@ -235,6 +234,7 @@ class Initialization(seamm.Node):
 
         # Get the energy expression.
         eex = ff.energy_expression(configuration, style="LAMMPS")
+        eex["molecules"] = [1] * configuration.n_atoms
         logger.debug("energy expression:\n" + pprint.pformat(eex))
 
         # Determine if we have any charges, and if so, if they are sparse
@@ -527,8 +527,18 @@ class Initialization(seamm.Node):
         system_db = self.get_variable("_system_db")
         configuration = system_db.system.configuration
 
+        # Need to know the type of potential
+        potential = self.get_variable("_OpenKIM_Potential")
+
+        if "reaxff" in potential.lower():
+            potential_type = "ReaxFF"
+            lammps_step.set_lammps_unit_system("real")
+        else:
+            potential_type = "EAM"
+            lammps_step.set_lammps_unit_system("metal")
+
         # Get the (simple) energy expression for these systems
-        eex = self.OpenKIM_energy_expression()
+        eex = self.OpenKIM_energy_expression(potential_type=potential_type)
 
         lines = []
         lines.append("")
@@ -536,8 +546,10 @@ class Initialization(seamm.Node):
         lines.append("")
         lines.append("newton              on")
         lines.append("")
-        potential = self.get_variable("_OpenKIM_Potential")
-        lines.append(f"kim_init            {potential} metal " "unit_conversion_mode")
+        if "reaxff" in potential.lower():
+            lines.append(f"kim_init            {potential} real unit_conversion_mode")
+        else:
+            lines.append(f"kim_init            {potential} metal unit_conversion_mode")
         lines.append("")
         periodicity = configuration.periodicity
         if periodicity == 0:
@@ -564,8 +576,19 @@ class Initialization(seamm.Node):
 
         return (lines, eex)
 
-    def OpenKIM_energy_expression(self):
-        """Create the (simple) energy expression for OpenKIM models."""
+    def OpenKIM_energy_expression(self, potential_type="EAM"):
+        """Create the (simple) energy expression for OpenKIM models.
+
+        Parameters
+        ----------
+        potential_type : str
+            The class of potential, e.g. "ReaxFF" or "EAM"
+
+        Returns
+        -------
+        dict()
+            The energy expression as a dictionary.
+        """
         eex = {}
         eex["terms"] = {"OpenKIM": []}
 
@@ -601,7 +624,16 @@ class Initialization(seamm.Node):
             x, y, z = xyz
             result.append((x, y, z, index))
 
-        eex["n_atoms"] = len(result)
+        n_atoms = len(result)
+
+        if potential_type == "ReaxFF":
+            # ReaxFF needs charges. Use those on the atoms if present, otherwise 0.
+            if "charge" in atoms:
+                eex["charges"] = [*atoms["charge"]]
+            else:
+                eex["charges"] = [0.0] * n_atoms
+
+        eex["n_atoms"] = n_atoms
         eex["n_atom_types"] = len(atom_types)
 
         return eex
