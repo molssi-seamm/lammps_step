@@ -196,6 +196,7 @@ class NPT(lammps_step.NVT):
         lines.append("thermo              {}".format(int(nsteps / 100)))
 
         nfixes = 0
+        ndumps = 0
         if P["thermostat"] == "Nose-Hoover":
             Tchain = P["Tchain"]
             Tloop = P["Tloop"]
@@ -369,6 +370,29 @@ class NPT(lammps_step.NVT):
                     "_".join(str(e) for e in self._id),
                 )
             )
+
+            # For ReaxFF, hard-wired at the moment.
+            ff = self.get_variable("_forcefield")
+            if ff == "OpenKIM":
+                potential = self.get_variable("_OpenKIM_Potential")
+                if "reaxff" in potential.lower():
+                    version = "_".join(str(e) for e in self._id)
+                    nfixes += 1
+                    lines.append(
+                        f"fix                 {nfixes} all reax/c/bonds {nevery} "
+                        f"bonds_{version}.reaxff"
+                    )
+                    nfixes += 1
+                    lines.append(
+                        f"fix                 {nfixes} all reax/c/species {nevery} "
+                        f"{nrepeat} {nfreq} species_{version}.reaxff"
+                    )
+                    ndumps += 1
+                    lines.append(
+                        f"dump                {ndumps} all custom {nevery} "
+                        f"dump_{version}.reaxff id xu yu zu"
+                    )
+
             self.description.append(
                 __(
                     (
@@ -391,6 +415,8 @@ class NPT(lammps_step.NVT):
 
         for fix in range(1, nfixes + 1):
             lines.append("unfix               {}".format(fix))
+        for dump in range(1, ndumps + 1):
+            lines.append("undump               {}".format(dump))
         lines.append("")
 
         return lines
