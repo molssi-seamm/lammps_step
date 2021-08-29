@@ -10,16 +10,15 @@ logger = logging.getLogger(__name__)
 class NVE_Parameters(lammps_step.EnergyParameters):
     """The control parameters for NVE dynamics in LAMMPS"""
 
+    #                "Until properties converge to the requested accuracy.",
+
     parameters = {
         "run_control": {
-            "default": "Until properties converge to the requested accuracy.",
+            "default": "For a fixed length of simulated time.",
             "kind": "enumeration",
             "default_units": None,
             "format_string": "",
-            "enumeration": (
-                "Until properties converge to the requested accuracy.",
-                "For a fixed length of simulated time.",
-            ),
+            "enumeration": ("For a fixed length of simulated time.",),
             "description": "How long to run? ",
             "help_text": (
                 "How to determine when to stop the simulation. "
