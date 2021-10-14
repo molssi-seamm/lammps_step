@@ -42,6 +42,9 @@ class NVE(lammps_step.Energy):
     def get_input(self, extras=None):
         """Get the input for an NVE dynamics run in LAMMPS"""
 
+        system_db = self.get_variable("_system_db")
+        configuration = system_db.system.configuration
+
         self.description = []
         self.description.append(__(self.header, indent=3 * " "))
 
@@ -77,6 +80,7 @@ class NVE(lammps_step.Energy):
 
         lines = []
         nfixes = 0
+        ndumps = 0
         lines.append("")
         lines.append("#     NVE dynamics")
         lines.append("")
@@ -133,6 +137,35 @@ class NVE(lammps_step.Energy):
                     "_".join(str(e) for e in self._id),
                 )
             )
+
+            # For ReaxFF, hard-wired at the moment.
+            ff = self.get_variable("_forcefield")
+            if ff == "OpenKIM":
+                potential = self.get_variable("_OpenKIM_Potential")
+                if "reaxff" in potential.lower():
+                    version = "_".join(str(e) for e in self._id)
+                    nfixes += 1
+                    lines.append(
+                        f"fix                 {nfixes} all reax/c/bonds {nevery} "
+                        f"bonds_{version}.reaxff"
+                    )
+                    nfixes += 1
+                    lines.append(
+                        f"fix                 {nfixes} all reax/c/species {nevery} "
+                        f"{nrepeat} {nfreq} species_{version}.reaxff"
+                    )
+                    ndumps += 1
+                    if configuration.periodicity == 0:
+                        lines.append(
+                            f"dump                {ndumps} all custom {nevery} "
+                            f"dump_{version}.reaxff id x y z"
+                        )
+                    else:
+                        lines.append(
+                            f"dump                {ndumps} all custom {nevery} "
+                            f"dump_{version}.reaxff id xsu ysu zsu"
+                        )
+
             self.description.append(
                 __(
                     (
@@ -155,6 +188,8 @@ class NVE(lammps_step.Energy):
 
         for fix in range(1, nfixes + 1):
             lines.append("unfix               {}".format(fix))
+        for dump in range(1, ndumps + 1):
+            lines.append("undump               {}".format(dump))
         lines.append("")
 
         return lines

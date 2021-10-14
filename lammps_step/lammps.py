@@ -125,9 +125,9 @@ class LAMMPS(seamm.Node):
             a = lx
             b = ly
             c = lz
-            alpha = 0.0
-            beta = 0.0
-            gamma = 0.0
+            alpha = 90.0
+            beta = 90.0
+            gamma = 90.0
         else:
             a = lx
             b = sqrt(ly ** 2 + xy ** 2)
@@ -336,8 +336,6 @@ class LAMMPS(seamm.Node):
             printer.important("   LAMMPS using the serial version.\n")
 
         self.subflowchart.root_directory = self.flowchart.root_directory
-
-        files = {}
 
         # Get the first real node
         node = self.subflowchart.get_node("1").next()
