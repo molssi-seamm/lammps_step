@@ -145,7 +145,7 @@ class Initialization(seamm.Node):
             text += " the best k-space acceleration method for the "
             text += " molecular system will be chosen."
         else:
-            text += " the {method} for k-space acceleration will be used."
+            text += " the {kspace_method} for k-space acceleration will be used."
 
         if P["kspace_method"] != "none":
             text += " The accuracy goal is {kspace_accuracy}."
