@@ -2,7 +2,7 @@
 # How many cores to use for LAMMPS.  Set to 1 to use only the serial
 # version of LAMMPS. LAMMPS will try to choose a reasonable number of
 # cores based on the size of the system and other parameters. The
-# option 'lammps-atoms-per-core' can be used to tune this estimate.
+# option 'atoms-per-core' can be used to tune this estimate.
 #
 # The default is 'available', meaning use all the cores available to
 # the calculation if that makes sense based on the type of
@@ -15,7 +15,7 @@
 # you consistently use expensive potentials, or have e.g. GPUs. The
 # default is 1000.
 
-# lammps-atoms-per-core = 1000
+# atoms-per-core = 1000
 
 # Whether to write local HTML files for the graphs, etc. generated so
 # they can be viewed without the SEAMM Dashboard.
