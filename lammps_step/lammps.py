@@ -312,6 +312,9 @@ class LAMMPS(seamm.Node):
                 np = int(round(n_atoms / o["atoms_per_core"]))
                 if np < 1:
                     np = 1
+                self.logger.info(
+                    f"Could use {np} cores: {n_atoms=} {o['atoms_per_core']=}"
+                )
 
                 # How many processors does this node have?
                 n_cores = psutil.cpu_count(logical=False)
