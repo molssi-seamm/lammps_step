@@ -130,8 +130,8 @@ class LAMMPS(seamm.Node):
             gamma = 0.0
         else:
             a = lx
-            b = sqrt(ly ** 2 + xy ** 2)
-            c = sqrt(lz ** 2 + xz ** 2 + yz ** 2)
+            b = sqrt(ly**2 + xy**2)
+            c = sqrt(lz**2 + xz**2 + yz**2)
             alpha = degrees(acos((xy * xz + lx * yz) / (b * c)))
             beta = degrees(acos(xz / c))
             gamma = degrees(acos(xy / b))
@@ -150,9 +150,9 @@ class LAMMPS(seamm.Node):
             lx = 0
             xy = b * cos(radians(gamma))
             xz = c * cos(radians(beta))
-            ly = sqrt(b ** 2 - xy ** 2)
+            ly = sqrt(b**2 - xy**2)
             yz = (b * c * cos(radians(alpha)) - xy * xz) / ly
-            lz = sqrt(c ** 2 - xz ** 2 - yz ** 2)
+            lz = sqrt(c**2 - xz**2 - yz**2)
 
         return (lx, ly, lz, xy, xz, yz)
 
