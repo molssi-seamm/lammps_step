@@ -102,7 +102,7 @@ class Velocities(seamm.Node):
                     "remove_momentum"
                 ] = "remove both translational and rotational momentum"
         if P["seed"] == "random":
-            P["seed"] = int(random.random() * 2 ** 31)
+            P["seed"] = int(random.random() * 2**31)
 
         # Have to fix formatting for printing...
         PP = dict(P)
