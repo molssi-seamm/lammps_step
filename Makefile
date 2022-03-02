@@ -1,6 +1,7 @@
 MODULE := lammps_step
 .PHONY: help clean clean-build clean-pyc clean-test lint format typing test dependencies
-.PHONY: test-all coverage html docs servedocs release check-release dist install uninsta.DEFAULT_GOAL := help
+.PHONY: test-all coverage html docs servedocs release check-release dist install uninstall
+.DEFAULT_GOAL := help
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
 try:
