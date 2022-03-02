@@ -1,9 +1,9 @@
 numpy
 pandas
-Pmw==2.0.1
+Pmw
 psutil
 scipy
-pymbar==3.0.5
-seamm>=2021.2.2
-seamm-ff-util>=2021.2.2
-statsmodels==0.11.1
+pymbar
+seamm
+seamm-ff-util
+statsmodels

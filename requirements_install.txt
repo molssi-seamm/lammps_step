@@ -1,6 +1,0 @@
-kim-query
-psutil
-pymbar
-seamm
-seamm-ff-util
-statsmodels
