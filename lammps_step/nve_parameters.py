@@ -12,7 +12,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
 
     parameters = {
         "run_control": {
-            "default": "Until properties converge to the requested accuracy.",
+            "default": "For a fixed length of simulated time.",
             "kind": "enumeration",
             "default_units": None,
             "format_string": "",
