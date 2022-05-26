@@ -182,10 +182,9 @@ class Initialization(seamm.Node):
         # And atom-type if necessary
         key = f"atom_types_{ffname}"
         if key not in configuration.atoms:
-            smiles = configuration.to_smiles(hydrogens=True)
-            logger.debug("Atom typing -- smiles = " + smiles)
+            logger.debug("Atom typing")
             ff_assigner = seamm_ff_util.FFAssigner(ff)
-            atom_types = ff_assigner.assign(smiles, add_hydrogens=False)
+            atom_types = ff_assigner.assign(configuration)
 
             logger.info("Atom types: " + ", ".join(atom_types))
 
