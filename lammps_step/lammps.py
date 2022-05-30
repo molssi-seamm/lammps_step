@@ -507,7 +507,8 @@ class LAMMPS(seamm.Node):
                     "initialization node",
                 )
 
-            base = "lammps_substep_%s_iter_%d" % (node_initialization._id[1], 0)
+            # base = "lammps_substep_%s_iter_%d" % (node_initialization._id[1], 0)
+            base = "lammps"
 
             restart = base + ".restart.*"
             dump = base + ".dump.*"
@@ -716,7 +717,8 @@ class LAMMPS(seamm.Node):
                 node_ids.append(n._id[1])
                 new_input_data += self._get_node_input(node=n, extras=extras)
 
-        base = "lammps_substep_%s_iter_%d" % ("_".join(node_ids), iteration)
+        # base = "lammps_substep_%s_iter_%d" % ("_".join(node_ids), iteration)
+        base = "lammps"
 
         input_file = base + ".dat"
         restart = base + ".restart.*"
