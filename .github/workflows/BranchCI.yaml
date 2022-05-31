@@ -7,8 +7,8 @@ on:
       - 'master'
 
 jobs:
-  build-ubuntu:
-    name: Light CI for branch
+  branch-ci:
+    name: Branch CI
     uses: molssi-seamm/devops/.github/workflows/BranchCI.yaml@main
     with:
       src : lammps_step
