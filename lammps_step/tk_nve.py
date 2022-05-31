@@ -112,8 +112,8 @@ class TkNVE(lammps_step.TkEnergy):
 
         # And put them back in depending...
         row = 0
-        self["run_control"].grid(row=row, column=0, sticky=tk.W)
-        row += 1
+        # self["run_control"].grid(row=row, column=0, sticky=tk.W)
+        # row += 1
 
         widgets = []
         if "fixed length" in run_control:
