@@ -9,6 +9,7 @@ from math import sqrt, exp, degrees, radians, cos, acos
 from pathlib import Path
 import os
 import os.path
+import pkg_resources
 import pprint
 import re
 import shutil
@@ -24,6 +25,7 @@ from scipy.stats import t as t_student
 import statsmodels.tsa.stattools as stattools
 
 import lammps_step
+import molsystem
 import seamm
 import seamm_util
 import seamm_util.printing as printing
@@ -34,6 +36,11 @@ from pymbar import timeseries
 logger = logging.getLogger("lammps")
 job = printing.getPrinter()
 printer = printing.getPrinter("lammps")
+
+# Add LAMMPS's properties to the standard properties
+path = Path(pkg_resources.resource_filename(__name__, "data/"))
+csv_file = path / "properties.csv"
+molsystem.add_properties_from_file(csv_file)
 
 bond_style = {
     "quadratic_bond": "harmonic",
@@ -1544,7 +1551,7 @@ class LAMMPS(seamm.Node):
 
             # compute indices of uncorrelated timeseries using pymbar
             yy = y.to_numpy()
-            conv, inefficiency, Neff_max = timeseries.detectEquilibration(yy)
+            conv, inefficiency, Neff_max = timeseries.detect_equilibration(yy)
 
             self.logger.info(
                 "  converged in {} steps, inefficiency = {}, Neff_max = {}".format(
@@ -1573,7 +1580,9 @@ class LAMMPS(seamm.Node):
                     tau = dt_fs / 2
                 t0 = conv * dt_fs
                 y_t_equil = yy[conv:]
-                indices = timeseries.subsampleCorrelatedData(y_t_equil, g=inefficiency)
+                indices = timeseries.subsample_correlated_data(
+                    y_t_equil, g=inefficiency
+                )
 
                 if len(indices) == 0:
                     print("Problem with column " + column)
@@ -1858,6 +1867,29 @@ class LAMMPS(seamm.Node):
                     dedent=False,
                 )
             )
+
+        # Add citations for pymbar
+        self.references.cite(
+            raw=self._bibliography["mbar"],
+            alias="pymbar-1",
+            module="lammps_step",
+            level=1,
+            note="The main reference for pymbar.",
+        )
+        self.references.cite(
+            raw=self._bibliography["histogram"],
+            alias="pymbar-2",
+            module="lammps_step",
+            level=2,
+            note="The second citation for pymbar",
+        )
+        self.references.cite(
+            raw=self._bibliography["convergence"],
+            alias="pymbar-3",
+            module="lammps_step",
+            level=2,
+            note="The third citation for pymbar",
+        )
 
         return results
 

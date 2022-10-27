@@ -56,6 +56,9 @@ class NVT(lammps_step.NVE):
 
         logger.debug("NVT.init() creating NVT_Parameters object")
 
+        self._calculation = "nvt"
+        self._model = None
+        self._metadata = lammps_step.metadata
         self.parameters = lammps_step.NVT_Parameters()
 
         logger.debug("NVT.init() completed")

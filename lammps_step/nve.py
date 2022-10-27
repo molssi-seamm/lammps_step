@@ -26,6 +26,9 @@ class NVE(lammps_step.Energy):
 
         logger.debug("NVE.init() creating NVE_Parameters object")
 
+        self._calculation = "nve"
+        self._model = None
+        self._metadata = lammps_step.metadata
         self.parameters = lammps_step.NVE_Parameters()
 
     def description_text(self):
