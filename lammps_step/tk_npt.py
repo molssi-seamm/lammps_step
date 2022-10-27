@@ -21,15 +21,7 @@ class TkNPT(lammps_step.TkNVT):
             tk_flowchart=tk_flowchart, node=node, canvas=canvas, x=x, y=y, w=w, h=h
         )
 
-        # Overwrite the property metadata
-        self.property_metadata = {}
-        for item, data in lammps_step.properties.items():
-            if "," in item:
-                continue
-            if "npt" in data["calculation"]:
-                self.property_metadata[item] = data
-
-    def create_dialog(self, title="Edit NPT dynamics parameters", calculation="npt"):
+    def create_dialog(self, title="Edit NPT dynamics parameters"):
         """Create the edit dialog!
 
         This is reasonably complicated, so a bit of description
@@ -53,7 +45,7 @@ class TkNPT(lammps_step.TkNVT):
         """
 
         # Let parent classes do their thing.
-        super().create_dialog(title=title, calculation=calculation)
+        super().create_dialog(title=title)
 
         # Shortcut for parameters
         P = self.node.parameters

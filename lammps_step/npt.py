@@ -41,6 +41,9 @@ class NPT(lammps_step.NVT):
 
         logger.debug("NPT.init() creating NPT_Parameters object")
 
+        self._calculation = "npt"
+        self._model = None
+        self._metadata = lammps_step.metadata
         self.parameters = lammps_step.NPT_Parameters()
 
         logger.debug("NPT.init() completed")

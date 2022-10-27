@@ -22,8 +22,12 @@ class Energy(seamm.Node):
 
         super().__init__(flowchart=flowchart, title=title, extension=extension)
 
-        self.description = "A single point energy calculation"
+        self._calculation = "energy"
+        self._model = None
+        self._metadata = lammps_step.metadata
         self.parameters = lammps_step.EnergyParameters()
+
+        self.description = "A single point energy calculation"
 
     @property
     def header(self):
@@ -77,15 +81,21 @@ class Energy(seamm.Node):
         """Parse the output and generating the text output and store the
         data in variables for other stages to access
         """
+        # Get the configuration
+        _, configuration = self.get_system_configuration(None)
 
-        # printer.normal(self._long_header)
+        # Need to set the model for properties.
+        # See what type of forcefield we have amd handle it
+        ff = self.get_variable("_forcefield")
+        if ff == "OpenKIM":
+            self._model = "OpenKIM/" + self.get_variable("_OpenKIM_Potential")
+        else:
+            # Valence forcefield...
+            self._model = ff.current_forcefield
 
         # Put any requested results into variables or tables
         self.store_results(
+            configuration=configuration,
             data=data,
-            properties=lammps_step.properties,
-            results=self.parameters["results"].value,
             create_tables=self.parameters["create tables"].get(),
         )
-
-        # printer.normal('\n')

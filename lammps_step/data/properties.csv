@@ -1,0 +1,37 @@
+Property,Type,Units,Description,URL
+cell_a#LAMMPS#{model},float,Å,"The cell_a.",https://en.wikipedia.org/wiki/Unit_cell
+cell_a, stderr#LAMMPS#{model},float,Å,"The standard error of the cell_a.",https://en.wikipedia.org/wiki/Standard_error
+cell_a, tau#LAMMPS#{model},float,fs,"The autocorrelation time of the cell_a.",https://en.wikipedia.org/wiki/Autocorrelation
+cell_a, inefficiency#LAMMPS#{model},float,,"The statistical inefficiency of the cell_a sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+cell_b#LAMMPS#{model},float,Å,"The cell_b.",https://en.wikipedia.org/wiki/Unit_cell
+cell_b, stderr#LAMMPS#{model},float,Å,"The standard error of the cell_b.",https://en.wikipedia.org/wiki/Standard_error
+cell_b, tau#LAMMPS#{model},float,fs,"The autocorrelation time of the cell_b.",https://en.wikipedia.org/wiki/Autocorrelation
+cell_b, inefficiency#LAMMPS#{model},float,,"The statistical inefficiency of the cell_b sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+cell_c#LAMMPS#{model},float,Å,"The cell_c.",https://en.wikipedia.org/wiki/Unit_cell
+cell_c, stderr#LAMMPS#{model},float,Å,"The standard error of the cell_c.",https://en.wikipedia.org/wiki/Standard_error
+cell_c, tau#LAMMPS#{model},float,fs,"The autocorrelation time of the cell_c.",https://en.wikipedia.org/wiki/Autocorrelation
+cell_c, inefficiency#LAMMPS#{model},float,,"The statistical inefficiency of the cell_c sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+density#LAMMPS#{model},float,g/mL,"The density.",https://en.wikipedia.org/wiki/Density
+density, stderr#LAMMPS#{model},float,g/mL,"The standard error of the density.",https://en.wikipedia.org/wiki/Standard_error
+density, tau#LAMMPS#{model},float,fs,"The autocorrelation time of the density.",https://en.wikipedia.org/wiki/Autocorrelation
+density, inefficiency#LAMMPS#{model},float,,"The statistical inefficiency of the density sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+pressure#LAMMPS#{model},float,atm,"The pressure.",https://en.wikipedia.org/wiki/Pressure
+pressure, stderr#LAMMPS#{model},float,atm,"The standard error of the pressure.",https://en.wikipedia.org/wiki/Standard_error
+pressure, tau#LAMMPS#{model},float,fs,"The autocorrelation time of the pressure.",https://en.wikipedia.org/wiki/Autocorrelation
+pressure, inefficiency#LAMMPS#{model},float,,"The statistical inefficiency of the pressure sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+temperature#LAMMPS#{model},float,K,"The temperature.",https://en.wikipedia.org/wiki/Temperature
+temperature, stderr#LAMMPS#{model},float,K,"The standard error of the temperature.",https://en.wikipedia.org/wiki/Standard_error
+temperature, tau#LAMMPS#{model},float,fs,"The autocorrelation time of the temperature.",https://en.wikipedia.org/wiki/Autocorrelation
+temperature, inefficiency#LAMMPS#{model},float,,"The statistical inefficiency of the temperature sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+total energy#LAMMPS#{model},float,kJ/mol,"The {model} total energy.",
+total energy, stderr#LAMMPS#{model},float,kJ/mol,"The standard error of the {model} total energy.",https://en.wikipedia.org/wiki/Standard_error
+total energy, tau#LAMMPS#{model},float,kJ/mol,"The autocorellation time of the {model} total energy.",https://en.wikipedia.org/wiki/Autocorrelation
+total energy, inefficiency#LAMMPS#{model},float,kJ/mol,"The statistical inefficiency of the {model} total energy.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+kinetic energy#LAMMPS#{model},float,kJ/mol,"The {model} kinetic energy.",https://en.wikipedia.org/wiki/Kinetic_energy
+kinetic energy, stderr#LAMMPS#{model},float,kJ/mol,"The standard error of the {model} kinetic energy.",https://en.wikipedia.org/wiki/Standard_error
+kinetic energy, tau#LAMMPS#{model},float,kJ/mol,"The autocorellation time of the {model} kinetic energy.",https://en.wikipedia.org/wiki/Autocorrelation
+kinetic energy, inefficiency#LAMMPS#{model},float,kJ/mol,"The statistical inefficiency of the {model} kinetic energy.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+potential energy#LAMMPS#{model},float,kJ/mol,"The {model} potential energy.",https://en.wikipedia.org/wiki/Potential_energy
+potential energy, stderr#LAMMPS#{model},float,kJ/mol,"The standard error of the {model} potential energy.",https://en.wikipedia.org/wiki/Standard_error
+potential energy, tau#LAMMPS#{model},float,kJ/mol,"The autocorellation time of the {model} potential energy.",https://en.wikipedia.org/wiki/Autocorrelation
+potential energy, inefficiency#LAMMPS#{model},float,kJ/mol,"The statistical inefficiency of the {model} potential energy.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
