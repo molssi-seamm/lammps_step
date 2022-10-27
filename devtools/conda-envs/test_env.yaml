@@ -11,7 +11,7 @@ dependencies:
   # SEAMM
   - kim-query
   - psutil
-  - pymbar
+  - pymbar>=4.0
   - seamm
   - seamm-ff-util
   - statsmodels
