@@ -21,6 +21,10 @@ class Minimization(lammps_step.Energy):
 
         self.description = "Minimization step in LAMMPS"
 
+        self._calculation = "minimization"
+        self._model = None
+        self._metadata = lammps_step.metadata
+
         self.convergence = "normal"
         self.etol_method = "is"
         self.etol = 1.0e-06

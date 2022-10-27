@@ -1,9 +1,10 @@
+molsystem
 numpy
 pandas
 Pmw
 psutil
 scipy
-pymbar
+pymbar>=4.0
 seamm
 seamm-ff-util
 statsmodels
