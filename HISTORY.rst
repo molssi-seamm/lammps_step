@@ -2,6 +2,10 @@
 History
 =======
 
+2022.10.31 -- Bugfix: properties with commas
+  Properties with commas in their name in data/properties.csv need to have quotes to
+  protect the property name!
+
 2022.10.27 -- Added properties
   * Added properties to be saved in the database.
   * Updated calls to `pymbar` because the names of methods were changed.
