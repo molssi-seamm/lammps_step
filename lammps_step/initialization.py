@@ -2,7 +2,6 @@
 
 """A single-point initialization in LAMMPS"""
 
-import seamm_ff_util
 import lammps_step
 import logging
 import seamm
@@ -169,7 +168,7 @@ class Initialization(seamm.Node):
         system_db = self.get_variable("_system_db")
         configuration = system_db.system.configuration
 
-        # See what type of forcefield we have amd handle it
+        # See what type of forcefield we have and handle it
         ff = self.get_variable("_forcefield")
         if ff == "OpenKIM":
             lammps_step.set_lammps_unit_system("metal")
@@ -183,57 +182,11 @@ class Initialization(seamm.Node):
         key = f"atom_types_{ffname}"
         if key not in configuration.atoms:
             logger.debug("Atom typing")
-            ff_assigner = seamm_ff_util.FFAssigner(ff)
-            atom_types = ff_assigner.assign(configuration)
-
-            logger.info("Atom types: " + ", ".join(atom_types))
-
-            configuration.atoms.add_attribute(key, coltype="str", values=atom_types)
-
-            printer.important(
-                __(
-                    f"Assigned the atom types for forcefield '{ffname}' to "
-                    "the system",
-                    indent=self.indent + "    ",
-                )
-            )
-
-            # Now get the charges if forcefield has them.
-            terms = ff.terms
-            if "bond charge increment" in terms:
-                logger.debug("Getting the charges for the system")
-                neighbors = configuration.bonded_neighbors(as_indices=True)
-
-                charges = []
-                total_q = 0.0
-                for i in range(configuration.n_atoms):
-                    itype = atom_types[i]
-                    parameters = ff.charges(itype)[3]
-                    q = float(parameters["Q"])
-                    for j in neighbors[i]:
-                        jtype = atom_types[j]
-                        parameters = ff.bond_increments(itype, jtype)[3]
-                        q += float(parameters["deltaij"])
-                    charges.append(q)
-                    total_q += q
-                if abs(total_q) > 0.0001:
-                    logger.warning(f"Total charge is not zero: {total_q:.4f}")
-                    logger.info(
-                        "Charges from increments and charges:\n"
-                        + pprint.pformat(charges)
-                    )
-                else:
-                    logger.debug("Charges from increments:\n" + pprint.pformat(charges))
-
-                key = f"charges_{ffname}"
-                if key not in configuration.atoms:
-                    configuration.atoms.add_attribute(key, coltype="float")
-                charge_column = configuration.atoms.get_column(key)
-                charge_column[0:] = charges
-                logger.debug(f"Set column '{key}' to the charges")
+            ff.assign_forcefield(configuration)
 
         # Get the energy expression.
-        eex = ff.energy_expression(configuration, style="LAMMPS")
+        style = "LAMMPS-class2" if "cff" in ffname else "LAMMPS"
+        eex = ff.energy_expression(configuration, style=style)
         logger.debug("energy expression:\n" + pprint.pformat(eex))
 
         # Determine if we have any charges, and if so, if they are sparse
@@ -510,8 +463,13 @@ class Initialization(seamm.Node):
                 lines.append(line)
 
         lines.append("")
-        if extras is not None and "read_data" in extras and extras["read_data"] is True:
 
+        # Handle 1-4s in nonbonds
+        if "opls" in ffname:
+            lines.append("special_bonds       lj/coul 0.0 0.0 0.5")
+            lines.append("")
+
+        if extras is not None and "read_data" in extras and extras["read_data"] is True:
             lines.append("read_data           structure.dat")
 
         # Set up standard variables

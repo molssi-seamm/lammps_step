@@ -52,15 +52,18 @@ bond_style = {
 angle_style = {
     "quadratic_angle": "harmonic",
     "quartic_angle": "class2",
+    "simple_fourier_angle": "fourier/simple",
 }
 
 dihedral_style = {
     "torsion_1": "harmonic",
     "torsion_3": "class2",
+    "torsion_opls": "opls",
 }
 
 improper_style = {
     "wilson_out_of_plane": "class2",
+    "improper_opls": "cvff",
 }
 
 
@@ -360,7 +363,6 @@ class LAMMPS(seamm.Node):
         files = {}
 
         while node is not None:
-
             if isinstance(node, lammps_step.Initialization):
                 initialization_header, eex = self._get_node_input(
                     node=node, extras={"read_data": True}
@@ -391,21 +393,15 @@ class LAMMPS(seamm.Node):
                 shake = self.shake_fix(P, eex)
                 if shake != "":
                     extras["shake"] = shake
-
             else:
-
                 P = node.parameters.current_values_to_dict(
                     context=seamm.flowchart_variables._data
                 )
 
                 if "run_control" not in P or "Until" not in P["run_control"]:
-
                     history_nodes.append(node)
-
                 else:
-
                     if len(history_nodes) > 0:  # if imcccc
-
                         files = self._prepare_input(
                             files,
                             nodes=history_nodes,
@@ -413,23 +409,16 @@ class LAMMPS(seamm.Node):
                             write_restart=True,
                             extras=extras,
                         )
-
                         files = self._execute_single_sim(files, np=np)
-
                         self.analyze(nodes=history_nodes)
-
                         self._trajectory = []
-
                     iteration = 0
 
                     extras["nsteps"] = 666
 
                     while True:
-
                         extras["nsteps"] = round(1.5 * extras["nsteps"])
-
                         control_properties = {}
-
                         for prp in P["control_properties"]:
                             k = prp[0]
                             control_properties[k] = {
@@ -459,7 +448,6 @@ class LAMMPS(seamm.Node):
                         for prp, v in analysis[node_id].items():
                             if v["short_production"] is False:
                                 if v["few_neff"] is False:
-
                                     accuracy = control_properties[prp]["accuracy"] / 100
                                     dof = v["n_sample"]
                                     mean = v["mean"]
@@ -472,7 +460,6 @@ class LAMMPS(seamm.Node):
                                         control_properties[prp][
                                             "enough_accuracy"
                                         ] = True
-
                         enough_acc = [
                             v["enough_accuracy"]
                             for prp, v in control_properties.items()
@@ -499,7 +486,6 @@ class LAMMPS(seamm.Node):
             node = node.next()
 
         if len(history_nodes) == 0:
-
             node_initialization = self.subflowchart.get_node("1").next()
 
             if node_initialization is None:
@@ -539,7 +525,6 @@ class LAMMPS(seamm.Node):
             files = self._execute_single_sim(files, np=np)
 
         if len(history_nodes) > 0:
-
             files = self._prepare_input(
                 files,
                 nodes=history_nodes,
@@ -569,7 +554,6 @@ class LAMMPS(seamm.Node):
         """
         tmpdict = {}
         for k, v in files.items():
-
             if v["filename"] is None or v["data"] is None:
                 continue
 
@@ -586,6 +570,7 @@ class LAMMPS(seamm.Node):
             "*.restart.*",
             "*.dump.*",
             "*.log",
+            "*.dat",
             "log.cite",
         ]  # yapf: disable
 
@@ -621,7 +606,13 @@ class LAMMPS(seamm.Node):
             cmd = [str(lmp_serial)]
         cmd.extend(["-in", files["input"]["filename"]])
 
-        result = local.run(cmd=cmd, files=tmpdict, return_files=return_files)
+        result = local.run(
+            cmd=cmd,
+            files=tmpdict,
+            return_files=return_files,
+            in_situ=True,
+            directory=self.directory,
+        )
 
         if result is None:
             self.logger.error("There was an error running LAMMPS")
@@ -645,7 +636,7 @@ class LAMMPS(seamm.Node):
 
         if result["stderr"] != "":
             self.logger.warning("stderr:\n" + result["stderr"])
-            f = os.path.join(self.directory, "sstderr.txt")
+            f = os.path.join(self.directory, "stderr.txt")
             with open(f, mode="w") as fd:
                 fd.write(result["stderr"])
 
@@ -712,11 +703,9 @@ class LAMMPS(seamm.Node):
         write_restart=False,
         extras=None,
     ):
-
         if isinstance(nodes, list) is False:
             node_ids = [nodes._id[1]]
             new_input_data = self._get_node_input(node=nodes, extras=extras)
-
         else:
             node_ids = []
             new_input_data = []
@@ -752,7 +741,6 @@ class LAMMPS(seamm.Node):
         return files
 
     def _get_node_input(self, node=None, extras=None):
-
         try:
             ret = node.get_input(extras=extras)
         except Exception as e:
@@ -956,6 +944,9 @@ class LAMMPS(seamm.Node):
                         f"{counter:6d} {function} {values['Theta0']} "
                         f"{values['K2']} {values['K3']} {values['K4']}"
                     )
+                elif form == "simple_fourier_angle":
+                    function = "fourier/simple" if use_hybrid else ""
+                    line = f"{counter:6d} {function} {values['K']} -1 {values['n']}"
                 line += (
                     f" # {types[0]} {types[1]} {types[2]}"
                     f" --> {real_types[0]} {real_types[1]} {real_types[2]}"
@@ -1104,6 +1095,15 @@ class LAMMPS(seamm.Node):
                         f"{values['V1']} {values['Phi0_1']} "
                         f"{values['V2']} {values['Phi0_2']} "
                         f"{values['V3']} {values['Phi0_3']} "
+                    )
+                elif form == "torsion_opls":
+                    function = "opls" if use_hybrid else ""
+                    line = (
+                        f"{counter:6d} {function} "
+                        f"{values['V1']} "
+                        f"{values['V2']} "
+                        f"{values['V3']} "
+                        f"{values['V4']} "
                     )
                 line += (
                     f" # {types[0]}-{types[1]}-{types[2]}-{types[3]} "
@@ -1356,13 +1356,24 @@ class LAMMPS(seamm.Node):
             lines.append("")
             lines.append("Impropers")
             lines.append("")
+
+            # Need forms to reorder impropers....
+            form = {i: f[0] for i, f in enumerate(eex["oop parameters"], start=1)}
+
             for counter, tmp in zip(range(1, eex["n_oops"] + 1), eex["oops"]):
                 i, j, k, l, index = tmp
-                lines.append(
-                    "{:6d} {:6d} {:6d} {:6d} {:6d} {:6d}".format(
-                        counter, index, i, j, k, l
+                if form[index] == "improper_opls":
+                    lines.append(
+                        "{:6d} {:6d} {:6d} {:6d} {:6d} {:6d}".format(
+                            counter, index, j, i, k, l
+                        )
                     )
-                )
+                else:
+                    lines.append(
+                        "{:6d} {:6d} {:6d} {:6d} {:6d} {:6d}".format(
+                            counter, index, i, j, k, l
+                        )
+                    )
 
             lines.append("")
             lines.append("Improper Coeffs")
@@ -1371,19 +1382,30 @@ class LAMMPS(seamm.Node):
                 range(1, eex["n_oop_types"] + 1), eex["oop parameters"]
             ):
                 form, values, types, parameters_type, real_types = parameters
-                lines.append(
-                    "{:6d} {} {}".format(counter, values["K"], values["Chi0"])
-                    + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
-                        types[0],
-                        types[1],
-                        types[2],
-                        types[3],
-                        real_types[0],
-                        real_types[1],
-                        real_types[2],
-                        real_types[3],
+                if form == "wilson_out_of_plane":
+                    lines.append(
+                        "{:6d} {} {}".format(counter, values["K"], values["Chi0"])
+                        + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
+                            types[0],
+                            types[1],
+                            types[2],
+                            types[3],
+                            real_types[0],
+                            real_types[1],
+                            real_types[2],
+                            real_types[3],
+                        )
                     )
-                )
+                elif form == "improper_opls":
+                    # divide by two because OPLS uses V2/2 and CVS V.
+                    lines.append(
+                        f"{counter:6d} {float(values['V2'])/2:.4f} -1 2 "
+                        f"# {types[0]}-{types[1]}-{types[2]}-{types[3]} --> "
+                        f"{real_types[0]}-{real_types[1]}-{real_types[2]}-"
+                        f"{real_types[3]}"
+                    )
+                else:
+                    raise RuntimeError(f"Can't handle oop form '{form}'")
 
             # angle-angle
             if "n_angle-angle_types" in eex:
@@ -1428,7 +1450,6 @@ class LAMMPS(seamm.Node):
         ret = {node._id[1]: None for node in nodes}
 
         for node in nodes:
-
             for value in node.description:
                 printer.important(value)
                 printer.important(" ")
@@ -1454,13 +1475,11 @@ class LAMMPS(seamm.Node):
             node_data = None
 
             if "run_control" in P:
-
                 if P["run_control"] == "For a fixed length of simulated time.":
                     control_properties = lambda x: x not in ["tstep"]  # noqa: E731
                     # Reset the trajectory data so doesn't carry over
                     self._trajectory = []
                 else:
-
                     if len(P["control_properties"]) == 0:
                         raise KeyError(
                             "No physical property selected for automatic",

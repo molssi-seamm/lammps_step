@@ -1,0 +1,759 @@
+#!/usr/bin/env run_flowchart
+!MolSSI flowchart 2.0
+#metadata
+{
+    "title": "Ar NPT dynamics example",
+    "description": "1000 Ar atoms NPT dynamics for 100 ps at 110K & 30 atm.\n",
+    "keywords": [
+        "LAMMPS",
+        "Argon",
+        "NPT",
+        "dynamics"
+    ],
+    "creators": [
+        {
+            "name": "Saxe, Paul",
+            "orcid": "0000-0002-8641-9448",
+            "affiliation": "The Molecular Sciences Software Institute (MolSSI)"
+        }
+    ],
+    "sha256": "cafe3d4650ff7de2bf3092d76a6744bcecea8c5e5cbf1f2f8b4dad37c93278f4",
+    "sha256_strict": "2d3d384cc667d0f3b2c48745c2b69f09f50f8886652197e889c25dfb8b23149e"
+}
+#flowchart
+{
+    "item": "object",
+    "module": "seamm.flowchart",
+    "class": "Flowchart",
+    "extension": null,
+    "nodes": [
+        {
+            "item": "object",
+            "module": "seamm.start_node",
+            "class": "StartNode",
+            "version": "2022.10.23+6.ga2a37fb.dirty",
+            "extension": null,
+            "attributes": {
+                "_tables": [],
+                "_title": "Start",
+                "_uuid": 1,
+                "extension": null,
+                "_method": null,
+                "parameters": null,
+                "x": 150,
+                "y": 35,
+                "w": 200,
+                "h": 50
+            }
+        },
+        {
+            "item": "object",
+            "module": "forcefield_step.forcefield",
+            "class": "Forcefield",
+            "version": "2022.5.29+2.g62a9ea5.dirty",
+            "extension": "Forcefield",
+            "attributes": {
+                "_tables": [],
+                "_title": "Forcefield",
+                "_uuid": 314393192813288690535393305831042949190,
+                "extension": "Forcefield",
+                "_method": null,
+                "parameters": {
+                    "__class__": "ForcefieldParameters",
+                    "__module__": "forcefield_step.forcefield_parameters",
+                    "task": {
+                        "value": "setup forcefield",
+                        "units": null
+                    },
+                    "forcefield_file": {
+                        "value": "oplsaa.frc",
+                        "units": null
+                    },
+                    "forcefield": {
+                        "value": "default",
+                        "units": null
+                    },
+                    "elements": {
+                        "value": [],
+                        "units": null
+                    },
+                    "potentials": {
+                        "value": "",
+                        "units": null
+                    }
+                },
+                "x": 150,
+                "y": 105,
+                "w": 200,
+                "h": 50
+            }
+        },
+        {
+            "item": "object",
+            "module": "packmol_step.packmol",
+            "class": "Packmol",
+            "version": "2022.5.31+0.ga411aae.dirty",
+            "extension": "Packmol",
+            "attributes": {
+                "_tables": [],
+                "_title": "Packmol",
+                "_uuid": 77481164284498517070612867943235431034,
+                "extension": "Packmol",
+                "_method": null,
+                "parameters": {
+                    "__class__": "PackmolParameters",
+                    "__module__": "packmol_step.packmol_parameters",
+                    "molecules": {
+                        "value": [
+                            {
+                                "component": "fluid",
+                                "source": "SMILES",
+                                "definition": "[Ar]",
+                                "count": "1"
+                            }
+                        ],
+                        "units": null
+                    },
+                    "periodic": {
+                        "value": "Yes",
+                        "units": null
+                    },
+                    "shape": {
+                        "value": "cubic",
+                        "units": null
+                    },
+                    "dimensions": {
+                        "value": "calculated from the density",
+                        "units": null
+                    },
+                    "fluid amount": {
+                        "value": "rounding this number of atoms",
+                        "units": null
+                    },
+                    "density": {
+                        "value": "0.7",
+                        "units": "g/ml"
+                    },
+                    "volume": {
+                        "value": "8.0",
+                        "units": "nm^3"
+                    },
+                    "temperature": {
+                        "value": "298.15",
+                        "units": "K"
+                    },
+                    "pressure": {
+                        "value": "1.0",
+                        "units": "atm"
+                    },
+                    "gap": {
+                        "value": "2.0",
+                        "units": "\u00c5"
+                    },
+                    "edge length": {
+                        "value": "20",
+                        "units": "\u00c5"
+                    },
+                    "a": {
+                        "value": "20",
+                        "units": "\u00c5"
+                    },
+                    "b": {
+                        "value": "20",
+                        "units": "\u00c5"
+                    },
+                    "c": {
+                        "value": "20",
+                        "units": "\u00c5"
+                    },
+                    "a_ratio": {
+                        "value": "1",
+                        "units": null
+                    },
+                    "b_ratio": {
+                        "value": "1",
+                        "units": null
+                    },
+                    "c_ratio": {
+                        "value": "1",
+                        "units": null
+                    },
+                    "diameter": {
+                        "value": "20.0",
+                        "units": "\u00c5"
+                    },
+                    "solvent thickness": {
+                        "value": "10.0",
+                        "units": "\u00c5"
+                    },
+                    "approximate number of molecules": {
+                        "value": "100",
+                        "units": null
+                    },
+                    "approximate number of atoms": {
+                        "value": "1000",
+                        "units": null
+                    },
+                    "assign forcefield": {
+                        "value": "If not assigned",
+                        "units": null
+                    },
+                    "structure handling": {
+                        "value": "Overwrite the current configuration",
+                        "units": null
+                    },
+                    "subsequent structure handling": {
+                        "value": "Create a new system and configuration",
+                        "units": null
+                    },
+                    "system name": {
+                        "value": "fluid",
+                        "units": null
+                    },
+                    "configuration name": {
+                        "value": "initial",
+                        "units": null
+                    }
+                },
+                "x": 150,
+                "y": 175,
+                "w": 200,
+                "h": 50
+            }
+        },
+        {
+            "item": "object",
+            "module": "lammps_step.lammps",
+            "class": "LAMMPS",
+            "version": "2022.10.31+0.gc836475.dirty",
+            "extension": "LAMMPS",
+            "attributes": {
+                "_tables": [],
+                "_title": "LAMMPS",
+                "_uuid": 210844114676080720778349434045141713112,
+                "extension": "LAMMPS",
+                "_method": null,
+                "parameters": null,
+                "x": 150,
+                "y": 245,
+                "w": 200,
+                "h": 50
+            },
+            "subflowchart": {
+                "item": "object",
+                "module": "seamm.flowchart",
+                "class": "Flowchart",
+                "extension": null,
+                "nodes": [
+                    {
+                        "item": "object",
+                        "module": "seamm.start_node",
+                        "class": "StartNode",
+                        "version": "2022.10.23+6.ga2a37fb.dirty",
+                        "extension": null,
+                        "attributes": {
+                            "_tables": [],
+                            "_title": "Start",
+                            "_uuid": 1,
+                            "extension": null,
+                            "_method": null,
+                            "parameters": null,
+                            "x": 150.0,
+                            "y": 35.0,
+                            "w": 200,
+                            "h": 50
+                        }
+                    },
+                    {
+                        "item": "object",
+                        "module": "lammps_step.initialization",
+                        "class": "Initialization",
+                        "version": "2022.10.31+0.gc836475.dirty",
+                        "extension": "Initialization",
+                        "attributes": {
+                            "_tables": [],
+                            "_title": "Initialization",
+                            "_uuid": 33270569291065256712649754652928814620,
+                            "extension": "Initialization",
+                            "_method": null,
+                            "parameters": {
+                                "__class__": "InitializationParameters",
+                                "__module__": "lammps_step.initialization_parameters",
+                                "cutoff": {
+                                    "value": "10.0",
+                                    "units": "\u00c5"
+                                },
+                                "kspace_method": {
+                                    "value": "automatic",
+                                    "units": null
+                                },
+                                "kspace_accuracy": {
+                                    "value": "1e-5",
+                                    "units": null
+                                },
+                                "kspace_smallq": {
+                                    "value": "1e-5",
+                                    "units": null
+                                },
+                                "charged_atom_fraction_cutoff": {
+                                    "value": 0.1,
+                                    "units": null
+                                },
+                                "ewald_atom_cutoff": {
+                                    "value": 1000,
+                                    "units": null
+                                },
+                                "msm_atom_cutoff": {
+                                    "value": 5000,
+                                    "units": null
+                                },
+                                "tail_correction": {
+                                    "value": "yes",
+                                    "units": null
+                                },
+                                "shift_nonbond": {
+                                    "value": "no",
+                                    "units": null
+                                },
+                                "rigid_waters": {
+                                    "value": "yes",
+                                    "units": null
+                                },
+                                "fix_XH_bond_lengths": {
+                                    "value": "none",
+                                    "units": null
+                                }
+                            },
+                            "x": 150.0,
+                            "y": 105.0,
+                            "w": 200,
+                            "h": 50
+                        }
+                    },
+                    {
+                        "item": "object",
+                        "module": "lammps_step.npt",
+                        "class": "NPT",
+                        "version": "2022.10.31+0.gc836475.dirty",
+                        "extension": "NPT",
+                        "attributes": {
+                            "_tables": [],
+                            "_title": "NPT dynamics",
+                            "_uuid": 307396487051017245693525381461773816517,
+                            "extension": "NPT",
+                            "_method": null,
+                            "parameters": {
+                                "__class__": "NPT_Parameters",
+                                "__module__": "lammps_step.npt_parameters",
+                                "results": {
+                                    "value": {
+                                        "T": {
+                                            "property": "temperature#LAMMPS#{model}"
+                                        },
+                                        "T,stderr": {
+                                            "property": "temperature, stderr#LAMMPS#{model}"
+                                        },
+                                        "T,tau": {
+                                            "property": "temperature, tau#LAMMPS#{model}"
+                                        },
+                                        "T,inefficiency": {
+                                            "property": "temperature, inefficiency#LAMMPS#{model}"
+                                        },
+                                        "P": {
+                                            "property": "pressure#LAMMPS#{model}"
+                                        },
+                                        "P,stderr": {
+                                            "property": "pressure, stderr#LAMMPS#{model}"
+                                        },
+                                        "P,tau": {
+                                            "property": "pressure, tau#LAMMPS#{model}"
+                                        },
+                                        "P,inefficiency": {
+                                            "property": "pressure, inefficiency#LAMMPS#{model}"
+                                        },
+                                        "density": {
+                                            "property": "density#LAMMPS#{model}"
+                                        },
+                                        "density,stderr": {
+                                            "property": "density, stderr#LAMMPS#{model}"
+                                        },
+                                        "density,tau": {
+                                            "property": "density, tau#LAMMPS#{model}"
+                                        },
+                                        "density,inefficiency": {
+                                            "property": "density, inefficiency#LAMMPS#{model}"
+                                        },
+                                        "a": {
+                                            "property": "cell_a#LAMMPS#{model}"
+                                        },
+                                        "a,stderr": {
+                                            "property": "cell_a, stderr#LAMMPS#{model}"
+                                        },
+                                        "a,tau": {
+                                            "property": "cell_a, tau#LAMMPS#{model}"
+                                        },
+                                        "a,inefficiency": {
+                                            "property": "cell_a, inefficiency#LAMMPS#{model}"
+                                        },
+                                        "b": {
+                                            "property": "cell_b#LAMMPS#{model}"
+                                        },
+                                        "b,stderr": {
+                                            "property": "cell_b, stderr#LAMMPS#{model}"
+                                        },
+                                        "b,tau": {
+                                            "property": "cell_b, tau#LAMMPS#{model}"
+                                        },
+                                        "b,inefficiency": {
+                                            "property": "cell_b, inefficiency#LAMMPS#{model}"
+                                        },
+                                        "c": {
+                                            "property": "cell_c#LAMMPS#{model}"
+                                        },
+                                        "c,stderr": {
+                                            "property": "cell_c, stderr#LAMMPS#{model}"
+                                        },
+                                        "c,tau": {
+                                            "property": "cell_c, tau#LAMMPS#{model}"
+                                        },
+                                        "c,inefficiency": {
+                                            "property": "cell_c, inefficiency#LAMMPS#{model}"
+                                        },
+                                        "Etot": {
+                                            "property": "total energy#LAMMPS#{model}"
+                                        },
+                                        "Etot,stderr": {
+                                            "property": "total energy, stderr#LAMMPS#{model}"
+                                        },
+                                        "Etot,tau": {
+                                            "property": "total energy, tau#LAMMPS#{model}"
+                                        },
+                                        "Etot,inefficiency": {
+                                            "property": "total energy, inefficiency#LAMMPS#{model}"
+                                        },
+                                        "Eke": {
+                                            "property": "kinetic energy#LAMMPS#{model}"
+                                        },
+                                        "Eke,stderr": {
+                                            "property": "kinetic energy, stderr#LAMMPS#{model}"
+                                        },
+                                        "Eke,tau": {
+                                            "property": "kinetic energy, tau#LAMMPS#{model}"
+                                        },
+                                        "Eke,inefficiency": {
+                                            "property": "kinetic energy, inefficiency#LAMMPS#{model}"
+                                        },
+                                        "Epe": {
+                                            "property": "potential energy#LAMMPS#{model}"
+                                        },
+                                        "Epe,stderr": {
+                                            "property": "potential energy, stderr#LAMMPS#{model}"
+                                        },
+                                        "Epe,tau": {
+                                            "property": "potential energy, tau#LAMMPS#{model}"
+                                        },
+                                        "Epe,inefficiency": {
+                                            "property": "potential energy, inefficiency#LAMMPS#{model}"
+                                        }
+                                    },
+                                    "units": null
+                                },
+                                "create tables": {
+                                    "value": "yes",
+                                    "units": null
+                                },
+                                "run_control": {
+                                    "value": "For a fixed length of simulated time.",
+                                    "units": null
+                                },
+                                "time": {
+                                    "value": "100.0",
+                                    "units": "ps"
+                                },
+                                "maximum_time": {
+                                    "value": "1.0",
+                                    "units": "ns"
+                                },
+                                "timestep": {
+                                    "value": "normal",
+                                    "units": "fs"
+                                },
+                                "control_properties": {
+                                    "value": [],
+                                    "units": null
+                                },
+                                "sampling": {
+                                    "value": "50",
+                                    "units": "fs"
+                                },
+                                "thermostat": {
+                                    "value": "Nose-Hoover",
+                                    "units": null
+                                },
+                                "T0": {
+                                    "value": "110",
+                                    "units": "K"
+                                },
+                                "T1": {
+                                    "value": "110",
+                                    "units": "K"
+                                },
+                                "Tdamp": {
+                                    "value": "100.0",
+                                    "units": "fs"
+                                },
+                                "Tchain": {
+                                    "value": "3",
+                                    "units": null
+                                },
+                                "Tloop": {
+                                    "value": "1",
+                                    "units": null
+                                },
+                                "drag": {
+                                    "value": "0.0",
+                                    "units": null
+                                },
+                                "seed": {
+                                    "value": "random",
+                                    "units": null
+                                },
+                                "frequency": {
+                                    "value": "100.0",
+                                    "units": "fs"
+                                },
+                                "window": {
+                                    "value": "20.0",
+                                    "units": "K"
+                                },
+                                "fraction": {
+                                    "value": "1.0",
+                                    "units": null
+                                },
+                                "system type": {
+                                    "value": "fluid",
+                                    "units": null
+                                },
+                                "keep orthorhombic": {
+                                    "value": "yes",
+                                    "units": null
+                                },
+                                "barostat": {
+                                    "value": "Nose-Hoover",
+                                    "units": null
+                                },
+                                "Panneal": {
+                                    "value": "no",
+                                    "units": null
+                                },
+                                "use_stress": {
+                                    "value": "isotropic pressure",
+                                    "units": null
+                                },
+                                "couple": {
+                                    "value": "x, y and z",
+                                    "units": null
+                                },
+                                "Pinitial": {
+                                    "value": "30",
+                                    "units": "atm"
+                                },
+                                "Pfinal": {
+                                    "value": "1.0",
+                                    "units": "atm"
+                                },
+                                "Pdamp": {
+                                    "value": "1000.0",
+                                    "units": "fs"
+                                },
+                                "Sxx,initial": {
+                                    "value": "1.0",
+                                    "units": "atm"
+                                },
+                                "Syy,initial": {
+                                    "value": "1.0",
+                                    "units": "atm"
+                                },
+                                "Szz,initial": {
+                                    "value": "1.0",
+                                    "units": "atm"
+                                },
+                                "Sxy,initial": {
+                                    "value": "0.0",
+                                    "units": "atm"
+                                },
+                                "Sxz,initial": {
+                                    "value": "0.0",
+                                    "units": "atm"
+                                },
+                                "Syz,initial": {
+                                    "value": "0.0",
+                                    "units": "atm"
+                                },
+                                "Sxx,final": {
+                                    "value": "1.0",
+                                    "units": "atm"
+                                },
+                                "Syy,final": {
+                                    "value": "1.0",
+                                    "units": "atm"
+                                },
+                                "Szz,final": {
+                                    "value": "1.0",
+                                    "units": "atm"
+                                },
+                                "Sxy,final": {
+                                    "value": "0.0",
+                                    "units": "atm"
+                                },
+                                "Sxz,final": {
+                                    "value": "0.0",
+                                    "units": "atm"
+                                },
+                                "Syz,final": {
+                                    "value": "0.0",
+                                    "units": "atm"
+                                },
+                                "Sxx damp": {
+                                    "value": "1000.0",
+                                    "units": "fs"
+                                },
+                                "Syy damp": {
+                                    "value": "1000.0",
+                                    "units": "fs"
+                                },
+                                "Szz damp": {
+                                    "value": "1000.0",
+                                    "units": "fs"
+                                },
+                                "Sxy damp": {
+                                    "value": "1000.0",
+                                    "units": "fs"
+                                },
+                                "Sxz damp": {
+                                    "value": "1000.0",
+                                    "units": "fs"
+                                },
+                                "Syz damp": {
+                                    "value": "1000.0",
+                                    "units": "fs"
+                                },
+                                "nreset": {
+                                    "value": "never",
+                                    "units": null
+                                },
+                                "mtk": {
+                                    "value": "yes",
+                                    "units": null
+                                },
+                                "modulus": {
+                                    "value": "50.0",
+                                    "units": "GPa"
+                                }
+                            },
+                            "x": 150.0,
+                            "y": 175.0,
+                            "w": 200,
+                            "h": 50
+                        }
+                    }
+                ],
+                "edges": [
+                    {
+                        "item": "edge",
+                        "node1": 1,
+                        "node2": 33270569291065256712649754652928814620,
+                        "edge_type": "execution",
+                        "edge_subtype": "next",
+                        "attributes": {
+                            "anchor1": "s",
+                            "anchor2": "n",
+                            "coords": [
+                                150,
+                                60,
+                                150,
+                                80
+                            ],
+                            "arrow_id": 36
+                        }
+                    },
+                    {
+                        "item": "edge",
+                        "node1": 33270569291065256712649754652928814620,
+                        "node2": 307396487051017245693525381461773816517,
+                        "edge_type": "execution",
+                        "edge_subtype": "next",
+                        "attributes": {
+                            "anchor1": "s",
+                            "anchor2": "n",
+                            "coords": [
+                                150,
+                                130,
+                                150,
+                                150
+                            ],
+                            "arrow_id": 95
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "edges": [
+        {
+            "item": "edge",
+            "node1": 1,
+            "node2": 314393192813288690535393305831042949190,
+            "edge_type": "execution",
+            "edge_subtype": "next",
+            "attributes": {
+                "anchor1": "s",
+                "anchor2": "n",
+                "coords": [
+                    150,
+                    60,
+                    150,
+                    80
+                ],
+                "arrow_id": 284
+            }
+        },
+        {
+            "item": "edge",
+            "node1": 314393192813288690535393305831042949190,
+            "node2": 77481164284498517070612867943235431034,
+            "edge_type": "execution",
+            "edge_subtype": "next",
+            "attributes": {
+                "anchor1": "s",
+                "anchor2": "n",
+                "coords": [
+                    150,
+                    130,
+                    150,
+                    150
+                ],
+                "arrow_id": 209
+            }
+        },
+        {
+            "item": "edge",
+            "node1": 77481164284498517070612867943235431034,
+            "node2": 210844114676080720778349434045141713112,
+            "edge_type": "execution",
+            "edge_subtype": "next",
+            "attributes": {
+                "anchor1": "s",
+                "anchor2": "n",
+                "coords": [
+                    150,
+                    200,
+                    150,
+                    220
+                ],
+                "arrow_id": 302
+            }
+        }
+    ]
+}
+#end

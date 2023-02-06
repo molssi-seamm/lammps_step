@@ -42,7 +42,7 @@ class TkCustom(seamm.TkNode):
             text_padx=4,
             text_pady=4,
         )
-        text.insert("1.0", self.node.text)
+        text.insert("1.0", self.node.parameters["script"].value)
         text.pack(expand=tk.YES, fill=tk.BOTH)
 
     def handle_dialog(self, result):
@@ -50,13 +50,15 @@ class TkCustom(seamm.TkNode):
         if result is None or result == "Cancel":
             self.dialog.deactivate(result)
             self["text"].delete(1.0, "end")
-            self["text"].insert(1.0, self.node.text)
+            self["text"].insert(1.0, self.node.parameters["script"].value)
         elif result == "Help":
             self.help()
         elif result == "OK":
             self.dialog.deactivate(result)
             # Capture the parameters from the widgets
-            self.node.text = self["text"].get(1.0, tk.END)
+            self.node.parameters["script"].value = (
+                self["text"].get(1.0, tk.END).rstrip()
+            )
         else:
             self.dialog.deactivate(result)
             raise RuntimeError("Don't recognize dialog result '{}'".format(result))
