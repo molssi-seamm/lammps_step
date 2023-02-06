@@ -399,7 +399,6 @@ class LAMMPS(seamm.Node):
                 )
 
                 if "run_control" not in P or "Until" not in P["run_control"]:
-
                     history_nodes.append(node)
                 else:
                     if len(history_nodes) > 0:  # if imcccc
@@ -704,11 +703,9 @@ class LAMMPS(seamm.Node):
         write_restart=False,
         extras=None,
     ):
-
         if isinstance(nodes, list) is False:
             node_ids = [nodes._id[1]]
             new_input_data = self._get_node_input(node=nodes, extras=extras)
-
         else:
             node_ids = []
             new_input_data = []
@@ -744,7 +741,6 @@ class LAMMPS(seamm.Node):
         return files
 
     def _get_node_input(self, node=None, extras=None):
-
         try:
             ret = node.get_input(extras=extras)
         except Exception as e:
@@ -1454,7 +1450,6 @@ class LAMMPS(seamm.Node):
         ret = {node._id[1]: None for node in nodes}
 
         for node in nodes:
-
             for value in node.description:
                 printer.important(value)
                 printer.important(" ")
@@ -1480,13 +1475,11 @@ class LAMMPS(seamm.Node):
             node_data = None
 
             if "run_control" in P:
-
                 if P["run_control"] == "For a fixed length of simulated time.":
                     control_properties = lambda x: x not in ["tstep"]  # noqa: E731
                     # Reset the trajectory data so doesn't carry over
                     self._trajectory = []
                 else:
-
                     if len(P["control_properties"]) == 0:
                         raise KeyError(
                             "No physical property selected for automatic",
