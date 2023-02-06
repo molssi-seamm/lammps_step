@@ -33,23 +33,26 @@ class Installer(seamm_installer.InstallerBase):
 
     There are a number of ways to determine which are the correct LAMMPS
     executables to use. The aim of this installer is to help the user locate
-    the executables. There are a number of possibilities:
+    the executables. There are a number of possibilities
 
-    1. The correct executables are already available.
+    #. The correct executables are already available.
 
-        1. If they are already registered in `seamm.ini` there is nothing else
+        #. If they are already registered in `seamm.ini` there is nothing else
            to do.
-        2. They may be in the current path, in which case they need to be added
+
+        #. They may be in the current path, in which case they need to be added
            to `seamm.ini`.
-        3. If a module system is in use, a module may need to be loaded to give
+
+        #. If a module system is in use, a module may need to be loaded to give
            access to LAMMPS.
-        3. They cannot be found automatically, so the user needs to locate the
+
+        #. They cannot be found automatically, so the user needs to locate the
            executables for the installer.
 
-    2. LAMMPS is not installed on the machine. In this case they can be
-       installed in a Conda environment. There is one choice:
+    #. LAMMPS is not installed on the machine. In this case they can be
+       installed in a Conda environment. There is one choice
 
-        1. They can be installed in a separate environment, `seamm-lammps` by
+        #. They can be installed in a separate environment, `seamm-lammps` by
            default.
     """
 

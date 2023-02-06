@@ -2,6 +2,11 @@
 History
 =======
 
+2023.2.6 -- Added handling of OPLS-AA forcefield
+   * Added handling of the OPLS-AA forcefield
+   * Moved documentation to new MolSSI theme and diátaxis layout
+   * Cleaned up internale dependencies and workflows for GitHub
+
 2022.10.31 -- Bugfix: properties with commas
   Properties with commas in their name in data/properties.csv need to have quotes to
   protect the property name!
