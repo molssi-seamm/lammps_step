@@ -27,6 +27,7 @@ from .lammps_step import LAMMPSStep  # noqa: F401
 from .tk_lammps import TkLAMMPS  # noqa: F401
 
 from .custom import Custom  # noqa: F401
+from .custom_parameters import CustomParameters  # noqa: F401
 from .custom_step import CustomStep  # noqa: F401
 from .tk_custom import TkCustom  # noqa: F401
 
