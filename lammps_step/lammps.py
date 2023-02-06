@@ -363,7 +363,6 @@ class LAMMPS(seamm.Node):
         files = {}
 
         while node is not None:
-
             if isinstance(node, lammps_step.Initialization):
                 initialization_header, eex = self._get_node_input(
                     node=node, extras={"read_data": True}
@@ -394,9 +393,7 @@ class LAMMPS(seamm.Node):
                 shake = self.shake_fix(P, eex)
                 if shake != "":
                     extras["shake"] = shake
-
             else:
-
                 P = node.parameters.current_values_to_dict(
                     context=seamm.flowchart_variables._data
                 )
@@ -404,11 +401,8 @@ class LAMMPS(seamm.Node):
                 if "run_control" not in P or "Until" not in P["run_control"]:
 
                     history_nodes.append(node)
-
                 else:
-
                     if len(history_nodes) > 0:  # if imcccc
-
                         files = self._prepare_input(
                             files,
                             nodes=history_nodes,
@@ -416,23 +410,16 @@ class LAMMPS(seamm.Node):
                             write_restart=True,
                             extras=extras,
                         )
-
                         files = self._execute_single_sim(files, np=np)
-
                         self.analyze(nodes=history_nodes)
-
                         self._trajectory = []
-
                     iteration = 0
 
                     extras["nsteps"] = 666
 
                     while True:
-
                         extras["nsteps"] = round(1.5 * extras["nsteps"])
-
                         control_properties = {}
-
                         for prp in P["control_properties"]:
                             k = prp[0]
                             control_properties[k] = {
@@ -462,7 +449,6 @@ class LAMMPS(seamm.Node):
                         for prp, v in analysis[node_id].items():
                             if v["short_production"] is False:
                                 if v["few_neff"] is False:
-
                                     accuracy = control_properties[prp]["accuracy"] / 100
                                     dof = v["n_sample"]
                                     mean = v["mean"]
@@ -475,7 +461,6 @@ class LAMMPS(seamm.Node):
                                         control_properties[prp][
                                             "enough_accuracy"
                                         ] = True
-
                         enough_acc = [
                             v["enough_accuracy"]
                             for prp, v in control_properties.items()
@@ -502,7 +487,6 @@ class LAMMPS(seamm.Node):
             node = node.next()
 
         if len(history_nodes) == 0:
-
             node_initialization = self.subflowchart.get_node("1").next()
 
             if node_initialization is None:
@@ -542,7 +526,6 @@ class LAMMPS(seamm.Node):
             files = self._execute_single_sim(files, np=np)
 
         if len(history_nodes) > 0:
-
             files = self._prepare_input(
                 files,
                 nodes=history_nodes,
@@ -572,7 +555,6 @@ class LAMMPS(seamm.Node):
         """
         tmpdict = {}
         for k, v in files.items():
-
             if v["filename"] is None or v["data"] is None:
                 continue
 

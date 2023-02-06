@@ -16,7 +16,6 @@ printer = printing.getPrinter("lammps")
 
 
 class NPT(lammps_step.NVT):
-
     methods = {
         "Nose-Hoover": {
             "documentation": "https://lammps.sandia.gov/doc/fix_nh.html#fix-npt-command",  # noqa: E501
