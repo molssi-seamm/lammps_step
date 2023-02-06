@@ -1,12 +1,39 @@
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>lammps_step.lammps &mdash; SEAMM LAMMPS Plug-in 2022.10.31 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/custom.css" type="text/css" />
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2023.2.6 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -15,79 +42,387 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
-    <script src="../../_static/js/theme.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lammps_step/lammps';</script>
 
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
-</head>
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
 
-<body class="wy-body-for-nav">
-<!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PQXXTJ2"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
- 
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-            <a href="../../index.html" class="icon icon-home"> SEAMM LAMMPS Plug-in
-          </a>
-              <div class="version">
-                2022.10.31
-              </div>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../user/index.html">User Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../developer/index.html">Developer Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../history.html">History</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference external" href="https://molssi-seamm.github.io">Main SEAMM documentation</a></li>
-</ul>
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
 
-        </div>
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../_static/SEAMM logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+    <p class="title logo__title">LAMMPS Step</p>
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <nav class="navbar-nav">
+    <p class="sidebar-header-items__title" role="heading" aria-level="1" aria-label="Site Navigation">
+        Site Navigation
+    </p>
+    <ul id="navbar-main-elements" class="navbar-nav">
+        
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../getting_started/index.html">
+                        Getting Started
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../user_guide/index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../developer_guide/index.html">
+                        Developer Documentation
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../api/index.html">
+                        API Documentation
+                      </a>
+                    </li>
+                
+            <div class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    More
+                </button>
+                <div class="dropdown-menu">
+                    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../authors.html">
+                        Development Team
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../history.html">
+                        History
+                      </a>
+                    </li>
+                
+
+                <li class="nav-item">
+                  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+                    SEAMM Documentation
+                  </a>
+                </li>
+                
+
+                <li class="nav-item">
+                  <a class="nav-link nav-external" href="https://molssi.org">
+                    MolSSI
+                  </a>
+                </li>
+                
+                </div>
+            </div>
+            
+    </ul>
+</nav>
       </div>
-    </nav>
+      
+    </div>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">SEAMM LAMMPS Plug-in</a>
-      </nav>
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/lammps_step" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><span><i class="fa-brands fa-square-github"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><span><i class="fa-brands fa-square-twitter"></i></span>
+            <label class="sr-only">Twitter</label></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
 
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a></li>
-          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">lammps_step.lammps</li>
-      <li class="wy-breadcrumbs-aside">
-      </li>
-  </ul>
-  <hr/>
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+      
+      <div class="navbar-center-item">
+        <nav class="navbar-nav">
+    <p class="sidebar-header-items__title" role="heading" aria-level="1" aria-label="Site Navigation">
+        Site Navigation
+    </p>
+    <ul id="navbar-main-elements" class="navbar-nav">
+        
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../getting_started/index.html">
+                        Getting Started
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../user_guide/index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../developer_guide/index.html">
+                        Developer Documentation
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../api/index.html">
+                        API Documentation
+                      </a>
+                    </li>
+                
+            <div class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    More
+                </button>
+                <div class="dropdown-menu">
+                    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../authors.html">
+                        Development Team
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../history.html">
+                        History
+                      </a>
+                    </li>
+                
+
+                <li class="nav-item">
+                  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+                    SEAMM Documentation
+                  </a>
+                </li>
+                
+
+                <li class="nav-item">
+                  <a class="nav-link nav-external" href="https://molssi.org">
+                    MolSSI
+                  </a>
+                </li>
+                
+                </div>
+            </div>
+            
+    </ul>
+</nav>
+      </div>
+      
+      </div>
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/lammps_step" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><span><i class="fa-brands fa-square-github"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><span><i class="fa-brands fa-square-twitter"></i></span>
+            <label class="sr-only">Twitter</label></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
   <h1>Source code for lammps_step.lammps</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
@@ -143,19 +478,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <span class="n">angle_style</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;quadratic_angle&quot;</span><span class="p">:</span> <span class="s2">&quot;harmonic&quot;</span><span class="p">,</span>
     <span class="s2">&quot;quartic_angle&quot;</span><span class="p">:</span> <span class="s2">&quot;class2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;simple_fourier_angle&quot;</span><span class="p">:</span> <span class="s2">&quot;fourier/simple&quot;</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="n">dihedral_style</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;torsion_1&quot;</span><span class="p">:</span> <span class="s2">&quot;harmonic&quot;</span><span class="p">,</span>
     <span class="s2">&quot;torsion_3&quot;</span><span class="p">:</span> <span class="s2">&quot;class2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;torsion_opls&quot;</span><span class="p">:</span> <span class="s2">&quot;opls&quot;</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="n">improper_style</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;wilson_out_of_plane&quot;</span><span class="p">:</span> <span class="s2">&quot;class2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;improper_opls&quot;</span><span class="p">:</span> <span class="s2">&quot;cvff&quot;</span><span class="p">,</span>
 <span class="p">}</span>
 
 
-<div class="viewcode-block" id="LAMMPS"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.lammps.LAMMPS">[docs]</a><span class="k">class</span> <span class="nc">LAMMPS</span><span class="p">(</span><span class="n">seamm</span><span class="o">.</span><span class="n">Node</span><span class="p">):</span>
+<div class="viewcode-block" id="LAMMPS"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS">[docs]</a><span class="k">class</span> <span class="nc">LAMMPS</span><span class="p">(</span><span class="n">seamm</span><span class="o">.</span><span class="n">Node</span><span class="p">):</span>
     <span class="n">display_units</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;T&quot;</span><span class="p">:</span> <span class="s2">&quot;K&quot;</span><span class="p">,</span>
         <span class="s2">&quot;P&quot;</span><span class="p">:</span> <span class="s2">&quot;atm&quot;</span><span class="p">,</span>
@@ -216,7 +554,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The git version of this module.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">__git_revision__</span>
 
-<div class="viewcode-block" id="LAMMPS.box_to_cell"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.lammps.LAMMPS.box_to_cell">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="LAMMPS.box_to_cell"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.box_to_cell">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">box_to_cell</span><span class="p">(</span><span class="n">lx</span><span class="p">,</span> <span class="n">ly</span><span class="p">,</span> <span class="n">lz</span><span class="p">,</span> <span class="n">xy</span><span class="p">,</span> <span class="n">xz</span><span class="p">,</span> <span class="n">yz</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the LAMMPS box definition to cell parameters.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">xy</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">xz</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">yz</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -236,7 +574,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         <span class="k">return</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LAMMPS.cell_to_box"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.lammps.LAMMPS.cell_to_box">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="LAMMPS.cell_to_box"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.cell_to_box">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">cell_to_box</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert cell parameters to the LAMMPS box.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">alpha</span> <span class="o">==</span> <span class="mi">90</span> <span class="ow">and</span> <span class="n">beta</span> <span class="o">==</span> <span class="mi">90</span> <span class="ow">and</span> <span class="n">gamma</span> <span class="o">==</span> <span class="mi">90</span><span class="p">:</span>
@@ -254,7 +592,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         <span class="k">return</span> <span class="p">(</span><span class="n">lx</span><span class="p">,</span> <span class="n">ly</span><span class="p">,</span> <span class="n">lz</span><span class="p">,</span> <span class="n">xy</span><span class="p">,</span> <span class="n">xz</span><span class="p">,</span> <span class="n">yz</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LAMMPS.create_parser"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.lammps.LAMMPS.create_parser">[docs]</a>    <span class="k">def</span> <span class="nf">create_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="LAMMPS.create_parser"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.create_parser">[docs]</a>    <span class="k">def</span> <span class="nf">create_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup the command-line / config file parser&quot;&quot;&quot;</span>
         <span class="n">parser_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_type</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">seamm_util</span><span class="o">.</span><span class="n">getParser</span><span class="p">()</span>
@@ -323,7 +661,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         <span class="k">return</span> <span class="n">result</span></div>
 
-<div class="viewcode-block" id="LAMMPS.set_id"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.lammps.LAMMPS.set_id">[docs]</a>    <span class="k">def</span> <span class="nf">set_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="p">):</span>
+<div class="viewcode-block" id="LAMMPS.set_id"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.set_id">[docs]</a>    <span class="k">def</span> <span class="nf">set_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the id for node to a given tuple&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="n">node_id</span>
 
@@ -332,7 +670,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">next</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="LAMMPS.description_text"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.lammps.LAMMPS.description_text">[docs]</a>    <span class="k">def</span> <span class="nf">description_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="LAMMPS.description_text"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.description_text">[docs]</a>    <span class="k">def</span> <span class="nf">description_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a short description of this step.</span>
 
 <span class="sd">        Return a nicely formatted string describing what this step will</span>
@@ -383,7 +721,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         <span class="k">return</span> <span class="n">text</span></div>
 
-<div class="viewcode-block" id="LAMMPS.run"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.lammps.LAMMPS.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="LAMMPS.run"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a LAMMPS simulation&quot;&quot;&quot;</span>
 
         <span class="n">system_db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_system_db&quot;</span><span class="p">)</span>
@@ -451,7 +789,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <span class="n">files</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="k">while</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">Initialization</span><span class="p">):</span>
                 <span class="n">initialization_header</span><span class="p">,</span> <span class="n">eex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_node_input</span><span class="p">(</span>
                     <span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;read_data&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
@@ -482,21 +819,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <span class="n">shake</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shake_fix</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">eex</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">shake</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
                     <span class="n">extras</span><span class="p">[</span><span class="s2">&quot;shake&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">shake</span>
-
             <span class="k">else</span><span class="p">:</span>
-
                 <span class="n">P</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">current_values_to_dict</span><span class="p">(</span>
                     <span class="n">context</span><span class="o">=</span><span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">_data</span>
                 <span class="p">)</span>
 
                 <span class="k">if</span> <span class="s2">&quot;run_control&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">P</span> <span class="ow">or</span> <span class="s2">&quot;Until&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;run_control&quot;</span><span class="p">]:</span>
-
                     <span class="n">history_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-
                 <span class="k">else</span><span class="p">:</span>
-
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">history_nodes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># if imcccc</span>
-
                         <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_input</span><span class="p">(</span>
                             <span class="n">files</span><span class="p">,</span>
                             <span class="n">nodes</span><span class="o">=</span><span class="n">history_nodes</span><span class="p">,</span>
@@ -504,23 +835,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <span class="n">write_restart</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                             <span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">,</span>
                         <span class="p">)</span>
-
                         <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_single_sim</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="n">np</span><span class="p">)</span>
-
                         <span class="bp">self</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">nodes</span><span class="o">=</span><span class="n">history_nodes</span><span class="p">)</span>
-
                         <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
-
                     <span class="n">iteration</span> <span class="o">=</span> <span class="mi">0</span>
 
                     <span class="n">extras</span><span class="p">[</span><span class="s2">&quot;nsteps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">666</span>
 
                     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-
                         <span class="n">extras</span><span class="p">[</span><span class="s2">&quot;nsteps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">extras</span><span class="p">[</span><span class="s2">&quot;nsteps&quot;</span><span class="p">])</span>
-
                         <span class="n">control_properties</span> <span class="o">=</span> <span class="p">{}</span>
-
                         <span class="k">for</span> <span class="n">prp</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;control_properties&quot;</span><span class="p">]:</span>
                             <span class="n">k</span> <span class="o">=</span> <span class="n">prp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                             <span class="n">control_properties</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
@@ -550,7 +874,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <span class="k">for</span> <span class="n">prp</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">analysis</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                             <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;short_production&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
                                 <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;few_neff&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
-
                                     <span class="n">accuracy</span> <span class="o">=</span> <span class="n">control_properties</span><span class="p">[</span><span class="n">prp</span><span class="p">][</span><span class="s2">&quot;accuracy&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">100</span>
                                     <span class="n">dof</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;n_sample&quot;</span><span class="p">]</span>
                                     <span class="n">mean</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span>
@@ -563,7 +886,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                                         <span class="n">control_properties</span><span class="p">[</span><span class="n">prp</span><span class="p">][</span>
                                             <span class="s2">&quot;enough_accuracy&quot;</span>
                                         <span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-
                         <span class="n">enough_acc</span> <span class="o">=</span> <span class="p">[</span>
                             <span class="n">v</span><span class="p">[</span><span class="s2">&quot;enough_accuracy&quot;</span><span class="p">]</span>
                             <span class="k">for</span> <span class="n">prp</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">control_properties</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
@@ -590,7 +912,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">history_nodes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-
             <span class="n">node_initialization</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subflowchart</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="s2">&quot;1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
 
             <span class="k">if</span> <span class="n">node_initialization</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -630,7 +951,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_single_sim</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="n">np</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">history_nodes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-
             <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_input</span><span class="p">(</span>
                 <span class="n">files</span><span class="p">,</span>
                 <span class="n">nodes</span><span class="o">=</span><span class="n">history_nodes</span><span class="p">,</span>
@@ -660,7 +980,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">tmpdict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">files</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-
             <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">continue</span>
 
@@ -677,6 +996,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <span class="s2">&quot;*.restart.*&quot;</span><span class="p">,</span>
             <span class="s2">&quot;*.dump.*&quot;</span><span class="p">,</span>
             <span class="s2">&quot;*.log&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;*.dat&quot;</span><span class="p">,</span>
             <span class="s2">&quot;log.cite&quot;</span><span class="p">,</span>
         <span class="p">]</span>  <span class="c1"># yapf: disable</span>
 
@@ -712,7 +1032,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">lmp_serial</span><span class="p">)]</span>
         <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;-in&quot;</span><span class="p">,</span> <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]])</span>
 
-        <span class="n">result</span> <span class="o">=</span> <span class="n">local</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="o">=</span><span class="n">cmd</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="n">tmpdict</span><span class="p">,</span> <span class="n">return_files</span><span class="o">=</span><span class="n">return_files</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">local</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="n">cmd</span><span class="o">=</span><span class="n">cmd</span><span class="p">,</span>
+            <span class="n">files</span><span class="o">=</span><span class="n">tmpdict</span><span class="p">,</span>
+            <span class="n">return_files</span><span class="o">=</span><span class="n">return_files</span><span class="p">,</span>
+            <span class="n">in_situ</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">directory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;There was an error running LAMMPS&quot;</span><span class="p">)</span>
@@ -736,7 +1062,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stderr&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;stderr:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stderr&quot;</span><span class="p">])</span>
-            <span class="n">f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="s2">&quot;sstderr.txt&quot;</span><span class="p">)</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="s2">&quot;stderr.txt&quot;</span><span class="p">)</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
                 <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;stderr&quot;</span><span class="p">])</span>
 
@@ -803,11 +1129,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <span class="n">write_restart</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">extras</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
             <span class="n">node_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">nodes</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
             <span class="n">new_input_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_node_input</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">nodes</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">)</span>
-
         <span class="k">else</span><span class="p">:</span>
             <span class="n">node_ids</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">new_input_data</span> <span class="o">=</span> <span class="p">[]</span>
@@ -843,7 +1167,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <span class="k">return</span> <span class="n">files</span>
 
     <span class="k">def</span> <span class="nf">_get_node_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-
         <span class="k">try</span><span class="p">:</span>
             <span class="n">ret</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_input</span><span class="p">(</span><span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -866,7 +1189,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <span class="k">raise</span>
         <span class="k">return</span> <span class="n">ret</span>
 
-<div class="viewcode-block" id="LAMMPS.structure_data"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.lammps.LAMMPS.structure_data">[docs]</a>    <span class="k">def</span> <span class="nf">structure_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eex</span><span class="p">,</span> <span class="n">triclinic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="LAMMPS.structure_data"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.structure_data">[docs]</a>    <span class="k">def</span> <span class="nf">structure_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eex</span><span class="p">,</span> <span class="n">triclinic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the LAMMPS structure file from the energy expression&quot;&quot;&quot;</span>
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -1047,6 +1370,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;Theta0&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
                         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K3&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K4&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;simple_fourier_angle&quot;</span><span class="p">:</span>
+                    <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;fourier/simple&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> -1 </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;n&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="n">line</span> <span class="o">+=</span> <span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="sa">f</span><span class="s2">&quot; --&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -1195,6 +1521,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V1&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;Phi0_1&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
                         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;Phi0_2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
                         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V3&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;Phi0_3&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;torsion_opls&quot;</span><span class="p">:</span>
+                    <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;opls&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V1&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V3&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V4&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
                     <span class="p">)</span>
                 <span class="n">line</span> <span class="o">+=</span> <span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
@@ -1447,13 +1782,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Impropers&quot;</span><span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Need forms to reorder impropers....</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;oop parameters&quot;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">)}</span>
+
             <span class="k">for</span> <span class="n">counter</span><span class="p">,</span> <span class="n">tmp</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_oops&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;oops&quot;</span><span class="p">]):</span>
                 <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">tmp</span>
-                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                    <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">counter</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span>
+                <span class="k">if</span> <span class="n">form</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;improper_opls&quot;</span><span class="p">:</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">counter</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span>
+                        <span class="p">)</span>
                     <span class="p">)</span>
-                <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">counter</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
 
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Improper Coeffs&quot;</span><span class="p">)</span>
@@ -1462,19 +1808,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_oop_types&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;oop parameters&quot;</span><span class="p">]</span>
             <span class="p">):</span>
                 <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
-                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                    <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">counter</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;Chi0&quot;</span><span class="p">])</span>
-                    <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                        <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                        <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                        <span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                        <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                        <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                        <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                        <span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                <span class="k">if</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;wilson_out_of_plane&quot;</span><span class="p">:</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">counter</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;Chi0&quot;</span><span class="p">])</span>
+                        <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                            <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                            <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                            <span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                            <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                            <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                            <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                            <span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                        <span class="p">)</span>
                     <span class="p">)</span>
-                <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;improper_opls&quot;</span><span class="p">:</span>
+                    <span class="c1"># divide by two because OPLS uses V2/2 and CVS V.</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V2&#39;</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> -1 2 &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt; &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">-&quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Can&#39;t handle oop form &#39;</span><span class="si">{</span><span class="n">form</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
 
             <span class="c1"># angle-angle</span>
             <span class="k">if</span> <span class="s2">&quot;n_angle-angle_types&quot;</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">:</span>
@@ -1511,7 +1868,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">lines</span></div>
 
-<div class="viewcode-block" id="LAMMPS.analyze"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.lammps.LAMMPS.analyze">[docs]</a>    <span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="LAMMPS.analyze"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.analyze">[docs]</a>    <span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Analyze the output of the calculation&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
             <span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">nodes</span><span class="p">]</span>
@@ -1519,7 +1876,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <span class="n">ret</span> <span class="o">=</span> <span class="p">{</span><span class="n">node</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">}</span>
 
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
-
             <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
@@ -1545,13 +1901,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <span class="n">node_data</span> <span class="o">=</span> <span class="kc">None</span>
 
             <span class="k">if</span> <span class="s2">&quot;run_control&quot;</span> <span class="ow">in</span> <span class="n">P</span><span class="p">:</span>
-
                 <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;run_control&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;For a fixed length of simulated time.&quot;</span><span class="p">:</span>
                     <span class="n">control_properties</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;tstep&quot;</span><span class="p">]</span>  <span class="c1"># noqa: E731</span>
                     <span class="c1"># Reset the trajectory data so doesn&#39;t carry over</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">else</span><span class="p">:</span>
-
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;control_properties&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
                             <span class="s2">&quot;No physical property selected for automatic&quot;</span><span class="p">,</span>
@@ -1571,7 +1925,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         <span class="k">return</span> <span class="n">ret</span></div>
 
-<div class="viewcode-block" id="LAMMPS.analyze_trajectory"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.lammps.LAMMPS.analyze_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">analyze_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">control_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="LAMMPS.analyze_trajectory"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.analyze_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">analyze_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">control_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a trajectory file and do the statistical analysis&quot;&quot;&quot;</span>
 
         <span class="n">write_html</span> <span class="o">=</span> <span class="s2">&quot;html&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;html&quot;</span><span class="p">]</span>
@@ -1984,7 +2338,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         <span class="k">return</span> <span class="n">results</span></div>
 
-<div class="viewcode-block" id="LAMMPS.shake_fix"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.lammps.LAMMPS.shake_fix">[docs]</a>    <span class="k">def</span> <span class="nf">shake_fix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">eex</span><span class="p">):</span>
+<div class="viewcode-block" id="LAMMPS.shake_fix"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.shake_fix">[docs]</a>    <span class="k">def</span> <span class="nf">shake_fix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">eex</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the &#39;fix shake&#39; line needed for handling waters and X-H.</span>
 
 <span class="sd">        Parameters</span>
@@ -2053,7 +2407,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         <span class="k">return</span> <span class="n">result</span></div>
 
-<div class="viewcode-block" id="LAMMPS.read_dump"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.lammps.LAMMPS.read_dump">[docs]</a>    <span class="k">def</span> <span class="nf">read_dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dumpfile</span><span class="p">):</span>
+<div class="viewcode-block" id="LAMMPS.read_dump"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.read_dump">[docs]</a>    <span class="k">def</span> <span class="nf">read_dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dumpfile</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the LAMMPS dumpfile and update the system.</span>
 
 <span class="sd">        Parameters</span>
@@ -2237,47 +2591,88 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <span class="p">)</span></div>
 </pre></div>
 
-           </div>
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
           </div>
-          <footer>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+</div>
 
-  <hr/>
-
-  <div role="contentinfo">
-    <p></p>
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
   </div>
 
   
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
 
-<p>
-<div class="row">
-  <div class="column_left">
-    <a href="https://molssi.org/" target="_blank" title="Go to MolSSI in a new tab">
-      <img src="/_images/MolSSI.jpg" alt="The MolSSI" style="border:0;">
-    </a>
-  </div>
-  <div class="column">
-    &copy; Copyright 2020, the Molecular Sciences Software Institute,
-    which receives funding from the National Science Foundation under award ACI-1547580
-  </div>
-  <div class="column_right">
-    <a href="https://nsf.gov/" target="_blank" title="Go to the NSF in a new tab">
-      <img src="/_images/NSF_4-Color_bitmap_Logo.png" alt="The NSF" style="border:0;">
-    </a>
-  </div>
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+  
+
+
+
+  
+  
+  
+  
+  
+  
+  
+
+
+<div class="row h-10">
+    <div class="col-2">
+        <a href="https://molssi.org/" target="_blank" title="Go to MolSSI in a new tab">
+            <img src="../../_static/molssi_main_logo.png" class="logo__image only-light footer_logo" alt="Logo image">
+            <img src="../../_static/molssi_main_logo_inverted_white.png" class="logo__image only-dark footer_logo" alt="Logo image">
+        </a>
+    </div>
+    <div class="col-8">
+        <p> &copy; Copyright 2017-2023 <a href="https://molssi.org/">The Molecular Sciences Software Institute</a></p>
+        <p>Funded by the National Science Foundation 
+          <a href="https://nsf.gov/awardsearch/showAward?AWD_ID=1547580">OAC-1547580</a> and 
+          <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=2136142">CHE-2136142.</a></p>
+ 
+        
+
+    </div>
+    <div class="col-2">
+        <a href="https://nsf.gov/" target="_blank" title="Go to the NSF in a new tab">
+            <img src="../../_static/nsf.png" class="footer_logo" alt="The NSF">
+          </a>
+    </div>
 </div>
-
-
-</footer>
-        </div>
-      </div>
-    </section>
   </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
-
-</body>
+  
+</div>
+  </footer>
+  </body>
 </html>

@@ -1,0 +1,722 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Getting Started &#8212; SEAMM LAMMPS Plug-in 2023.2.6 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
+<!-- End Google Tag Manager -->
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'getting_started/index';</script>
+
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="User Guide" href="../user_guide/index.html" />
+    <link rel="prev" title="LAMMPS Step" href="../index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../_static/SEAMM logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+    <p class="title logo__title">LAMMPS Step</p>
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <nav class="navbar-nav">
+    <p class="sidebar-header-items__title" role="heading" aria-level="1" aria-label="Site Navigation">
+        Site Navigation
+    </p>
+    <ul id="navbar-main-elements" class="navbar-nav">
+        
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="#">
+                        Getting Started
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../user_guide/index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../developer_guide/index.html">
+                        Developer Documentation
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../api/index.html">
+                        API Documentation
+                      </a>
+                    </li>
+                
+            <div class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    More
+                </button>
+                <div class="dropdown-menu">
+                    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../authors.html">
+                        Development Team
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../history.html">
+                        History
+                      </a>
+                    </li>
+                
+
+                <li class="nav-item">
+                  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+                    SEAMM Documentation
+                  </a>
+                </li>
+                
+
+                <li class="nav-item">
+                  <a class="nav-link nav-external" href="https://molssi.org">
+                    MolSSI
+                  </a>
+                </li>
+                
+                </div>
+            </div>
+            
+    </ul>
+</nav>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/lammps_step" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><span><i class="fa-brands fa-square-github"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><span><i class="fa-brands fa-square-twitter"></i></span>
+            <label class="sr-only">Twitter</label></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+      
+      <div class="navbar-center-item">
+        <nav class="navbar-nav">
+    <p class="sidebar-header-items__title" role="heading" aria-level="1" aria-label="Site Navigation">
+        Site Navigation
+    </p>
+    <ul id="navbar-main-elements" class="navbar-nav">
+        
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="#">
+                        Getting Started
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../user_guide/index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../developer_guide/index.html">
+                        Developer Documentation
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../api/index.html">
+                        API Documentation
+                      </a>
+                    </li>
+                
+            <div class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    More
+                </button>
+                <div class="dropdown-menu">
+                    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../authors.html">
+                        Development Team
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../history.html">
+                        History
+                      </a>
+                    </li>
+                
+
+                <li class="nav-item">
+                  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+                    SEAMM Documentation
+                  </a>
+                </li>
+                
+
+                <li class="nav-item">
+                  <a class="nav-link nav-external" href="https://molssi.org">
+                    MolSSI
+                  </a>
+                </li>
+                
+                </div>
+            </div>
+            
+    </ul>
+</nav>
+      </div>
+      
+      </div>
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/lammps_step" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><span><i class="fa-brands fa-square-github"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><span><i class="fa-brands fa-square-twitter"></i></span>
+            <label class="sr-only">Twitter</label></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <section id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this heading">#</a></h1>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">#</a></h2>
+<p>The LAMMPS step is probably already installed in your SEAMM environment, but
+if not or if you wish to check, follow the directions for the <a class="reference external" href="https://molssi-seamm.github.io/installation/index.html">SEAMM Installer</a>. The
+graphical installer is the easiest to use. In the SEAMM conda environment, simply type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">seamm</span><span class="o">-</span><span class="n">installer</span>
+</pre></div>
+</div>
+<p>or use the shortcut if you installed one. Switch to the second tab, <cite>Components</cite>, and
+check for <cite>LAMMPS-step</cite>. If it is not installed, or can be updated, check the box
+next to it and click <cite>Install selected</cite> or <cite>Update selected</cite> as appropriate.</p>
+<p>The non-graphical installer is also straightforward:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">seamm</span><span class="o">-</span><span class="n">installer</span> <span class="n">install</span> <span class="o">--</span><span class="n">update</span> <span class="n">lammps</span><span class="o">-</span><span class="n">step</span>
+</pre></div>
+</div>
+<p>will ensure both that it is installed and up-to-date.</p>
+</section>
+<section id="example-of-npt-dynamics">
+<h2>Example of NPT dynamics<a class="headerlink" href="#example-of-npt-dynamics" title="Permalink to this heading">#</a></h2>
+<p>Here is a simple example that will run quickly on any machine, including your
+laptop. We’ll simulate an argon fluid at 110 K and 30 atm pressure using a periodic cell
+containing 1000 atoms.</p>
+<p>First we need a <a class="reference download internal" download="" href="../_downloads/243468b5b9487b902043b938b4d18acf/ar_npt_dynamics.flow"><code class="xref download docutils literal notranslate"><span class="pre">flowchart</span></code></a> for the simulation. It
+needs to have three steps:</p>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="../_images/flowchart.png"><img alt="Flowchart for Ar fluid simulation" src="../_images/flowchart.png" style="width: 300px;" /></a>
+<figcaption>
+<p><span class="caption-text">Flowchart for Ar fluid NPT simulation</span><a class="headerlink" href="#id1" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<p>Create a flowchart that looks like the above. If you need help doing this, please go to
+the main <a class="reference external" href="https://molssi-seamm.github.io/getting_started/index.html">SEAMM tutorials</a>, then come back here once you are more familiar with the
+interface. We’ll edit each step in the next paragraphs, so just create a flowchart that
+looks like the above.</p>
+<p>The three steps are straightforward: the first establishes the forcefield that will be
+used in all subsequent steps unless charge by another Forcefield Step; the Packmol step
+will create the fluid system of argon; and the LAMMPS step, run the molecular dynamics.</p>
+<p>Now edit the forcefield step and set the forcefield to OPLS-AA, like this:</p>
+<figure class="align-center" id="id2">
+<a class="reference internal image-reference" href="../_images/edit_forcefield.png"><img alt="Setting the forcefield" src="../_images/edit_forcefield.png" style="width: 600px;" /></a>
+<figcaption>
+<p><span class="caption-text">Setting the forcefield for the simulation</span><a class="headerlink" href="#id2" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<p>You will need to change the forcefield repository to <cite>oplsaa.frc</cite>. Each forcefield may
+have different variants in the file; however, for this calculation the default is all we
+need.</p>
+<p>Next edit the <cite>Packmol Step</cite> and set it up as shown:</p>
+<figure class="align-center" id="id3">
+<a class="reference internal image-reference" href="../_images/edit_packmol.png"><img alt="Building the Ar fluid system" src="../_images/edit_packmol.png" style="width: 600px;" /></a>
+<figcaption>
+<p><span class="caption-text">Building the Ar fluid system</span><a class="headerlink" href="#id3" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<p>Here you will need to change to a periodic system. Check that Packmol will build a cubic
+system with a density of 0.7. Set the approximate number of atoms to 1000 – that will
+be the number of argon atoms in your simulation box. If you wish you can change the
+system and configuration names, but they will not be used anywhere else in this example,
+so you can leave them with the defaults, if you wish.</p>
+<p>The last step is to create the LAMMPS simulation. When you edit the <cite>LAMMPS Step</cite> you
+will see a dialog for creating a flowchart that is similar to the main one that you just
+created. However, the choice of steps on the left is specific to LAMMPS. Create a LAMMPS
+flowchart like this:</p>
+<figure class="align-center" id="id4">
+<a class="reference internal image-reference" href="../_images/lammps_flowchart.png"><img alt="Subflowchart for LAMMPS" src="../_images/lammps_flowchart.png" style="width: 300px;" /></a>
+<figcaption>
+<p><span class="caption-text">Subflowchart for LAMMPS</span><a class="headerlink" href="#id4" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<p>Now edit the steps. There is actually nothing that you need to change in the
+<cite>Initialization Step</cite>. The defaults are usually fine:</p>
+<figure class="align-center" id="id5">
+<a class="reference internal image-reference" href="../_images/edit_initialization.png"><img alt="The LAMMPS initialization step" src="../_images/edit_initialization.png" style="width: 600px;" /></a>
+<figcaption>
+<p><span class="caption-text">The LAMMPS initialization step</span><a class="headerlink" href="#id5" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<p>There is more needed in the NPT dynamics step:</p>
+<figure class="align-center" id="id6">
+<a class="reference internal image-reference" href="../_images/edit_npt.png"><img alt="Dialog for the LAMMPS NPT step" src="../_images/edit_npt.png" style="width: 600px;" /></a>
+<figcaption>
+<p><span class="caption-text">The LAMMPS NPT step</span><a class="headerlink" href="#id6" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<p>Here you need to change the two temperatures on the left side to 110 K and the pressure,
+on the right, to 30 atm. This is in the liquid part of the phase diagram for argon, as
+we can see at the nice <a class="reference external" href="https://webbook.nist.gov/cgi/fluid.cgi?P=30&amp;TLow=90&amp;THigh=140&amp;TInc=10&amp;Digits=5&amp;ID=C7440371&amp;Action=Load&amp;Type=IsoBar&amp;TUnit=K&amp;PUnit=atm&amp;DUnit=g%2Fml&amp;HUnit=kJ%2Fmol&amp;WUnit=m%2Fs&amp;VisUnit=uPa*s&amp;STUnit=N%2Fm&amp;RefState=DEF">NIST fluid properties</a> website:</p>
+<figure class="align-center" id="id7">
+<a class="reference internal image-reference" href="../_images/nist.png"><img alt="Table for the NIST fluid properties website" src="../_images/nist.png" style="width: 600px;" /></a>
+<figcaption>
+<p><span class="caption-text">Tabulation of Argon fluid properties at NIST</span><a class="headerlink" href="#id7" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<p>Experimentally the density should be about 1.256 at the temperature and pressure that we
+have chosen. Let’s see what we get! Submit the calculation to your Dashboard and check
+the results. It will take about a minute to run. You should then find something similar
+to this in <cite>job.out</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Step 3: LAMMPS  2022.10.31+4.g1c55ce2.dirty
+ LAMMPS using the serial version.
+
+ Step 3.2: NPT dynamics
+     100.0 ps of canonical (NPT) dynamics at 110.0 K using a Nose-Hoover
+     thermostat. The thermostat will use a chain of 3 thermostats with 1
+     subcycles and a drag factor of 0.0.
+
+
+     The run will be 50,000 steps of dynamics sampled every 25 steps.
+
+     Analysis of trajectory_npt_3_2.seamm_trj
+
+                                           Std Error  Time to
+             Property           Value       of mean   convergence     tau    inefficiency
+        --------------------   ---------  ---------   -----------  --------  ------------
+                           T =   110.568 ±   0.595      0.00 fs     25.0 fs        2.0
+                           P =    68.086 ±  39.845      0.00 fs     25.0 fs        1.2
+                     density =     1.253 ±   0.001*     9.00 ps    546.3 fs       22.9
+                           a =    37.547 ±   0.014*     9.00 ps    547.1 fs       22.9
+                           b =    37.547 ±   0.014*     9.00 ps    547.1 fs       22.9
+                           c =    37.547 ±   0.014*     9.00 ps    547.1 fs       22.9
+                        Etot =  -687.190 ± 178.422      0.00 fs    400.8 fs       17.0
+                         Eke =   329.250 ±   1.771      0.00 fs     25.0 fs        2.0
+                         Epe = -1029.024 ± 163.311      0.00 fs    358.3 fs       15.3
+                       Epair = -1029.024 ± 163.311      0.00 fs    358.3 fs       15.3
+
+
+Wrote the final structure to &#39;final_structure.mmcif&#39; and &#39;final_structure.cif&#39; for viewing.
+</pre></div>
+</div>
+<p>The density predicted – third line in the table – is 1.253, very close to the
+experimental value of 1.256. Of course, Argon is about the easiest possible case!
+However, you should expect fluid densities within 1-2% with a good forcefield.</p>
+<p>If you open the folder labeled ‘3’ on the left of the Dashboard, you will find a
+collection of graphs listed. The last one is the density. If you click on it you will
+see a graph like the following:</p>
+<figure class="align-center" id="id8">
+<a class="reference internal image-reference" href="../_images/density.png"><img alt="The plot of the density vs time in the simulation" src="../_images/density.png" style="width: 800px;" /></a>
+<figcaption>
+<p><span class="caption-text">The density of the Argon during the simulation</span><a class="headerlink" href="#id8" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<p>The subgraph on the left shows the density vs time as a green line. It started at a low
+value of 0.7 because we asked Packmol to create a system with that density. Initially it
+actually dropped lower because some atoms in the as-built structure were too close
+together and pushed everything apart. Then the pressure rapidly climbs to about 1.25
+after 10 ps, and then fluctuates around that value for the rest of the run. SEAMM
+automatically determines when the property has settled down and computes the average and
+standard error that you saw in the table above. It is also indicated by the black
+horizontal line in the graph.</p>
+<p>The graph on the right shows the autocorrelation function and an exponential fit to it,
+which is used to get the time constant of the autocorrelation. In this case the time
+constant is about 500 fs, or 0.5 ps. This means that the density at a time t is still
+correlated with the density 0.5 ps earlier, meaning that there is little new information
+gained by sampling that density. This is the basis of the statistical inefficiency in
+the table, which was about 23 for the density. In this calculation we sampled the
+properties every 50 ps, which was fine for the pressure, for example, but is about 23
+times more often than useful for the density. The results shown are correct because the code
+corrects for the oversampling. It just means that the trajectory file is about 23 times
+larger than it needs to be and the code did some more work than necessary to correctly
+predict the density and its standard error.</p>
+<p>That should be enough to get started. For more detail about the functionality in this
+plug-in, see the <a class="reference internal" href="../user_guide/index.html#user-guide"><span class="std std-ref">User Guide</span></a>.</p>
+</section>
+</section>
+
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="../index.html" title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">LAMMPS Step</p>
+      </div>
+  </a>
+  <a class='right-next' id="next-link" href="../user_guide/index.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">User Guide</p>
+  </div>
+  <i class="fa-solid fa-angle-right"></i>
+  </a>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#installation">
+   Installation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#example-of-npt-dynamics">
+   Example of NPT dynamics
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
+<div class="tocsection sourcelink">
+    <a href="../_sources/getting_started/index.rst.txt">
+        <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+</div>
+
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+  
+
+
+
+  
+  
+  
+  
+  
+  
+  
+
+
+<div class="row h-10">
+    <div class="col-2">
+        <a href="https://molssi.org/" target="_blank" title="Go to MolSSI in a new tab">
+            <img src="../_static/molssi_main_logo.png" class="logo__image only-light footer_logo" alt="Logo image">
+            <img src="../_static/molssi_main_logo_inverted_white.png" class="logo__image only-dark footer_logo" alt="Logo image">
+        </a>
+    </div>
+    <div class="col-8">
+        <p> &copy; Copyright 2017-2023 <a href="https://molssi.org/">The Molecular Sciences Software Institute</a></p>
+        <p>Funded by the National Science Foundation 
+          <a href="https://nsf.gov/awardsearch/showAward?AWD_ID=1547580">OAC-1547580</a> and 
+          <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=2136142">CHE-2136142.</a></p>
+ 
+        
+
+    </div>
+    <div class="col-2">
+        <a href="https://nsf.gov/" target="_blank" title="Go to the NSF in a new tab">
+            <img src="../_static/nsf.png" class="footer_logo" alt="The NSF">
+          </a>
+    </div>
+</div>
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>
