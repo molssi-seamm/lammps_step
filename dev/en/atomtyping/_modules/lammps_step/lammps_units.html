@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lammps_step.lammps_units &mdash; SEAMM LAMMPS Plug-in 2021.2.11+18.g260ca78 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SEAMM LAMMPS Plug-in
+          </a>
+              <div class="version">
+                2021.2.11+18.g260ca78
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user/index.html">User Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../developer/index.html">Developer Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../history.html">History</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://molssi-seamm.github.io">Main SEAMM documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SEAMM LAMMPS Plug-in</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">lammps_step.lammps_units</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for lammps_step.lammps_units</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;Definition of unit systems in LAMMPS.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">seamm_util</span> <span class="kn">import</span> <span class="n">ureg</span><span class="p">,</span> <span class="n">Q_</span><span class="p">,</span> <span class="n">units_class</span>  <span class="c1"># noqa: F401</span>
+
+<span class="n">lammps_unit_system</span> <span class="o">=</span> <span class="s1">&#39;real&#39;</span>
+
+<span class="n">unit_systems</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;real&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;mass&#39;</span><span class="p">:</span> <span class="s1">&#39;grams/mole&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;distance&#39;</span><span class="p">:</span> <span class="s1">&#39;angstroms&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="s1">&#39;femtoseconds&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="s1">&#39;kcal/mole&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;velocity&#39;</span><span class="p">:</span> <span class="s1">&#39;angstroms/femtosecond&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;force&#39;</span><span class="p">:</span> <span class="s1">&#39;kcal/mole/angstrom&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;torque&#39;</span><span class="p">:</span> <span class="s1">&#39;kcal/mole&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;temperature&#39;</span><span class="p">:</span> <span class="s1">&#39;kelvin&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;pressure&#39;</span><span class="p">:</span> <span class="s1">&#39;atmospheres&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;dynamic viscosity&#39;</span><span class="p">:</span> <span class="s1">&#39;poise&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="s1">&#39;elementary_charge&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;dipole&#39;</span><span class="p">:</span> <span class="s1">&#39;elementary_charge*angstroms&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;electric field&#39;</span><span class="p">:</span> <span class="s1">&#39;volts/angstrom&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;density&#39;</span><span class="p">:</span> <span class="s1">&#39;gram/cm^3&#39;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;metal&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;mass&#39;</span><span class="p">:</span> <span class="s1">&#39;grams/mole&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;distance&#39;</span><span class="p">:</span> <span class="s1">&#39;angstroms&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="s1">&#39;picoseconds&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="s1">&#39;eV&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;velocity&#39;</span><span class="p">:</span> <span class="s1">&#39;angstroms/picosecond&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;force&#39;</span><span class="p">:</span> <span class="s1">&#39;eV/angstrom&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;torque&#39;</span><span class="p">:</span> <span class="s1">&#39;eV&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;temperature&#39;</span><span class="p">:</span> <span class="s1">&#39;kelvin&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;pressure&#39;</span><span class="p">:</span> <span class="s1">&#39;bars&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;dynamic viscosity&#39;</span><span class="p">:</span> <span class="s1">&#39;poise&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="s1">&#39;elementary_charge&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;dipole&#39;</span><span class="p">:</span> <span class="s1">&#39;elementary_charge*angstroms&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;electric field&#39;</span><span class="p">:</span> <span class="s1">&#39;volts/angstrom&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;density&#39;</span><span class="p">:</span> <span class="s1">&#39;gram/cm^3&#39;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;si&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;mass&#39;</span><span class="p">:</span> <span class="s1">&#39;kilograms&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;distance&#39;</span><span class="p">:</span> <span class="s1">&#39;meters&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="s1">&#39;seconds&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="s1">&#39;joules&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;velocity&#39;</span><span class="p">:</span> <span class="s1">&#39;meters/second&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;force&#39;</span><span class="p">:</span> <span class="s1">&#39;newtons&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;torque&#39;</span><span class="p">:</span> <span class="s1">&#39;newton*meters&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;temperature&#39;</span><span class="p">:</span> <span class="s1">&#39;kelvin&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;pressure&#39;</span><span class="p">:</span> <span class="s1">&#39;pascals&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;dynamic viscosity&#39;</span><span class="p">:</span> <span class="s1">&#39;pascal*second&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="s1">&#39;coulombs&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;dipole&#39;</span><span class="p">:</span> <span class="s1">&#39;coulombs*meters&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;electric field&#39;</span><span class="p">:</span> <span class="s1">&#39;volts/meter&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;density&#39;</span><span class="p">:</span> <span class="s1">&#39;kilograms/meter^3&#39;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;cgs&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;mass&#39;</span><span class="p">:</span> <span class="s1">&#39;grams&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;distance&#39;</span><span class="p">:</span> <span class="s1">&#39;centimeters&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="s1">&#39;seconds&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="s1">&#39;ergs&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;velocity&#39;</span><span class="p">:</span> <span class="s1">&#39;centimeters/second&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;force&#39;</span><span class="p">:</span> <span class="s1">&#39;dynes&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;torque&#39;</span><span class="p">:</span> <span class="s1">&#39;dyne*centimeters&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;temperature&#39;</span><span class="p">:</span> <span class="s1">&#39;kelvin&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;pressure&#39;</span><span class="p">:</span> <span class="s1">&#39;dyne/cm^2&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;dynamic viscosity&#39;</span><span class="p">:</span> <span class="s1">&#39;poise&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="s1">&#39;statcoulombs&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;dipole&#39;</span><span class="p">:</span> <span class="s1">&#39;statcoulombs*cm&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;electric field&#39;</span><span class="p">:</span> <span class="s1">&#39;statvolt/cm&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;density&#39;</span><span class="p">:</span> <span class="s1">&#39;grams/cm^3&#39;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;electron&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;mass&#39;</span><span class="p">:</span> <span class="s1">&#39;amu&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;distance&#39;</span><span class="p">:</span> <span class="s1">&#39;bohr&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="s1">&#39;femtoseconds&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="s1">&#39;hartrees&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;velocity&#39;</span><span class="p">:</span> <span class="s1">&#39;bohr/a_u_time&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;force&#39;</span><span class="p">:</span> <span class="s1">&#39;hartrees/bohr&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;temperature&#39;</span><span class="p">:</span> <span class="s1">&#39;kelvin&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;pressure&#39;</span><span class="p">:</span> <span class="s1">&#39;pascals&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="s1">&#39;elementary_charge&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;dipole moment&#39;</span><span class="p">:</span> <span class="s1">&#39;debye&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;electric field&#39;</span><span class="p">:</span> <span class="s1">&#39;volts/cm&#39;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;micro&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;mass&#39;</span><span class="p">:</span> <span class="s1">&#39;picograms&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;distance&#39;</span><span class="p">:</span> <span class="s1">&#39;micrometers&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="s1">&#39;microseconds&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="s1">&#39;picogram*micrometer^2/microsecond^2&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;velocity&#39;</span><span class="p">:</span> <span class="s1">&#39;micrometers/microsecond&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;force&#39;</span><span class="p">:</span> <span class="s1">&#39;picogram*micrometer/microsecond^2&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;torque&#39;</span><span class="p">:</span> <span class="s1">&#39;picogram*micrometer^2/microsecond^2&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;temperature&#39;</span><span class="p">:</span> <span class="s1">&#39;kelvin&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;pressure&#39;</span><span class="p">:</span> <span class="s1">&#39;picogram/(micrometer*microsecond^2)&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;dynamic viscosity&#39;</span><span class="p">:</span> <span class="s1">&#39;picogram/(micrometer*microsecond)&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="s1">&#39;picocoulombs&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;dipole&#39;</span><span class="p">:</span> <span class="s1">&#39;picocoulomb*micrometer&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;electric field&#39;</span><span class="p">:</span> <span class="s1">&#39;volt/micrometer&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;density&#39;</span><span class="p">:</span> <span class="s1">&#39;picograms/micrometer^3&#39;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;nano&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;mass&#39;</span><span class="p">:</span> <span class="s1">&#39;attograms&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;distance&#39;</span><span class="p">:</span> <span class="s1">&#39;nanometers&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="s1">&#39;nanoseconds&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="s1">&#39;attogram*nanometer^2/nanosecond^2&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;velocity&#39;</span><span class="p">:</span> <span class="s1">&#39;nanometers/nanosecond&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;force&#39;</span><span class="p">:</span> <span class="s1">&#39;attogram*nanometer/nanosecond^2&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;torque&#39;</span><span class="p">:</span> <span class="s1">&#39;attogram*nanometer^2/nanosecond^2&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;temperature&#39;</span><span class="p">:</span> <span class="s1">&#39;kelvin&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;pressure&#39;</span><span class="p">:</span> <span class="s1">&#39;attogram/(nanometer*nanosecond^2)&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;dynamic viscosity&#39;</span><span class="p">:</span> <span class="s1">&#39;attogram/(nanometer*nanosecond)&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="s1">&#39;elementary_charge&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;dipole&#39;</span><span class="p">:</span> <span class="s1">&#39;elementary_charge*nanometer&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;electric field&#39;</span><span class="p">:</span> <span class="s1">&#39;volt/nanometer&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;density&#39;</span><span class="p">:</span> <span class="s1">&#39;attograms/nanometer^3&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">quantity_to_dimensionality</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;mass&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;[mass] / [substance]&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;[mass]&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;[length]&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;[time]&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;[length] ** 2 * [mass] / [substance] / [time] ** 2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;[length] ** 2 * [mass] / [time] ** 2&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;velocity&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;[length] / [time]&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;force&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;[length] * [mass] / [substance] / [time] ** 2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;[length] * [mass] / [time] ** 2&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;torque&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;[length] ** 2 * [mass] / [substance] / [time] ** 2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;[length] ** 2 * [mass] / [time] ** 2&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;[temperature]&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;pressure&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;[mass] / [length] / [time] ** 2&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;dynamic viscosity&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;[mass] / [length] / [time]&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;charge&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;[current] * [time]&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;[length] ** 1.5 * [mass] ** 0.5 / [time]&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;dipole&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;[current] * [length] * [time]&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;[length] ** 2.5 * [mass] ** 0.5 / [time]&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;electric field&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;[length] * [mass] / [current] / [time] ** 3&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;[mass] ** 0.5 / [length] ** 0.5 / [time]&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;density&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;[mass] / [length] ** 3&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;dipole moment&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;[current] * [length] * [time]&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+
+<span class="n">dimensionality_to_quantity</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;[mass] / [substance]&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;mass&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[mass]&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;mass&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[length]&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;distance&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[time]&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;time&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[length] ** 2 * [mass] / [substance] / [time] ** 2&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;energy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;torque&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[length] ** 2 * [mass] / [time] ** 2&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;energy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;torque&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[length] / [time]&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;velocity&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[length] * [mass] / [substance] / [time] ** 2&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;force&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[length] * [mass] / [time] ** 2&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;force&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[temperature]&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;temperature&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[mass] / [length] / [time] ** 2&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;pressure&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[mass] / [length] / [time]&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;dynamic viscosity&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[current] * [time]&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;charge&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[length] ** 1.5 * [mass] ** 0.5 / [time]&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;charge&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[current] * [length] * [time]&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;dipole&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;dipole moment&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[length] ** 2.5 * [mass] ** 0.5 / [time]&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;dipole&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[length] * [mass] / [current] / [time] ** 3&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;electric field&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[mass] ** 0.5 / [length] ** 0.5 / [time]&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;electric field&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;[mass] / [length] ** 3&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;density&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="set_lammps_unit_system"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.lammps_units.set_lammps_unit_system">[docs]</a><span class="k">def</span> <span class="nf">set_lammps_unit_system</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the default unit system for LAMMPS.&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">lammps_unit_system</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">unit_systems</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unit system &#39;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39; not recognized!&quot;</span><span class="p">)</span>
+    <span class="n">lammps_unit_system</span> <span class="o">=</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="get_lammps_unit_system"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.lammps_units.get_lammps_unit_system">[docs]</a><span class="k">def</span> <span class="nf">get_lammps_unit_system</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the default unit system for LAMMPS.&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">lammps_unit_system</span>
+    <span class="k">return</span> <span class="n">lammps_unit_system</span></div>
+
+
+<div class="viewcode-block" id="to_lammps_units"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.lammps_units.to_lammps_units">[docs]</a><span class="k">def</span> <span class="nf">to_lammps_units</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">quantity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unit_system</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert the value with units to the current LAMMPS units.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">units_class</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">quantity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">quantities</span> <span class="o">=</span> <span class="n">dimensionality_to_quantity</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">)]</span>
+        <span class="n">quantity</span> <span class="o">=</span> <span class="n">quantities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">unit_system</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">unit_system</span> <span class="o">=</span> <span class="n">lammps_unit_system</span>
+
+    <span class="n">unit_expr</span> <span class="o">=</span> <span class="n">unit_systems</span><span class="p">[</span><span class="n">unit_system</span><span class="p">][</span><span class="n">quantity</span><span class="p">]</span>
+    <span class="n">converted</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">unit_expr</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">converted</span><span class="o">.</span><span class="n">magnitude</span></div>
+
+
+<div class="viewcode-block" id="from_lammps_units"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.lammps_units.from_lammps_units">[docs]</a><span class="k">def</span> <span class="nf">from_lammps_units</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">quantity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unit_system</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert the scalar value from LAMMPS units to requested units&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">quantity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dimensions</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">dimensionality</span>
+        <span class="n">quantities</span> <span class="o">=</span> <span class="n">dimensionality_to_quantity</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)]</span>
+        <span class="n">quantity</span> <span class="o">=</span> <span class="n">quantities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">unit_system</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">unit_system</span> <span class="o">=</span> <span class="n">lammps_unit_system</span>
+
+    <span class="n">unit_expr</span> <span class="o">=</span> <span class="n">unit_systems</span><span class="p">[</span><span class="n">unit_system</span><span class="p">][</span><span class="n">quantity</span><span class="p">]</span>
+    <span class="n">converted</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">unit_expr</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">converted</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">import</span> <span class="nn">pint</span>
+    <span class="kn">import</span> <span class="nn">json</span>
+
+    <span class="k">for</span> <span class="n">unit</span> <span class="ow">in</span> <span class="n">ureg</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">ureg</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">pint</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">UndefinedUnitError</span><span class="p">:</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="s1">&#39;unknown&#39;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s1"> --&gt; </span><span class="si">{</span><span class="n">q</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">dimensionality</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">system</span><span class="p">,</span> <span class="n">units</span> <span class="ow">in</span> <span class="n">unit_systems</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">system</span><span class="si">}</span><span class="s1"> system of units&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">unit_expr</span> <span class="ow">in</span> <span class="n">units</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="si">{</span><span class="n">quantity</span><span class="si">}</span><span class="s1"> uses </span><span class="si">{</span><span class="n">unit_expr</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">ureg</span><span class="p">(</span><span class="n">unit_expr</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t\t</span><span class="si">{</span><span class="n">q</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">dimensions</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">quantity</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dimensionality</span><span class="p">:</span>
+                <span class="n">dimensionality</span><span class="p">[</span><span class="n">quantity</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">dimensions</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">dimensions</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dimensionality</span><span class="p">[</span><span class="n">quantity</span><span class="p">]:</span>
+                <span class="n">dimensionality</span><span class="p">[</span><span class="n">quantity</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">system</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">quantity</span><span class="si">}</span><span class="s1"> &lt;-- </span><span class="si">{</span><span class="n">unit_expr</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">dimensionality</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+
+    <span class="n">inverse</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">unit_exprs</span> <span class="ow">in</span> <span class="n">dimensionality</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">unit_expr</span> <span class="ow">in</span> <span class="n">unit_exprs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">unit_expr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">inverse</span><span class="p">:</span>
+                <span class="n">inverse</span><span class="p">[</span><span class="n">unit_expr</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">quantity</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">quantity</span> <span class="o">!=</span> <span class="n">inverse</span><span class="p">[</span><span class="n">unit_expr</span><span class="p">]:</span>
+                <span class="n">inverse</span><span class="p">[</span><span class="n">unit_expr</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">quantity</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;quantity </span><span class="si">{</span><span class="n">quantity</span><span class="si">}</span><span class="s1"> != </span><span class="si">{</span><span class="n">inverse</span><span class="p">[</span><span class="n">unit_expr</span><span class="p">]</span><span class="si">}</span><span class="s1"> for </span><span class="si">{</span><span class="n">unit_expr</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>  <span class="c1"># noqa: E501</span>
+
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">inverse</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;2.0 kJ/mol&#39;</span>
+    <span class="n">converted</span> <span class="o">=</span> <span class="n">to_lammps_units</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1"> in real units is </span><span class="si">{</span><span class="n">converted</span><span class="si">:</span><span class="s1">.4</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">converted</span><span class="si">:</span><span class="s1">.4</span><span class="si">}</span><span class="s1"> --&gt; </span><span class="si">{</span><span class="n">from_lammps_units</span><span class="p">(</span><span class="n">converted</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;kJ/mol&quot;</span><span class="p">)</span><span class="si">:</span><span class="s1">~.4</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="n">lammps_unit_system</span> <span class="o">=</span> <span class="s1">&#39;metal&#39;</span>
+    <span class="n">converted</span> <span class="o">=</span> <span class="n">to_lammps_units</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1"> in metal units is </span><span class="si">{</span><span class="n">converted</span><span class="si">:</span><span class="s1">.4</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">converted</span><span class="si">:</span><span class="s1">.4</span><span class="si">}</span><span class="s1"> --&gt; </span><span class="si">{</span><span class="n">from_lammps_units</span><span class="p">(</span><span class="n">converted</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;kJ/mol&quot;</span><span class="p">)</span><span class="si">:</span><span class="s1">~.4</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+  
+
+<p>
+<div class="row">
+  <div class="column_left">
+    <a href="https://molssi.org/" target="_blank" title="Go to MolSSI in a new tab">
+      <img src="/_images/MolSSI.jpg" alt="The MolSSI" style="border:0;">
+    </a>
+  </div>
+  <div class="column">
+    &copy; Copyright 2020, the Molecular Sciences Software Institute,
+    which receives funding from the National Science Foundation under award ACI-1547580
+  </div>
+  <div class="column_right">
+    <a href="https://nsf.gov/" target="_blank" title="Go to the NSF in a new tab">
+      <img src="/_images/NSF_4-Color_bitmap_Logo.png" alt="The NSF" style="border:0;">
+    </a>
+  </div>
+</div>
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

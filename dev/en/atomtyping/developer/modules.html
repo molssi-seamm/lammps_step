@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lammps_step &mdash; SEAMM LAMMPS Plug-in 2021.2.11+18.g260ca78 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="lammps_step package" href="lammps_step.html" />
+    <link rel="prev" title="Usage" href="usage.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> SEAMM LAMMPS Plug-in
+          </a>
+              <div class="version">
+                2021.2.11+18.g260ca78
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../user/index.html">User Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">lammps_step</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html">lammps_step package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html">Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../history.html">History</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://molssi-seamm.github.io">Main SEAMM documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SEAMM LAMMPS Plug-in</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Developer Documentation</a></li>
+      <li class="breadcrumb-item active">lammps_step</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/developer/modules.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="lammps-step">
+<h1>lammps_step<a class="headerlink" href="#lammps-step" title="Permalink to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="lammps_step.html">lammps_step package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.custom">lammps_step.custom module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.custom.Custom"><code class="docutils literal notranslate"><span class="pre">Custom</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.custom.Custom.get_input"><code class="docutils literal notranslate"><span class="pre">Custom.get_input()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.custom_step">lammps_step.custom_step module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.custom_step.CustomStep"><code class="docutils literal notranslate"><span class="pre">CustomStep</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.custom_step.CustomStep.create_node"><code class="docutils literal notranslate"><span class="pre">CustomStep.create_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.custom_step.CustomStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">CustomStep.create_tk_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.custom_step.CustomStep.description"><code class="docutils literal notranslate"><span class="pre">CustomStep.description()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.custom_step.CustomStep.my_description"><code class="docutils literal notranslate"><span class="pre">CustomStep.my_description</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.energy">lammps_step.energy module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.energy.Energy"><code class="docutils literal notranslate"><span class="pre">Energy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.energy.Energy.analyze"><code class="docutils literal notranslate"><span class="pre">Energy.analyze()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.energy.Energy.description_text"><code class="docutils literal notranslate"><span class="pre">Energy.description_text()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.energy.Energy.get_input"><code class="docutils literal notranslate"><span class="pre">Energy.get_input()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.energy.Energy.git_revision"><code class="docutils literal notranslate"><span class="pre">Energy.git_revision</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.energy.Energy.header"><code class="docutils literal notranslate"><span class="pre">Energy.header</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.energy.Energy.version"><code class="docutils literal notranslate"><span class="pre">Energy.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.energy_parameters">lammps_step.energy_parameters module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.energy_parameters.EnergyParameters"><code class="docutils literal notranslate"><span class="pre">EnergyParameters</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.energy_parameters.EnergyParameters.parameters"><code class="docutils literal notranslate"><span class="pre">EnergyParameters.parameters</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.energy_step">lammps_step.energy_step module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.energy_step.EnergyStep"><code class="docutils literal notranslate"><span class="pre">EnergyStep</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.energy_step.EnergyStep.create_node"><code class="docutils literal notranslate"><span class="pre">EnergyStep.create_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.energy_step.EnergyStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">EnergyStep.create_tk_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.energy_step.EnergyStep.description"><code class="docutils literal notranslate"><span class="pre">EnergyStep.description()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.energy_step.EnergyStep.my_description"><code class="docutils literal notranslate"><span class="pre">EnergyStep.my_description</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.initialization">lammps_step.initialization module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.initialization.Initialization"><code class="docutils literal notranslate"><span class="pre">Initialization</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.initialization.Initialization.OpenKIM_energy_expression"><code class="docutils literal notranslate"><span class="pre">Initialization.OpenKIM_energy_expression()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.initialization.Initialization.OpenKIM_input"><code class="docutils literal notranslate"><span class="pre">Initialization.OpenKIM_input()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.initialization.Initialization.description_text"><code class="docutils literal notranslate"><span class="pre">Initialization.description_text()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.initialization.Initialization.get_input"><code class="docutils literal notranslate"><span class="pre">Initialization.get_input()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.initialization.Initialization.git_revision"><code class="docutils literal notranslate"><span class="pre">Initialization.git_revision</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.initialization.Initialization.header"><code class="docutils literal notranslate"><span class="pre">Initialization.header</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.initialization.Initialization.kspace_methods"><code class="docutils literal notranslate"><span class="pre">Initialization.kspace_methods</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.initialization.Initialization.version"><code class="docutils literal notranslate"><span class="pre">Initialization.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.initialization_parameters">lammps_step.initialization_parameters module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.initialization_parameters.InitializationParameters"><code class="docutils literal notranslate"><span class="pre">InitializationParameters</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.initialization_parameters.InitializationParameters.parameters"><code class="docutils literal notranslate"><span class="pre">InitializationParameters.parameters</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.initialization_step">lammps_step.initialization_step module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.initialization_step.InitializationStep"><code class="docutils literal notranslate"><span class="pre">InitializationStep</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.initialization_step.InitializationStep.create_node"><code class="docutils literal notranslate"><span class="pre">InitializationStep.create_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.initialization_step.InitializationStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">InitializationStep.create_tk_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.initialization_step.InitializationStep.description"><code class="docutils literal notranslate"><span class="pre">InitializationStep.description()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.initialization_step.InitializationStep.my_description"><code class="docutils literal notranslate"><span class="pre">InitializationStep.my_description</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.lammps">lammps_step.lammps module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS"><code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.analyze"><code class="docutils literal notranslate"><span class="pre">LAMMPS.analyze()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.analyze_trajectory"><code class="docutils literal notranslate"><span class="pre">LAMMPS.analyze_trajectory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.box_to_cell"><code class="docutils literal notranslate"><span class="pre">LAMMPS.box_to_cell()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.cell_to_box"><code class="docutils literal notranslate"><span class="pre">LAMMPS.cell_to_box()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.create_parser"><code class="docutils literal notranslate"><span class="pre">LAMMPS.create_parser()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.description_text"><code class="docutils literal notranslate"><span class="pre">LAMMPS.description_text()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.display_title"><code class="docutils literal notranslate"><span class="pre">LAMMPS.display_title</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.display_units"><code class="docutils literal notranslate"><span class="pre">LAMMPS.display_units</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.git_revision"><code class="docutils literal notranslate"><span class="pre">LAMMPS.git_revision</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.read_dump"><code class="docutils literal notranslate"><span class="pre">LAMMPS.read_dump()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.run"><code class="docutils literal notranslate"><span class="pre">LAMMPS.run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.set_id"><code class="docutils literal notranslate"><span class="pre">LAMMPS.set_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.shake_fix"><code class="docutils literal notranslate"><span class="pre">LAMMPS.shake_fix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.structure_data"><code class="docutils literal notranslate"><span class="pre">LAMMPS.structure_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.version"><code class="docutils literal notranslate"><span class="pre">LAMMPS.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.lammps_step">lammps_step.lammps_step module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.lammps_step.LAMMPSStep"><code class="docutils literal notranslate"><span class="pre">LAMMPSStep</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps_step.LAMMPSStep.create_node"><code class="docutils literal notranslate"><span class="pre">LAMMPSStep.create_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps_step.LAMMPSStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">LAMMPSStep.create_tk_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps_step.LAMMPSStep.description"><code class="docutils literal notranslate"><span class="pre">LAMMPSStep.description()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps_step.LAMMPSStep.my_description"><code class="docutils literal notranslate"><span class="pre">LAMMPSStep.my_description</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.lammps_units">lammps_step.lammps_units module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.lammps_units.from_lammps_units"><code class="docutils literal notranslate"><span class="pre">from_lammps_units()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.lammps_units.get_lammps_unit_system"><code class="docutils literal notranslate"><span class="pre">get_lammps_unit_system()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.lammps_units.set_lammps_unit_system"><code class="docutils literal notranslate"><span class="pre">set_lammps_unit_system()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.lammps_units.to_lammps_units"><code class="docutils literal notranslate"><span class="pre">to_lammps_units()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.minimization">lammps_step.minimization module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.minimization.Minimization"><code class="docutils literal notranslate"><span class="pre">Minimization</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.minimization.Minimization.description_text"><code class="docutils literal notranslate"><span class="pre">Minimization.description_text()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.minimization.Minimization.get_input"><code class="docutils literal notranslate"><span class="pre">Minimization.get_input()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.minimization_step">lammps_step.minimization_step module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.minimization_step.MinimizationStep"><code class="docutils literal notranslate"><span class="pre">MinimizationStep</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.minimization_step.MinimizationStep.create_node"><code class="docutils literal notranslate"><span class="pre">MinimizationStep.create_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.minimization_step.MinimizationStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">MinimizationStep.create_tk_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.minimization_step.MinimizationStep.description"><code class="docutils literal notranslate"><span class="pre">MinimizationStep.description()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.minimization_step.MinimizationStep.my_description"><code class="docutils literal notranslate"><span class="pre">MinimizationStep.my_description</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.npt">lammps_step.npt module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.npt.NPT"><code class="docutils literal notranslate"><span class="pre">NPT</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.npt.NPT.describe"><code class="docutils literal notranslate"><span class="pre">NPT.describe()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.npt.NPT.description_text"><code class="docutils literal notranslate"><span class="pre">NPT.description_text()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.npt.NPT.get_input"><code class="docutils literal notranslate"><span class="pre">NPT.get_input()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.npt.NPT.get_pressure_text"><code class="docutils literal notranslate"><span class="pre">NPT.get_pressure_text()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.npt.NPT.methods"><code class="docutils literal notranslate"><span class="pre">NPT.methods</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.npt_parameters">lammps_step.npt_parameters module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.npt_parameters.NPT_Parameters"><code class="docutils literal notranslate"><span class="pre">NPT_Parameters</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.npt_parameters.NPT_Parameters.parameters"><code class="docutils literal notranslate"><span class="pre">NPT_Parameters.parameters</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.npt_step">lammps_step.npt_step module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.npt_step.NPTStep"><code class="docutils literal notranslate"><span class="pre">NPTStep</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.npt_step.NPTStep.create_node"><code class="docutils literal notranslate"><span class="pre">NPTStep.create_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.npt_step.NPTStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">NPTStep.create_tk_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.npt_step.NPTStep.description"><code class="docutils literal notranslate"><span class="pre">NPTStep.description()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.npt_step.NPTStep.my_description"><code class="docutils literal notranslate"><span class="pre">NPTStep.my_description</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.nve">lammps_step.nve module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.nve.NVE"><code class="docutils literal notranslate"><span class="pre">NVE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nve.NVE.description_text"><code class="docutils literal notranslate"><span class="pre">NVE.description_text()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nve.NVE.get_input"><code class="docutils literal notranslate"><span class="pre">NVE.get_input()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nve.NVE.timestep"><code class="docutils literal notranslate"><span class="pre">NVE.timestep()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.nve_parameters">lammps_step.nve_parameters module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.nve_parameters.NVE_Parameters"><code class="docutils literal notranslate"><span class="pre">NVE_Parameters</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nve_parameters.NVE_Parameters.parameters"><code class="docutils literal notranslate"><span class="pre">NVE_Parameters.parameters</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.nve_step">lammps_step.nve_step module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.nve_step.NVEStep"><code class="docutils literal notranslate"><span class="pre">NVEStep</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nve_step.NVEStep.create_node"><code class="docutils literal notranslate"><span class="pre">NVEStep.create_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nve_step.NVEStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">NVEStep.create_tk_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nve_step.NVEStep.description"><code class="docutils literal notranslate"><span class="pre">NVEStep.description()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nve_step.NVEStep.my_description"><code class="docutils literal notranslate"><span class="pre">NVEStep.my_description</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.nvt">lammps_step.nvt module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.nvt.NVT"><code class="docutils literal notranslate"><span class="pre">NVT</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nvt.NVT.describe"><code class="docutils literal notranslate"><span class="pre">NVT.describe()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nvt.NVT.description_text"><code class="docutils literal notranslate"><span class="pre">NVT.description_text()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nvt.NVT.get_input"><code class="docutils literal notranslate"><span class="pre">NVT.get_input()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.nvt_parameters">lammps_step.nvt_parameters module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.nvt_parameters.NVT_Parameters"><code class="docutils literal notranslate"><span class="pre">NVT_Parameters</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nvt_parameters.NVT_Parameters.parameters"><code class="docutils literal notranslate"><span class="pre">NVT_Parameters.parameters</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.nvt_step">lammps_step.nvt_step module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.nvt_step.NVTStep"><code class="docutils literal notranslate"><span class="pre">NVTStep</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nvt_step.NVTStep.create_node"><code class="docutils literal notranslate"><span class="pre">NVTStep.create_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nvt_step.NVTStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">NVTStep.create_tk_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nvt_step.NVTStep.description"><code class="docutils literal notranslate"><span class="pre">NVTStep.description()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nvt_step.NVTStep.my_description"><code class="docutils literal notranslate"><span class="pre">NVTStep.my_description</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.tk_custom">lammps_step.tk_custom module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.tk_custom.TkCustom"><code class="docutils literal notranslate"><span class="pre">TkCustom</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_custom.TkCustom.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkCustom.create_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_custom.TkCustom.handle_dialog"><code class="docutils literal notranslate"><span class="pre">TkCustom.handle_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_custom.TkCustom.right_click"><code class="docutils literal notranslate"><span class="pre">TkCustom.right_click()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.tk_energy">lammps_step.tk_energy module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.tk_energy.TkEnergy"><code class="docutils literal notranslate"><span class="pre">TkEnergy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_energy.TkEnergy.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkEnergy.create_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_energy.TkEnergy.right_click"><code class="docutils literal notranslate"><span class="pre">TkEnergy.right_click()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.tk_initialization">lammps_step.tk_initialization module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.tk_initialization.TkInitialization"><code class="docutils literal notranslate"><span class="pre">TkInitialization</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_initialization.TkInitialization.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkInitialization.create_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_initialization.TkInitialization.kspace_method_cb"><code class="docutils literal notranslate"><span class="pre">TkInitialization.kspace_method_cb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_initialization.TkInitialization.right_click"><code class="docutils literal notranslate"><span class="pre">TkInitialization.right_click()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.tk_lammps">lammps_step.tk_lammps module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.tk_lammps.TkLAMMPS"><code class="docutils literal notranslate"><span class="pre">TkLAMMPS</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_lammps.TkLAMMPS.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkLAMMPS.create_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_lammps.TkLAMMPS.from_flowchart"><code class="docutils literal notranslate"><span class="pre">TkLAMMPS.from_flowchart()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_lammps.TkLAMMPS.node_class"><code class="docutils literal notranslate"><span class="pre">TkLAMMPS.node_class</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_lammps.TkLAMMPS.right_click"><code class="docutils literal notranslate"><span class="pre">TkLAMMPS.right_click()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_lammps.TkLAMMPS.update_flowchart"><code class="docutils literal notranslate"><span class="pre">TkLAMMPS.update_flowchart()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.tk_minimization">lammps_step.tk_minimization module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.tk_minimization.TkMinimization"><code class="docutils literal notranslate"><span class="pre">TkMinimization</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_minimization.TkMinimization.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkMinimization.create_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_minimization.TkMinimization.handle_dialog"><code class="docutils literal notranslate"><span class="pre">TkMinimization.handle_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_minimization.TkMinimization.reset_dialog"><code class="docutils literal notranslate"><span class="pre">TkMinimization.reset_dialog()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.tk_npt">lammps_step.tk_npt module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.tk_npt.TkNPT"><code class="docutils literal notranslate"><span class="pre">TkNPT</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_npt.TkNPT.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkNPT.create_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_npt.TkNPT.handle_dialog"><code class="docutils literal notranslate"><span class="pre">TkNPT.handle_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_npt.TkNPT.reset_dialog"><code class="docutils literal notranslate"><span class="pre">TkNPT.reset_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_npt.TkNPT.reset_pressure_frame"><code class="docutils literal notranslate"><span class="pre">TkNPT.reset_pressure_frame()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_npt.TkNPT.reset_stress_frame"><code class="docutils literal notranslate"><span class="pre">TkNPT.reset_stress_frame()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.tk_nve">lammps_step.tk_nve module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.tk_nve.TkNVE"><code class="docutils literal notranslate"><span class="pre">TkNVE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_nve.TkNVE.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkNVE.create_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_nve.TkNVE.handle_dialog"><code class="docutils literal notranslate"><span class="pre">TkNVE.handle_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_nve.TkNVE.reset_control_frame"><code class="docutils literal notranslate"><span class="pre">TkNVE.reset_control_frame()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_nve.TkNVE.reset_dialog"><code class="docutils literal notranslate"><span class="pre">TkNVE.reset_dialog()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.tk_nvt">lammps_step.tk_nvt module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.tk_nvt.TkNVT"><code class="docutils literal notranslate"><span class="pre">TkNVT</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_nvt.TkNVT.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkNVT.create_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_nvt.TkNVT.handle_dialog"><code class="docutils literal notranslate"><span class="pre">TkNVT.handle_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_nvt.TkNVT.reset_dialog"><code class="docutils literal notranslate"><span class="pre">TkNVT.reset_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_nvt.TkNVT.reset_temperature_frame"><code class="docutils literal notranslate"><span class="pre">TkNVT.reset_temperature_frame()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.tk_velocities">lammps_step.tk_velocities module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.tk_velocities.TkVelocities"><code class="docutils literal notranslate"><span class="pre">TkVelocities</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_velocities.TkVelocities.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkVelocities.create_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_velocities.TkVelocities.reset_dialog"><code class="docutils literal notranslate"><span class="pre">TkVelocities.reset_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_velocities.TkVelocities.right_click"><code class="docutils literal notranslate"><span class="pre">TkVelocities.right_click()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.velocities">lammps_step.velocities module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.velocities.Velocities"><code class="docutils literal notranslate"><span class="pre">Velocities</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.velocities.Velocities.description_text"><code class="docutils literal notranslate"><span class="pre">Velocities.description_text()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.velocities.Velocities.get_input"><code class="docutils literal notranslate"><span class="pre">Velocities.get_input()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.velocities.Velocities.git_revision"><code class="docutils literal notranslate"><span class="pre">Velocities.git_revision</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.velocities.Velocities.header"><code class="docutils literal notranslate"><span class="pre">Velocities.header</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.velocities.Velocities.version"><code class="docutils literal notranslate"><span class="pre">Velocities.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.velocities_parameters">lammps_step.velocities_parameters module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.velocities_parameters.VelocitiesParameters"><code class="docutils literal notranslate"><span class="pre">VelocitiesParameters</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.velocities_parameters.VelocitiesParameters.parameters"><code class="docutils literal notranslate"><span class="pre">VelocitiesParameters.parameters</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.velocities_step">lammps_step.velocities_step module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.velocities_step.VelocitiesStep"><code class="docutils literal notranslate"><span class="pre">VelocitiesStep</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.velocities_step.VelocitiesStep.create_node"><code class="docutils literal notranslate"><span class="pre">VelocitiesStep.create_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.velocities_step.VelocitiesStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">VelocitiesStep.create_tk_node()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.velocities_step.VelocitiesStep.description"><code class="docutils literal notranslate"><span class="pre">VelocitiesStep.description()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.velocities_step.VelocitiesStep.my_description"><code class="docutils literal notranslate"><span class="pre">VelocitiesStep.my_description</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="usage.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="lammps_step.html" class="btn btn-neutral float-right" title="lammps_step package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+  
+
+<p>
+<div class="row">
+  <div class="column_left">
+    <a href="https://molssi.org/" target="_blank" title="Go to MolSSI in a new tab">
+      <img src="/_images/MolSSI.jpg" alt="The MolSSI" style="border:0;">
+    </a>
+  </div>
+  <div class="column">
+    &copy; Copyright 2020, the Molecular Sciences Software Institute,
+    which receives funding from the National Science Foundation under award ACI-1547580
+  </div>
+  <div class="column_right">
+    <a href="https://nsf.gov/" target="_blank" title="Go to the NSF in a new tab">
+      <img src="/_images/NSF_4-Color_bitmap_Logo.png" alt="The NSF" style="border:0;">
+    </a>
+  </div>
+</div>
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

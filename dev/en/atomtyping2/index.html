@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SEAMM LAMMPS Plug-in &mdash; SEAMM LAMMPS Plug-in 2021.2.11+20.g863fbc7 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="User Documentation" href="user/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="#" class="icon icon-home"> SEAMM LAMMPS Plug-in
+          </a>
+              <div class="version">
+                2021.2.11+20.g863fbc7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="user/index.html">User Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developer/index.html">Developer Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://molssi-seamm.github.io">Main SEAMM documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">SEAMM LAMMPS Plug-in</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">SEAMM LAMMPS Plug-in</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <a class="reference external image-reference" href="https://github.com/molssi-seamm/lammps_step/pulls"><img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr-raw/molssi-seamm/lammps_step" /></a>
+<a class="reference external image-reference" href="https://github.com/molssi-seamm/lammps_step/actions"><img alt="Build Status" src="https://github.com/molssi-seamm/lammps_step/workflows/CI/badge.svg" /></a>
+<a class="reference external image-reference" href="https://codecov.io/gh/molssi-seamm/lammps_step"><img alt="Code Coverage" src="https://codecov.io/gh/molssi-seamm/lammps_step/branch/master/graph/badge.svg" /></a>
+<a class="reference external image-reference" href="https://lgtm.com/projects/g/molssi-seamm/lammps_step/context:python"><img alt="Code Quality" src="https://img.shields.io/lgtm/grade/python/g/molssi-seamm/lammps_step.svg?logo=lgtm&amp;logoWidth=18" /></a>
+<a class="reference external image-reference" href="https://molssi-seamm.github.io/lammps_step/index.html"><img alt="Documentation Status" src="https://github.com/molssi-seamm/lammps_step/workflows/Documentation/badge.svg" /></a>
+<a class="reference external image-reference" href="https://pyup.io/repos/github/molssi-seamm/lammps_step/"><img alt="Updates for Dependencies" src="https://pyup.io/repos/github/molssi-seamm/lammps_step/shield.svg" /></a>
+<a class="reference external image-reference" href="https://pypi.python.org/pypi/lammps_step"><img alt="PyPi VERSION" src="https://img.shields.io/pypi/v/lammps_step.svg" /></a>
+<section id="seamm-lammps-plug-in">
+<h1>SEAMM LAMMPS Plug-in<a class="headerlink" href="#seamm-lammps-plug-in" title="Permalink to this heading"></a></h1>
+<p>A SEAMM plug-in for LAMMPS, a forcefield-based molecular dynamics code.</p>
+<p>This plug-in provides a graphical user interface (GUI) for setting up
+complex simulations using LAMMPS. It uses a sub-flowchart that
+provides steps such as constant pressure and temperature (NPT)
+dynamics which give access to the functionality in LAMMPS in a more
+consistent and understandable way than the inscrutable fixes that
+LAMMPS uses.</p>
+<p>These sub-flowcharts mirror the main flowchart in form and function
+and can use the same variables such as temperature and pressure that
+are accessible anywhere in the flowcharts. This allows “programming” a
+LAMMPS workflow in the same familiar way that SEAMM uses to represent
+the overall workflow.</p>
+<ul class="simple">
+<li><p>Free software: BSD license</p></li>
+<li><p>Documentation: <a class="reference external" href="https://molssi-seamm/lammps_step/index.html">https://molssi-seamm/lammps_step/index.html</a></p></li>
+<li><p>Code: <a class="reference external" href="https://github.com/molssi-seamm/lammps_step">https://github.com/molssi-seamm/lammps_step</a></p></li>
+</ul>
+<section id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Use of any forcefield supported by the forcefield plug-in:</p>
+<ul>
+<li><p>PCFF</p></li>
+<li><p>OpenKIM: EAM, MEAM, LJ, ReaxFF</p></li>
+</ul>
+</li>
+<li><p>Molecular statics: minimization</p></li>
+<li><p>Molecular dynamics: NVE, NVT, and NPT with any of the approaches
+supported in LAMMPS</p></li>
+<li><p>Automatic statistical analysis of averages from MD</p>
+<ul>
+<li><p>Detection of equilibration</p></li>
+<li><p>Mean and standard error of the mean for the sampling after
+equilibration</p></li>
+<li><p>Autocorrelation function and time</p></li>
+<li><p>Statistical inefficiency</p></li>
+<li><p>Plotting of results in the Dashboard</p></li>
+</ul>
+</li>
+<li><p>Using property values to drive MD. Rather than running MD for a
+length of time, automatically run long enough to determine a set of
+properties within given error bars.</p></li>
+</ul>
+</section>
+<section id="acknowledgements">
+<h2>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this heading"></a></h2>
+<p>This package was created with <a class="reference external" href="https://github.com/audreyr/cookiecutter">Cookiecutter</a> and the <a class="reference external" href="https://github.com/molssi-seamm/cookiecutter-seamm-plugin">molssi-seamm/cookiecutter-seamm-plugin</a> project template.</p>
+<p>Developed by the Molecular Sciences Software Institute (<a class="reference external" href="https://www.molssi.org">MolSSI</a>),
+which receives funding from the <a class="reference external" href="https://www.nsf.gov">National Science Foundation</a> under
+award ACI-1547580</p>
+</section>
+<section id="development-team">
+<h2>Development Team<a class="headerlink" href="#development-team" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Paul Saxe &lt;<a class="reference external" href="mailto:psaxe&#37;&#52;&#48;molssi&#46;org">psaxe<span>&#64;</span>molssi<span>&#46;</span>org</a>&gt; (Lead)</p></li>
+<li><p>Eliseo Marin-Rimoldi &lt;<a class="reference external" href="mailto:meliseo&#37;&#52;&#48;molssi&#46;org">meliseo<span>&#64;</span>molssi<span>&#46;</span>org</a>&gt;</p></li>
+</ul>
+</section>
+</section>
+<section id="versions-of-this-documentation">
+<h1>Versions of this Documentation<a class="headerlink" href="#versions-of-this-documentation" title="Permalink to this heading"></a></h1>
+<iframe
+src="https://molssi-seamm.github.io/lammps_step/dev/versions.html"
+title="Documentation Versions"  style="border:none;">
+</iframe><div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="user/index.html" class="btn btn-neutral float-right" title="User Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+  
+
+<p>
+<div class="row">
+  <div class="column_left">
+    <a href="https://molssi.org/" target="_blank" title="Go to MolSSI in a new tab">
+      <img src="/_images/MolSSI.jpg" alt="The MolSSI" style="border:0;">
+    </a>
+  </div>
+  <div class="column">
+    &copy; Copyright 2020, the Molecular Sciences Software Institute,
+    which receives funding from the National Science Foundation under award ACI-1547580
+  </div>
+  <div class="column_right">
+    <a href="https://nsf.gov/" target="_blank" title="Go to the NSF in a new tab">
+      <img src="/_images/NSF_4-Color_bitmap_Logo.png" alt="The NSF" style="border:0;">
+    </a>
+  </div>
+</div>
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

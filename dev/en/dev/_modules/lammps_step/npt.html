@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lammps_step.npt &mdash; SEAMM LAMMPS Plug-in 2022.10.31+4.g1c55ce2 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/custom.css" type="text/css" />
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
+<!-- End Google Tag Manager -->
+
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PQXXTJ2"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+ 
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SEAMM LAMMPS Plug-in
+          </a>
+              <div class="version">
+                2022.10.31+4.g1c55ce2
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user/index.html">User Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../developer/index.html">Developer Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../history.html">History</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://molssi-seamm.github.io">Main SEAMM documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SEAMM LAMMPS Plug-in</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">lammps_step.npt</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for lammps_step.npt</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;NPT (canonical) dynamics in LAMMPS&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">lammps_step</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">seamm</span>
+<span class="kn">from</span> <span class="nn">seamm_util</span> <span class="kn">import</span> <span class="n">units_class</span>
+<span class="kn">import</span> <span class="nn">seamm_util.printing</span> <span class="k">as</span> <span class="nn">printing</span>
+<span class="kn">from</span> <span class="nn">seamm_util.printing</span> <span class="kn">import</span> <span class="n">FormattedText</span> <span class="k">as</span> <span class="n">__</span>
+<span class="kn">import</span> <span class="nn">random</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">job</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">()</span>
+<span class="n">printer</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">(</span><span class="s2">&quot;lammps&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="NPT"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.npt.NPT">[docs]</a><span class="k">class</span> <span class="nc">NPT</span><span class="p">(</span><span class="n">lammps_step</span><span class="o">.</span><span class="n">NVT</span><span class="p">):</span>
+
+    <span class="n">methods</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Nose-Hoover&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;documentation&quot;</span><span class="p">:</span> <span class="s2">&quot;https://lammps.sandia.gov/doc/fix_nh.html#fix-npt-command&quot;</span><span class="p">,</span>  <span class="c1"># noqa: E501</span>
+            <span class="s2">&quot;references&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Shinoda&quot;</span><span class="p">,</span> <span class="s2">&quot;Tuckerman&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;Berendsen&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;documentation&quot;</span><span class="p">:</span> <span class="s2">&quot;https://lammps.sandia.gov/doc/fix_press_berendsen.html&quot;</span><span class="p">,</span>  <span class="c1"># noqa: E501</span>
+            <span class="s2">&quot;references&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Berendsen&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flowchart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;NPT dynamics&quot;</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the node&quot;&quot;&quot;</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating NPT </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">flowchart</span><span class="o">=</span><span class="n">flowchart</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;NPT after super init, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;NPT dynamics step in LAMMPS&quot;</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;NPT.init() creating NPT_Parameters object&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calculation</span> <span class="o">=</span> <span class="s2">&quot;npt&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">NPT_Parameters</span><span class="p">()</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;NPT.init() completed&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NPT.description_text"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.npt.NPT.description_text">[docs]</a>    <span class="k">def</span> <span class="nf">description_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the text description of what this step will do.</span>
+<span class="sd">        The dictionary of control values is passed in as P so that</span>
+<span class="sd">        the code can test values, etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">P</span><span class="p">:</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values_to_dict</span><span class="p">()</span>
+
+        <span class="c1"># What will we do?</span>
+
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;T0&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;T1&quot;</span><span class="p">]:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{time}</span><span class="s2"> of canonical (NPT) dynamics at </span><span class="si">{T0}</span><span class="s2"> &quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;</span><span class="si">{time}</span><span class="s2"> of canonical (NPT) dynamics starting &quot;</span>
+                <span class="s2">&quot; at </span><span class="si">{T0}</span><span class="s2">, going to </span><span class="si">{T1}</span><span class="s2">, &quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Nose-Hoover&quot;</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;using a Nose-Hoover thermostat.&quot;</span>
+            <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Tchain&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;3&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Tloop&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;1&quot;</span><span class="p">:</span>
+                    <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
+                        <span class="s2">&quot; The thermostat will use a chain of </span><span class="si">{Tchain}</span><span class="s2"> &quot;</span>
+                        <span class="s2">&quot;thermostats with </span><span class="si">{Tloop}</span><span class="s2"> subcycles and a &quot;</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
+                        <span class="s2">&quot; The thermostat will use a chain of </span><span class="si">{Tchain}</span><span class="s2"> &quot;</span>
+                        <span class="s2">&quot;thermostats and a &quot;</span>
+                    <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Tloop&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;1&quot;</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot; The thermostat will use </span><span class="si">{Tloop}</span><span class="s2"> subcycles and a &quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot; The thermostat will use a &quot;</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;drag factor of </span><span class="si">{drag}</span><span class="s2">.&quot;</span>
+        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Berendsen&quot;</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;using a Berendsen thermostat with a damping time &quot;</span> <span class="s2">&quot;of </span><span class="si">{Tdamp}</span><span class="s2">&quot;</span>
+        <span class="k">elif</span> <span class="s2">&quot;csvr&quot;</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="s2">&quot;using a canonical sampling thermostat using velocity &quot;</span>
+                <span class="s2">&quot;rescaling (CSVR) with a damping time of </span><span class="si">{Tdamp}</span><span class="s2"> and &quot;</span>
+                <span class="s2">&quot;a </span><span class="si">{random_seed}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">&quot;csld&quot;</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="s2">&quot;using a canonical sampling thermostat using Langevin &quot;</span>
+                <span class="s2">&quot;dynamics (CSLD) with a damping time of </span><span class="si">{Tdamp}</span><span class="s2"> and &quot;</span>
+                <span class="s2">&quot;a </span><span class="si">{random_seed}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;velocity rescaling&quot;</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="s2">&quot;using velocity rescaling every </span><span class="si">{frequency}</span><span class="s2"> with a &quot;</span>
+                <span class="s2">&quot;temperature window of </span><span class="si">{window}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;fraction&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
+                    <span class="s2">&quot; The velocities will only be scaled a fraction &quot;</span>
+                    <span class="s2">&quot;(</span><span class="si">{fraction}</span><span class="s2">) of the amount needed to fully correct &quot;</span>
+                    <span class="s2">&quot;the temperature.&quot;</span>
+                <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Langevin&quot;</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="s2">&quot;using a Langevin thermostat with a damping time &quot;</span>
+                <span class="s2">&quot;of </span><span class="si">{Tdamp}</span><span class="s2"> and a </span><span class="si">{random_seed}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;using the thermostat given by </span><span class="si">{thermostat}</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">P</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="NPT.describe"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.npt.NPT.describe">[docs]</a>    <span class="k">def</span> <span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">json_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write out information about what this node will do</span>
+<span class="sd">        If json_dict is passed in, add information to that dictionary</span>
+<span class="sd">        so that it can be written out by the controller as appropriate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Can&#39;t call super() because it will print too much</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">visited</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">job</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
+        <span class="n">next_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+
+        <span class="c1"># Local copies of variables in a dictionary</span>
+
+        <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values_to_dict</span><span class="p">()</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">description_text</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+        <span class="n">job</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="s2">&quot;    &quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">P</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">next_node</span></div>
+
+<div class="viewcode-block" id="NPT.get_input"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.npt.NPT.get_input">[docs]</a>    <span class="k">def</span> <span class="nf">get_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the input for an NPT dynamics run in LAMMPS&quot;&quot;&quot;</span>
+
+        <span class="n">keep_orthorhombic</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">current_values_to_dict</span><span class="p">(</span>
+            <span class="n">context</span><span class="o">=</span><span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">_data</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Fix variables with special cases</span>
+        <span class="n">timestep</span><span class="p">,</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestep</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;seed&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;random&quot;</span><span class="p">:</span>
+            <span class="c1"># Apparently the seed must be no larger than 900,000,000</span>
+            <span class="n">P</span><span class="p">[</span><span class="s2">&quot;seed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mi">899999999</span><span class="p">)</span>
+
+        <span class="c1"># Have to fix formatting for printing...</span>
+        <span class="n">PP</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">PP</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">units_class</span><span class="p">):</span>
+                <span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;{:~P}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description_text</span><span class="p">(</span><span class="n">PP</span><span class="p">),</span> <span class="o">**</span><span class="n">PP</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
+
+        <span class="n">time</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+        <span class="n">nsteps</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">time</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">)</span>
+
+        <span class="n">T0</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;T0&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;temperature&quot;</span><span class="p">)</span>
+        <span class="n">T1</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;T1&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;temperature&quot;</span><span class="p">)</span>
+        <span class="n">Tdamp</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;Tdamp&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+
+        <span class="n">barostat</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;barostat&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">barostat</span> <span class="o">==</span> <span class="s2">&quot;Berendsen&quot;</span><span class="p">:</span>
+            <span class="n">modulus</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;modulus&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Work out the pressure/stress part of the command</span>
+        <span class="n">ptext</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pressure_text</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">keep_orthorhombic</span><span class="p">)</span>
+
+        <span class="n">thermo_properties</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;time temp press etotal ke pe ebond &quot;</span>
+            <span class="s2">&quot;eangle edihed eimp evdwl etail ecoul elong&quot;</span>
+        <span class="p">)</span>
+        <span class="n">properties</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;v_time v_temp v_press v_density v_cella v_cellb &quot;</span>
+            <span class="s2">&quot;v_cellc v_etotal v_ke v_pe v_epair&quot;</span>
+        <span class="p">)</span>
+        <span class="n">title2</span> <span class="o">=</span> <span class="s2">&quot;tstep t T P density a b c Etot Eke Epe Epair&quot;</span>
+
+        <span class="c1"># and build the LAMMPS script</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;#     NPT dynamics&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;reset_timestep      0&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;timestep            </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">timestep</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;thermo_style        custom </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">thermo_properties</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;thermo              </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">nsteps</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)))</span>
+
+        <span class="n">nfixes</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Nose-Hoover&quot;</span><span class="p">:</span>
+            <span class="n">Tchain</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Tchain&quot;</span><span class="p">]</span>
+            <span class="n">Tloop</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Tloop&quot;</span><span class="p">]</span>
+            <span class="n">drag</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;drag&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">barostat</span> <span class="o">==</span> <span class="s2">&quot;Nose-Hoover&quot;</span><span class="p">:</span>
+                <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> all npt &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="s2">&quot;temp </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">Tdamp</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="s2">&quot;tchain </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Tchain</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="s2">&quot;tloop </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Tloop</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="s2">&quot;drag </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">drag</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="n">ptext</span>
+                <span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">citation</span> <span class="ow">in</span> <span class="n">NPT</span><span class="o">.</span><span class="n">methods</span><span class="p">[</span><span class="s2">&quot;Nose-Hoover&quot;</span><span class="p">][</span><span class="s2">&quot;references&quot;</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">references</span><span class="o">.</span><span class="n">cite</span><span class="p">(</span>
+                        <span class="n">raw</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_bibliography</span><span class="p">[</span><span class="n">citation</span><span class="p">],</span>
+                        <span class="n">alias</span><span class="o">=</span><span class="n">citation</span><span class="p">,</span>
+                        <span class="n">module</span><span class="o">=</span><span class="s2">&quot;lammps_step&quot;</span><span class="p">,</span>
+                        <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                        <span class="n">note</span><span class="o">=</span><span class="s2">&quot;Citation for NPT barostat.&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> all nvt &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="s2">&quot;temp </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">Tdamp</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="s2">&quot;tchain </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Tchain</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="s2">&quot;tloop </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Tloop</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="s2">&quot;drag </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">drag</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> all &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="s2">&quot;press/berendsen &quot;</span>
+                    <span class="o">+</span> <span class="n">ptext</span>
+                    <span class="o">+</span> <span class="s2">&quot; modulus </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">modulus</span><span class="p">)</span>
+                <span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">citation</span> <span class="ow">in</span> <span class="n">NPT</span><span class="o">.</span><span class="n">methods</span><span class="p">[</span><span class="s2">&quot;Berendsen&quot;</span><span class="p">][</span><span class="s2">&quot;references&quot;</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">references</span><span class="o">.</span><span class="n">cite</span><span class="p">(</span>
+                        <span class="n">raw</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_bibliography</span><span class="p">[</span><span class="n">citation</span><span class="p">],</span>
+                        <span class="n">alias</span><span class="o">=</span><span class="n">citation</span><span class="p">,</span>
+                        <span class="n">module</span><span class="o">=</span><span class="s2">&quot;lammps_step&quot;</span><span class="p">,</span>
+                        <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                        <span class="n">note</span><span class="o">=</span><span class="s2">&quot;Citation for NPT barostat.&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Berendsen&quot;</span><span class="p">:</span>
+            <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">&quot;all temp/berendsen &quot;</span>
+                <span class="o">+</span> <span class="s2">&quot; </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">Tdamp</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;all nve&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">&quot;csvr&quot;</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]:</span>
+            <span class="n">seed</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;seed&quot;</span><span class="p">]</span>
+            <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">&quot;all temp/csvr &quot;</span>
+                <span class="o">+</span> <span class="s2">&quot; </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">Tdamp</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;all nve&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">&quot;csld&quot;</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]:</span>
+            <span class="n">seed</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;seed&quot;</span><span class="p">]</span>
+            <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">&quot;all temp/csld &quot;</span>
+                <span class="o">+</span> <span class="s2">&quot; </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">Tdamp</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;all nve&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;velocity rescaling&quot;</span><span class="p">:</span>
+            <span class="n">frequency</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;frequency&quot;</span><span class="p">]</span>
+            <span class="n">nevery</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">nsteps</span> <span class="o">/</span> <span class="p">(</span><span class="n">frequency</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+            <span class="n">window</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;window&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;temperature&quot;</span><span class="p">)</span>
+            <span class="n">fraction</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;fraction&quot;</span><span class="p">]</span>
+            <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">&quot;all temp/rescale &quot;</span>
+                <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nevery</span><span class="p">,</span> <span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">fraction</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;all nve&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Langevin&quot;</span><span class="p">:</span>
+            <span class="n">seed</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;seed&quot;</span><span class="p">]</span>
+            <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">&quot;all langevin &quot;</span>
+                <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">Tdamp</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;all nve&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Don&#39;t recognize temperature control &quot;</span> <span class="o">+</span> <span class="s2">&quot;&#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">])</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Add the citation for the thermostat</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">thermostat_metadata</span>
+        <span class="k">for</span> <span class="n">citation</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">[</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]][</span><span class="s2">&quot;references&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">references</span><span class="o">.</span><span class="n">cite</span><span class="p">(</span>
+                <span class="n">raw</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_bibliography</span><span class="p">[</span><span class="n">citation</span><span class="p">],</span>
+                <span class="n">alias</span><span class="o">=</span><span class="n">citation</span><span class="p">,</span>
+                <span class="n">module</span><span class="o">=</span><span class="s2">&quot;lammps_step&quot;</span><span class="p">,</span>
+                <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">note</span><span class="o">=</span><span class="s2">&quot;Citation for thermostat.&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># summary output written 10 times during run so we can see progress</span>
+        <span class="n">nevery</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">nfreq</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nsteps</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="n">nrepeat</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nfreq</span> <span class="o">/</span> <span class="n">nevery</span><span class="p">)</span>
+        <span class="n">nfreq</span> <span class="o">=</span> <span class="n">nevery</span> <span class="o">*</span> <span class="n">nrepeat</span>
+        <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
+            <span class="o">+</span> <span class="s2">&quot;all ave/time &quot;</span>
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> off 2 title2 &#39;</span><span class="si">{}</span><span class="s2">&#39; file summary_npt_</span><span class="si">{}</span><span class="s2">.txt&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">nevery</span><span class="p">,</span>
+                <span class="n">nrepeat</span><span class="p">,</span>
+                <span class="n">nfreq</span><span class="p">,</span>
+                <span class="n">properties</span><span class="p">,</span>
+                <span class="n">title2</span><span class="p">,</span>
+                <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># instantaneous output written for averaging</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;sampling&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">__</span><span class="p">(</span>
+                    <span class="s2">&quot;The run will be </span><span class="si">{nsteps:n}</span><span class="s2"> steps of dynamics.&quot;</span><span class="p">,</span>
+                    <span class="n">nsteps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span>
+                    <span class="n">indent</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sampling</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;sampling&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+            <span class="n">nevery</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">sampling</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">)</span>
+            <span class="n">nfreq</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nsteps</span> <span class="o">/</span> <span class="n">nevery</span><span class="p">)</span>
+            <span class="n">nrepeat</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">nfreq</span> <span class="o">=</span> <span class="n">nevery</span> <span class="o">*</span> <span class="n">nrepeat</span>
+            <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">T0</span> <span class="o">==</span> <span class="n">T1</span><span class="p">:</span>
+                <span class="n">title1</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;!MolSSI trajectory 1.0 LAMMPS, NPT </span><span class="si">{}</span><span class="s2"> steps of </span><span class="si">{}</span><span class="s2"> fs, &quot;</span> <span class="s2">&quot;T=</span><span class="si">{}</span><span class="s2"> K&quot;</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">nsteps</span> <span class="o">/</span> <span class="n">nevery</span><span class="p">),</span> <span class="n">timestep</span> <span class="o">*</span> <span class="n">nevery</span><span class="p">,</span> <span class="n">T0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">title1</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;!MolSSI trajectory 1.0 LAMMPS, NPT </span><span class="si">{}</span><span class="s2"> steps of </span><span class="si">{}</span><span class="s2"> fs, &quot;</span> <span class="s2">&quot;T=</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> K&quot;</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">nsteps</span> <span class="o">/</span> <span class="n">nevery</span><span class="p">),</span> <span class="n">timestep</span> <span class="o">*</span> <span class="n">nevery</span><span class="p">,</span> <span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> all ave/time </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> off 2 &quot;</span>
+                    <span class="s2">&quot;title1 &#39;</span><span class="si">{}</span><span class="s2">&#39; title2 &#39;</span><span class="si">{}</span><span class="s2">&#39; file trajectory_npt_</span><span class="si">{}</span><span class="s2">.seamm_trj&quot;</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">nfixes</span><span class="p">,</span>
+                    <span class="n">nevery</span><span class="p">,</span>
+                    <span class="n">nrepeat</span><span class="p">,</span>
+                    <span class="n">nfreq</span><span class="p">,</span>
+                    <span class="n">properties</span><span class="p">,</span>
+                    <span class="n">title1</span><span class="p">,</span>
+                    <span class="n">title2</span><span class="p">,</span>
+                    <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">__</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;The run will be </span><span class="si">{nsteps:,d}</span><span class="s2"> steps of dynamics &quot;</span>
+                        <span class="s2">&quot;sampled every </span><span class="si">{nevery:n}</span><span class="s2"> steps.&quot;</span>
+                    <span class="p">),</span>
+                    <span class="n">nsteps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span>
+                    <span class="n">nevery</span><span class="o">=</span><span class="n">nevery</span><span class="p">,</span>
+                    <span class="n">indent</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">extras</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;shake&quot;</span> <span class="ow">in</span> <span class="n">extras</span><span class="p">:</span>
+            <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extras</span><span class="p">[</span><span class="s2">&quot;shake&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">))</span>
+
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;run                 </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nsteps</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">fix</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nfixes</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;unfix               </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fix</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lines</span></div>
+
+<div class="viewcode-block" id="NPT.get_pressure_text"><a class="viewcode-back" href="../../developer/lammps_step.html#lammps_step.npt.NPT.get_pressure_text">[docs]</a>    <span class="k">def</span> <span class="nf">get_pressure_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">keep_orthorhombic</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Work out and return the pressure/stress part of the</span>
+<span class="sd">        &#39;fix npt&#39; or &#39;fix berendsen&#39; in LAMMPS</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">system_type</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;system type&quot;</span><span class="p">]</span>
+        <span class="n">Panneal</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Panneal&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">system_type</span> <span class="o">==</span> <span class="s2">&quot;fluid&quot;</span><span class="p">:</span>
+            <span class="n">use_stress</span> <span class="o">=</span> <span class="s2">&quot;isotropic pressure&quot;</span>
+            <span class="n">couple</span> <span class="o">=</span> <span class="s2">&quot;x, y and z&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">use_stress</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;use_stress&quot;</span><span class="p">]</span>
+            <span class="n">couple</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;couple&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">use_stress</span> <span class="o">==</span> <span class="s2">&quot;isotropic pressure&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">couple</span> <span class="o">==</span> <span class="s2">&quot;x, y and z&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">keep_orthorhombic</span><span class="p">:</span>
+                    <span class="n">ptext</span> <span class="o">=</span> <span class="s2">&quot; iso </span><span class="si">{P0}</span><span class="s2"> </span><span class="si">{P1}</span><span class="s2"> </span><span class="si">{Pdamp}</span><span class="s2">&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">ptext</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="s2">&quot; couple xyz &quot;</span>
+                        <span class="s2">&quot;x </span><span class="si">{P0}</span><span class="s2"> </span><span class="si">{P1}</span><span class="s2"> </span><span class="si">{Pdamp}</span><span class="s2"> &quot;</span>
+                        <span class="s2">&quot;y </span><span class="si">{P0}</span><span class="s2"> </span><span class="si">{P1}</span><span class="s2"> </span><span class="si">{Pdamp}</span><span class="s2"> &quot;</span>
+                        <span class="s2">&quot;z </span><span class="si">{P0}</span><span class="s2"> </span><span class="si">{P1}</span><span class="s2"> </span><span class="si">{Pdamp}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_orthorhombic</span><span class="p">:</span>
+                    <span class="n">ptext</span> <span class="o">+=</span> <span class="p">(</span>
+                        <span class="s2">&quot; xy 0.0 0.0 </span><span class="si">{Pdamp}</span><span class="s2"> &quot;</span>
+                        <span class="s2">&quot;xz 0.0 0.0 </span><span class="si">{Pdamp}</span><span class="s2"> &quot;</span>
+                        <span class="s2">&quot;yz 0.0 0.0 </span><span class="si">{Pdamp}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">couple</span> <span class="o">==</span> <span class="s2">&quot;x and y&quot;</span><span class="p">:</span>
+                <span class="n">ptext</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot; couple xy &quot;</span>
+                    <span class="s2">&quot;x </span><span class="si">{P0}</span><span class="s2"> </span><span class="si">{P1}</span><span class="s2"> </span><span class="si">{Pdamp}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;y </span><span class="si">{P0}</span><span class="s2"> </span><span class="si">{P1}</span><span class="s2"> </span><span class="si">{Pdamp}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;z </span><span class="si">{P0}</span><span class="s2"> </span><span class="si">{P1}</span><span class="s2"> </span><span class="si">{Pdamp}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_orthorhombic</span><span class="p">:</span>
+                    <span class="n">ptext</span> <span class="o">+=</span> <span class="p">(</span>
+                        <span class="s2">&quot; xy 0.0 0.0 </span><span class="si">{Pdamp}</span><span class="s2"> &quot;</span>
+                        <span class="s2">&quot;xz 0.0 0.0 </span><span class="si">{Pdamp}</span><span class="s2"> &quot;</span>
+                        <span class="s2">&quot;yz 0.0 0.0 </span><span class="si">{Pdamp}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">couple</span> <span class="o">==</span> <span class="s2">&quot;x and z&quot;</span><span class="p">:</span>
+                <span class="n">ptext</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot; couple xz &quot;</span>
+                    <span class="s2">&quot;x </span><span class="si">{P0}</span><span class="s2"> </span><span class="si">{P1}</span><span class="s2"> </span><span class="si">{Pdamp}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;y </span><span class="si">{P0}</span><span class="s2"> </span><span class="si">{P1}</span><span class="s2"> </span><span class="si">{Pdamp}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;z </span><span class="si">{P0}</span><span class="s2"> </span><span class="si">{P1}</span><span class="s2"> </span><span class="si">{Pdamp}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_orthorhombic</span><span class="p">:</span>
+                    <span class="n">ptext</span> <span class="o">+=</span> <span class="p">(</span>
+                        <span class="s2">&quot; xy 0.0 0.0 </span><span class="si">{Pdamp}</span><span class="s2"> &quot;</span>
+                        <span class="s2">&quot;xz 0.0 0.0 </span><span class="si">{Pdamp}</span><span class="s2"> &quot;</span>
+                        <span class="s2">&quot;yz 0.0 0.0 </span><span class="si">{Pdamp}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">couple</span> <span class="o">==</span> <span class="s2">&quot;y and z&quot;</span><span class="p">:</span>
+                <span class="n">ptext</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot; couple yz &quot;</span>
+                    <span class="s2">&quot;x </span><span class="si">{P0}</span><span class="s2"> </span><span class="si">{P1}</span><span class="s2"> </span><span class="si">{Pdamp}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;y </span><span class="si">{P0}</span><span class="s2"> </span><span class="si">{P1}</span><span class="s2"> </span><span class="si">{Pdamp}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;z </span><span class="si">{P0}</span><span class="s2"> </span><span class="si">{P1}</span><span class="s2"> </span><span class="si">{Pdamp}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_orthorhombic</span><span class="p">:</span>
+                    <span class="n">ptext</span> <span class="o">+=</span> <span class="p">(</span>
+                        <span class="s2">&quot; xy 0.0 0.0 </span><span class="si">{Pdamp}</span><span class="s2"> &quot;</span>
+                        <span class="s2">&quot;xz 0.0 0.0 </span><span class="si">{Pdamp}</span><span class="s2"> &quot;</span>
+                        <span class="s2">&quot;yz 0.0 0.0 </span><span class="si">{Pdamp}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">keep_orthorhombic</span><span class="p">:</span>
+                    <span class="n">ptext</span> <span class="o">=</span> <span class="s2">&quot; aniso </span><span class="si">{P0}</span><span class="s2"> </span><span class="si">{P1}</span><span class="s2"> </span><span class="si">{Pdamp}</span><span class="s2">&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">ptext</span> <span class="o">=</span> <span class="s2">&quot; tri </span><span class="si">{P0}</span><span class="s2"> </span><span class="si">{P1}</span><span class="s2"> </span><span class="si">{Pdamp}</span><span class="s2">&quot;</span>
+
+            <span class="n">P0</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;Pinitial&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">Panneal</span><span class="p">:</span>
+                <span class="n">P1</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;Pfinal&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">P1</span> <span class="o">=</span> <span class="n">P0</span>
+            <span class="n">Pdamp</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;Pdamp&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+
+            <span class="n">ptext</span> <span class="o">=</span> <span class="n">ptext</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">P0</span><span class="o">=</span><span class="n">P0</span><span class="p">,</span> <span class="n">P1</span><span class="o">=</span><span class="n">P1</span><span class="p">,</span> <span class="n">Pdamp</span><span class="o">=</span><span class="n">Pdamp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">couple</span> <span class="o">==</span> <span class="s2">&quot;x, y and z&quot;</span><span class="p">:</span>
+                <span class="n">ptext</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot; couple = xyz &quot;</span>
+                    <span class="s2">&quot;x </span><span class="si">{Sxx0}</span><span class="s2"> </span><span class="si">{Sxx1}</span><span class="s2"> </span><span class="si">{Dxx}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;y </span><span class="si">{Sxx0}</span><span class="s2"> </span><span class="si">{Sxx1}</span><span class="s2"> </span><span class="si">{Dxx}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;z </span><span class="si">{Sxx0}</span><span class="s2"> </span><span class="si">{Sxx1}</span><span class="s2"> </span><span class="si">{Dxx}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">couple</span> <span class="o">==</span> <span class="s2">&quot;x and y&quot;</span><span class="p">:</span>
+                <span class="n">ptext</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot; couple = xy &quot;</span>
+                    <span class="s2">&quot;x </span><span class="si">{Sxx0}</span><span class="s2"> </span><span class="si">{Sxx1}</span><span class="s2"> </span><span class="si">{Dxx}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;y </span><span class="si">{Sxx0}</span><span class="s2"> </span><span class="si">{Sxx1}</span><span class="s2"> </span><span class="si">{Dxx}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;z </span><span class="si">{Szz0}</span><span class="s2"> </span><span class="si">{Szz1}</span><span class="s2"> </span><span class="si">{Dzz}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">couple</span> <span class="o">==</span> <span class="s2">&quot;x and z&quot;</span><span class="p">:</span>
+                <span class="n">ptext</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot; couple = xz &quot;</span>
+                    <span class="s2">&quot;x </span><span class="si">{Sxx0}</span><span class="s2"> </span><span class="si">{Sxx1}</span><span class="s2"> </span><span class="si">{Dxx}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;y </span><span class="si">{Syy0}</span><span class="s2"> </span><span class="si">{Syy1}</span><span class="s2"> </span><span class="si">{Dyy}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;z </span><span class="si">{Sxx0}</span><span class="s2"> </span><span class="si">{Sxx1}</span><span class="s2"> </span><span class="si">{Dxx}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">couple</span> <span class="o">==</span> <span class="s2">&quot;y and z&quot;</span><span class="p">:</span>
+                <span class="n">ptext</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot; couple = yz &quot;</span>
+                    <span class="s2">&quot;x </span><span class="si">{Sxx0}</span><span class="s2"> </span><span class="si">{Sxx1}</span><span class="s2"> </span><span class="si">{Dxx}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;y </span><span class="si">{Syy0}</span><span class="s2"> </span><span class="si">{Syy1}</span><span class="s2"> </span><span class="si">{Dyy}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;z </span><span class="si">{Syy0}</span><span class="s2"> </span><span class="si">{Syy1}</span><span class="s2"> </span><span class="si">{Dyy}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># elif couple == &#39;none&#39;:</span>
+                <span class="n">ptext</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot; couple = none &quot;</span>
+                    <span class="s2">&quot;x </span><span class="si">{Sxx0}</span><span class="s2"> </span><span class="si">{Sxx1}</span><span class="s2"> </span><span class="si">{Dxx}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;y </span><span class="si">{Syy0}</span><span class="s2"> </span><span class="si">{Syy1}</span><span class="s2"> </span><span class="si">{Dyy}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;z </span><span class="si">{Szz0}</span><span class="s2"> </span><span class="si">{Szz1}</span><span class="s2"> </span><span class="si">{Dzz}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_orthorhombic</span><span class="p">:</span>
+                <span class="n">ptext</span> <span class="o">+=</span> <span class="p">(</span>
+                    <span class="s2">&quot; xy </span><span class="si">{Sxy0}</span><span class="s2"> </span><span class="si">{Sxy1}</span><span class="s2"> </span><span class="si">{Dxy}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;xz </span><span class="si">{Sxz0}</span><span class="s2"> </span><span class="si">{Sxz1}</span><span class="s2"> </span><span class="si">{Dxz}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;yz </span><span class="si">{Syz0}</span><span class="s2"> </span><span class="si">{Syz1}</span><span class="s2"> </span><span class="si">{Dyz}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+            <span class="n">Tmp</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Sxx0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Sxx,initial&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span>
+            <span class="p">)</span>
+            <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Syy0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Syy,initial&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span>
+            <span class="p">)</span>
+            <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Szz0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Szz,initial&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">Panneal</span><span class="p">:</span>
+                <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Sxx1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                    <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Sxx,final&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span>
+                <span class="p">)</span>
+                <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Syy1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                    <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Syy,final&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span>
+                <span class="p">)</span>
+                <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Szz1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                    <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Szz,final&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Sxx1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Sxx0&quot;</span><span class="p">]</span>
+                <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Syy1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Syy0&quot;</span><span class="p">]</span>
+                <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Szz1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Szz0&quot;</span><span class="p">]</span>
+            <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Dxx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;Sxx damp&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span><span class="p">)</span>
+            <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Dyy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;Syy damp&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span><span class="p">)</span>
+            <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Dzz&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;Szz damp&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_orthorhombic</span><span class="p">:</span>
+                <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Sxy0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                    <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Sxy,initial&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span>
+                <span class="p">)</span>
+                <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Sxz0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                    <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Sxz,initial&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span>
+                <span class="p">)</span>
+                <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Syz0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                    <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Syz,initial&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">Panneal</span><span class="p">:</span>
+                    <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Sxy1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                        <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Sxy,final&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span>
+                    <span class="p">)</span>
+                    <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Sxz1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                        <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Sxz,final&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span>
+                    <span class="p">)</span>
+                    <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Syz1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                        <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Syz,final&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Sxy1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Sxy0&quot;</span><span class="p">]</span>
+                    <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Sxz1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Sxz0&quot;</span><span class="p">]</span>
+                    <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Syz1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Syz0&quot;</span><span class="p">]</span>
+                <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Dxy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                    <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Sxy damp&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span>
+                <span class="p">)</span>
+                <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Dxz&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                    <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Sxz damp&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span>
+                <span class="p">)</span>
+                <span class="n">Tmp</span><span class="p">[</span><span class="s2">&quot;Dyz&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                    <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Syz damp&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span>
+                <span class="p">)</span>
+
+            <span class="n">ptext</span> <span class="o">=</span> <span class="n">ptext</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">Tmp</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ptext</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+  
+
+<p>
+<div class="row">
+  <div class="column_left">
+    <a href="https://molssi.org/" target="_blank" title="Go to MolSSI in a new tab">
+      <img src="/_images/MolSSI.jpg" alt="The MolSSI" style="border:0;">
+    </a>
+  </div>
+  <div class="column">
+    &copy; Copyright 2020, the Molecular Sciences Software Institute,
+    which receives funding from the National Science Foundation under award ACI-1547580
+  </div>
+  <div class="column_right">
+    <a href="https://nsf.gov/" target="_blank" title="Go to the NSF in a new tab">
+      <img src="/_images/NSF_4-Color_bitmap_Logo.png" alt="The NSF" style="border:0;">
+    </a>
+  </div>
+</div>
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
