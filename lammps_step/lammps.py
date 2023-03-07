@@ -833,15 +833,26 @@ class LAMMPS(seamm.Node):
         lines.append("")
 
         if "charges" in eex:
-            for i, xyz_index, q in zip(
-                range(1, eex["n_atoms"] + 1), eex["atoms"], eex["charges"]
-            ):
-                x, y, z, index = xyz_index
-                # The '1' is molecule ID ... should correct at some point!
-                lines.append(
-                    f"{i:6d}      1 {index:6d} {q:6.3f} {x:12.7f} {y:12.7f} "
-                    f"{z:12.7f}"
-                )
+            if "molecule" in eex:
+                for i, mol, xyz_index, q in zip(
+                    range(1, eex["n_atoms"] + 1),
+                    eex["molecule"],
+                    eex["atoms"],
+                    eex["charges"],
+                ):
+                    x, y, z, index = xyz_index
+                    lines.append(
+                        f"{i:6d} {mol + 1:6d} {index:6d} {q:6.3f} {x:12.7f} {y:12.7f} "
+                        f"{z:12.7f}"
+                    )
+            else:
+                for i, xyz_index, q in zip(
+                    range(1, eex["n_atoms"] + 1), eex["atoms"], eex["charges"]
+                ):
+                    x, y, z, index = xyz_index
+                    lines.append(
+                        f"{i:6d} {index:6d} {q:6.3f} {x:12.7f} {y:12.7f} {z:12.7f}"
+                    )
         else:
             for i, xyz_index in enumerate(eex["atoms"]):
                 x, y, z, index = xyz_index
