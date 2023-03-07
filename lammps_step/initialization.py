@@ -494,7 +494,15 @@ class Initialization(seamm.Node):
         lines.append("newton              on")
         lines.append("")
         potential = self.get_variable("_OpenKIM_Potential")
-        lines.append(f"kim_init            {potential} metal " "unit_conversion_mode")
+        if "reax" in potential.lower():
+            lines.append("atom_style          charge")
+            lines.append(
+                f"kim                 init {potential} real unit_conversion_mode"
+            )
+        else:
+            lines.append(
+                f"kim                 init {potential} metal unit_conversion_mode"
+            )
         lines.append("")
         periodicity = configuration.periodicity
         if periodicity == 0:
@@ -511,7 +519,7 @@ class Initialization(seamm.Node):
         lines.append("")
         lines.append("read_data           structure.dat")
         lines.append("")
-        lines.append(f'kim_interactions    {" ".join(eex["atom types"])}')
+        lines.append(f'kim                 interactions {" ".join(eex["atom types"])}')
 
         # Set up standard variables
         for variable in thermo_variables:
@@ -558,7 +566,15 @@ class Initialization(seamm.Node):
             x, y, z = xyz
             result.append((x, y, z, index))
 
-        eex["n_atoms"] = len(result)
+        eex["n_atoms"] = n_atoms = len(result)
         eex["n_atom_types"] = len(atom_types)
+
+        # For ReaxFF we need charges
+        potential = self.get_variable("_OpenKIM_Potential")
+        if "reax" in potential.lower():
+            if "charge" in atoms:
+                eex["charges"] = atoms.get_column_data["charges"]
+            else:
+                eex["charges"] = [0.0] * n_atoms
 
         return eex

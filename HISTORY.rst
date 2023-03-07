@@ -1,6 +1,10 @@
 =======
 History
 =======
+2023.4.6 -- Better forcefield handling.
+   * Added correct molecule numbers for valence forcefields.
+   * Correctly handle ReaxFF from OpenKim
+   * Updated for some minor changes in OpenKim
 
 2023.2.6 -- Added handling of OPLS-AA forcefield
    * Added handling of the OPLS-AA forcefield
