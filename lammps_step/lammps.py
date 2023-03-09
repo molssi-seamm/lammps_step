@@ -2,6 +2,7 @@
 
 """A node or step for LAMMPS in a flowchart"""
 
+from contextlib import contextmanager
 import copy
 import glob
 import logging
@@ -31,11 +32,43 @@ import seamm_util
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
 
-from pymbar import timeseries
+# from pymbar import timeseries
 
 logger = logging.getLogger("lammps")
 job = printing.getPrinter()
 printer = printing.getPrinter("lammps")
+
+
+# Temporarily used here to stop pymbar's annoying warning.
+@contextmanager
+def logging_disabled(highest_level=logging.CRITICAL):
+    """
+    A context manager that will prevent any logging messages
+    triggered during the body from being processed.
+
+    :param highest_level: the maximum logging level in use.
+      This would only need to be changed if a custom level greater than CRITICAL
+      is defined.
+
+    From Simon Weber https://gist.github.com/simon-weber/7853144
+    """
+    # two kind-of hacks here:
+    #    * can't get the highest logging level in effect => delegate to the user
+    #    * can't get the current module-level override => use an undocumented
+    #       (but non-private!) interface
+
+    previous_level = logging.root.manager.disable
+
+    logging.disable(highest_level)
+
+    try:
+        yield
+    finally:
+        logging.disable(previous_level)
+
+
+with logging_disabled(highest_level=logging.WARNING):
+    from pymbar import timeseries
 
 # Add LAMMPS's properties to the standard properties
 path = Path(pkg_resources.resource_filename(__name__, "data/"))
