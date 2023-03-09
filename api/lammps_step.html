@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2023.4.6 documentation</title>
+    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2023.4.9 documentation</title>
   
   
   
@@ -935,6 +935,21 @@ be used as is.</p>
 <dd><p>The semantic version of this module.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lammps_step.lammps.logging_disabled">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.lammps.</span></span><span class="sig-name descname"><span class="pre">logging_disabled</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">highest_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#logging_disabled"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.lammps.logging_disabled" title="Permalink to this definition">#</a></dt>
+<dd><p>A context manager that will prevent any logging messages
+triggered during the body from being processed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>highest_level</strong> – the maximum logging level in use.
+This would only need to be changed if a custom level greater than CRITICAL
+is defined.</p>
+</dd>
+</dl>
+<p>From Simon Weber <a class="reference external" href="https://gist.github.com/simon-weber/7853144">https://gist.github.com/simon-weber/7853144</a></p>
 </dd></dl>
 
 </section>
@@ -1931,6 +1946,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.version"><code class="docutils literal notranslate"><span class="pre">LAMMPS.version</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.logging_disabled"><code class="docutils literal notranslate"><span class="pre">logging_disabled()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.lammps_step">lammps_step.lammps_step module</a><ul class="visible nav section-nav flex-column">

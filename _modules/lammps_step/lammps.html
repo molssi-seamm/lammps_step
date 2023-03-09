@@ -8,7 +8,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2023.4.6 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2023.4.9 documentation</title>
   
   
   
@@ -483,6 +483,7 @@ document.write(`
 
 <span class="sd">&quot;&quot;&quot;A node or step for LAMMPS in a flowchart&quot;&quot;&quot;</span>
 
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">import</span> <span class="nn">logging</span>
@@ -512,11 +513,43 @@ document.write(`
 <span class="kn">import</span> <span class="nn">seamm_util.printing</span> <span class="k">as</span> <span class="nn">printing</span>
 <span class="kn">from</span> <span class="nn">seamm_util.printing</span> <span class="kn">import</span> <span class="n">FormattedText</span> <span class="k">as</span> <span class="n">__</span>
 
-<span class="kn">from</span> <span class="nn">pymbar</span> <span class="kn">import</span> <span class="n">timeseries</span>
+<span class="c1"># from pymbar import timeseries</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;lammps&quot;</span><span class="p">)</span>
 <span class="n">job</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">()</span>
 <span class="n">printer</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">(</span><span class="s2">&quot;lammps&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># Temporarily used here to stop pymbar&#39;s annoying warning.</span>
+<div class="viewcode-block" id="logging_disabled"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.logging_disabled">[docs]</a><span class="nd">@contextmanager</span>
+<span class="k">def</span> <span class="nf">logging_disabled</span><span class="p">(</span><span class="n">highest_level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A context manager that will prevent any logging messages</span>
+<span class="sd">    triggered during the body from being processed.</span>
+
+<span class="sd">    :param highest_level: the maximum logging level in use.</span>
+<span class="sd">      This would only need to be changed if a custom level greater than CRITICAL</span>
+<span class="sd">      is defined.</span>
+
+<span class="sd">    From Simon Weber https://gist.github.com/simon-weber/7853144</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># two kind-of hacks here:</span>
+    <span class="c1">#    * can&#39;t get the highest logging level in effect =&gt; delegate to the user</span>
+    <span class="c1">#    * can&#39;t get the current module-level override =&gt; use an undocumented</span>
+    <span class="c1">#       (but non-private!) interface</span>
+
+    <span class="n">previous_level</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">disable</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">disable</span><span class="p">(</span><span class="n">highest_level</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">disable</span><span class="p">(</span><span class="n">previous_level</span><span class="p">)</span></div>
+
+
+<span class="k">with</span> <span class="n">logging_disabled</span><span class="p">(</span><span class="n">highest_level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">pymbar</span> <span class="kn">import</span> <span class="n">timeseries</span>
 
 <span class="c1"># Add LAMMPS&#39;s properties to the standard properties</span>
 <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">pkg_resources</span><span class="o">.</span><span class="n">resource_filename</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;data/&quot;</span><span class="p">))</span>

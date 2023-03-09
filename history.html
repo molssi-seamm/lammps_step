@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2023.4.6 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2023.4.9 documentation</title>
   
   
   
@@ -484,6 +484,12 @@ document.write(`
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Permalink to this heading">#</a></h1>
 <dl class="simple">
+<dt>2023.4.9 – Hid the warning from pymbar</dt><dd><ul class="simple">
+<li><p>Importing pymbar timeseries writes a warning to the terminal about its proper
+usage. SEAMM already handles the warned case, so the message is simply confusing to
+users and hence this release hides it.</p></li>
+</ul>
+</dd>
 <dt>2023.4.6 – Better forcefield handling.</dt><dd><ul class="simple">
 <li><p>Added correct molecule numbers for valence forcefields.</p></li>
 <li><p>Correctly handle ReaxFF from OpenKim</p></li>
