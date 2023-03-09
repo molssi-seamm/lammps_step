@@ -1,6 +1,11 @@
 =======
 History
 =======
+2023.4.9 -- Hid the warning from pymbar
+   * Importing pymbar timeseries writes a warning to the terminal about its proper
+     usage. SEAMM already handles the warned case, so the message is simply confusing to
+     users and hence this release hides it.
+     
 2023.4.6 -- Better forcefield handling.
    * Added correct molecule numbers for valence forcefields.
    * Correctly handle ReaxFF from OpenKim
