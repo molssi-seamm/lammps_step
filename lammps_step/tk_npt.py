@@ -155,7 +155,10 @@ class TkNPT(lammps_step.TkNVT):
         row += 1
 
         if system_type == "fluid":
-            sw.align_labels((self["system type"], self["barostat"], self["Panneal"]))
+            sw.align_labels(
+                (self["system type"], self["barostat"], self["Panneal"]),
+                sticky=tk.E,
+            )
         else:
             self["use_stress"].grid(row=row, column=0, sticky=tk.W)
             row += 1
@@ -170,7 +173,8 @@ class TkNPT(lammps_step.TkNVT):
                     self["Panneal"],
                     self["use_stress"],
                     self["couple"],
-                )
+                ),
+                sticky=tk.E,
             )
 
         self["stress_frame"].grid(row=row, column=0, sticky=tk.W)
@@ -180,7 +184,7 @@ class TkNPT(lammps_step.TkNVT):
             self["nreset"].grid(row=row, column=0, sticky=tk.W)
             row += 1
             self["mtk"].grid(row=row, column=0, sticky=tk.W)
-            sw.align_labels((self["nreset"], self["mtk"]))
+            sw.align_labels((self["nreset"], self["mtk"]), sticky=tk.E)
         else:
             self["modulus"].grid(row=row, column=0, sticky=tk.W)
 
@@ -722,7 +726,7 @@ class TkNPT(lammps_step.TkNVT):
                 self["Pdamp"].grid(row=row, column=0, sticky=tk.W)
                 widgets.append(self["Pdamp"])
                 row += 1
-            sw.align_labels(widgets)
+            sw.align_labels(widgets, sticky=tk.E)
 
     def handle_dialog(self, result):
         """Handle when the user clicks a button on the dialog,
