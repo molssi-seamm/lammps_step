@@ -15,16 +15,24 @@ printer = printing.getPrinter("lammps")
 
 
 class NVE(lammps_step.Energy):
-    def __init__(self, flowchart=None, title="NVE dynamics", extension=None):
+    def __init__(
+        self,
+        flowchart=None,
+        title="NVE dynamics",
+        extension=None,
+        logger=logger,
+    ):
         """Initialize the node"""
 
         logger.debug("Creating NVE {}".format(self))
 
-        super().__init__(flowchart=flowchart, title=title, extension=extension)
-
-        self.description = "NVE dynamics step in LAMMPS"
-
-        logger.debug("NVE.init() creating NVE_Parameters object")
+        super().__init__(
+            flowchart=flowchart,
+            title=title,
+            extension=extension,
+            logger=logger,
+        )
+        self.logger.debug("NVE.init() creating NVE_Parameters object")
 
         self._calculation = "nve"
         self._model = None
@@ -112,7 +120,7 @@ class NVE(lammps_step.Energy):
             )
         else:
             sampling = lammps_step.to_lammps_units(P["sampling"], quantity="time")
-            nevery = round(sampling / timestep)
+            nevery = max(1, round(sampling / timestep))
             nfreq = int(nsteps / nevery)
             nrepeat = 1
             nfreq = nevery * nrepeat
@@ -160,7 +168,11 @@ class NVE(lammps_step.Energy):
             lines.append("unfix               {}".format(fix))
         lines.append("")
 
-        return lines
+        return {
+            "script": lines,
+            "postscript": None,
+            "use python": False,
+        }
 
     def timestep(self, value):
         """Get the timestep in the correct units.

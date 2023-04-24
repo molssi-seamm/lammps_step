@@ -17,12 +17,13 @@ import shutil
 import string
 import sys
 import traceback
+import warnings
 
 import bibtexparser
-import numpy
+import numpy as np
 import pandas
 import psutil
-from scipy.stats import t as t_student
+from scipy import stats
 import statsmodels.tsa.stattools as stattools
 
 import lammps_step
@@ -70,6 +71,7 @@ def logging_disabled(highest_level=logging.CRITICAL):
 with logging_disabled(highest_level=logging.WARNING):
     from pymbar import timeseries
 
+
 # Add LAMMPS's properties to the standard properties
 path = Path(pkg_resources.resource_filename(__name__, "data/"))
 csv_file = path / "properties.csv"
@@ -105,6 +107,7 @@ class LAMMPS(seamm.Node):
         "T": "K",
         "P": "atm",
         "t": "fs",
+        "V": "Å^3",
         "density": "g/mL",
         "a": "Å",
         "b": "Å",
@@ -114,11 +117,20 @@ class LAMMPS(seamm.Node):
         "Epe": "kcal/mol",
         "Emol": "kcal/mol",
         "Epair": "kcal/mol",
+        "Jx": "W/m^2",
+        "Jy": "W/m^2",
+        "Jz": "W/m^2",
+        "Kappa_x": "W/K/m",
+        "Kappa_y": "W/K/m",
+        "Kappa_z": "W/K/m",
+        "Kappa": "W/K/m",
+        "u": "kcal/mol",
     }
     display_title = {
         "T": "Temperature",
         "P": "Pressure",
         "t": "Time",
+        "V": "Volume",
         "density": "Density",
         "a": "a lattice parameter",
         "b": "b lattice parameter",
@@ -128,6 +140,14 @@ class LAMMPS(seamm.Node):
         "Epe": "Potential Energy",
         "Emol": "Molecular Energy, Valence Terms",
         "Epair": "Pair (Nonbond) Energy",
+        "Jx": "heat flux in x",
+        "Jy": "heat flux in y",
+        "Jz": "heat flux in z",
+        "Kappa_x": "thermal conductivity in x",
+        "Kappa_y": "thermal conductivity in y",
+        "Kappa_z": "thermal conductivity in z",
+        "Kappa": "thermal conductivity",
+        "u": "atom PE",
     }
 
     def __init__(
@@ -190,7 +210,7 @@ class LAMMPS(seamm.Node):
             lz = c
             xy = xz = yz = 0.0
         else:
-            lx = 0
+            lx = a
             xy = b * cos(radians(gamma))
             xz = c * cos(radians(beta))
             ly = sqrt(b**2 - xy**2)
@@ -484,9 +504,7 @@ class LAMMPS(seamm.Node):
                                     accuracy = control_properties[prp]["accuracy"] / 100
                                     dof = v["n_sample"]
                                     mean = v["mean"]
-                                    ci = t_student.interval(
-                                        0.95, dof - 1, loc=0, scale=1
-                                    )
+                                    ci = stats.t.interval(0.95, dof - 1, loc=0, scale=1)
                                     interval = (ci[1] - ci[0]) * v["sem"]
                                     print(abs(interval / mean))
                                     if abs(interval / mean) < accuracy:
@@ -546,6 +564,7 @@ class LAMMPS(seamm.Node):
             new_input_data.append(
                 f"write_dump all custom  {dump} id " "xu yu zu modify flush yes sort id"
             )
+            new_input_data.append("")
 
             files["input"]["filename"] = input_file
             files["input"]["data"] += new_input_data
@@ -572,7 +591,15 @@ class LAMMPS(seamm.Node):
 
             self._trajectory = []
 
-        self.read_dump(os.path.join(self.directory, files["dump"]["filename"]))
+        if "dump" in files:
+            try:
+                self.read_dump(os.path.join(self.directory, files["dump"]["filename"]))
+            except Exception as e:
+                printer.normal("Warning: unable to read the LAMMPS dumpfile")
+                logger.warning(f"The was a problem reading the LAMMPS dumpfile: {e}")
+                logger.warning(traceback.format_exc())
+        else:
+            printer.normal("Warning: there is no 'dump' file from LAMMPS")
 
         printer.normal("")
 
@@ -605,59 +632,83 @@ class LAMMPS(seamm.Node):
             "*.log",
             "*.dat",
             "log.cite",
-        ]  # yapf: disable
+            "run_lammps",
+        ]
 
-        local = seamm.ExecLocal()
+        # Check for already having run
+        path = Path(self.directory) / "success.dat"
+        if path.exists():
+            run_lammps = False
+            result = {}
+            path = Path(self.directory) / "log.cite"
+            if path.exists():
+                result["log.cite"] = {
+                    "data": path.read_text(),
+                }
+            path = Path(self.directory) / "stdout.txt"
+            if path.exists():
+                result["stdout"] = path.read_text()
+            result["stderr"] = ""
+        else:
+            run_lammps = True
+            local = seamm.ExecLocal()
 
-        # Find the executables and if they exist.
-        lammps_path = Path(self.options["lammps_path"]).expanduser().resolve()
-        lmp_serial = lammps_path / self.options["lammps_serial"]
-        lmp_serial = lmp_serial.expanduser().resolve()
-        if not lmp_serial.exists():
-            lmp_serial = None
+            # Find the executables and if they exist.
+            lammps_path = Path(self.options["lammps_path"]).expanduser().resolve()
+            lmp_serial = lammps_path / self.options["lammps_serial"]
+            lmp_serial = lmp_serial.expanduser().resolve()
+            if not lmp_serial.exists():
+                lmp_serial = None
 
-        lmp_mpi = lammps_path / self.options["lammps_mpi"]
-        lmp_mpi = lmp_mpi.expanduser().resolve()
-        if lmp_mpi.exists():
-            mpiexec = lammps_path / self.options["mpiexec"]
-            mpiexec = mpiexec.expanduser().resolve()
-            if not mpiexec.exists():
-                # See if it is in the path
-                mpiexec = shutil.which(self.options["mpiexec"])
-                if mpiexec is None:
-                    lmp_mpi = None
+            lmp_mpi = lammps_path / self.options["lammps_mpi"]
+            lmp_mpi = lmp_mpi.expanduser().resolve()
+            if lmp_mpi.exists():
+                mpiexec = lammps_path / self.options["mpiexec"]
+                mpiexec = mpiexec.expanduser().resolve()
+                if not mpiexec.exists():
+                    # See if it is in the path
+                    mpiexec = shutil.which(self.options["mpiexec"])
+                    if mpiexec is None:
+                        lmp_mpi = None
+                    else:
+                        mpiexec = Path(mpiexec).expanduser().resolve()
+            else:
+                lmp_mpi = None
+
+            # Use the parallel executable if the serial does not exist, and vice
+            # versa
+            if "python script" in files:
+                python = lammps_path / "python"
+                if lmp_mpi is not None and (np > 1 or lmp_serial is None):
+                    cmd = [str(mpiexec), "-np", str(np), str(python), "run_lammps"]
                 else:
-                    mpiexec = Path(mpiexec).expanduser().resolve()
-        else:
-            lmp_mpi = None
+                    cmd = [str(python), "run_lammps"]
+            else:
+                if lmp_mpi is not None and (np > 1 or lmp_serial is None):
+                    cmd = [str(mpiexec), "-np", str(np), str(lmp_mpi)]
+                else:
+                    cmd = [str(lmp_serial)]
+                cmd.extend(["-in", files["input"]["filename"]])
 
-        # Use the parallel executable if the serial does not exist, and vice
-        # versa
-        if lmp_mpi is not None and (np > 1 or lmp_serial is None):
-            cmd = [str(mpiexec), "-np", str(np), str(lmp_mpi)]
-        else:
-            cmd = [str(lmp_serial)]
-        cmd.extend(["-in", files["input"]["filename"]])
+            result = local.run(
+                cmd=cmd,
+                files=tmpdict,
+                return_files=return_files,
+                in_situ=True,
+                directory=self.directory,
+            )
 
-        result = local.run(
-            cmd=cmd,
-            files=tmpdict,
-            return_files=return_files,
-            in_situ=True,
-            directory=self.directory,
-        )
+            if result is None:
+                self.logger.error("There was an error running LAMMPS")
+                return None
 
-        if result is None:
-            self.logger.error("There was an error running LAMMPS")
-            return None
+            self.logger.debug("\n" + pprint.pformat(result))
 
-        self.logger.debug("\n" + pprint.pformat(result))
+            self.logger.debug("stdout:\n" + result["stdout"])
 
-        self.logger.debug("stdout:\n" + result["stdout"])
-
-        f = os.path.join(self.directory, "stdout.txt")
-        with open(f, mode="w") as fd:
-            fd.write(result["stdout"])
+            f = os.path.join(self.directory, "stdout.txt")
+            with open(f, mode="w") as fd:
+                fd.write(result["stdout"])
 
         # Add the citations, getting the version from stdout and any citations
         if "log.cite" in result:
@@ -667,56 +718,57 @@ class LAMMPS(seamm.Node):
         else:
             self._add_lammps_citations(result["stdout"])
 
-        if result["stderr"] != "":
-            self.logger.warning("stderr:\n" + result["stderr"])
-            f = os.path.join(self.directory, "stderr.txt")
-            with open(f, mode="w") as fd:
-                fd.write(result["stderr"])
+        if run_lammps:
+            if result["stderr"] != "":
+                self.logger.warning("stderr:\n" + result["stderr"])
+                f = os.path.join(self.directory, "stderr.txt")
+                with open(f, mode="w") as fd:
+                    fd.write(result["stderr"])
 
-        for filename in result["files"]:
-            f = os.path.join(self.directory, filename)
-            mode = "wb" if type(result[filename]["data"]) is bytes else "w"
-            with open(f, mode=mode) as fd:
-                if result[filename]["data"] is not None:
-                    fd.write(result[filename]["data"])
-                else:
-                    fd.write(result[filename]["exception"])
+            for filename in result["files"]:
+                f = os.path.join(self.directory, filename)
+                mode = "wb" if type(result[filename]["data"]) is bytes else "w"
+                with open(f, mode=mode) as fd:
+                    if result[filename]["data"] is not None:
+                        fd.write(result[filename]["data"])
+                    else:
+                        fd.write(result[filename]["exception"])
 
         base = os.path.basename(files["input"]["filename"][0:-4])
-        restart_file = base + ".restart.*"
-        dump_file = base + ".dump.*"
-        filename = os.path.join(self.directory, restart_file)
-        restart_filenames = glob.glob(filename)
+        dump_file = base + ".dump.0"
+
+        # restart_file = base + ".restart.*"
+        # filename = os.path.join(self.directory, restart_file)
+        # restart_filenames = glob.glob(filename)
 
         # Probably the step didn't run
-        if len(restart_filenames) == 0:
-            raise FileNotFoundError(
-                "Lammps_step: could not find any file with the pattern %s" % (filename)
-            )
+        # if len(restart_filenames) == 0:
+        #     raise FileNotFoundError(
+        #         f"Lammps_step: could not find any file with the pattern {filename}"
+        #     )
 
-        run_lengths = []
+        # run_lengths = []
 
-        for f in restart_filenames:
-            try:
-                pre, ext = os.path.splitext(f)
-                ext = int(ext.strip("."))
-            except ValueError:
-                raise Exception("Lammps_step: could not extract run length from %s" % f)
-            run_lengths.append(ext)
+        # for f in restart_filenames:
+        #     try:
+        #         pre, ext = os.path.splitext(f)
+        #         ext = int(ext.strip("."))
+        #     except ValueError:
+        #         raise Exception(f"Lammps_step: could not extract run length from {f}")
+        #     run_lengths.append(ext)
 
-            last_snapshot = str(max(run_lengths))
+        #     last_snapshot = str(max(run_lengths))
 
-        restart_file = restart_file.replace("*", last_snapshot)
-        dump_file = dump_file.replace("*", last_snapshot)
-        files["restart"] = {}
-        files["restart"]["filename"] = restart_file
+        # restart_file = restart_file.replace("*", last_snapshot)
+        # files["restart"] = {}
+        # files["restart"]["filename"] = restart_file
+        # filename = os.path.join(self.directory, restart_file)
+        # with open(filename, mode="rb") as fd:
+        #     files["restart"]["data"] = fd.read()
+
         files["dump"] = {}
         files["dump"]["filename"] = dump_file
         files["dump"]["data"] = None
-
-        filename = os.path.join(self.directory, restart_file)
-        with open(filename, mode="rb") as fd:
-            files["restart"]["data"] = fd.read()
 
         files["input"] = {}
         files["input"]["filename"] = None
@@ -724,6 +776,11 @@ class LAMMPS(seamm.Node):
             node=self._initialization_node, extras={"read_data": False}
         )
         files["input"]["data"] = copy.deepcopy(initialization_header)
+
+        # Write a small file to say that LAMMPS ran successfully, so cancel
+        # skip if rerunning.
+        path = Path(self.directory) / "success.dat"
+        path.write_text("success")
 
         return files
 
@@ -736,40 +793,75 @@ class LAMMPS(seamm.Node):
         write_restart=False,
         extras=None,
     ):
+        python_script = None
+        postscript = None
         if isinstance(nodes, list) is False:
             node_ids = [nodes._id[1]]
-            new_input_data = self._get_node_input(node=nodes, extras=extras)
+            todo = self._get_node_input(node=nodes, extras=extras)
+            new_input_data = todo["script"]
+            if todo["postscript"] is not None:
+                postscript = todo["postscript"]
+            if todo["use python"] and "python script" in todo:
+                python_script = todo["python script"]
         else:
             node_ids = []
             new_input_data = []
             for n in nodes:
                 node_ids.append(n._id[1])
-                new_input_data += self._get_node_input(node=n, extras=extras)
+                todo = self._get_node_input(node=n, extras=extras)
+                new_input_data += todo["script"]
+                if todo["postscript"] is not None:
+                    postscript = todo["postscript"]
+                if todo["use python"] and "python script" in todo:
+                    python_script = todo["python script"]
 
         # base = "lammps_substep_%s_iter_%d" % ("_".join(node_ids), iteration)
         base = "lammps"
 
         input_file = base + ".dat"
-        restart = base + ".restart.*"
+        # restart = base + ".restart.*"
         dump = base + ".dump.*"
 
-        if read_restart:
-            new_input_data.insert(
-                0, "read_restart          %s" % (files["restart"]["filename"])
+        # if read_restart:
+        #     new_input_data.insert(
+        #         0, "read_restart          %s" % (files["restart"]["filename"])
+        #     )
+
+        # if write_restart:
+        #     new_input_data.append(f"write_restart          {restart}")
+
+        if postscript is None:
+            new_input_data.append("reset_timestep      0")
+            new_input_data.append("run                 0")
+            new_input_data.append(
+                f"write_dump          all custom  {dump} id xu yu zu "
+                "modify flush yes sort id"
             )
-
-        if write_restart:
-            new_input_data.append(f"write_restart          {restart}")
-
-        new_input_data.append(
-            f"write_dump all custom  {dump} id " "xu yu zu modify flush yes sort id"
-        )
+            new_input_data.append("")
 
         files["input"]["data"] += new_input_data
 
         files["input"]["filename"] = input_file
         files["input"]["data"] = "\n".join(files["input"]["data"])
         self.logger.debug(files["input"]["filename"] + ":\n" + files["input"]["data"])
+
+        if postscript is not None:
+            postscript.append("reset_timestep      0")
+            postscript.append("run                 0")
+            postscript.append(
+                f"write_dump          all custom  {dump} id xu yu zu "
+                "modify flush yes sort id"
+            )
+            postscript.append("")
+            files["postscript"] = {
+                "data": "\n".join(postscript),
+                "filename": "lammps_post.dat",
+            }
+        if python_script is not None:
+            files["python script"] = {
+                "data": python_script,
+                "filename": "run_lammps",
+            }
 
         return files
 
@@ -799,9 +891,6 @@ class LAMMPS(seamm.Node):
     def structure_data(self, eex, triclinic=False):
         """Create the LAMMPS structure file from the energy expression"""
         lines = []
-
-        # The terms in the forcefield, and for each a list of forms
-        terms = eex["terms"]
 
         lines.append("Structure file for LAMMPS generated by a MolSSI flowchart")
         lines.append("{:10d} atoms".format(eex["n_atoms"]))
@@ -890,8 +979,8 @@ class LAMMPS(seamm.Node):
             for i, xyz_index in enumerate(eex["atoms"]):
                 x, y, z, index = xyz_index
                 lines.append(f"{i+1:6d} {index:6d} {x:12.7f} {y:12.7f} {z:12.7f}")
-        lines.append("")
 
+        lines.append("")
         lines.append("Masses")
         lines.append("")
         self._data["masses"] = []
@@ -903,11 +992,14 @@ class LAMMPS(seamm.Node):
         # nonbonds
         if "nonbond parameters" in eex:
             lines.append("")
-            lines.append("Pair Coeffs")
+            if len(eex["nonbond parameters"]) > eex["n_atom_types"]:
+                lines.append("PairIJ Coeffs")
+            else:
+                lines.append("Pair Coeffs")
             lines.append("")
-            for i, parameters in zip(
-                range(1, eex["n_atom_types"] + 1), eex["nonbond parameters"]
-            ):
+            i = 1
+            j = 1
+            for parameters in eex["nonbond parameters"]:
                 form, values, types, parameters_type, real_types = parameters
                 if form == "nonbond(9-6)":
                     lines.append(
@@ -915,13 +1007,27 @@ class LAMMPS(seamm.Node):
                             i, values["eps"], values["rmin"], types[0], real_types[0]
                         )
                     )
-                else:
+                    i += 1
+                elif form == "nonbond(12-6)":
                     lines.append(
                         "{:6d} {} {} # {} --> {}".format(
                             i, values["eps"], values["sigma"], types[0], real_types[0]
                         )
                     )
-
+                    i += 1
+                elif form == "buckingham":
+                    line = "{:6d} {} {} {} {}".format(
+                        j, i, values["A"], values["rho"], values["C"]
+                    )
+                    line += (
+                        f" # {types[1]}-{types[0]} --> {real_types[1]}_{real_types[0]}"
+                    )
+                    lines.append(line)
+                    if j == i:
+                        i += 1
+                        j = 1
+                    else:
+                        j += 1
         # bonds
         if "n_bonds" in eex and eex["n_bonds"] > 0:
             lines.append("")
@@ -935,7 +1041,8 @@ class LAMMPS(seamm.Node):
             lines.append("Bond Coeffs")
             lines.append("")
 
-            use_hybrid = len(terms["bond"]) > 1
+            forms = set([v[0] for v in eex["bond parameters"]])
+            use_hybrid = len(forms) > 1
 
             for counter, parameters in zip(
                 range(1, eex["n_bond_types"] + 1), eex["bond parameters"]
@@ -970,8 +1077,9 @@ class LAMMPS(seamm.Node):
             lines.append("Angle Coeffs")
             lines.append("")
 
-            use_hybrid = len(terms["angle"]) > 1
             quartic_function = "class2" if "n_bond-bond_types" in eex else "quartic"
+            forms = set([v[0] for v in eex["angle parameters"]])
+            use_hybrid = len(forms) > 1
 
             for counter, parameters in zip(
                 range(1, eex["n_angle_types"] + 1), eex["angle parameters"]
@@ -1010,9 +1118,14 @@ class LAMMPS(seamm.Node):
                     form, values, types, parameters_type, real_types = parameters
                     angle_form = angles[0]
                     if angle_form == "quartic_angle":
+                        function = "class2" if use_hybrid else ""
                         lines.append(
-                            "{:6d} class2 {} {} {}".format(
-                                counter, values["K"], values["R10"], values["R20"]
+                            "{:6d} {} {} {} {}".format(
+                                counter,
+                                function,
+                                values["K"],
+                                values["R10"],
+                                values["R20"],
                             )
                             + " # {}-{}-{} --> {}-{}-{}".format(
                                 types[0],
@@ -1049,9 +1162,11 @@ class LAMMPS(seamm.Node):
                     form, values, types, parameters_type, real_types = parameters
                     angle_form = angles[0]
                     if angle_form == "quartic_angle":
+                        function = "class2" if use_hybrid else ""
                         lines.append(
-                            "{:6d} class2 {} {} {} {}".format(
+                            "{:6d} {} {} {} {} {}".format(
                                 counter,
+                                function,
                                 values["K12"],
                                 values["K23"],
                                 values["R10"],
@@ -1096,7 +1211,8 @@ class LAMMPS(seamm.Node):
             lines.append("Dihedral Coeffs")
             lines.append("")
 
-            use_hybrid = len(terms["torsion"]) > 1
+            forms = set([v[0] for v in eex["torsion parameters"]])
+            use_hybrid = len(forms) > 1
 
             for counter, parameters in zip(
                 range(1, eex["n_torsion_types"] + 1), eex["torsion parameters"]
@@ -1170,9 +1286,11 @@ class LAMMPS(seamm.Node):
                     form, values, types, parameters_type, real_types = parameters
                     torsion_form = torsions[0]
                     if torsion_form == "torsion_3":
+                        function = "class2" if use_hybrid else ""
                         lines.append(
-                            "{:6d} class2 {} {} {} {}".format(
+                            "{:6d} {} {} {} {} {}".format(
                                 counter,
+                                function,
                                 values["V1"],
                                 values["V2"],
                                 values["V3"],
@@ -1217,9 +1335,11 @@ class LAMMPS(seamm.Node):
                     form, values, types, parameters_type, real_types = parameters
                     torsion_form = torsions[0]
                     if torsion_form == "torsion_3":
+                        function = "class2" if use_hybrid else ""
                         lines.append(
-                            "{:6d} class2 {} {} {} {} {} {} {} {}".format(
+                            "{:6d} {} {} {} {} {} {} {} {} {}".format(
                                 counter,
+                                function,
                                 values["V1_L"],
                                 values["V2_L"],
                                 values["V3_L"],
@@ -1268,9 +1388,11 @@ class LAMMPS(seamm.Node):
                     form, values, types, parameters_type, real_types = parameters
                     torsion_form = torsions[0]
                     if torsion_form == "torsion_3":
+                        function = "class2" if use_hybrid else ""
                         lines.append(
-                            "{:6d} class2 {} {} {} {} {} {} {} {}".format(
+                            "{:6d} {} {} {} {} {} {} {} {} {}".format(
                                 counter,
+                                function,
                                 values["V1_L"],
                                 values["V2_L"],
                                 values["V3_L"],
@@ -1319,9 +1441,11 @@ class LAMMPS(seamm.Node):
                     form, values, types, parameters_type, real_types = parameters
                     torsion_form = torsions[0]
                     if torsion_form == "torsion_3":
+                        function = "class2" if use_hybrid else ""
                         lines.append(
-                            "{:6d} class2 {} {} {}".format(
+                            "{:6d} {} {} {} {}".format(
                                 counter,
+                                function,
                                 values["K"],
                                 values["Theta0_L"],
                                 values["Theta0_R"],
@@ -1365,9 +1489,14 @@ class LAMMPS(seamm.Node):
                     form, values, types, parameters_type, real_types = parameters
                     torsion_form = torsions[0]
                     if torsion_form == "torsion_3":
+                        function = "class2" if use_hybrid else ""
                         lines.append(
-                            "{:6d} class2 {} {} {}".format(
-                                counter, values["K"], values["R10"], values["R30"]
+                            "{:6d} {} {} {} {}".format(
+                                counter,
+                                function,
+                                values["K"],
+                                values["R10"],
+                                values["R30"],
                             )
                             + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
                                 types[0],
@@ -1484,6 +1613,7 @@ class LAMMPS(seamm.Node):
                     )
 
         lines.append("")
+        lines.append("")
         return lines
 
     def analyze(self, indent="", nodes=None, **kwargs):
@@ -1532,18 +1662,30 @@ class LAMMPS(seamm.Node):
 
                     control_properties = [prp[0] for prp in P["control_properties"]]
 
-                node_data = self.analyze_trajectory(
-                    filename, control_properties=control_properties
+                node_data, table = self.analyze_trajectory(
+                    filename, control_properties=control_properties, node=node
                 )
                 # Get just the values from the node data
                 values = {k: v["mean"] for k, v in node_data.items()}
-                node.analyze(data=values)
+                # And the other key values
+                for k, v in node_data.items():
+                    for key in ("stderr", "tau", "inefficiency", "n_samples"):
+                        if key in v:
+                            values[f"{k},{key}"] = v[key]
+
+                node.analyze(data=values, properties=node_data, table=table)
 
             ret[node._id[1]] = node_data
 
         return ret
 
-    def analyze_trajectory(self, filename, sampling_rate=20, control_properties=None):
+    def analyze_trajectory(
+        self,
+        filename,
+        sampling_rate=20,
+        control_properties=None,
+        node=None,
+    ):
         """Read a trajectory file and do the statistical analysis"""
 
         write_html = "html" in self.options and self.options["html"]
@@ -1552,11 +1694,21 @@ class LAMMPS(seamm.Node):
 
         results = {}
 
+        table = {
+            "Property": [],
+            "Value": [],
+            " ": [],
+            "StdErr": [],
+            "Units": [],
+            "convergence": [],
+            "tau": [],
+            "inefficiency": [],
+        }
+
         if isinstance(control_properties, list) and "t" not in control_properties:
             control_properties.append("t")
 
         # Process the trajectory data
-
         with open(filename, "r") as fd:
             file_data = pandas.read_csv(
                 fd,
@@ -1568,25 +1720,18 @@ class LAMMPS(seamm.Node):
             )
             self._trajectory.append(file_data.iloc[:-1])
 
-        dt_fs = file_data.index[1] - file_data.index[0]
-        dt = dt_fs
+        dt = lammps_step.from_lammps_units(
+            file_data.index[1] - file_data.index[0], "fs"
+        )
+        dt_fs = dt.m_as("fs")
         data = pandas.concat(self._trajectory)
         data = data.reset_index(drop=True)
-        data.index *= dt
+        data.index *= dt_fs
 
         self.logger.debug("Columns: {}".format(data.columns))
         self.logger.debug("  Types:\n{}".format(data.dtypes))
 
         printer.normal("       Analysis of " + os.path.basename(filename) + "\n")
-
-        printer.normal(
-            "                                             Std Error  "
-            "Time to\n"
-            "               Property           Value       of mean   "
-            "convergence     tau    inefficiency\n"
-            "          --------------------   ---------  ---------   "
-            "-----------  --------  ------------"
-        )
 
         # Work out the time step, rather than give the whole vector
         t = data.index
@@ -1595,26 +1740,46 @@ class LAMMPS(seamm.Node):
         divisor = 1
         if len_trj >= 4000000000:
             t_units = "ms"
-            divisor = 1000000000
         elif len_trj >= 4000000:
             t_units = "ns"
-            divisor = 1000000
         elif len_trj >= 4000:
             t_units = "ps"
-            divisor = 1000
-        dt /= divisor
-        t_max = float((len(t) - 1) * dt)
+        t_max = float((len(t) - 1) * dt.m_as(t_units))
 
         for column in data.columns:
+            if "Unnamed:" in column:
+                continue
+            meta_column = column.rstrip("0123456789")
+
+            if meta_column in LAMMPS.display_title:
+                meta_title = LAMMPS.display_title[meta_column]
+            elif column in LAMMPS.display_title:
+                meta_title = LAMMPS.display_title[column]
+            else:
+                meta_title = f"unknown: {column}"
+            if meta_column in LAMMPS.display_units:
+                meta_units = LAMMPS.display_units[meta_column]
+            elif column in LAMMPS.display_units:
+                meta_units = LAMMPS.display_units[column]
+            else:
+                meta_units = "???"
+
             have_warning = False
             have_acf_warning = False
-            y = data[column]
+            # Ignore first point, t=0, cause it might not be right.
+            y = data[column][1:]
 
             self.logger.info("Analyzing {}, nsamples = {}".format(column, len(y)))
 
             # compute indices of uncorrelated timeseries using pymbar
+            # Their algorithm is quadratic in length of Y unless you
+            # use 'nskip'. I set it so there are about 100 time origins, so
+            # the convergence time is accurate to about 1%.
             yy = y.to_numpy()
-            conv, inefficiency, Neff_max = timeseries.detect_equilibration(yy)
+            nskip = yy.size // 100 + 1
+            conv, inefficiency, Neff_max = timeseries.detect_equilibration(
+                yy, nskip=nskip
+            )
 
             self.logger.info(
                 "  converged in {} steps, inefficiency = {}, Neff_max = {}".format(
@@ -1622,17 +1787,16 @@ class LAMMPS(seamm.Node):
                 )
             )
 
-            if numpy.isnan(inefficiency) or numpy.isnan(Neff_max):
+            if np.isnan(inefficiency) or np.isnan(Neff_max):
                 # Apparently didn't converge!
-                printer.normal(
-                    __(
-                        "{column:>23s} did not converge to a stationary state",
-                        column=column,
-                        indent=7 * " ",
-                        wrap=False,
-                        dedent=False,
-                    )
-                )
+                table["Property"].append(column)
+                table["Value"].append("")
+                table[" "].append("")
+                table["StdErr"].append("")
+                table["Units"].append("")
+                table["convergence"].append("unconverged")
+                table["tau"].append("")
+                table["inefficiency"].append("")
 
                 have_acf = False
                 is_converged = False
@@ -1670,23 +1834,37 @@ class LAMMPS(seamm.Node):
                     acf_warning = "^"
                 else:
                     have_acf = True
-                    acf_warning = " "
+                    acf_warning = ""
                     nlags = 4 * int(round(inefficiency + 0.5))
+
                     if nlags > int(len(y_t_equil) / 2):
                         nlags = int(len(y_t_equil) / 2)
-                    acf, confidence = stattools.acf(
-                        y_t_equil,
-                        nlags=nlags,
-                        alpha=0.05,
-                        fft=nlags > 16,
-                        adjusted=False,
-                    )
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore", RuntimeWarning)
+                        acf, confidence = stattools.acf(
+                            y_t_equil,
+                            nlags=nlags,
+                            alpha=0.05,
+                            fft=True,
+                            adjusted=False,
+                        )
 
                 results[column] = {}
                 results[column]["mean"] = mean
-                results[column]["sem"] = sem
+                results[column]["stderr"] = sem
                 results[column]["n_sample"] = n_samples
                 results[column]["short_production"] = have_acf_warning
+                results[column]["tau"] = tau
+                results[column]["inefficiency"] = inefficiency
+                results[column]["timestep"] = dt_fs
+                results[column]["rootname"] = rootname
+                if have_acf:
+                    results[column]["acf"] = acf
+                    results[column]["acf_confidence"] = confidence
+
+                # Don't print or graph some properties, like heat flux
+                if column in ("Jx", "Jy", "Jz"):
+                    results[column]["values"] = data[column].to_numpy()
 
                 # Work out units on convergence time
                 conv_units = "fs"
@@ -1722,50 +1900,34 @@ class LAMMPS(seamm.Node):
 
                 results[column]["few_neff"] = have_warning
 
-                printer.normal(
-                    __(
-                        "{column:>23s} = {value:9.3f} ± {stderr:7.3f}{warn}"
-                        " {t0:8.2f} {conv_units} {tau:8.1f} {tau_units}{acf} "
-                        "{inefficiency:9.1f}",
-                        column=column,
-                        value=mean,
-                        stderr=sem,
-                        warn=warn,
-                        t0=t_conv,
-                        conv_units=conv_units,
-                        tau=t_tau,
-                        tau_units=tau_units,
-                        acf=acf_warning,
-                        inefficiency=inefficiency,
-                        indent=7 * " ",
-                        wrap=False,
-                        dedent=False,
-                    )
-                )
+                table["Property"].append(f"{column}{warn}")
+                table["Value"].append(f"{mean:.3f}")
+                table[" "].append("±")
+                table["StdErr"].append(f"{sem:.3f}")
+                table["Units"].append(meta_units)
+                table["convergence"].append(f"{t_conv:.2f} {conv_units}")
+                table["tau"].append(f"{t_tau:.1f} {tau_units}{acf_warning}")
+                table["inefficiency"].append(f"{inefficiency:.1f}")
 
             # Create graphs of the property
             figure = self.create_figure(
                 module_path=(self.__module__.split(".")[0], "seamm"),
                 template="line.graph_template",
-                title=LAMMPS.display_title[column],
+                title=meta_title,
             )
 
             # The autocorrelation function
             if have_acf:
                 plot_acf = figure.add_plot("acf")
 
-                dt_acf = float(dt_fs)
                 t_acf_units = "fs"
                 len_acf = (len(acf) - 1) * dt_fs
                 if len_acf >= 2000000000:
                     t_acf_units = "ms"
-                    dt_acf /= 1000000000
                 elif len_acf >= 2000000:
                     t_acf_units = "ns"
-                    dt_acf /= 1000000
                 elif len_acf >= 2000:
                     t_acf_units = "ps"
-                    dt_acf /= 1000
 
                 x_acf_axis = plot_acf.add_axis(
                     "x", label="Time ({})".format(t_acf_units)
@@ -1786,7 +1948,7 @@ class LAMMPS(seamm.Node):
                     y_axis=y_acf_axis,
                     name="fit",
                     x0=0,
-                    dx=dt_acf,
+                    dx=dt.m_as(t_acf_units),
                     xlabel="t",
                     xunits=t_acf_units,
                     y=fit,
@@ -1804,7 +1966,7 @@ class LAMMPS(seamm.Node):
                     t_acf.append(tmp)
                     yplus.append(upper)
                     yminus.append(lower)
-                    tmp += dt_acf
+                    tmp += dt.m_as(t_acf_units)
 
                 plot_acf.add_trace(
                     x_axis=x_acf_axis,
@@ -1815,8 +1977,7 @@ class LAMMPS(seamm.Node):
                     xunits=t_acf_units,
                     y=yplus + yminus[::-1],
                     ylabel="stderr",
-                    yunits=LAMMPS.display_units[column],
-                    showlegend="false",
+                    yunits=meta_units,
                     color="rgba(211,211,211,0.5)",
                     fill="toself",
                 )
@@ -1827,7 +1988,7 @@ class LAMMPS(seamm.Node):
                     y_axis=y_acf_axis,
                     name="acf",
                     x0=0,
-                    dx=dt_acf,
+                    dx=dt.m_as(t_acf_units),
                     xlabel="t",
                     xunits=t_acf_units,
                     y=list(acf),
@@ -1841,9 +2002,9 @@ class LAMMPS(seamm.Node):
 
             plot = figure.add_plot("trj")
 
-            ylabel = LAMMPS.display_title[column]
-            if LAMMPS.display_units[column] != "":
-                ylabel += " ({})".format(LAMMPS.display_units[column])
+            ylabel = meta_title
+            if meta_units != "":
+                ylabel += f" ({meta_units})"
 
             x_axis = plot.add_axis("x", label="Time ({})".format(t_units))
             y_axis = plot.add_axis("y", label=ylabel, anchor=x_axis)
@@ -1858,12 +2019,12 @@ class LAMMPS(seamm.Node):
                 y_axis=y_axis,
                 name=column,
                 x0=0,
-                dx=dt,
+                dx=dt.m_as(t_units),
                 xlabel="t",
                 xunits=t_units,
                 y=list(y),
                 ylabel=column,
-                yunits=LAMMPS.display_units[column],
+                yunits=meta_units,
                 color="#4dbd74",
             )
 
@@ -1879,8 +2040,7 @@ class LAMMPS(seamm.Node):
                     xunits=t_units,
                     y=[mean + sem, mean + sem, mean - sem, mean - sem],
                     ylabel="sem",
-                    yunits=LAMMPS.display_units[column],
-                    showlegend="false",
+                    yunits=meta_units,
                     color="rgba(211,211,211,0.5)",
                     fill="toself",
                 )
@@ -1895,7 +2055,7 @@ class LAMMPS(seamm.Node):
                     xunits=t_units,
                     y=[mean, mean],
                     ylabel="average",
-                    yunits=LAMMPS.display_units[column],
+                    yunits=meta_units,
                     color="black",
                 )
 
@@ -1903,33 +2063,18 @@ class LAMMPS(seamm.Node):
                 figure.grid_plots("trj - acf")
             else:
                 figure.grid_plots("trj")
-            figure.dump("{}_{}.graph".format(rootname, column))
+            if node is None:
+                path = Path(f"{rootname}_{column}.graph")
+            else:
+                node_path = Path(node.directory)
+                node_path.mkdir(parents=True, exist_ok=True)
+                path = node_path / f"{column}.graph"
+
+            figure.dump(path)
 
             if write_html:
                 figure.template = "line.html_template"
-                figure.dump("{}_{}.html".format(rootname, column))
-
-        if have_warning or have_acf_warning:
-            printer.normal("\n")
-        if have_warning:
-            printer.normal(
-                __(
-                    "          * this property has less than 100 independent "
-                    "samples, so may not be accurate.",
-                    wrap=False,
-                    dedent=False,
-                )
-            )
-
-        if have_acf_warning:
-            printer.normal(
-                __(
-                    "          ^ there are not enough samples after "
-                    "equilibration to plot the ACF.",
-                    wrap=False,
-                    dedent=False,
-                )
-            )
+                figure.dump(path.with_suffix(".html"))
 
         # Add citations for pymbar
         self.references.cite(
@@ -1954,7 +2099,7 @@ class LAMMPS(seamm.Node):
             note="The third citation for pymbar",
         )
 
-        return results
+        return results, table
 
     def shake_fix(self, P, eex):
         """Create the 'fix shake' line needed for handling waters and X-H.

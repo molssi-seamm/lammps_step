@@ -118,7 +118,7 @@ metadata["results"] = {
         "dimensionality": "scalar",
         "property": "density, stderr#LAMMPS#{model}",
         "type": "float",
-        "units": "K",
+        "units": "g/ml",
     },
     "density,tau": {
         "calculation": ["npt"],
@@ -150,7 +150,7 @@ metadata["results"] = {
         "dimensionality": "scalar",
         "property": "cell_a, stderr#LAMMPS#{model}",
         "type": "float",
-        "units": "K",
+        "units": "Å",
     },
     "a,tau": {
         "calculation": ["npt"],
@@ -182,7 +182,7 @@ metadata["results"] = {
         "dimensionality": "scalar",
         "property": "cell_b, stderr#LAMMPS#{model}",
         "type": "float",
-        "units": "K",
+        "units": "Å",
     },
     "b,tau": {
         "calculation": ["npt"],
@@ -214,7 +214,7 @@ metadata["results"] = {
         "dimensionality": "scalar",
         "property": "cell_c, stderr#LAMMPS#{model}",
         "type": "float",
-        "units": "K",
+        "units": "Å",
     },
     "c,tau": {
         "calculation": ["npt"],
@@ -254,7 +254,7 @@ metadata["results"] = {
         "dimensionality": "scalar",
         "property": "total energy, stderr#LAMMPS#{model}",
         "type": "float",
-        "units": "K",
+        "units": "kcal/mol",
     },
     "Etot,tau": {
         "calculation": [
@@ -302,7 +302,7 @@ metadata["results"] = {
         "dimensionality": "scalar",
         "property": "kinetic energy, stderr#LAMMPS#{model}",
         "type": "float",
-        "units": "K",
+        "units": "kcal/mol",
     },
     "Eke,tau": {
         "calculation": [
@@ -350,7 +350,7 @@ metadata["results"] = {
         "dimensionality": "scalar",
         "property": "potential energy, stderr#LAMMPS#{model}",
         "type": "float",
-        "units": "K",
+        "units": "kcal/mol",
     },
     "Epe,tau": {
         "calculation": [
@@ -396,7 +396,7 @@ metadata["results"] = {
         "description": "stderr of nonbond energy",
         "dimensionality": "scalar",
         "type": "float",
-        "units": "K",
+        "units": "kcal/mol",
     },
     "Epair,tau": {
         "calculation": [

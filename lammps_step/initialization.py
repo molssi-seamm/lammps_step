@@ -131,7 +131,7 @@ class Initialization(seamm.Node):
         if not P:
             P = self.parameters.values_to_dict()
 
-        text = "Initialize the calculation with a cutoff of {cutoff} Å"
+        text = "Initialize the calculation with a cutoff of {cutoff}"
         if P["shift_nonbond"]:
             text += ", shifting the nonbond energies to 0 at the cutoff"
         text += ". If the system is periodic"
@@ -202,6 +202,8 @@ class Initialization(seamm.Node):
         else:
             n_charged_atoms = 0
 
+        kspace_style = ""
+
         lines = []
         lines.append("")
         lines.append("#     initialization of LAMMPS")
@@ -268,13 +270,15 @@ class Initialization(seamm.Node):
                             )
             if mixing == "":
                 mixing = "geometric"
+        elif nonbond_term == "buckingham":
+            pair_style_base = "buck"
+            mixing = None
         else:
             raise RuntimeError("Can't handle nonbond term {} yet!".format(nonbond_term))
 
         shift = "yes" if P["shift_nonbond"] else "no"
         if P["kspace_method"] == "automatic":
             if periodicity == 3:
-                kspace_style = ""
                 if n_charged_atoms == 0:
                     pair_style = pair_style_base
                     string += (
@@ -313,11 +317,16 @@ class Initialization(seamm.Node):
                 lines.append(
                     "pair_style          {} {}".format(pair_style, P["cutoff"])
                 )
-                lines.append(
-                    "pair_modify         mix "
-                    + mixing
-                    + " tail {} shift {}".format(tail_correction, shift)
-                )
+                if mixing is None:
+                    lines.append(
+                        f"pair_modify         tail {tail_correction} shift {shift}"
+                    )
+                else:
+                    lines.append(
+                        "pair_modify         mix "
+                        + mixing
+                        + " tail {} shift {}".format(tail_correction, shift)
+                    )
                 if shift:
                     string += (
                         " The van der Waals terms will be shifted "
@@ -378,9 +387,10 @@ class Initialization(seamm.Node):
                 lines.append(
                     "pair_style          {} {}".format(pair_style, P["cutoff"])
                 )
-                lines.append(
-                    "pair_modify         mix " + mixing + " shift {}".format(shift)
-                )
+                if mixing is None:
+                    lines.append(f"pair_modify         shift {shift}")
+                else:
+                    lines.append(f"pair_modify         mix {mixing} shift {shift}")
                 if kspace_style != "":
                     lines.append("kspace_style        " + kspace_style.format(**P))
             self.description.append(__(string, indent=7 * " ", **P))
@@ -397,13 +407,16 @@ class Initialization(seamm.Node):
                 lines.append(
                     "pair_style          {} {}".format(pair_style, P["cutoff"])
                 )
-                lines.append(
-                    "pair_modify         mix "
-                    + mixing
-                    + " tail {} shift {}".format(tail_correction, shift)
-                )
-                if kspace_style != "":
-                    lines.append("kspace_style        " + kspace_style)
+                if mixing is None:
+                    lines.append(
+                        f"pair_modify         tail {tail_correction} shift {shift}"
+                    )
+                else:
+                    lines.append(
+                        "pair_modify         mix "
+                        + mixing
+                        + " tail {} shift {}".format(tail_correction, shift)
+                    )
             else:
                 if n_charged_atoms == 0:
                     pair_style = pair_style_base
@@ -412,53 +425,53 @@ class Initialization(seamm.Node):
                 lines.append(
                     "pair_style          {} {}".format(pair_style, P["cutoff"])
                 )
-                lines.append(
-                    "pair_modify         mix " + mixing + " shift {}".format(shift)
-                )
+                if mixing is None:
+                    lines.append(f"pair_modify         shift {shift}")
+                else:
+                    lines.append(f"pair_modify         mix {mixing} shift {shift}")
                 if "msm" in lammps_step.kspace_methods[P["kspace_method"]]:
                     kspace_style = lammps_step.kspace_methods[
                         P["kspace_method"]
                     ].format(**P)
-                    lines.append("kspace_style        " + kspace_style)
 
         if "bond" in terms and eex["n_bonds"] > 0:
-            if len(terms["bond"]) == 1:
-                bond_style = lammps_step.bond_style[terms["bond"][0]]
+            forms = set([v[0] for v in eex["bond parameters"]])
+            if len(forms) == 1:
+                bond_style = lammps_step.bond_style[[*forms][0]]
                 lines.append("bond_style          " + bond_style)
             else:
                 line = "bond_style          hybrid"
-                for term in terms["bond"]:
+                for term in forms:
                     line += " " + lammps_step.bond_style[term]
                 lines.append(line)
         if "angle" in terms and eex["n_angles"] > 0:
-            if len(terms["angle"]) == 1:
-                angle_style = lammps_step.angle_style[terms["angle"][0]]
+            forms = set([v[0] for v in eex["angle parameters"]])
+            if len(forms) == 1:
+                angle_style = lammps_step.angle_style[[*forms][0]]
                 lines.append("angle_style         " + angle_style)
             else:
                 line = "angle_style         hybrid"
-                for term in terms["angle"]:
+                for term in forms:
                     line += " " + lammps_step.angle_style[term]
                 lines.append(line)
         if "torsion" in terms and eex["n_torsions"] > 0:
-            if len(terms["torsion"]) == 1:
-                #  yapf: disable
-                dihedral_style = lammps_step.dihedral_style[
-                    terms["torsion"][0]
-                ]  # noqa: E501
-                #  yapf: enable
+            forms = set([v[0] for v in eex["torsion parameters"]])
+            if len(forms) == 1:
+                dihedral_style = lammps_step.dihedral_style[[*forms][0]]
                 lines.append("dihedral_style      " + dihedral_style)
             else:
                 line = "dihedral_style      hybrid"
-                for term in terms["torsion"]:
+                for term in forms:
                     line += " " + lammps_step.dihedral_style[term]
                 lines.append(line)
         if "out-of-plane" in terms and eex["n_oops"] > 0:
-            if len(terms["out-of-plane"]) == 1:
-                improper_style = lammps_step.improper_style[terms["out-of-plane"][0]]
+            forms = set([v[0] for v in eex["oop parameters"]])
+            if len(forms) == 1:
+                improper_style = lammps_step.improper_style[[*forms][0]]
                 lines.append("improper_style      " + improper_style)
             else:
                 line = "improper_style      hybrid"
-                for term in terms["out-of-plane"]:
+                for term in forms:
                     line += " " + lammps_step.improper_style[term]
                 lines.append(line)
 
@@ -471,6 +484,9 @@ class Initialization(seamm.Node):
 
         if extras is not None and "read_data" in extras and extras["read_data"] is True:
             lines.append("read_data           structure.dat")
+
+        if kspace_style != "":
+            lines.append("kspace_style        " + kspace_style)
 
         # Set up standard variables
         for variable in thermo_variables:

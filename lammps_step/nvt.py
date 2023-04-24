@@ -43,25 +43,36 @@ thermostat_metadata = {
 
 
 class NVT(lammps_step.NVE):
-    def __init__(self, flowchart=None, title="NVT dynamics", extension=None):
+    def __init__(
+        self,
+        flowchart=None,
+        title="NVT dynamics",
+        extension=None,
+        logger=logger,
+    ):
         """Initialize the node"""
 
         logger.debug("Creating NVT {}".format(self))
 
-        super().__init__(flowchart=flowchart, title=title, extension=extension)
+        super().__init__(
+            flowchart=flowchart,
+            title=title,
+            extension=extension,
+            logger=logger,
+        )
 
-        logger.debug("NVT after super init, {}".format(self))
+        self.logger.debug("NVT after super init, {}".format(self))
 
         self.description = "NVT dynamics step in LAMMPS"
 
-        logger.debug("NVT.init() creating NVT_Parameters object")
+        self.logger.debug("NVT.init() creating NVT_Parameters object")
 
         self._calculation = "nvt"
         self._model = None
         self._metadata = lammps_step.metadata
         self.parameters = lammps_step.NVT_Parameters()
 
-        logger.debug("NVT.init() completed")
+        self.logger.debug("NVT.init() completed")
 
     def description_text(self, P=None):
         """Return a short description of this step.
@@ -253,7 +264,7 @@ class NVT(lammps_step.NVE):
         elif P["thermostat"] == "velocity rescaling":
             frequency = lammps_step.to_lammps_units(P["frequency"], quantity="time")
 
-            nevery = round(nsteps / (frequency / timestep))
+            nevery = max(1, round(nsteps / (frequency / timestep)))
             window = lammps_step.to_lammps_units(P["window"], quantity="temperature")
             fraction = P["fraction"]
             nfixes += 1
@@ -320,7 +331,7 @@ class NVT(lammps_step.NVE):
             )
         else:
             sampling = lammps_step.to_lammps_units(P["sampling"], quantity="time")
-            nevery = round(sampling / timestep)
+            nevery = max(1, round(sampling / timestep))
             nrepeat = 1
             nfreq = nevery * nrepeat
             nfixes += 1
@@ -372,4 +383,8 @@ class NVT(lammps_step.NVE):
             lines.append("unfix               {}".format(fix))
         lines.append("")
 
-        return lines
+        return {
+            "script": lines,
+            "postscript": None,
+            "use python": False,
+        }

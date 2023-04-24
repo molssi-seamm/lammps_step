@@ -15,6 +15,7 @@ dependencies:
   - seamm
   - seamm-ff-util
   - statsmodels
+  - tabulate
 
   # Testing
   - black

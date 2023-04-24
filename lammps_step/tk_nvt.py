@@ -130,7 +130,7 @@ class TkNVT(lammps_step.TkNVE):
         self["thermostat"].grid(row=row, column=0, columnspan=2, sticky=tk.W)
         row += 1
 
-        sw.align_labels((self["T0"], self["T1"], self["thermostat"]))
+        sw.align_labels((self["T0"], self["T1"], self["thermostat"]), sticky=tk.E)
 
         # and controls for specific thermostats
         if thermostat != "velocity rescaling":
@@ -148,7 +148,8 @@ class TkNVT(lammps_step.TkNVE):
             row += 1
 
             sw.align_labels(
-                (self["Tdamp"], self["Tchain"], self["Tloop"], self["drag"])
+                (self["Tdamp"], self["Tchain"], self["Tloop"], self["drag"]),
+                sticky=tk.E,
             )
         elif thermostat == "Berendsen":
             pass
@@ -165,11 +166,13 @@ class TkNVT(lammps_step.TkNVE):
             self["fraction"].grid(row=row, column=1, sticky=tk.W)
             row += 1
 
-            sw.align_labels((self["frequency"], self["window"], self["fraction"]))
+            sw.align_labels(
+                (self["frequency"], self["window"], self["fraction"]), sticky=tk.E
+            )
         elif thermostat == "Langevin":
             self["seed"].grid(row=row, column=1, sticky=tk.W)
             row += 1
-            sw.align_labels((self["Tdamp"], self["seed"]))
+            sw.align_labels((self["Tdamp"], self["seed"]), sticky=tk.E)
         else:
             raise RuntimeError(
                 "Don't recognize thermostat " + "'{}'".format(thermostat)

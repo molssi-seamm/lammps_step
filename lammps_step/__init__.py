@@ -10,64 +10,67 @@ A step for running molecular dynamics using LAMMPS.
 
 
 # The metadata
-from .metadata import metadata  # noqa: F401
+from .metadata import metadata
 
-from .lammps_units import set_lammps_unit_system  # noqa: F401
-from .lammps_units import get_lammps_unit_system  # noqa: F401
-from .lammps_units import to_lammps_units  # noqa: F401
-from .lammps_units import from_lammps_units  # noqa: F401
+from .lammps_units import set_lammps_unit_system
+from .lammps_units import get_lammps_unit_system
+from .lammps_units import to_lammps_units
+from .lammps_units import from_lammps_units
 
-from .lammps import bond_style  # noqa: F401
-from .lammps import angle_style  # noqa: F401
-from .lammps import dihedral_style  # noqa: F401
-from .lammps import improper_style  # noqa: F401
+from .lammps import bond_style
+from .lammps import angle_style
+from .lammps import dihedral_style
+from .lammps import improper_style
 
-from .lammps import LAMMPS  # noqa: F401
-from .lammps_step import LAMMPSStep  # noqa: F401
-from .tk_lammps import TkLAMMPS  # noqa: F401
+from .lammps import LAMMPS
+from .lammps_step import LAMMPSStep
+from .tk_lammps import TkLAMMPS
 
-from .custom import Custom  # noqa: F401
-from .custom_parameters import CustomParameters  # noqa: F401
-from .custom_step import CustomStep  # noqa: F401
-from .tk_custom import TkCustom  # noqa: F401
+from .custom import Custom
+from .custom_parameters import CustomParameters
+from .custom_step import CustomStep
+from .tk_custom import TkCustom
 
-from .initialization import Initialization  # noqa: F401
-from .initialization_parameters import (  # noqa: F401
-    InitializationParameters,
-)
-from .initialization_parameters import kspace_methods  # noqa: F401
-from .initialization_step import InitializationStep  # noqa: F401
-from .tk_initialization import TkInitialization  # noqa: F401
+from .initialization import Initialization
+from .initialization_parameters import InitializationParameters
+from .initialization_parameters import kspace_methods
+from .initialization_step import InitializationStep
+from .tk_initialization import TkInitialization
 
-from .energy import Energy  # noqa: F401
-from .energy_parameters import EnergyParameters  # noqa: F401
-from .energy_step import EnergyStep  # noqa: F401
-from .tk_energy import TkEnergy  # noqa: F401
+from .energy import Energy
+from .energy_parameters import EnergyParameters
+from .energy_step import EnergyStep
+from .tk_energy import TkEnergy
 
-from .minimization import Minimization  # noqa: F401
-from .minimization_step import MinimizationStep  # noqa: F401
-from .tk_minimization import TkMinimization  # noqa: F401
+from .minimization import Minimization
+from .minimization_step import MinimizationStep
+from .tk_minimization import TkMinimization
 
-from .velocities import Velocities  # noqa: F401
-from .velocities_parameters import VelocitiesParameters  # noqa: F401, E501
-from .velocities_step import VelocitiesStep  # noqa: F401
-from .tk_velocities import TkVelocities  # noqa: F401
+from .velocities import Velocities
+from .velocities_parameters import VelocitiesParameters
+from .velocities_step import VelocitiesStep
+from .tk_velocities import TkVelocities
 
-from .nve import NVE  # noqa: F401
-from .nve_parameters import NVE_Parameters  # noqa: F401
-from .nve_step import NVEStep  # noqa: F401
-from .tk_nve import TkNVE  # noqa: F401
+from .nve import NVE
+from .nve_parameters import NVE_Parameters
+from .nve_step import NVEStep
+from .tk_nve import TkNVE
 
-from .nvt import NVT  # noqa: F401
-from .nvt import thermostat_metadata  # noqa: F401
-from .nvt_parameters import NVT_Parameters  # noqa: F401
-from .nvt_step import NVTStep  # noqa: F401
-from .tk_nvt import TkNVT  # noqa: F401
+from .nvt import NVT
+from .nvt import thermostat_metadata
+from .nvt_parameters import NVT_Parameters
+from .nvt_step import NVTStep
+from .tk_nvt import TkNVT
 
-from .npt import NPT  # noqa: F401
-from .npt_parameters import NPT_Parameters  # noqa: F401
-from .npt_step import NPTStep  # noqa: F401
-from .tk_npt import TkNPT  # noqa: F401
+from .npt import NPT
+from .npt_parameters import NPT_Parameters
+from .npt_step import NPTStep
+from .tk_npt import TkNPT
+
+from .heat_flux_step import HeatFluxStep
+from .heat_flux import HeatFlux
+from .heat_flux_parameters import HeatFluxParameters
+from .tk_heat_flux import TkHeatFlux
 
 # Handle versioneer
 from ._version import get_versions

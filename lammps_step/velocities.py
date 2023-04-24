@@ -71,11 +71,11 @@ class Velocities(seamm.Node):
                 "'{remove_momentum}'"
             )
         else:
-            text += " LAMMPS will {remove_momentum}."
+            text += " LAMMPS will {remove_momentum}"
 
         if P["method"] != "scaling current velocities":
             if P["seed"] == "random":
-                text += " The random number generator will be initialized " "randomly."
+                text += " The random number generator will be initialized randomly."
             else:
                 text += (
                     " The random number generator will be initialized "
@@ -118,23 +118,19 @@ class Velocities(seamm.Node):
         lines.append("#     velocities")
         lines.append("")
 
-        if P["remove_momentum"] == (
-            "remove translational but not " "rotational momentum"
-        ):
+        if P["remove_momentum"] == "remove translational but not rotational momentum":
             remove_translations = "yes"
             remove_rotations = "no"
-        elif P["remove_momentum"] == (
-            "remove rotational but not " "translational momentum"
-        ):
+        elif P["remove_momentum"] == "remove rotational but not translational momentum":
             remove_translations = "no"
             remove_rotations = "yes"
         elif P["remove_momentum"] == (
-            "remove both translational and " "rotational momentum"
+            "remove both translational and rotational momentum"
         ):
             remove_translations = "yes"
             remove_rotations = "yes"
         elif P["remove_momentum"] == (
-            "remove neither translational nor " "rotational momentum"
+            "remove neither translational nor rotational momentum"
         ):
             remove_translations = "no"
             remove_rotations = "no"
@@ -162,4 +158,8 @@ class Velocities(seamm.Node):
                 "Velocity method '{}' not supported yet".format(P["method"])
             )
 
-        return lines
+        return {
+            "script": lines,
+            "postscript": None,
+            "use python": False,
+        }

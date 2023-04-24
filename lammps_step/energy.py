@@ -4,23 +4,38 @@
 
 import logging
 
+from tabulate import tabulate
+
 import lammps_step
 import seamm
 from seamm_util import units_class
+import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
 
 logger = logging.getLogger(__name__)
+printer = printing.getPrinter("lammps")
 
 
 class Energy(seamm.Node):
     """Handle a singlepoint energy calculation in LAMMPS"""
 
-    def __init__(self, flowchart=None, title="Energy", extension=None):
+    def __init__(
+        self,
+        flowchart=None,
+        title="Energy",
+        extension=None,
+        logger=logger,
+    ):
         """Initialize the node"""
 
         logger.debug("Creating Energy {}".format(self))
 
-        super().__init__(flowchart=flowchart, title=title, extension=extension)
+        super().__init__(
+            flowchart=flowchart,
+            title=title,
+            extension=extension,
+            logger=logger,
+        )
 
         self._calculation = "energy"
         self._model = None
@@ -75,17 +90,82 @@ class Energy(seamm.Node):
         lines.append("")
         lines.append("run                 0")
 
-        return lines
+        return {
+            "script": lines,
+            "postscript": None,
+            "use python": False,
+        }
 
-    def analyze(self, indent="", data={}):
+    def analyze(self, indent="", data={}, table=None, **kwargs):
         """Parse the output and generating the text output and store the
         data in variables for other stages to access
         """
+        if table is not None:
+            text = ""
+            tmp = tabulate(
+                table,
+                headers="keys",
+                tablefmt="simple",
+                disable_numparse=True,
+                colalign=(
+                    "center",
+                    "decimal",
+                    "center",
+                    "decimal",
+                    "left",
+                    "decimal",
+                    "decimal",
+                    "decimal",
+                ),
+            )
+            length = len(tmp.splitlines()[0])
+            text += "\n"
+            text += "Properties".center(length)
+            text += "\n"
+            text += tmp
+            text += "\n"
+
+            printer.normal(__(text, indent=8 * " ", wrap=False, dedent=False))
+
+            have_warning = False
+            for value in table["Property"]:
+                if len(value) > 0 and value[-1] == "*":
+                    have_warning = True
+                    break
+
+            have_acf_warning = False
+            for value in table["tau"]:
+                if len(value) > 0 and value[-1] == "^":
+                    have_warning = True
+                    break
+
+            if have_warning or have_acf_warning:
+                printer.normal("\n")
+            if have_warning:
+                printer.normal(
+                    __(
+                        "          * this property has less than 100 independent "
+                        "samples, so may not be accurate.",
+                        wrap=False,
+                        dedent=False,
+                    )
+                )
+
+            if have_acf_warning:
+                printer.normal(
+                    __(
+                        "          ^ there are not enough samples after "
+                        "equilibration to plot the ACF.",
+                        wrap=False,
+                        dedent=False,
+                    )
+                )
+
         # Get the configuration
         _, configuration = self.get_system_configuration(None)
 
         # Need to set the model for properties.
-        # See what type of forcefield we have amd handle it
+        # See what type of forcefield we have and handle it
         ff = self.get_variable("_forcefield")
         if ff == "OpenKIM":
             self._model = "OpenKIM/" + self.get_variable("_OpenKIM_Potential")
