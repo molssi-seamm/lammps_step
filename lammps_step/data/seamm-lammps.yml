@@ -7,3 +7,4 @@ dependencies:
   - openmpi
   - lammps
   - openkim-models
+  - mpi4py
