@@ -70,4 +70,8 @@ class Custom(seamm.Node):
         lines.append("")
         lines.append(P["script"])
 
-        return lines
+        return {
+            "script": lines,
+            "postscript": None,
+            "use python": False,
+        }
