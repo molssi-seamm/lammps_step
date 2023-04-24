@@ -64,4 +64,4 @@ class TkVelocities(seamm.TkNode):
             widgets.append(self["seed"])
             row += 1
 
-            sw.align_labels(widgets)
+            sw.align_labels(widgets, sticky=tk.E)
