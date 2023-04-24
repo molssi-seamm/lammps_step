@@ -89,6 +89,7 @@ setup(
             'LAMMPS = lammps_step:LAMMPSStep',
         ],
         'org.molssi.seamm.lammps': [
+            'HeatFlux = lammps_step:HeatFluxStep',
             'Custom = lammps_step:CustomStep',
             'Energy = lammps_step:EnergyStep',
             'Initialization = lammps_step:InitializationStep',
@@ -99,6 +100,7 @@ setup(
             'Velocities = lammps_step:VelocitiesStep',
         ],
         'org.molssi.seamm.lammps.tk': [
+            'HeatFlux = lammps_step:HeatFluxStep',
             'Custom = lammps_step:CustomStep',
             'Energy = lammps_step:EnergyStep',
             'Initialization = lammps_step:InitializationStep',
