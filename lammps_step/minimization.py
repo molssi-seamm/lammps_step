@@ -140,4 +140,8 @@ class Minimization(lammps_step.Energy):
             "minimize            {} {} {} {}".format(etol, ftol, maxiters, maxevals)
         )
 
-        return lines
+        return {
+            "script": lines,
+            "postscript": None,
+            "use python": False,
+        }
