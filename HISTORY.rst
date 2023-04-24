@@ -1,6 +1,16 @@
 =======
 History
 =======
+2023.4.24 -- Support for thermal conductivity
+   * Internal changes to support thermal conductivity with its embedded flowchart.
+   * Added the heat flux substep.
+   * Now delete output and reference files when rerunning, so the output is clean.
+   * Internal changes to support running LAMMPS from a Python driver.
+   * Corrected units of properties returned from LAMMPS when e.g. metal units used.
+   * Added support for Buckingham potentials
+   * Fixed issues with and cleaned up the use of hybrid types for bonds, angles, ....
+   * Fixed issues with the alignment of some of the widgets in the GUI.
+     
 2023.4.9 -- Hid the warning from pymbar
    * Importing pymbar timeseries writes a warning to the terminal about its proper
      usage. SEAMM already handles the warned case, so the message is simply confusing to

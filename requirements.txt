@@ -8,3 +8,4 @@ pymbar>=4.0
 seamm
 seamm-ff-util
 statsmodels
+tabulate
