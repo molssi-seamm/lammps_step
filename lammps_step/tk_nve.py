@@ -128,7 +128,7 @@ class TkNVE(lammps_step.TkEnergy):
             self["control_properties"].grid(row=row, column=0, sticky=tk.NSEW)
             row += 1
 
-        sw.align_labels(widgets)
+        sw.align_labels(widgets, sticky=tk.E)
 
     def handle_dialog(self, result):
         if result == "OK":
