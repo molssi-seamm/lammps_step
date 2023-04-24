@@ -52,6 +52,30 @@ lammps\_step.energy\_step module
    :undoc-members:
    :show-inheritance:
 
+lammps\_step.heat\_flux module
+------------------------------
+
+.. automodule:: lammps_step.heat_flux
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+lammps\_step.heat\_flux\_parameters module
+------------------------------------------
+
+.. automodule:: lammps_step.heat_flux_parameters
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+lammps\_step.heat\_flux\_step module
+------------------------------------
+
+.. automodule:: lammps_step.heat_flux_step
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 lammps\_step.initialization module
 ----------------------------------
 
@@ -216,6 +240,14 @@ lammps\_step.tk\_energy module
 ------------------------------
 
 .. automodule:: lammps_step.tk_energy
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+lammps\_step.tk\_heat\_flux module
+----------------------------------
+
+.. automodule:: lammps_step.tk_heat_flux
    :members:
    :undoc-members:
    :show-inheritance:

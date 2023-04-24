@@ -8,7 +8,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.velocities_parameters &#8212; SEAMM LAMMPS Plug-in 2023.4.24 documentation</title>
+    <title>lammps_step.tk_heat_flux &#8212; SEAMM LAMMPS Plug-in 2023.4.24 documentation</title>
   
   
   
@@ -54,7 +54,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
     <script src="../../_static/design-tabs.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lammps_step/velocities_parameters';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lammps_step/tk_heat_flux';</script>
 
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -461,7 +461,7 @@ document.write(`
     
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page">lammps_step.velocities_parameters</li>
+    <li class="breadcrumb-item active" aria-current="page">lammps_step.tk_heat_flux</li>
   </ul>
 </nav>
 </div>
@@ -478,87 +478,203 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <h1>Source code for lammps_step.velocities_parameters</h1><div class="highlight"><pre>
+  <h1>Source code for lammps_step.tk_heat_flux</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="sd">&quot;&quot;&quot;Control parameters for NVT (canonical) dynamics&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">logging</span>
+<span class="sd">&quot;&quot;&quot;The graphical part of a Heat Flux step&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">pprint</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">import</span> <span class="nn">tkinter</span> <span class="k">as</span> <span class="nn">tk</span>
+
+<span class="kn">import</span> <span class="nn">lammps_step</span>  <span class="c1"># noqa: F401, E999</span>
 <span class="kn">import</span> <span class="nn">seamm</span>
+<span class="kn">from</span> <span class="nn">seamm_util</span> <span class="kn">import</span> <span class="n">ureg</span><span class="p">,</span> <span class="n">Q_</span><span class="p">,</span> <span class="n">units_class</span>  <span class="c1"># noqa: F401, E999</span>
+<span class="kn">import</span> <span class="nn">seamm_widgets</span> <span class="k">as</span> <span class="nn">sw</span>
 
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
+<div class="viewcode-block" id="TkHeatFlux"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_heat_flux.TkHeatFlux">[docs]</a><span class="k">class</span> <span class="nc">TkHeatFlux</span><span class="p">(</span><span class="n">seamm</span><span class="o">.</span><span class="n">TkNode</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The graphical part of a Heat Flux step in a flowchart.</span>
 
-<div class="viewcode-block" id="VelocitiesParameters"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.velocities_parameters.VelocitiesParameters">[docs]</a><span class="k">class</span> <span class="nc">VelocitiesParameters</span><span class="p">(</span><span class="n">seamm</span><span class="o">.</span><span class="n">Parameters</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The control parameters for NVT dynamics in LAMMPS&quot;&quot;&quot;</span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tk_flowchart : TkFlowchart = None</span>
+<span class="sd">        The flowchart that we belong to.</span>
+<span class="sd">    node : Node = None</span>
+<span class="sd">        The corresponding node of the non-graphical flowchart</span>
+<span class="sd">    canvas: tkCanvas = None</span>
+<span class="sd">        The Tk Canvas to draw on</span>
+<span class="sd">    dialog : Dialog</span>
+<span class="sd">        The Pmw dialog object</span>
+<span class="sd">    x : int = None</span>
+<span class="sd">        The x-coordinate of the center of the picture of the node</span>
+<span class="sd">    y : int = None</span>
+<span class="sd">        The y-coordinate of the center of the picture of the node</span>
+<span class="sd">    w : int = 200</span>
+<span class="sd">        The width in pixels of the picture of the node</span>
+<span class="sd">    h : int = 50</span>
+<span class="sd">        The height in pixels of the picture of the node</span>
+<span class="sd">    self[widget] : dict</span>
+<span class="sd">        A dictionary of tk widgets built using the information</span>
+<span class="sd">        contained in Heat Flux_parameters.py</span>
 
-    <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;using a random distribution&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;enumeration&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;format_string&quot;</span><span class="p">:</span> <span class="s2">&quot;s&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;enumeration&quot;</span><span class="p">:</span> <span class="p">(</span>
-                <span class="s2">&quot;using a random distribution&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;scaling current velocities&quot;</span><span class="p">,</span>
-            <span class="p">),</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set the temperature&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;help_text&quot;</span><span class="p">:</span> <span class="p">(</span>
-                <span class="s2">&quot;The method to use to adjuust the velocities &quot;</span>
-                <span class="s2">&quot;and hence the temperature.&quot;</span>
-            <span class="p">),</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;T&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="mf">298.15</span><span class="p">,</span>
-            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default_units&quot;</span><span class="p">:</span> <span class="s2">&quot;K&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;format_string&quot;</span><span class="p">:</span> <span class="s2">&quot;.2f&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Temperature:&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;help_text&quot;</span><span class="p">:</span> <span class="s2">&quot;The temperature corresponding to the velocities.&quot;</span><span class="p">,</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;seed&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;random&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default_units&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="s2">&quot;format_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;enumeration&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;random&quot;</span><span class="p">,),</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Random seed:&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;help_text&quot;</span><span class="p">:</span> <span class="p">(</span>
-                <span class="s2">&quot;The seed for the random number generator.&quot;</span>
-                <span class="s2">&quot;&#39;random&#39; means to generate a random integer &quot;</span>
-                <span class="s2">&quot;as the seed.&quot;</span>
-            <span class="p">),</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;remove_momentum&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="p">(</span>
-                <span class="s2">&quot;remove any translational and, for molecular systems, &quot;</span>
-                <span class="s2">&quot;rotational momentum (default).&quot;</span>
-            <span class="p">),</span>
-            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;enumeration&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;format_string&quot;</span><span class="p">:</span> <span class="s2">&quot;s&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;enumeration&quot;</span><span class="p">:</span> <span class="p">(</span>
-                <span class="p">(</span>
-                    <span class="s2">&quot;remove any translational and, for molecular systems, &quot;</span>
-                    <span class="s2">&quot;rotational momentum (default)&quot;</span>
-                <span class="p">),</span>
-                <span class="s2">&quot;remove translational but not rotational momentum&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;remove rotational but not translational momentum&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;remove both translational and rotational momentum&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;remove neither translational nor rotational momentum&quot;</span><span class="p">,</span>
-            <span class="p">),</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Momentum:&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;help_text&quot;</span><span class="p">:</span> <span class="p">(</span>
-                <span class="s2">&quot;Ensure that there is no overall linear &quot;</span>
-                <span class="s2">&quot;momentum so the system does not translate.&quot;</span>
-            <span class="p">),</span>
-        <span class="p">},</span>
-    <span class="p">}</span>
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    HeatFlux, TkHeatFlux,</span>
+<span class="sd">    HeatFluxParameters,</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="p">{},</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the instance, by default from the default</span>
-<span class="sd">        parameters given in the class&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tk_flowchart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">node</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">canvas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">w</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+        <span class="n">h</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a graphical node.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tk_flowchart: Tk_Flowchart</span>
+<span class="sd">            The graphical flowchart that we are in.</span>
+<span class="sd">        node: Node</span>
+<span class="sd">            The non-graphical node for this step.</span>
+<span class="sd">        namespace: str</span>
+<span class="sd">            The stevedore namespace for finding sub-nodes.</span>
+<span class="sd">        canvas: Canvas</span>
+<span class="sd">           The Tk canvas to draw on.</span>
+<span class="sd">        x: float</span>
+<span class="sd">            The x position of the nodes center on the canvas.</span>
+<span class="sd">        y: float</span>
+<span class="sd">            The y position of the nodes cetner on the canvas.</span>
+<span class="sd">        w: float</span>
+<span class="sd">            The nodes graphical width, in pixels.</span>
+<span class="sd">        h: float</span>
+<span class="sd">            The nodes graphical height, in pixels.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dialog</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">defaults</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="n">VelocitiesParameters</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="o">**</span><span class="n">defaults</span><span class="p">},</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span>
-        <span class="p">)</span></div>
+            <span class="n">tk_flowchart</span><span class="o">=</span><span class="n">tk_flowchart</span><span class="p">,</span>
+            <span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">,</span>
+            <span class="n">canvas</span><span class="o">=</span><span class="n">canvas</span><span class="p">,</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+            <span class="n">w</span><span class="o">=</span><span class="n">w</span><span class="p">,</span>
+            <span class="n">h</span><span class="o">=</span><span class="n">h</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="TkHeatFlux.create_dialog"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_heat_flux.TkHeatFlux.create_dialog">[docs]</a>    <span class="k">def</span> <span class="nf">create_dialog</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create the dialog. A set of widgets will be chosen by default</span>
+<span class="sd">        based on what is specified in the Heat Flux_parameters</span>
+<span class="sd">        module.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        TkHeatFlux.reset_dialog</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">frame</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">create_dialog</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Heat Flux&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Shortcut for parameters</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">parameters</span>
+
+        <span class="c1"># Then create the widgets</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;timestep&quot;</span><span class="p">,</span> <span class="s2">&quot;sampling&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+
+        <span class="c1"># and lay them out</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_dialog</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TkHeatFlux.reset_dialog"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_heat_flux.TkHeatFlux.reset_dialog">[docs]</a>    <span class="k">def</span> <span class="nf">reset_dialog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Layout the widgets in the dialog.</span>
+
+<span class="sd">        The widgets are chosen by default from the information in</span>
+<span class="sd">        Heat Flux_parameter.</span>
+
+<span class="sd">        This function simply lays them out row by row with</span>
+<span class="sd">        aligned labels. You may wish a more complicated layout that</span>
+<span class="sd">        is controlled by values of some of the control parameters.</span>
+<span class="sd">        If so, edit or override this method</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        widget : Tk Widget = None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        TkHeatFlux.create_dialog</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Remove any widgets previously packed</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s2">&quot;frame&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">slave</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">grid_slaves</span><span class="p">():</span>
+            <span class="n">slave</span><span class="o">.</span><span class="n">grid_forget</span><span class="p">()</span>
+
+        <span class="c1"># Shortcut for parameters</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">parameters</span>
+
+        <span class="c1"># keep track of the row in a variable, so that the layout is flexible</span>
+        <span class="c1"># if e.g. rows are skipped to control such as &quot;method&quot; here</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">widgets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;timestep&quot;</span><span class="p">,</span> <span class="s2">&quot;sampling&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">EW</span><span class="p">)</span>
+            <span class="n">widgets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+            <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># Align the labels</span>
+        <span class="n">sw</span><span class="o">.</span><span class="n">align_labels</span><span class="p">(</span><span class="n">widgets</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">E</span><span class="p">)</span>
+
+        <span class="c1"># Setup the results if there are any</span>
+        <span class="n">have_results</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;results&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">metadata</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;results&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">have_results</span> <span class="ow">and</span> <span class="s2">&quot;results&quot;</span> <span class="ow">in</span> <span class="n">P</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setup_results</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TkHeatFlux.right_click"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_heat_flux.TkHeatFlux.right_click">[docs]</a>    <span class="k">def</span> <span class="nf">right_click</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Handles the right click event on the node.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        event : Tk Event</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        TkHeatFlux.edit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">right_click</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">popup_menu</span><span class="o">.</span><span class="n">add_command</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Edit..&quot;</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">edit</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">popup_menu</span><span class="o">.</span><span class="n">tk_popup</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">x_root</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">y_root</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div></div>
 </pre></div>
 
                 </article>

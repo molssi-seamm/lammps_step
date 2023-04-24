@@ -8,7 +8,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2023.4.9 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2023.4.24 documentation</title>
   
   
   
@@ -18,24 +18,24 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
 
   
-  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
 
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -498,12 +498,13 @@ document.write(`
 <span class="kn">import</span> <span class="nn">string</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
 
 <span class="kn">import</span> <span class="nn">bibtexparser</span>
-<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span>
 <span class="kn">import</span> <span class="nn">psutil</span>
-<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">t</span> <span class="k">as</span> <span class="n">t_student</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
 <span class="kn">import</span> <span class="nn">statsmodels.tsa.stattools</span> <span class="k">as</span> <span class="nn">stattools</span>
 
 <span class="kn">import</span> <span class="nn">lammps_step</span>
@@ -551,6 +552,7 @@ document.write(`
 <span class="k">with</span> <span class="n">logging_disabled</span><span class="p">(</span><span class="n">highest_level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">):</span>
     <span class="kn">from</span> <span class="nn">pymbar</span> <span class="kn">import</span> <span class="n">timeseries</span>
 
+
 <span class="c1"># Add LAMMPS&#39;s properties to the standard properties</span>
 <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">pkg_resources</span><span class="o">.</span><span class="n">resource_filename</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;data/&quot;</span><span class="p">))</span>
 <span class="n">csv_file</span> <span class="o">=</span> <span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;properties.csv&quot;</span>
@@ -586,6 +588,7 @@ document.write(`
         <span class="s2">&quot;T&quot;</span><span class="p">:</span> <span class="s2">&quot;K&quot;</span><span class="p">,</span>
         <span class="s2">&quot;P&quot;</span><span class="p">:</span> <span class="s2">&quot;atm&quot;</span><span class="p">,</span>
         <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="s2">&quot;fs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;V&quot;</span><span class="p">:</span> <span class="s2">&quot;Å^3&quot;</span><span class="p">,</span>
         <span class="s2">&quot;density&quot;</span><span class="p">:</span> <span class="s2">&quot;g/mL&quot;</span><span class="p">,</span>
         <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="s2">&quot;Å&quot;</span><span class="p">,</span>
         <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="s2">&quot;Å&quot;</span><span class="p">,</span>
@@ -595,11 +598,20 @@ document.write(`
         <span class="s2">&quot;Epe&quot;</span><span class="p">:</span> <span class="s2">&quot;kcal/mol&quot;</span><span class="p">,</span>
         <span class="s2">&quot;Emol&quot;</span><span class="p">:</span> <span class="s2">&quot;kcal/mol&quot;</span><span class="p">,</span>
         <span class="s2">&quot;Epair&quot;</span><span class="p">:</span> <span class="s2">&quot;kcal/mol&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Jx&quot;</span><span class="p">:</span> <span class="s2">&quot;W/m^2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Jy&quot;</span><span class="p">:</span> <span class="s2">&quot;W/m^2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Jz&quot;</span><span class="p">:</span> <span class="s2">&quot;W/m^2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Kappa_x&quot;</span><span class="p">:</span> <span class="s2">&quot;W/K/m&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Kappa_y&quot;</span><span class="p">:</span> <span class="s2">&quot;W/K/m&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Kappa_z&quot;</span><span class="p">:</span> <span class="s2">&quot;W/K/m&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Kappa&quot;</span><span class="p">:</span> <span class="s2">&quot;W/K/m&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="s2">&quot;kcal/mol&quot;</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="n">display_title</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;T&quot;</span><span class="p">:</span> <span class="s2">&quot;Temperature&quot;</span><span class="p">,</span>
         <span class="s2">&quot;P&quot;</span><span class="p">:</span> <span class="s2">&quot;Pressure&quot;</span><span class="p">,</span>
         <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="s2">&quot;Time&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;V&quot;</span><span class="p">:</span> <span class="s2">&quot;Volume&quot;</span><span class="p">,</span>
         <span class="s2">&quot;density&quot;</span><span class="p">:</span> <span class="s2">&quot;Density&quot;</span><span class="p">,</span>
         <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="s2">&quot;a lattice parameter&quot;</span><span class="p">,</span>
         <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="s2">&quot;b lattice parameter&quot;</span><span class="p">,</span>
@@ -609,6 +621,14 @@ document.write(`
         <span class="s2">&quot;Epe&quot;</span><span class="p">:</span> <span class="s2">&quot;Potential Energy&quot;</span><span class="p">,</span>
         <span class="s2">&quot;Emol&quot;</span><span class="p">:</span> <span class="s2">&quot;Molecular Energy, Valence Terms&quot;</span><span class="p">,</span>
         <span class="s2">&quot;Epair&quot;</span><span class="p">:</span> <span class="s2">&quot;Pair (Nonbond) Energy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Jx&quot;</span><span class="p">:</span> <span class="s2">&quot;heat flux in x&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Jy&quot;</span><span class="p">:</span> <span class="s2">&quot;heat flux in y&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Jz&quot;</span><span class="p">:</span> <span class="s2">&quot;heat flux in z&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Kappa_x&quot;</span><span class="p">:</span> <span class="s2">&quot;thermal conductivity in x&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Kappa_y&quot;</span><span class="p">:</span> <span class="s2">&quot;thermal conductivity in y&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Kappa_z&quot;</span><span class="p">:</span> <span class="s2">&quot;thermal conductivity in z&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Kappa&quot;</span><span class="p">:</span> <span class="s2">&quot;thermal conductivity&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="s2">&quot;atom PE&quot;</span><span class="p">,</span>
     <span class="p">}</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -671,7 +691,7 @@ document.write(`
             <span class="n">lz</span> <span class="o">=</span> <span class="n">c</span>
             <span class="n">xy</span> <span class="o">=</span> <span class="n">xz</span> <span class="o">=</span> <span class="n">yz</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">lx</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">lx</span> <span class="o">=</span> <span class="n">a</span>
             <span class="n">xy</span> <span class="o">=</span> <span class="n">b</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">radians</span><span class="p">(</span><span class="n">gamma</span><span class="p">))</span>
             <span class="n">xz</span> <span class="o">=</span> <span class="n">c</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">radians</span><span class="p">(</span><span class="n">beta</span><span class="p">))</span>
             <span class="n">ly</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">b</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">xy</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
@@ -965,9 +985,7 @@ document.write(`
                                     <span class="n">accuracy</span> <span class="o">=</span> <span class="n">control_properties</span><span class="p">[</span><span class="n">prp</span><span class="p">][</span><span class="s2">&quot;accuracy&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">100</span>
                                     <span class="n">dof</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;n_sample&quot;</span><span class="p">]</span>
                                     <span class="n">mean</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span>
-                                    <span class="n">ci</span> <span class="o">=</span> <span class="n">t_student</span><span class="o">.</span><span class="n">interval</span><span class="p">(</span>
-                                        <span class="mf">0.95</span><span class="p">,</span> <span class="n">dof</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span>
-                                    <span class="p">)</span>
+                                    <span class="n">ci</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">interval</span><span class="p">(</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">dof</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
                                     <span class="n">interval</span> <span class="o">=</span> <span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;sem&quot;</span><span class="p">]</span>
                                     <span class="nb">print</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">interval</span> <span class="o">/</span> <span class="n">mean</span><span class="p">))</span>
                                     <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">interval</span> <span class="o">/</span> <span class="n">mean</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">accuracy</span><span class="p">:</span>
@@ -1027,6 +1045,7 @@ document.write(`
             <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;write_dump all custom  </span><span class="si">{</span><span class="n">dump</span><span class="si">}</span><span class="s2"> id &quot;</span> <span class="s2">&quot;xu yu zu modify flush yes sort id&quot;</span>
             <span class="p">)</span>
+            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
             <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_file</span>
             <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_input_data</span>
@@ -1053,7 +1072,15 @@ document.write(`
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">read_dump</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">files</span><span class="p">[</span><span class="s2">&quot;dump&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="s2">&quot;dump&quot;</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">read_dump</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">files</span><span class="p">[</span><span class="s2">&quot;dump&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]))</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;Warning: unable to read the LAMMPS dumpfile&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The was a problem reading the LAMMPS dumpfile: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;Warning: there is no &#39;dump&#39; file from LAMMPS&quot;</span><span class="p">)</span>
 
         <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
@@ -1086,59 +1113,83 @@ document.write(`
             <span class="s2">&quot;*.log&quot;</span><span class="p">,</span>
             <span class="s2">&quot;*.dat&quot;</span><span class="p">,</span>
             <span class="s2">&quot;log.cite&quot;</span><span class="p">,</span>
-        <span class="p">]</span>  <span class="c1"># yapf: disable</span>
+            <span class="s2">&quot;run_lammps&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
 
-        <span class="n">local</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">ExecLocal</span><span class="p">()</span>
+        <span class="c1"># Check for already having run</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;success.dat&quot;</span>
+        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">run_lammps</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;log.cite&quot;</span>
+            <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">result</span><span class="p">[</span><span class="s2">&quot;log.cite&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">(),</span>
+                <span class="p">}</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;stdout.txt&quot;</span>
+            <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stdout&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stderr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">run_lammps</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">local</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">ExecLocal</span><span class="p">()</span>
 
-        <span class="c1"># Find the executables and if they exist.</span>
-        <span class="n">lammps_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;lammps_path&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-        <span class="n">lmp_serial</span> <span class="o">=</span> <span class="n">lammps_path</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;lammps_serial&quot;</span><span class="p">]</span>
-        <span class="n">lmp_serial</span> <span class="o">=</span> <span class="n">lmp_serial</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">lmp_serial</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="n">lmp_serial</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="c1"># Find the executables and if they exist.</span>
+            <span class="n">lammps_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;lammps_path&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+            <span class="n">lmp_serial</span> <span class="o">=</span> <span class="n">lammps_path</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;lammps_serial&quot;</span><span class="p">]</span>
+            <span class="n">lmp_serial</span> <span class="o">=</span> <span class="n">lmp_serial</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">lmp_serial</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">lmp_serial</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="n">lmp_mpi</span> <span class="o">=</span> <span class="n">lammps_path</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;lammps_mpi&quot;</span><span class="p">]</span>
-        <span class="n">lmp_mpi</span> <span class="o">=</span> <span class="n">lmp_mpi</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">lmp_mpi</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="n">mpiexec</span> <span class="o">=</span> <span class="n">lammps_path</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;mpiexec&quot;</span><span class="p">]</span>
-            <span class="n">mpiexec</span> <span class="o">=</span> <span class="n">mpiexec</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">mpiexec</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-                <span class="c1"># See if it is in the path</span>
-                <span class="n">mpiexec</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;mpiexec&quot;</span><span class="p">])</span>
-                <span class="k">if</span> <span class="n">mpiexec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">lmp_mpi</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">lmp_mpi</span> <span class="o">=</span> <span class="n">lammps_path</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;lammps_mpi&quot;</span><span class="p">]</span>
+            <span class="n">lmp_mpi</span> <span class="o">=</span> <span class="n">lmp_mpi</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">lmp_mpi</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">mpiexec</span> <span class="o">=</span> <span class="n">lammps_path</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;mpiexec&quot;</span><span class="p">]</span>
+                <span class="n">mpiexec</span> <span class="o">=</span> <span class="n">mpiexec</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">mpiexec</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                    <span class="c1"># See if it is in the path</span>
+                    <span class="n">mpiexec</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;mpiexec&quot;</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">mpiexec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">lmp_mpi</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">mpiexec</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">mpiexec</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lmp_mpi</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># Use the parallel executable if the serial does not exist, and vice</span>
+            <span class="c1"># versa</span>
+            <span class="k">if</span> <span class="s2">&quot;python script&quot;</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="n">python</span> <span class="o">=</span> <span class="n">lammps_path</span> <span class="o">/</span> <span class="s2">&quot;python&quot;</span>
+                <span class="k">if</span> <span class="n">lmp_mpi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">lmp_serial</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mpiexec</span><span class="p">),</span> <span class="s2">&quot;-np&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">python</span><span class="p">),</span> <span class="s2">&quot;run_lammps&quot;</span><span class="p">]</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">mpiexec</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">mpiexec</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">lmp_mpi</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">python</span><span class="p">),</span> <span class="s2">&quot;run_lammps&quot;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">lmp_mpi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">lmp_serial</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mpiexec</span><span class="p">),</span> <span class="s2">&quot;-np&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">lmp_mpi</span><span class="p">)]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">lmp_serial</span><span class="p">)]</span>
+                <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;-in&quot;</span><span class="p">,</span> <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]])</span>
 
-        <span class="c1"># Use the parallel executable if the serial does not exist, and vice</span>
-        <span class="c1"># versa</span>
-        <span class="k">if</span> <span class="n">lmp_mpi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">lmp_serial</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mpiexec</span><span class="p">),</span> <span class="s2">&quot;-np&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">lmp_mpi</span><span class="p">)]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">lmp_serial</span><span class="p">)]</span>
-        <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;-in&quot;</span><span class="p">,</span> <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]])</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">local</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                <span class="n">cmd</span><span class="o">=</span><span class="n">cmd</span><span class="p">,</span>
+                <span class="n">files</span><span class="o">=</span><span class="n">tmpdict</span><span class="p">,</span>
+                <span class="n">return_files</span><span class="o">=</span><span class="n">return_files</span><span class="p">,</span>
+                <span class="n">in_situ</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">directory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span>
+            <span class="p">)</span>
 
-        <span class="n">result</span> <span class="o">=</span> <span class="n">local</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-            <span class="n">cmd</span><span class="o">=</span><span class="n">cmd</span><span class="p">,</span>
-            <span class="n">files</span><span class="o">=</span><span class="n">tmpdict</span><span class="p">,</span>
-            <span class="n">return_files</span><span class="o">=</span><span class="n">return_files</span><span class="p">,</span>
-            <span class="n">in_situ</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">directory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span>
-        <span class="p">)</span>
+            <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;There was an error running LAMMPS&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
 
-        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;There was an error running LAMMPS&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;stdout:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stdout&quot;</span><span class="p">])</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;stdout:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stdout&quot;</span><span class="p">])</span>
-
-        <span class="n">f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="s2">&quot;stdout.txt&quot;</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
-            <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;stdout&quot;</span><span class="p">])</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="s2">&quot;stdout.txt&quot;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+                <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;stdout&quot;</span><span class="p">])</span>
 
         <span class="c1"># Add the citations, getting the version from stdout and any citations</span>
         <span class="k">if</span> <span class="s2">&quot;log.cite&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
@@ -1148,56 +1199,57 @@ document.write(`
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_lammps_citations</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;stdout&quot;</span><span class="p">])</span>
 
-        <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stderr&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;stderr:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stderr&quot;</span><span class="p">])</span>
-            <span class="n">f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="s2">&quot;stderr.txt&quot;</span><span class="p">)</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
-                <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;stderr&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">run_lammps</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stderr&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;stderr:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stderr&quot;</span><span class="p">])</span>
+                <span class="n">f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="s2">&quot;stderr.txt&quot;</span><span class="p">)</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+                    <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;stderr&quot;</span><span class="p">])</span>
 
-        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;files&quot;</span><span class="p">]:</span>
-            <span class="n">f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
-            <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;wb&quot;</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">filename</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">bytes</span> <span class="k">else</span> <span class="s2">&quot;w&quot;</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="n">filename</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">filename</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">])</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">filename</span><span class="p">][</span><span class="s2">&quot;exception&quot;</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;files&quot;</span><span class="p">]:</span>
+                <span class="n">f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+                <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;wb&quot;</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">filename</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">bytes</span> <span class="k">else</span> <span class="s2">&quot;w&quot;</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="n">filename</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">filename</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">filename</span><span class="p">][</span><span class="s2">&quot;exception&quot;</span><span class="p">])</span>
 
         <span class="n">base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">])</span>
-        <span class="n">restart_file</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;.restart.*&quot;</span>
-        <span class="n">dump_file</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;.dump.*&quot;</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">restart_file</span><span class="p">)</span>
-        <span class="n">restart_filenames</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">dump_file</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;.dump.0&quot;</span>
+
+        <span class="c1"># restart_file = base + &quot;.restart.*&quot;</span>
+        <span class="c1"># filename = os.path.join(self.directory, restart_file)</span>
+        <span class="c1"># restart_filenames = glob.glob(filename)</span>
 
         <span class="c1"># Probably the step didn&#39;t run</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">restart_filenames</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
-                <span class="s2">&quot;Lammps_step: could not find any file with the pattern </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-            <span class="p">)</span>
+        <span class="c1"># if len(restart_filenames) == 0:</span>
+        <span class="c1">#     raise FileNotFoundError(</span>
+        <span class="c1">#         f&quot;Lammps_step: could not find any file with the pattern {filename}&quot;</span>
+        <span class="c1">#     )</span>
 
-        <span class="n">run_lengths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># run_lengths = []</span>
 
-        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">restart_filenames</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">pre</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-                <span class="n">ext</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ext</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">))</span>
-            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Lammps_step: could not extract run length from </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">f</span><span class="p">)</span>
-            <span class="n">run_lengths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span>
+        <span class="c1"># for f in restart_filenames:</span>
+        <span class="c1">#     try:</span>
+        <span class="c1">#         pre, ext = os.path.splitext(f)</span>
+        <span class="c1">#         ext = int(ext.strip(&quot;.&quot;))</span>
+        <span class="c1">#     except ValueError:</span>
+        <span class="c1">#         raise Exception(f&quot;Lammps_step: could not extract run length from {f}&quot;)</span>
+        <span class="c1">#     run_lengths.append(ext)</span>
 
-            <span class="n">last_snapshot</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">run_lengths</span><span class="p">))</span>
+        <span class="c1">#     last_snapshot = str(max(run_lengths))</span>
 
-        <span class="n">restart_file</span> <span class="o">=</span> <span class="n">restart_file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">last_snapshot</span><span class="p">)</span>
-        <span class="n">dump_file</span> <span class="o">=</span> <span class="n">dump_file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">last_snapshot</span><span class="p">)</span>
-        <span class="n">files</span><span class="p">[</span><span class="s2">&quot;restart&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">files</span><span class="p">[</span><span class="s2">&quot;restart&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">restart_file</span>
+        <span class="c1"># restart_file = restart_file.replace(&quot;*&quot;, last_snapshot)</span>
+        <span class="c1"># files[&quot;restart&quot;] = {}</span>
+        <span class="c1"># files[&quot;restart&quot;][&quot;filename&quot;] = restart_file</span>
+        <span class="c1"># filename = os.path.join(self.directory, restart_file)</span>
+        <span class="c1"># with open(filename, mode=&quot;rb&quot;) as fd:</span>
+        <span class="c1">#     files[&quot;restart&quot;][&quot;data&quot;] = fd.read()</span>
+
         <span class="n">files</span><span class="p">[</span><span class="s2">&quot;dump&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">files</span><span class="p">[</span><span class="s2">&quot;dump&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dump_file</span>
         <span class="n">files</span><span class="p">[</span><span class="s2">&quot;dump&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">restart_file</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
-            <span class="n">files</span><span class="p">[</span><span class="s2">&quot;restart&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 
         <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1205,6 +1257,11 @@ document.write(`
             <span class="n">node</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_initialization_node</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;read_data&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
         <span class="p">)</span>
         <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">initialization_header</span><span class="p">)</span>
+
+        <span class="c1"># Write a small file to say that LAMMPS ran successfully, so cancel</span>
+        <span class="c1"># skip if rerunning.</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;success.dat&quot;</span>
+        <span class="n">path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">&quot;success&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">files</span>
 
@@ -1217,40 +1274,75 @@ document.write(`
         <span class="n">write_restart</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">extras</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="n">python_script</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">postscript</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
             <span class="n">node_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">nodes</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
-            <span class="n">new_input_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_node_input</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">nodes</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">)</span>
+            <span class="n">todo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_node_input</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">nodes</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">)</span>
+            <span class="n">new_input_data</span> <span class="o">=</span> <span class="n">todo</span><span class="p">[</span><span class="s2">&quot;script&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">todo</span><span class="p">[</span><span class="s2">&quot;postscript&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">postscript</span> <span class="o">=</span> <span class="n">todo</span><span class="p">[</span><span class="s2">&quot;postscript&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">todo</span><span class="p">[</span><span class="s2">&quot;use python&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="s2">&quot;python script&quot;</span> <span class="ow">in</span> <span class="n">todo</span><span class="p">:</span>
+                <span class="n">python_script</span> <span class="o">=</span> <span class="n">todo</span><span class="p">[</span><span class="s2">&quot;python script&quot;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">node_ids</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">new_input_data</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
                 <span class="n">node_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-                <span class="n">new_input_data</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_node_input</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">)</span>
+                <span class="n">todo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_node_input</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">)</span>
+                <span class="n">new_input_data</span> <span class="o">+=</span> <span class="n">todo</span><span class="p">[</span><span class="s2">&quot;script&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">todo</span><span class="p">[</span><span class="s2">&quot;postscript&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">postscript</span> <span class="o">=</span> <span class="n">todo</span><span class="p">[</span><span class="s2">&quot;postscript&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">todo</span><span class="p">[</span><span class="s2">&quot;use python&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="s2">&quot;python script&quot;</span> <span class="ow">in</span> <span class="n">todo</span><span class="p">:</span>
+                    <span class="n">python_script</span> <span class="o">=</span> <span class="n">todo</span><span class="p">[</span><span class="s2">&quot;python script&quot;</span><span class="p">]</span>
 
         <span class="c1"># base = &quot;lammps_substep_%s_iter_%d&quot; % (&quot;_&quot;.join(node_ids), iteration)</span>
         <span class="n">base</span> <span class="o">=</span> <span class="s2">&quot;lammps&quot;</span>
 
         <span class="n">input_file</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;.dat&quot;</span>
-        <span class="n">restart</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;.restart.*&quot;</span>
+        <span class="c1"># restart = base + &quot;.restart.*&quot;</span>
         <span class="n">dump</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;.dump.*&quot;</span>
 
-        <span class="k">if</span> <span class="n">read_restart</span><span class="p">:</span>
-            <span class="n">new_input_data</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
-                <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;read_restart          </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s2">&quot;restart&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">])</span>
+        <span class="c1"># if read_restart:</span>
+        <span class="c1">#     new_input_data.insert(</span>
+        <span class="c1">#         0, &quot;read_restart          %s&quot; % (files[&quot;restart&quot;][&quot;filename&quot;])</span>
+        <span class="c1">#     )</span>
+
+        <span class="c1"># if write_restart:</span>
+        <span class="c1">#     new_input_data.append(f&quot;write_restart          {restart}&quot;)</span>
+
+        <span class="k">if</span> <span class="n">postscript</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;reset_timestep      0&quot;</span><span class="p">)</span>
+            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;run                 0&quot;</span><span class="p">)</span>
+            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;write_dump          all custom  </span><span class="si">{</span><span class="n">dump</span><span class="si">}</span><span class="s2"> id xu yu zu &quot;</span>
+                <span class="s2">&quot;modify flush yes sort id&quot;</span>
             <span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">write_restart</span><span class="p">:</span>
-            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;write_restart          </span><span class="si">{</span><span class="n">restart</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;write_dump all custom  </span><span class="si">{</span><span class="n">dump</span><span class="si">}</span><span class="s2"> id &quot;</span> <span class="s2">&quot;xu yu zu modify flush yes sort id&quot;</span>
-        <span class="p">)</span>
+            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
         <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_input_data</span>
 
         <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_file</span>
         <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">postscript</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">postscript</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;reset_timestep      0&quot;</span><span class="p">)</span>
+            <span class="n">postscript</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;run                 0&quot;</span><span class="p">)</span>
+            <span class="n">postscript</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;write_dump          all custom  </span><span class="si">{</span><span class="n">dump</span><span class="si">}</span><span class="s2"> id xu yu zu &quot;</span>
+                <span class="s2">&quot;modify flush yes sort id&quot;</span>
+            <span class="p">)</span>
+            <span class="n">postscript</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">files</span><span class="p">[</span><span class="s2">&quot;postscript&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">postscript</span><span class="p">),</span>
+                <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="s2">&quot;lammps_post.dat&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="k">if</span> <span class="n">python_script</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">files</span><span class="p">[</span><span class="s2">&quot;python script&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">python_script</span><span class="p">,</span>
+                <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="s2">&quot;run_lammps&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
 
         <span class="k">return</span> <span class="n">files</span>
 
@@ -1280,9 +1372,6 @@ document.write(`
 <div class="viewcode-block" id="LAMMPS.structure_data"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.structure_data">[docs]</a>    <span class="k">def</span> <span class="nf">structure_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eex</span><span class="p">,</span> <span class="n">triclinic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the LAMMPS structure file from the energy expression&quot;&quot;&quot;</span>
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
-
-        <span class="c1"># The terms in the forcefield, and for each a list of forms</span>
-        <span class="n">terms</span> <span class="o">=</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;terms&quot;</span><span class="p">]</span>
 
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Structure file for LAMMPS generated by a MolSSI flowchart&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:10d}</span><span class="s2"> atoms&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_atoms&quot;</span><span class="p">]))</span>
@@ -1371,8 +1460,8 @@ document.write(`
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">xyz_index</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;atoms&quot;</span><span class="p">]):</span>
                 <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">xyz_index</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">index</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">12.7f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">y</span><span class="si">:</span><span class="s2">12.7f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">z</span><span class="si">:</span><span class="s2">12.7f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Masses&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s2">&quot;masses&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1384,11 +1473,14 @@ document.write(`
         <span class="c1"># nonbonds</span>
         <span class="k">if</span> <span class="s2">&quot;nonbond parameters&quot;</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">:</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Pair Coeffs&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;nonbond parameters&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_atom_types&quot;</span><span class="p">]:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;PairIJ Coeffs&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Pair Coeffs&quot;</span><span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
-                <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_atom_types&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;nonbond parameters&quot;</span><span class="p">]</span>
-            <span class="p">):</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;nonbond parameters&quot;</span><span class="p">]:</span>
                 <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
                 <span class="k">if</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;nonbond(9-6)&quot;</span><span class="p">:</span>
                     <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
@@ -1396,13 +1488,27 @@ document.write(`
                             <span class="n">i</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;eps&quot;</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;rmin&quot;</span><span class="p">],</span> <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                         <span class="p">)</span>
                     <span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;nonbond(12-6)&quot;</span><span class="p">:</span>
                     <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                         <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> # </span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                             <span class="n">i</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;eps&quot;</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;sigma&quot;</span><span class="p">],</span> <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                         <span class="p">)</span>
                     <span class="p">)</span>
-
+                    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;buckingham&quot;</span><span class="p">:</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;C&quot;</span><span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="n">line</span> <span class="o">+=</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>
+                        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="c1"># bonds</span>
         <span class="k">if</span> <span class="s2">&quot;n_bonds&quot;</span> <span class="ow">in</span> <span class="n">eex</span> <span class="ow">and</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_bonds&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -1416,7 +1522,8 @@ document.write(`
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Bond Coeffs&quot;</span><span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
-            <span class="n">use_hybrid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">terms</span><span class="p">[</span><span class="s2">&quot;bond&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span>
+            <span class="n">forms</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;bond parameters&quot;</span><span class="p">]])</span>
+            <span class="n">use_hybrid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">forms</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
 
             <span class="k">for</span> <span class="n">counter</span><span class="p">,</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
                 <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_bond_types&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;bond parameters&quot;</span><span class="p">]</span>
@@ -1451,8 +1558,9 @@ document.write(`
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Angle Coeffs&quot;</span><span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
-            <span class="n">use_hybrid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">terms</span><span class="p">[</span><span class="s2">&quot;angle&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span>
             <span class="n">quartic_function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="s2">&quot;n_bond-bond_types&quot;</span> <span class="ow">in</span> <span class="n">eex</span> <span class="k">else</span> <span class="s2">&quot;quartic&quot;</span>
+            <span class="n">forms</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;angle parameters&quot;</span><span class="p">]])</span>
+            <span class="n">use_hybrid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">forms</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
 
             <span class="k">for</span> <span class="n">counter</span><span class="p">,</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
                 <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_angle_types&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;angle parameters&quot;</span><span class="p">]</span>
@@ -1491,9 +1599,14 @@ document.write(`
                     <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
                     <span class="n">angle_form</span> <span class="o">=</span> <span class="n">angles</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">angle_form</span> <span class="o">==</span> <span class="s2">&quot;quartic_angle&quot;</span><span class="p">:</span>
+                        <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
                         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> class2 </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">counter</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R10&quot;</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R20&quot;</span><span class="p">]</span>
+                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                <span class="n">counter</span><span class="p">,</span>
+                                <span class="n">function</span><span class="p">,</span>
+                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">],</span>
+                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R10&quot;</span><span class="p">],</span>
+                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R20&quot;</span><span class="p">],</span>
                             <span class="p">)</span>
                             <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                                 <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
@@ -1530,9 +1643,11 @@ document.write(`
                     <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
                     <span class="n">angle_form</span> <span class="o">=</span> <span class="n">angles</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">angle_form</span> <span class="o">==</span> <span class="s2">&quot;quartic_angle&quot;</span><span class="p">:</span>
+                        <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
                         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> class2 </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                                 <span class="n">counter</span><span class="p">,</span>
+                                <span class="n">function</span><span class="p">,</span>
                                 <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K12&quot;</span><span class="p">],</span>
                                 <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K23&quot;</span><span class="p">],</span>
                                 <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R10&quot;</span><span class="p">],</span>
@@ -1577,7 +1692,8 @@ document.write(`
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Dihedral Coeffs&quot;</span><span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
-            <span class="n">use_hybrid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">terms</span><span class="p">[</span><span class="s2">&quot;torsion&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span>
+            <span class="n">forms</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;torsion parameters&quot;</span><span class="p">]])</span>
+            <span class="n">use_hybrid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">forms</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
 
             <span class="k">for</span> <span class="n">counter</span><span class="p">,</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
                 <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_torsion_types&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;torsion parameters&quot;</span><span class="p">]</span>
@@ -1651,9 +1767,11 @@ document.write(`
                     <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
                     <span class="n">torsion_form</span> <span class="o">=</span> <span class="n">torsions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">torsion_form</span> <span class="o">==</span> <span class="s2">&quot;torsion_3&quot;</span><span class="p">:</span>
+                        <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
                         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> class2 </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                                 <span class="n">counter</span><span class="p">,</span>
+                                <span class="n">function</span><span class="p">,</span>
                                 <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V1&quot;</span><span class="p">],</span>
                                 <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V2&quot;</span><span class="p">],</span>
                                 <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V3&quot;</span><span class="p">],</span>
@@ -1698,9 +1816,11 @@ document.write(`
                     <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
                     <span class="n">torsion_form</span> <span class="o">=</span> <span class="n">torsions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">torsion_form</span> <span class="o">==</span> <span class="s2">&quot;torsion_3&quot;</span><span class="p">:</span>
+                        <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
                         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> class2 </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                                 <span class="n">counter</span><span class="p">,</span>
+                                <span class="n">function</span><span class="p">,</span>
                                 <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V1_L&quot;</span><span class="p">],</span>
                                 <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V2_L&quot;</span><span class="p">],</span>
                                 <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V3_L&quot;</span><span class="p">],</span>
@@ -1749,9 +1869,11 @@ document.write(`
                     <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
                     <span class="n">torsion_form</span> <span class="o">=</span> <span class="n">torsions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">torsion_form</span> <span class="o">==</span> <span class="s2">&quot;torsion_3&quot;</span><span class="p">:</span>
+                        <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
                         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> class2 </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                                 <span class="n">counter</span><span class="p">,</span>
+                                <span class="n">function</span><span class="p">,</span>
                                 <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V1_L&quot;</span><span class="p">],</span>
                                 <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V2_L&quot;</span><span class="p">],</span>
                                 <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V3_L&quot;</span><span class="p">],</span>
@@ -1800,9 +1922,11 @@ document.write(`
                     <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
                     <span class="n">torsion_form</span> <span class="o">=</span> <span class="n">torsions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">torsion_form</span> <span class="o">==</span> <span class="s2">&quot;torsion_3&quot;</span><span class="p">:</span>
+                        <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
                         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> class2 </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                                 <span class="n">counter</span><span class="p">,</span>
+                                <span class="n">function</span><span class="p">,</span>
                                 <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">],</span>
                                 <span class="n">values</span><span class="p">[</span><span class="s2">&quot;Theta0_L&quot;</span><span class="p">],</span>
                                 <span class="n">values</span><span class="p">[</span><span class="s2">&quot;Theta0_R&quot;</span><span class="p">],</span>
@@ -1846,9 +1970,14 @@ document.write(`
                     <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
                     <span class="n">torsion_form</span> <span class="o">=</span> <span class="n">torsions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">torsion_form</span> <span class="o">==</span> <span class="s2">&quot;torsion_3&quot;</span><span class="p">:</span>
+                        <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
                         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> class2 </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">counter</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R10&quot;</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R30&quot;</span><span class="p">]</span>
+                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                <span class="n">counter</span><span class="p">,</span>
+                                <span class="n">function</span><span class="p">,</span>
+                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">],</span>
+                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R10&quot;</span><span class="p">],</span>
+                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R30&quot;</span><span class="p">],</span>
                             <span class="p">)</span>
                             <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                                 <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
@@ -1965,6 +2094,7 @@ document.write(`
                     <span class="p">)</span>
 
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">lines</span></div>
 
 <div class="viewcode-block" id="LAMMPS.analyze"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.analyze">[docs]</a>    <span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -2013,18 +2143,30 @@ document.write(`
 
                     <span class="n">control_properties</span> <span class="o">=</span> <span class="p">[</span><span class="n">prp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">prp</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;control_properties&quot;</span><span class="p">]]</span>
 
-                <span class="n">node_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_trajectory</span><span class="p">(</span>
-                    <span class="n">filename</span><span class="p">,</span> <span class="n">control_properties</span><span class="o">=</span><span class="n">control_properties</span>
+                <span class="n">node_data</span><span class="p">,</span> <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_trajectory</span><span class="p">(</span>
+                    <span class="n">filename</span><span class="p">,</span> <span class="n">control_properties</span><span class="o">=</span><span class="n">control_properties</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="n">node</span>
                 <span class="p">)</span>
                 <span class="c1"># Get just the values from the node data</span>
                 <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">node_data</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-                <span class="n">node</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+                <span class="c1"># And the other key values</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">node_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;stderr&quot;</span><span class="p">,</span> <span class="s2">&quot;tau&quot;</span><span class="p">,</span> <span class="s2">&quot;inefficiency&quot;</span><span class="p">,</span> <span class="s2">&quot;n_samples&quot;</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+                            <span class="n">values</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+                <span class="n">node</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">node_data</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">)</span>
 
             <span class="n">ret</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">node_data</span>
 
         <span class="k">return</span> <span class="n">ret</span></div>
 
-<div class="viewcode-block" id="LAMMPS.analyze_trajectory"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.analyze_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">analyze_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">control_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="LAMMPS.analyze_trajectory"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.analyze_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">analyze_trajectory</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">,</span>
+        <span class="n">sampling_rate</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+        <span class="n">control_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">node</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a trajectory file and do the statistical analysis&quot;&quot;&quot;</span>
 
         <span class="n">write_html</span> <span class="o">=</span> <span class="s2">&quot;html&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;html&quot;</span><span class="p">]</span>
@@ -2033,11 +2175,21 @@ document.write(`
 
         <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
 
+        <span class="n">table</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Property&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;Value&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot; &quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;StdErr&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;Units&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;convergence&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;tau&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;inefficiency&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="p">}</span>
+
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">control_properties</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;t&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">control_properties</span><span class="p">:</span>
             <span class="n">control_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">)</span>
 
         <span class="c1"># Process the trajectory data</span>
-
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
             <span class="n">file_data</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
                 <span class="n">fd</span><span class="p">,</span>
@@ -2049,25 +2201,18 @@ document.write(`
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file_data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
-        <span class="n">dt_fs</span> <span class="o">=</span> <span class="n">file_data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">file_data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">dt</span> <span class="o">=</span> <span class="n">dt_fs</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">from_lammps_units</span><span class="p">(</span>
+            <span class="n">file_data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">file_data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;fs&quot;</span>
+        <span class="p">)</span>
+        <span class="n">dt_fs</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;fs&quot;</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trajectory</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">data</span><span class="o">.</span><span class="n">index</span> <span class="o">*=</span> <span class="n">dt</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">index</span> <span class="o">*=</span> <span class="n">dt_fs</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Columns: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;  Types:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dtypes</span><span class="p">))</span>
 
         <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;       Analysis of &quot;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
-            <span class="s2">&quot;                                             Std Error  &quot;</span>
-            <span class="s2">&quot;Time to</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="s2">&quot;               Property           Value       of mean   &quot;</span>
-            <span class="s2">&quot;convergence     tau    inefficiency</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="s2">&quot;          --------------------   ---------  ---------   &quot;</span>
-            <span class="s2">&quot;-----------  --------  ------------&quot;</span>
-        <span class="p">)</span>
 
         <span class="c1"># Work out the time step, rather than give the whole vector</span>
         <span class="n">t</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span>
@@ -2076,26 +2221,46 @@ document.write(`
         <span class="n">divisor</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="n">len_trj</span> <span class="o">&gt;=</span> <span class="mi">4000000000</span><span class="p">:</span>
             <span class="n">t_units</span> <span class="o">=</span> <span class="s2">&quot;ms&quot;</span>
-            <span class="n">divisor</span> <span class="o">=</span> <span class="mi">1000000000</span>
         <span class="k">elif</span> <span class="n">len_trj</span> <span class="o">&gt;=</span> <span class="mi">4000000</span><span class="p">:</span>
             <span class="n">t_units</span> <span class="o">=</span> <span class="s2">&quot;ns&quot;</span>
-            <span class="n">divisor</span> <span class="o">=</span> <span class="mi">1000000</span>
         <span class="k">elif</span> <span class="n">len_trj</span> <span class="o">&gt;=</span> <span class="mi">4000</span><span class="p">:</span>
             <span class="n">t_units</span> <span class="o">=</span> <span class="s2">&quot;ps&quot;</span>
-            <span class="n">divisor</span> <span class="o">=</span> <span class="mi">1000</span>
-        <span class="n">dt</span> <span class="o">/=</span> <span class="n">divisor</span>
-        <span class="n">t_max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span>
+        <span class="n">t_max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="n">t_units</span><span class="p">))</span>
 
         <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;Unnamed:&quot;</span> <span class="ow">in</span> <span class="n">column</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">meta_column</span> <span class="o">=</span> <span class="n">column</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;0123456789&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">meta_column</span> <span class="ow">in</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_title</span><span class="p">:</span>
+                <span class="n">meta_title</span> <span class="o">=</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_title</span><span class="p">[</span><span class="n">meta_column</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_title</span><span class="p">:</span>
+                <span class="n">meta_title</span> <span class="o">=</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_title</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">meta_title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;unknown: </span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">meta_column</span> <span class="ow">in</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_units</span><span class="p">:</span>
+                <span class="n">meta_units</span> <span class="o">=</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_units</span><span class="p">[</span><span class="n">meta_column</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_units</span><span class="p">:</span>
+                <span class="n">meta_units</span> <span class="o">=</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_units</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">meta_units</span> <span class="o">=</span> <span class="s2">&quot;???&quot;</span>
+
             <span class="n">have_warning</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="n">have_acf_warning</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
+            <span class="c1"># Ignore first point, t=0, cause it might not be right.</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Analyzing </span><span class="si">{}</span><span class="s2">, nsamples = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)))</span>
 
             <span class="c1"># compute indices of uncorrelated timeseries using pymbar</span>
+            <span class="c1"># Their algorithm is quadratic in length of Y unless you</span>
+            <span class="c1"># use &#39;nskip&#39;. I set it so there are about 100 time origins, so</span>
+            <span class="c1"># the convergence time is accurate to about 1%.</span>
             <span class="n">yy</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
-            <span class="n">conv</span><span class="p">,</span> <span class="n">inefficiency</span><span class="p">,</span> <span class="n">Neff_max</span> <span class="o">=</span> <span class="n">timeseries</span><span class="o">.</span><span class="n">detect_equilibration</span><span class="p">(</span><span class="n">yy</span><span class="p">)</span>
+            <span class="n">nskip</span> <span class="o">=</span> <span class="n">yy</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="mi">100</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">conv</span><span class="p">,</span> <span class="n">inefficiency</span><span class="p">,</span> <span class="n">Neff_max</span> <span class="o">=</span> <span class="n">timeseries</span><span class="o">.</span><span class="n">detect_equilibration</span><span class="p">(</span>
+                <span class="n">yy</span><span class="p">,</span> <span class="n">nskip</span><span class="o">=</span><span class="n">nskip</span>
+            <span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                 <span class="s2">&quot;  converged in </span><span class="si">{}</span><span class="s2"> steps, inefficiency = </span><span class="si">{}</span><span class="s2">, Neff_max = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
@@ -2103,17 +2268,16 @@ document.write(`
                 <span class="p">)</span>
             <span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">inefficiency</span><span class="p">)</span> <span class="ow">or</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Neff_max</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">inefficiency</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Neff_max</span><span class="p">):</span>
                 <span class="c1"># Apparently didn&#39;t converge!</span>
-                <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
-                    <span class="n">__</span><span class="p">(</span>
-                        <span class="s2">&quot;</span><span class="si">{column:&gt;23s}</span><span class="s2"> did not converge to a stationary state&quot;</span><span class="p">,</span>
-                        <span class="n">column</span><span class="o">=</span><span class="n">column</span><span class="p">,</span>
-                        <span class="n">indent</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">,</span>
-                        <span class="n">wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                        <span class="n">dedent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="p">)</span>
-                <span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">column</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot; &quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;StdErr&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;convergence&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;unconverged&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;tau&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;inefficiency&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
                 <span class="n">have_acf</span> <span class="o">=</span> <span class="kc">False</span>
                 <span class="n">is_converged</span> <span class="o">=</span> <span class="kc">False</span>
@@ -2151,23 +2315,37 @@ document.write(`
                     <span class="n">acf_warning</span> <span class="o">=</span> <span class="s2">&quot;^&quot;</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">have_acf</span> <span class="o">=</span> <span class="kc">True</span>
-                    <span class="n">acf_warning</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span>
+                    <span class="n">acf_warning</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
                     <span class="n">nlags</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">inefficiency</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">))</span>
+
                     <span class="k">if</span> <span class="n">nlags</span> <span class="o">&gt;</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y_t_equil</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">):</span>
                         <span class="n">nlags</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y_t_equil</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
-                    <span class="n">acf</span><span class="p">,</span> <span class="n">confidence</span> <span class="o">=</span> <span class="n">stattools</span><span class="o">.</span><span class="n">acf</span><span class="p">(</span>
-                        <span class="n">y_t_equil</span><span class="p">,</span>
-                        <span class="n">nlags</span><span class="o">=</span><span class="n">nlags</span><span class="p">,</span>
-                        <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
-                        <span class="n">fft</span><span class="o">=</span><span class="n">nlags</span> <span class="o">&gt;</span> <span class="mi">16</span><span class="p">,</span>
-                        <span class="n">adjusted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="p">)</span>
+                    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+                        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+                        <span class="n">acf</span><span class="p">,</span> <span class="n">confidence</span> <span class="o">=</span> <span class="n">stattools</span><span class="o">.</span><span class="n">acf</span><span class="p">(</span>
+                            <span class="n">y_t_equil</span><span class="p">,</span>
+                            <span class="n">nlags</span><span class="o">=</span><span class="n">nlags</span><span class="p">,</span>
+                            <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+                            <span class="n">fft</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                            <span class="n">adjusted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="p">)</span>
 
                 <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
                 <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean</span>
-                <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;sem&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sem</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;stderr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sem</span>
                 <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;n_sample&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_samples</span>
                 <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;short_production&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">have_acf_warning</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;tau&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tau</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;inefficiency&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inefficiency</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;timestep&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dt_fs</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;rootname&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rootname</span>
+                <span class="k">if</span> <span class="n">have_acf</span><span class="p">:</span>
+                    <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;acf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">acf</span>
+                    <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;acf_confidence&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">confidence</span>
+
+                <span class="c1"># Don&#39;t print or graph some properties, like heat flux</span>
+                <span class="k">if</span> <span class="n">column</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;Jx&quot;</span><span class="p">,</span> <span class="s2">&quot;Jy&quot;</span><span class="p">,</span> <span class="s2">&quot;Jz&quot;</span><span class="p">):</span>
+                    <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
 
                 <span class="c1"># Work out units on convergence time</span>
                 <span class="n">conv_units</span> <span class="o">=</span> <span class="s2">&quot;fs&quot;</span>
@@ -2203,50 +2381,34 @@ document.write(`
 
                 <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;few_neff&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">have_warning</span>
 
-                <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
-                    <span class="n">__</span><span class="p">(</span>
-                        <span class="s2">&quot;</span><span class="si">{column:&gt;23s}</span><span class="s2"> = </span><span class="si">{value:9.3f}</span><span class="s2"> ± </span><span class="si">{stderr:7.3f}{warn}</span><span class="s2">&quot;</span>
-                        <span class="s2">&quot; </span><span class="si">{t0:8.2f}</span><span class="s2"> </span><span class="si">{conv_units}</span><span class="s2"> </span><span class="si">{tau:8.1f}</span><span class="s2"> </span><span class="si">{tau_units}{acf}</span><span class="s2"> &quot;</span>
-                        <span class="s2">&quot;</span><span class="si">{inefficiency:9.1f}</span><span class="s2">&quot;</span><span class="p">,</span>
-                        <span class="n">column</span><span class="o">=</span><span class="n">column</span><span class="p">,</span>
-                        <span class="n">value</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span>
-                        <span class="n">stderr</span><span class="o">=</span><span class="n">sem</span><span class="p">,</span>
-                        <span class="n">warn</span><span class="o">=</span><span class="n">warn</span><span class="p">,</span>
-                        <span class="n">t0</span><span class="o">=</span><span class="n">t_conv</span><span class="p">,</span>
-                        <span class="n">conv_units</span><span class="o">=</span><span class="n">conv_units</span><span class="p">,</span>
-                        <span class="n">tau</span><span class="o">=</span><span class="n">t_tau</span><span class="p">,</span>
-                        <span class="n">tau_units</span><span class="o">=</span><span class="n">tau_units</span><span class="p">,</span>
-                        <span class="n">acf</span><span class="o">=</span><span class="n">acf_warning</span><span class="p">,</span>
-                        <span class="n">inefficiency</span><span class="o">=</span><span class="n">inefficiency</span><span class="p">,</span>
-                        <span class="n">indent</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">,</span>
-                        <span class="n">wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                        <span class="n">dedent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="p">)</span>
-                <span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">column</span><span class="si">}{</span><span class="n">warn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mean</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot; &quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;±&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;StdErr&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sem</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta_units</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;convergence&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t_conv</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">conv_units</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;tau&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t_tau</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">tau_units</span><span class="si">}{</span><span class="n">acf_warning</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;inefficiency&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">inefficiency</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="c1"># Create graphs of the property</span>
             <span class="n">figure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_figure</span><span class="p">(</span>
                 <span class="n">module_path</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__module__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;seamm&quot;</span><span class="p">),</span>
                 <span class="n">template</span><span class="o">=</span><span class="s2">&quot;line.graph_template&quot;</span><span class="p">,</span>
-                <span class="n">title</span><span class="o">=</span><span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_title</span><span class="p">[</span><span class="n">column</span><span class="p">],</span>
+                <span class="n">title</span><span class="o">=</span><span class="n">meta_title</span><span class="p">,</span>
             <span class="p">)</span>
 
             <span class="c1"># The autocorrelation function</span>
             <span class="k">if</span> <span class="n">have_acf</span><span class="p">:</span>
                 <span class="n">plot_acf</span> <span class="o">=</span> <span class="n">figure</span><span class="o">.</span><span class="n">add_plot</span><span class="p">(</span><span class="s2">&quot;acf&quot;</span><span class="p">)</span>
 
-                <span class="n">dt_acf</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dt_fs</span><span class="p">)</span>
                 <span class="n">t_acf_units</span> <span class="o">=</span> <span class="s2">&quot;fs&quot;</span>
                 <span class="n">len_acf</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">acf</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt_fs</span>
                 <span class="k">if</span> <span class="n">len_acf</span> <span class="o">&gt;=</span> <span class="mi">2000000000</span><span class="p">:</span>
                     <span class="n">t_acf_units</span> <span class="o">=</span> <span class="s2">&quot;ms&quot;</span>
-                    <span class="n">dt_acf</span> <span class="o">/=</span> <span class="mi">1000000000</span>
                 <span class="k">elif</span> <span class="n">len_acf</span> <span class="o">&gt;=</span> <span class="mi">2000000</span><span class="p">:</span>
                     <span class="n">t_acf_units</span> <span class="o">=</span> <span class="s2">&quot;ns&quot;</span>
-                    <span class="n">dt_acf</span> <span class="o">/=</span> <span class="mi">1000000</span>
                 <span class="k">elif</span> <span class="n">len_acf</span> <span class="o">&gt;=</span> <span class="mi">2000</span><span class="p">:</span>
                     <span class="n">t_acf_units</span> <span class="o">=</span> <span class="s2">&quot;ps&quot;</span>
-                    <span class="n">dt_acf</span> <span class="o">/=</span> <span class="mi">1000</span>
 
                 <span class="n">x_acf_axis</span> <span class="o">=</span> <span class="n">plot_acf</span><span class="o">.</span><span class="n">add_axis</span><span class="p">(</span>
                     <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Time (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t_acf_units</span><span class="p">)</span>
@@ -2267,7 +2429,7 @@ document.write(`
                     <span class="n">y_axis</span><span class="o">=</span><span class="n">y_acf_axis</span><span class="p">,</span>
                     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;fit&quot;</span><span class="p">,</span>
                     <span class="n">x0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                    <span class="n">dx</span><span class="o">=</span><span class="n">dt_acf</span><span class="p">,</span>
+                    <span class="n">dx</span><span class="o">=</span><span class="n">dt</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="n">t_acf_units</span><span class="p">),</span>
                     <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">,</span>
                     <span class="n">xunits</span><span class="o">=</span><span class="n">t_acf_units</span><span class="p">,</span>
                     <span class="n">y</span><span class="o">=</span><span class="n">fit</span><span class="p">,</span>
@@ -2285,7 +2447,7 @@ document.write(`
                     <span class="n">t_acf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
                     <span class="n">yplus</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">upper</span><span class="p">)</span>
                     <span class="n">yminus</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lower</span><span class="p">)</span>
-                    <span class="n">tmp</span> <span class="o">+=</span> <span class="n">dt_acf</span>
+                    <span class="n">tmp</span> <span class="o">+=</span> <span class="n">dt</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="n">t_acf_units</span><span class="p">)</span>
 
                 <span class="n">plot_acf</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span>
                     <span class="n">x_axis</span><span class="o">=</span><span class="n">x_acf_axis</span><span class="p">,</span>
@@ -2296,8 +2458,7 @@ document.write(`
                     <span class="n">xunits</span><span class="o">=</span><span class="n">t_acf_units</span><span class="p">,</span>
                     <span class="n">y</span><span class="o">=</span><span class="n">yplus</span> <span class="o">+</span> <span class="n">yminus</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
                     <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;stderr&quot;</span><span class="p">,</span>
-                    <span class="n">yunits</span><span class="o">=</span><span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_units</span><span class="p">[</span><span class="n">column</span><span class="p">],</span>
-                    <span class="n">showlegend</span><span class="o">=</span><span class="s2">&quot;false&quot;</span><span class="p">,</span>
+                    <span class="n">yunits</span><span class="o">=</span><span class="n">meta_units</span><span class="p">,</span>
                     <span class="n">color</span><span class="o">=</span><span class="s2">&quot;rgba(211,211,211,0.5)&quot;</span><span class="p">,</span>
                     <span class="n">fill</span><span class="o">=</span><span class="s2">&quot;toself&quot;</span><span class="p">,</span>
                 <span class="p">)</span>
@@ -2308,7 +2469,7 @@ document.write(`
                     <span class="n">y_axis</span><span class="o">=</span><span class="n">y_acf_axis</span><span class="p">,</span>
                     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;acf&quot;</span><span class="p">,</span>
                     <span class="n">x0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                    <span class="n">dx</span><span class="o">=</span><span class="n">dt_acf</span><span class="p">,</span>
+                    <span class="n">dx</span><span class="o">=</span><span class="n">dt</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="n">t_acf_units</span><span class="p">),</span>
                     <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">,</span>
                     <span class="n">xunits</span><span class="o">=</span><span class="n">t_acf_units</span><span class="p">,</span>
                     <span class="n">y</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">acf</span><span class="p">),</span>
@@ -2322,9 +2483,9 @@ document.write(`
 
             <span class="n">plot</span> <span class="o">=</span> <span class="n">figure</span><span class="o">.</span><span class="n">add_plot</span><span class="p">(</span><span class="s2">&quot;trj&quot;</span><span class="p">)</span>
 
-            <span class="n">ylabel</span> <span class="o">=</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_title</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_units</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                <span class="n">ylabel</span> <span class="o">+=</span> <span class="s2">&quot; (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_units</span><span class="p">[</span><span class="n">column</span><span class="p">])</span>
+            <span class="n">ylabel</span> <span class="o">=</span> <span class="n">meta_title</span>
+            <span class="k">if</span> <span class="n">meta_units</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="n">ylabel</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; (</span><span class="si">{</span><span class="n">meta_units</span><span class="si">}</span><span class="s2">)&quot;</span>
 
             <span class="n">x_axis</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">add_axis</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Time (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t_units</span><span class="p">))</span>
             <span class="n">y_axis</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">add_axis</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span> <span class="n">anchor</span><span class="o">=</span><span class="n">x_axis</span><span class="p">)</span>
@@ -2339,12 +2500,12 @@ document.write(`
                 <span class="n">y_axis</span><span class="o">=</span><span class="n">y_axis</span><span class="p">,</span>
                 <span class="n">name</span><span class="o">=</span><span class="n">column</span><span class="p">,</span>
                 <span class="n">x0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                <span class="n">dx</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span>
+                <span class="n">dx</span><span class="o">=</span><span class="n">dt</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="n">t_units</span><span class="p">),</span>
                 <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">,</span>
                 <span class="n">xunits</span><span class="o">=</span><span class="n">t_units</span><span class="p">,</span>
                 <span class="n">y</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">y</span><span class="p">),</span>
                 <span class="n">ylabel</span><span class="o">=</span><span class="n">column</span><span class="p">,</span>
-                <span class="n">yunits</span><span class="o">=</span><span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_units</span><span class="p">[</span><span class="n">column</span><span class="p">],</span>
+                <span class="n">yunits</span><span class="o">=</span><span class="n">meta_units</span><span class="p">,</span>
                 <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#4dbd74&quot;</span><span class="p">,</span>
             <span class="p">)</span>
 
@@ -2360,8 +2521,7 @@ document.write(`
                     <span class="n">xunits</span><span class="o">=</span><span class="n">t_units</span><span class="p">,</span>
                     <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">mean</span> <span class="o">+</span> <span class="n">sem</span><span class="p">,</span> <span class="n">mean</span> <span class="o">+</span> <span class="n">sem</span><span class="p">,</span> <span class="n">mean</span> <span class="o">-</span> <span class="n">sem</span><span class="p">,</span> <span class="n">mean</span> <span class="o">-</span> <span class="n">sem</span><span class="p">],</span>
                     <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;sem&quot;</span><span class="p">,</span>
-                    <span class="n">yunits</span><span class="o">=</span><span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_units</span><span class="p">[</span><span class="n">column</span><span class="p">],</span>
-                    <span class="n">showlegend</span><span class="o">=</span><span class="s2">&quot;false&quot;</span><span class="p">,</span>
+                    <span class="n">yunits</span><span class="o">=</span><span class="n">meta_units</span><span class="p">,</span>
                     <span class="n">color</span><span class="o">=</span><span class="s2">&quot;rgba(211,211,211,0.5)&quot;</span><span class="p">,</span>
                     <span class="n">fill</span><span class="o">=</span><span class="s2">&quot;toself&quot;</span><span class="p">,</span>
                 <span class="p">)</span>
@@ -2376,7 +2536,7 @@ document.write(`
                     <span class="n">xunits</span><span class="o">=</span><span class="n">t_units</span><span class="p">,</span>
                     <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">mean</span><span class="p">,</span> <span class="n">mean</span><span class="p">],</span>
                     <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;average&quot;</span><span class="p">,</span>
-                    <span class="n">yunits</span><span class="o">=</span><span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_units</span><span class="p">[</span><span class="n">column</span><span class="p">],</span>
+                    <span class="n">yunits</span><span class="o">=</span><span class="n">meta_units</span><span class="p">,</span>
                     <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
                 <span class="p">)</span>
 
@@ -2384,33 +2544,18 @@ document.write(`
                 <span class="n">figure</span><span class="o">.</span><span class="n">grid_plots</span><span class="p">(</span><span class="s2">&quot;trj - acf&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">figure</span><span class="o">.</span><span class="n">grid_plots</span><span class="p">(</span><span class="s2">&quot;trj&quot;</span><span class="p">)</span>
-            <span class="n">figure</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">.graph&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rootname</span><span class="p">,</span> <span class="n">column</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rootname</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">.graph&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">node_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span>
+                <span class="n">node_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">node_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">.graph&quot;</span>
+
+            <span class="n">figure</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">write_html</span><span class="p">:</span>
                 <span class="n">figure</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="s2">&quot;line.html_template&quot;</span>
-                <span class="n">figure</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">.html&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rootname</span><span class="p">,</span> <span class="n">column</span><span class="p">))</span>
-
-        <span class="k">if</span> <span class="n">have_warning</span> <span class="ow">or</span> <span class="n">have_acf_warning</span><span class="p">:</span>
-            <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">have_warning</span><span class="p">:</span>
-            <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
-                <span class="n">__</span><span class="p">(</span>
-                    <span class="s2">&quot;          * this property has less than 100 independent &quot;</span>
-                    <span class="s2">&quot;samples, so may not be accurate.&quot;</span><span class="p">,</span>
-                    <span class="n">wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="n">dedent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">have_acf_warning</span><span class="p">:</span>
-            <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
-                <span class="n">__</span><span class="p">(</span>
-                    <span class="s2">&quot;          ^ there are not enough samples after &quot;</span>
-                    <span class="s2">&quot;equilibration to plot the ACF.&quot;</span><span class="p">,</span>
-                    <span class="n">wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="n">dedent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="p">)</span>
+                <span class="n">figure</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.html&quot;</span><span class="p">))</span>
 
         <span class="c1"># Add citations for pymbar</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">references</span><span class="o">.</span><span class="n">cite</span><span class="p">(</span>
@@ -2435,7 +2580,7 @@ document.write(`
             <span class="n">note</span><span class="o">=</span><span class="s2">&quot;The third citation for pymbar&quot;</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">results</span></div>
+        <span class="k">return</span> <span class="n">results</span><span class="p">,</span> <span class="n">table</span></div>
 
 <div class="viewcode-block" id="LAMMPS.shake_fix"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.shake_fix">[docs]</a>    <span class="k">def</span> <span class="nf">shake_fix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">eex</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the &#39;fix shake&#39; line needed for handling waters and X-H.</span>
@@ -2695,9 +2840,15 @@ document.write(`
               
               
                 <footer class="bd-footer-article">
-                  <!-- Previous / next buttons -->
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
 <div class="prev-next-area">
+</div></div>
+  
 </div>
+
                 </footer>
               
             </div>
@@ -2707,7 +2858,7 @@ document.write(`
             
           </div>
           <footer class="bd-footer-content">
-            <div class="bd-footer-content__inner"></div>
+            
           </footer>
         
       </main>
@@ -2715,8 +2866,8 @@ document.write(`
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -2766,7 +2917,7 @@ document.write(`
     <div class="footer-items__end">
       
         <div class="footer-item"><p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.13.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.13.3.
 </p></div>
       
     </div>
