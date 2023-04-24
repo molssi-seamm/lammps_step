@@ -182,10 +182,10 @@ class NPT(lammps_step.NVT):
             "eangle edihed eimp evdwl etail ecoul elong"
         )
         properties = (
-            "v_time v_temp v_press v_density v_cella v_cellb "
+            "v_time v_temp v_press v_vol v_density v_cella v_cellb "
             "v_cellc v_etotal v_ke v_pe v_epair"
         )
-        title2 = "tstep t T P density a b c Etot Eke Epe Epair"
+        title2 = "tstep t T P V density a b c Etot Eke Epe Epair"
 
         # and build the LAMMPS script
         lines = []
@@ -277,7 +277,7 @@ class NPT(lammps_step.NVT):
             lines.append("fix                 {} ".format(nfixes) + "all nve")
         elif P["thermostat"] == "velocity rescaling":
             frequency = P["frequency"]
-            nevery = round(nsteps / (frequency / timestep))
+            nevery = max(1, round(nsteps / (frequency / timestep)))
             window = lammps_step.to_lammps_units(P["window"], quantity="temperature")
             fraction = P["fraction"]
             nfixes += 1
@@ -343,7 +343,7 @@ class NPT(lammps_step.NVT):
             )
         else:
             sampling = lammps_step.to_lammps_units(P["sampling"], quantity="time")
-            nevery = round(sampling / timestep)
+            nevery = max(1, round(sampling / timestep))
             nfreq = int(nsteps / nevery)
             nrepeat = 1
             nfreq = nevery * nrepeat
@@ -395,7 +395,11 @@ class NPT(lammps_step.NVT):
             lines.append("unfix               {}".format(fix))
         lines.append("")
 
-        return lines
+        return {
+            "script": lines,
+            "postscript": None,
+            "use python": False,
+        }
 
     def get_pressure_text(self, P, keep_orthorhombic):
         """Work out and return the pressure/stress part of the
