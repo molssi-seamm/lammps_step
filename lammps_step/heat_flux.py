@@ -38,6 +38,9 @@ if path.exists():
 script = """\
 #!/usr/bin/env python
 
+import argparse
+import sys
+
 from lammps import lammps, LMP_STYLE_ATOM, LMP_TYPE_VECTOR, LMP_TYPE_ARRAY
 from mpi4py import MPI
 import numpy as np
@@ -69,17 +72,26 @@ def J_filter_cb(lmp, ntimestep, nlocal, ids, xyz, fext, args = []):
 
     lmp.numpy.fix_external_set_virial_peratom("J_filter", -S)
 
-def run_thermal_conductivity():
-    lmp = lammps()
+def run_thermal_conductivity(cmd_args=None):
+    if cmd_args is None:
+        lmp = lammps()
+    else:
+        lmp = lammps(cmdargs=cmd_args.split())
     lmp.file("lammps.dat")
 
     lmp.set_fix_external_callback("J_filter", J_filter_cb, lmp)
 
     lmp.file("lammps_post.dat")
 
-run_thermal_conductivity()
+    lmp.close()
+    lmp.finalize()
 
-MPI.Finalize()
+# Get any arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("--cmd-args", help="Command line arguments for LAMMPS")
+kwords = vars(parser.parse_args())
+
+run_thermal_conductivity(**kwords)
 """
 
 
