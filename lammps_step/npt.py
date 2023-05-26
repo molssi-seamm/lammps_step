@@ -2,6 +2,8 @@
 
 """NPT (canonical) dynamics in LAMMPS"""
 
+import json
+
 import lammps_step
 import logging
 import seamm
@@ -197,6 +199,8 @@ class NPT(lammps_step.NVT):
         lines.append("thermo_style        custom {}".format(thermo_properties))
         lines.append("thermo              {}".format(int(nsteps / 100)))
 
+        ncomputes = 0
+        ndumps = 0
         nfixes = 0
         if P["thermostat"] == "Nose-Hoover":
             Tchain = P["Tchain"]
@@ -320,17 +324,12 @@ class NPT(lammps_step.NVT):
         nrepeat = int(nfreq / nevery)
         nfreq = nevery * nrepeat
         nfixes += 1
+        filename = f"@{self._id[-1]}+npt_summary.trj"
         lines.append(
-            "fix                 {} ".format(nfixes)
-            + "all ave/time "
-            + "{} {} {} {} off 2 title2 '{}' file summary_npt_{}.txt".format(
-                nevery,
-                nrepeat,
-                nfreq,
-                properties,
-                title2,
-                "_".join(str(e) for e in self._id),
-            )
+            f"fix                 {nfixes} all ave/time {nevery} 1 {nfreq} &\n"
+            f"                       {properties} &\n"
+            "                       off 2 &\n"
+            f"                       file {filename}"
         )
         # instantaneous output written for averaging
         if P["sampling"] == "none":
@@ -348,28 +347,37 @@ class NPT(lammps_step.NVT):
             nrepeat = 1
             nfreq = nevery * nrepeat
             nfixes += 1
-            if T0 == T1:
-                title1 = (
-                    "!MolSSI trajectory 1.0 LAMMPS, NPT {} steps of {} fs, " "T={} K"
-                ).format(int(nsteps / nevery), timestep * nevery, T0)
+            dt = (nevery * P["timestep"]).to_compact()
+            P0tmp = P["Pinitial"].to_compact()
+            P1tmp = P["Pfinal"].to(P0tmp.units)
+            tmp = {
+                "code": "LAMMPS",
+                "type": "NPT",
+                "dt": dt.magnitude,
+                "tunits": str(dt.u),
+                "nsteps": nsteps // nevery,
+                "Tunits": "K",
+                "Punits": str(P0tmp.u),
+            }
+            if P0tmp == P1tmp:
+                tmp["P"] = P0tmp.magnitude
             else:
-                title1 = (
-                    "!MolSSI trajectory 1.0 LAMMPS, NPT {} steps of {} fs, " "T={}-{} K"
-                ).format(int(nsteps / nevery), timestep * nevery, T0, T1)
+                tmp["P0"] = P0tmp.magnitude
+                tmp["T1"] = P1tmp.magnitude
+            if T0 == T1:
+                tmp["T"] = T0
+            else:
+                tmp["T0"] = T0
+                tmp["T1"] = T1
+            title1 = "!MolSSI trajectory 2.0 " + json.dumps(tmp, separators=(",", ":"))
+            filename = f"@{self._id[-1]}+npt_state.trj"
             lines.append(
-                (
-                    "fix                 {} all ave/time {} {} {} {} off 2 "
-                    "title1 '{}' title2 '{}' file trajectory_npt_{}.seamm_trj"
-                ).format(
-                    nfixes,
-                    nevery,
-                    nrepeat,
-                    nfreq,
-                    properties,
-                    title1,
-                    title2,
-                    "_".join(str(e) for e in self._id),
-                )
+                f"fix                 {nfixes} all ave/time {nevery} 1 {nfreq} &\n"
+                f"                       {properties} &\n"
+                "                       off 2 &\n"
+                f"                       title1 '{title1}' &\n"
+                f"                       title2 '{title2}' &\n"
+                f"                       file {filename}"
             )
             self.description.append(
                 __(
@@ -382,6 +390,12 @@ class NPT(lammps_step.NVT):
                     indent=7 * " ",
                 )
             )
+
+        # Handle trajectories
+        tmp, ncomputes, ndumps, nfixes = self.trajectory_input(
+            P, timestep, nsteps, ncomputes, ndumps, nfixes
+        )
+        lines.extend(tmp)
 
         if extras is not None and "shake" in extras:
             nfixes += 1
