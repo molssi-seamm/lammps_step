@@ -266,6 +266,13 @@ class LAMMPS(seamm.Node):
         )
         parser.add_argument(
             parser_name,
+            "--gpu-modules",
+            nargs="*",
+            default=None,
+            help="the environment modules to load for the GPU version of LAMMPS",
+        )
+        parser.add_argument(
+            parser_name,
             "--lammps-path",
             default=None,
             help="the path to the LAMMPS executables",
@@ -281,6 +288,18 @@ class LAMMPS(seamm.Node):
             "--lammps-mpi",
             default="lmp_mpi",
             help="the mpi version of LAMMPS",
+        )
+        parser.add_argument(
+            parser_name,
+            "--cmd-args",
+            default="",
+            help="the command-line arguments for LAMMPS, e.g. '-k on'",
+        )
+        parser.add_argument(
+            parser_name,
+            "--gpu-cmd-args",
+            default="",
+            help="the command-line arguments for GPU version of LAMMPS, e.g. '-k on'",
         )
         parser.add_argument(
             parser_name, "--mpiexec", default="mpiexec", help="the mpi executable"
@@ -393,10 +412,6 @@ class LAMMPS(seamm.Node):
 
         # Print headers and get to work
         printer.important(self.header)
-        if np > 1:
-            printer.important("    LAMMPS using MPI with {} processes.\n".format(np))
-        else:
-            printer.important("   LAMMPS using the serial version.\n")
 
         self.subflowchart.root_directory = self.flowchart.root_directory
 
@@ -650,45 +665,153 @@ class LAMMPS(seamm.Node):
                 result["stdout"] = path.read_text()
             result["stderr"] = ""
         else:
+            # See if we are running in a batch job: SLURM, etc...
+            batch = {}
+            if "SLURM_JOBID" in os.environ:
+                batch["type"] = "slurm"
+                for item, value in os.environ.items():
+                    if item[0:6] == "SLURM_":
+                        batch[item[6:]] = value
+
+                if np > int(batch["NTASKS"]):
+                    np = int(batch["NTASKS"])
+                batch["NTASKS"] = np
+
+                if "NTASKS_PER_NODE" not in batch:
+                    batch["NTASKS_PER_NODE"] = int(batch["NTASKS"]) // int(
+                        batch["NNODES"]
+                    )
+
+                # Expand `[i-k]` naming in nodelist
+                nodes = batch["NODELIST"].split(",")
+                nodelist = []
+                npernode = batch["NTASKS_PER_NODE"]
+                for node in nodes:
+                    if "[" in node:
+                        node, count = node.split("[")
+                        first, last = count[0:-1].split("-")
+                        for i in range(int(first), int(last) + 1):
+                            nodelist.append(f"{node}{i}:{npernode}")
+                    else:
+                        nodelist.append(f"{node}:{npernode}")
+                nodelist = ",".join(nodelist)
+                batch["NODELIST"] = nodelist
+
+                if "JOB_GPUS" in batch:
+                    batch["ngpus"] = len(batch["JOB_GPUS"].split(","))
+
             run_lammps = True
             local = seamm.ExecLocal()
 
             # Find the executables and if they exist.
-            lammps_path = Path(self.options["lammps_path"]).expanduser().resolve()
-            lmp_serial = lammps_path / self.options["lammps_serial"]
-            lmp_serial = lmp_serial.expanduser().resolve()
-            if not lmp_serial.exists():
-                lmp_serial = None
-
-            lmp_mpi = lammps_path / self.options["lammps_mpi"]
-            lmp_mpi = lmp_mpi.expanduser().resolve()
-            if lmp_mpi.exists():
-                mpiexec = lammps_path / self.options["mpiexec"]
-                mpiexec = mpiexec.expanduser().resolve()
-                if not mpiexec.exists():
-                    # See if it is in the path
-                    mpiexec = shutil.which(self.options["mpiexec"])
-                    if mpiexec is None:
-                        lmp_mpi = None
+            if "ngpus" not in batch:
+                modules = self.options["modules"]
+            else:
+                modules = self.options["gpu_modules"]
+            serial = True
+            if len(modules) > 0:
+                # Use a module for LAMMPS
+                shell = True
+                cmd = []
+                cmd.append(f"module load {modules}")
+                lmp_serial = self.options["lammps_serial"]
+                lmp_mpi = self.options["lammps_mpi"]
+                mpiexec = self.options["mpiexec"]
+                if "python script" in files:
+                    python = "python"
+                    if lmp_mpi != "" and (np > 1 or lmp_serial == ""):
+                        serial = False
+                        text = mpiexec.format(**batch) + " python run_lammps"
                     else:
-                        mpiexec = Path(mpiexec).expanduser().resolve()
+                        text = "python run_lammps"
+                    if "ngpus" not in batch and self.options["cmd_args"] != "":
+                        text += " --cmd-args '"
+                        text += self.options["cmd_args"].format(**batch)
+                        text += "'"
+                    if "ngpus" in batch and self.options["gpu_cmd_args"] != "":
+                        text += " --cmd-args '"
+                        text += self.options["gpu_cmd_args"].format(**batch)
+                        text += "'"
+                else:
+                    if lmp_mpi != "" and (np > 1 or lmp_serial == ""):
+                        serial = False
+                        text = mpiexec.format(**batch) + " " + lmp_mpi
+                    else:
+                        text = lmp_serial
+                    if "ngpus" not in batch and self.options["cmd_args"] != "":
+                        text += " " + self.options["cmd_args"].format(**batch)
+                    if "ngpus" in batch and self.options["gpu_cmd_args"] != "":
+                        text += " " + self.options["gpu_cmd_args"].format(**batch)
+                    text += " -in lammps.dat"
+                cmd.append(text)
+                cmd = "\n".join(cmd)
             else:
-                lmp_mpi = None
+                shell = False
+                lammps_path = Path(self.options["lammps_path"]).expanduser().resolve()
+                lmp_serial = lammps_path / self.options["lammps_serial"]
+                lmp_serial = lmp_serial.expanduser().resolve()
+                if not lmp_serial.exists():
+                    lmp_serial = None
 
-            # Use the parallel executable if the serial does not exist, and vice
-            # versa
-            if "python script" in files:
-                python = lammps_path / "python"
-                if lmp_mpi is not None and (np > 1 or lmp_serial is None):
-                    cmd = [str(mpiexec), "-np", str(np), str(python), "run_lammps"]
+                lmp_mpi = lammps_path / self.options["lammps_mpi"]
+                lmp_mpi = lmp_mpi.expanduser().resolve()
+                if lmp_mpi.exists():
+                    tmp = self.options["mpiexec"].format(**batch).split()
+                    mpiexec = lammps_path / tmp[0]
+                    mpi_options = tmp[1:]
+                    mpiexec = mpiexec.expanduser().resolve()
+                    if not mpiexec.exists():
+                        # See if it is in the path
+                        mpiexec = shutil.which(tmp[0])
+                        if mpiexec is None:
+                            lmp_mpi = None
+                        else:
+                            mpiexec = Path(mpiexec).expanduser().resolve()
                 else:
-                    cmd = [str(python), "run_lammps"]
+                    lmp_mpi = None
+
+                # Use the parallel executable if the serial does not exist, and vice
+                # versa
+                if "python script" in files:
+                    python = lammps_path / "python"
+                    if lmp_mpi is not None and (np > 1 or lmp_serial is None):
+                        serial = False
+                        cmd = [str(mpiexec)]
+                        cmd.extend(mpi_options)
+                        cmd.append(str(python))
+                        cmd.append("run_lammps")
+                    else:
+                        cmd = [str(python), "run_lammps"]
+                    if "ngpus" not in batch and self.options["cmd_args"] != "":
+                        cmd_args = self.options["cmd_args"].format(**batch)
+                        cmd.extend(["--cmd-args", cmd_args])
+                    if "ngpus" in batch and self.options["gpu_cmd_args"] != "":
+                        cmd_args = self.options["gpu_cmd_args"].format(**batch)
+                        cmd.extend(["--cmd-args", cmd_args])
+                else:
+                    if lmp_mpi is not None and (np > 1 or lmp_serial is None):
+                        serial = False
+                        cmd = [str(mpiexec)]
+                        cmd.extend(mpi_options)
+                        cmd.append(str(lmp_mpi))
+                    else:
+                        cmd = [str(lmp_serial)]
+                    if "ngpus" not in batch and self.options["cmd_args"] != "":
+                        cmd.extend(self.options["cmd_args"].format(**batch).split())
+                    if "ngpus" in batch and self.options["gpu_cmd_args"] != "":
+                        cmd.extend(self.options["gpu_cmd_args"].format(**batch).split())
+                    cmd.extend(["-in", files["input"]["filename"]])
+
+            if serial:
+                printer.important("   LAMMPS using the serial version.\n")
             else:
-                if lmp_mpi is not None and (np > 1 or lmp_serial is None):
-                    cmd = [str(mpiexec), "-np", str(np), str(lmp_mpi)]
+                if "ngpus" in batch:
+                    printer.important(
+                        f"    LAMMPS using MPI with {np} processes and "
+                        f"{batch['ngpus']} gpus.\n"
+                    )
                 else:
-                    cmd = [str(lmp_serial)]
-                cmd.extend(["-in", files["input"]["filename"]])
+                    printer.important(f"    LAMMPS using MPI with {np} processes")
 
             result = local.run(
                 cmd=cmd,
@@ -696,6 +819,7 @@ class LAMMPS(seamm.Node):
                 return_files=return_files,
                 in_situ=True,
                 directory=self.directory,
+                shell=shell,
             )
 
             if result is None:
