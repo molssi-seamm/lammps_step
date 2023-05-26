@@ -4,7 +4,6 @@
 
 from contextlib import contextmanager
 import copy
-import glob
 import logging
 from math import sqrt, exp, degrees, radians, cos, acos
 from pathlib import Path
@@ -12,7 +11,6 @@ import os
 import os.path
 import pkg_resources
 import pprint
-import re
 import shutil
 import string
 import sys
@@ -627,10 +625,12 @@ class LAMMPS(seamm.Node):
         return_files = [
             "summary_*.txt",
             "trajectory_*.seamm_trj",
+            "*.trj",
             "*.restart.*",
             "*.dump.*",
             "*.log",
             "*.dat",
+            "log.lammps",
             "log.cite",
             "run_lammps",
         ]
@@ -638,7 +638,6 @@ class LAMMPS(seamm.Node):
         # Check for already having run
         path = Path(self.directory) / "success.dat"
         if path.exists():
-            run_lammps = False
             result = {}
             path = Path(self.directory) / "log.cite"
             if path.exists():
@@ -650,7 +649,6 @@ class LAMMPS(seamm.Node):
                 result["stdout"] = path.read_text()
             result["stderr"] = ""
         else:
-            run_lammps = True
             local = seamm.ExecLocal()
 
             # Find the executables and if they exist.
@@ -718,53 +716,8 @@ class LAMMPS(seamm.Node):
         else:
             self._add_lammps_citations(result["stdout"])
 
-        if run_lammps:
-            if result["stderr"] != "":
-                self.logger.warning("stderr:\n" + result["stderr"])
-                f = os.path.join(self.directory, "stderr.txt")
-                with open(f, mode="w") as fd:
-                    fd.write(result["stderr"])
-
-            for filename in result["files"]:
-                f = os.path.join(self.directory, filename)
-                mode = "wb" if type(result[filename]["data"]) is bytes else "w"
-                with open(f, mode=mode) as fd:
-                    if result[filename]["data"] is not None:
-                        fd.write(result[filename]["data"])
-                    else:
-                        fd.write(result[filename]["exception"])
-
         base = os.path.basename(files["input"]["filename"][0:-4])
         dump_file = base + ".dump.0"
-
-        # restart_file = base + ".restart.*"
-        # filename = os.path.join(self.directory, restart_file)
-        # restart_filenames = glob.glob(filename)
-
-        # Probably the step didn't run
-        # if len(restart_filenames) == 0:
-        #     raise FileNotFoundError(
-        #         f"Lammps_step: could not find any file with the pattern {filename}"
-        #     )
-
-        # run_lengths = []
-
-        # for f in restart_filenames:
-        #     try:
-        #         pre, ext = os.path.splitext(f)
-        #         ext = int(ext.strip("."))
-        #     except ValueError:
-        #         raise Exception(f"Lammps_step: could not extract run length from {f}")
-        #     run_lengths.append(ext)
-
-        #     last_snapshot = str(max(run_lengths))
-
-        # restart_file = restart_file.replace("*", last_snapshot)
-        # files["restart"] = {}
-        # files["restart"]["filename"] = restart_file
-        # filename = os.path.join(self.directory, restart_file)
-        # with open(filename, mode="rb") as fd:
-        #     files["restart"]["data"] = fd.read()
 
         files["dump"] = {}
         files["dump"]["filename"] = dump_file
@@ -1623,47 +1576,35 @@ class LAMMPS(seamm.Node):
 
         ret = {node._id[1]: None for node in nodes}
 
+        run_dir = Path(self.directory)
+
         for node in nodes:
             for value in node.description:
                 printer.important(value)
                 printer.important(" ")
 
+            subdir = run_dir / str(node._id[-1])
+
+            # Move any old style files
             id_str = "_".join(str(e) for e in node._id)
+            paths = sorted(run_dir.glob(f"*trajectory*{id_str}*.seamm_trj"))
+            for path in paths:
+                ensemble = str(path).split("_")[1]
+                path.rename(subdir / f"{ensemble}_state.trj")
 
-            filenames = glob.glob(
-                os.path.join(self.directory, "*trajectory*" + id_str + "*.seamm_trj")
-            )
+            paths = sorted(run_dir.glob(f"*summary*{id_str}*.seamm_trj"))
+            for path in paths:
+                ensemble = str(path).split("_")[1]
+                path.rename(subdir / f"{ensemble}_summary.trj")
 
-            if len(filenames) > 1:
-                filenames.sort(
-                    key=lambda x: int(re.search(r"iter_\d+", x).group().split("_")[1])
-                )
-
-            if len(filenames) > 0:
-                filename = filenames[-1]
-
-            P = node.parameters.current_values_to_dict(
-                context=seamm.flowchart_variables._data
-            )
-
-            node_data = None
-
-            if "run_control" in P:
-                if P["run_control"] == "For a fixed length of simulated time.":
-                    control_properties = lambda x: x not in ["tstep"]  # noqa: E731
-                    # Reset the trajectory data so doesn't carry over
-                    self._trajectory = []
-                else:
-                    if len(P["control_properties"]) == 0:
-                        raise KeyError(
-                            "No physical property selected for automatic",
-                            "equilibration detection",
-                        )
-
-                    control_properties = [prp[0] for prp in P["control_properties"]]
-
+            # Find the state trajectory, if any
+            paths = sorted(subdir.glob("*state.trj"))
+            if len(paths) > 1:
+                raise RuntimeError(f"More than on state.trj file for {id_str}.")
+            elif len(paths) == 1:
+                control_properties = lambda x: x not in ["tstep"]  # noqa: E731
                 node_data, table = self.analyze_trajectory(
-                    filename, control_properties=control_properties, node=node
+                    paths[0], control_properties=control_properties, node=node
                 )
                 # Get just the values from the node data
                 values = {k: v["mean"] for k, v in node_data.items()}
@@ -1672,8 +1613,12 @@ class LAMMPS(seamm.Node):
                     for key in ("stderr", "tau", "inefficiency", "n_samples"):
                         if key in v:
                             values[f"{k},{key}"] = v[key]
+            else:
+                node_data = None
+                values = {}
+                table = None
 
-                node.analyze(data=values, properties=node_data, table=table)
+            node.analyze(data=values, properties=node_data, table=table)
 
             ret[node._id[1]] = node_data
 
@@ -1681,7 +1626,7 @@ class LAMMPS(seamm.Node):
 
     def analyze_trajectory(
         self,
-        filename,
+        path,
         sampling_rate=20,
         control_properties=None,
         node=None,
@@ -1689,8 +1634,6 @@ class LAMMPS(seamm.Node):
         """Read a trajectory file and do the statistical analysis"""
 
         write_html = "html" in self.options and self.options["html"]
-
-        rootname = os.path.splitext(filename)[0]
 
         results = {}
 
@@ -1705,11 +1648,8 @@ class LAMMPS(seamm.Node):
             "inefficiency": [],
         }
 
-        if isinstance(control_properties, list) and "t" not in control_properties:
-            control_properties.append("t")
-
         # Process the trajectory data
-        with open(filename, "r") as fd:
+        with path.open() as fd:
             file_data = pandas.read_csv(
                 fd,
                 sep=" ",
@@ -1731,7 +1671,7 @@ class LAMMPS(seamm.Node):
         self.logger.debug("Columns: {}".format(data.columns))
         self.logger.debug("  Types:\n{}".format(data.dtypes))
 
-        printer.normal("       Analysis of " + os.path.basename(filename) + "\n")
+        printer.normal(f"       Analysis of {path.name}\n")
 
         # Work out the time step, rather than give the whole vector
         t = data.index
@@ -1857,7 +1797,7 @@ class LAMMPS(seamm.Node):
                 results[column]["tau"] = tau
                 results[column]["inefficiency"] = inefficiency
                 results[column]["timestep"] = dt_fs
-                results[column]["rootname"] = rootname
+                results[column]["rootname"] = path.stem
                 if have_acf:
                     results[column]["acf"] = acf
                     results[column]["acf_confidence"] = confidence
@@ -2064,7 +2004,7 @@ class LAMMPS(seamm.Node):
             else:
                 figure.grid_plots("trj")
             if node is None:
-                path = Path(f"{rootname}_{column}.graph")
+                path = Path(f"{path.stem}_{column}.graph")
             else:
                 node_path = Path(node.directory)
                 node_path.mkdir(parents=True, exist_ok=True)
