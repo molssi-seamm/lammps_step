@@ -2,6 +2,8 @@
 
 """NVE (microcanonical) dynamics in LAMMPS"""
 
+import json
+
 import lammps_step
 import logging
 import seamm
@@ -88,6 +90,8 @@ class NVE(lammps_step.Energy):
 
         lines = []
         nfixes = 0
+        ncomputes = 0
+        ndumps = 0
         lines.append("")
         lines.append("#     NVE dynamics")
         lines.append("")
@@ -97,18 +101,21 @@ class NVE(lammps_step.Energy):
         lines.append("thermo              {}".format(int(nsteps / 100)))
         nfixes += 1
         lines.append("fix                 {} all nve".format(nfixes))
+
         # summary output written 10 times during run so we can see progress
         nevery = 10
         nfreq = int(nsteps / 10)
         nrepeat = int(nfreq / nevery)
         nfreq = nevery * nrepeat
         nfixes += 1
+        filename = f"@{self._id[-1]}+nve_summary.trj"
         lines.append(
-            "fix                 {} ".format(nfixes) + "all  ave/time "
-            "{} {} {} {} file summary_nve_{}_iter_0.txt".format(
-                nevery, nrepeat, nfreq, properties, "_".join(str(e) for e in self._id)
-            )
+            f"fix                 {nfixes} all ave/time {nevery} 1 {nfreq} &\n"
+            f"                       {properties} &\n"
+            "                       off 2 &\n"
+            f"                       file {filename}"
         )
+
         # instantaneous output written for averaging
         if P["sampling"] == "none":
             self.description.append(
@@ -125,24 +132,26 @@ class NVE(lammps_step.Energy):
             nrepeat = 1
             nfreq = nevery * nrepeat
             nfixes += 1
-            title1 = "!MolSSI trajectory 1.0 LAMMPS, NVE {} steps of {} fs".format(
-                int(nsteps / nevery), timestep * nevery
+            dt = (nevery * P["timestep"]).to_compact()
+            text = json.dumps(
+                {
+                    "code": "LAMMPS",
+                    "type": "NVE",
+                    "dt": dt.magnitude,
+                    "tunits": str(dt.u),
+                    "nsteps": nsteps // nevery,
+                },
+                separators=(",", ":"),
             )
+            title1 = "!MolSSI trajectory 2.0 " + text
+            filename = f"@{self._id[-1]}+nve_state.trj"
             lines.append(
-                (
-                    "fix                 {} all ave/time {} {} {} {} off 2 "
-                    "title1 '{}' title2 '{}' file "
-                    "trajectory_nve_{}_iter_0.seamm_trj"
-                ).format(
-                    nfixes,
-                    nevery,
-                    nrepeat,
-                    nfreq,
-                    properties,
-                    title1,
-                    title2,
-                    "_".join(str(e) for e in self._id),
-                )
+                f"fix                 {nfixes} all ave/time {nevery} 1 {nfreq} &\n"
+                f"                       {properties} &\n"
+                "                       off 2 &\n"
+                f"                       title1 '{title1}' &\n"
+                f"                       title2 '{title2}' &\n"
+                f"                       file {filename}"
             )
             self.description.append(
                 __(
@@ -156,6 +165,12 @@ class NVE(lammps_step.Energy):
                 )
             )
 
+        # Handle trajectories
+        tmp, ncomputes, ndumps, nfixes = self.trajectory_input(
+            P, timestep, nsteps, ncomputes, ndumps, nfixes
+        )
+        lines.extend(tmp)
+
         if extras is not None and "shake" in extras:
             nfixes += 1
             lines.append(extras["shake"].format(nfixes))
@@ -164,8 +179,12 @@ class NVE(lammps_step.Energy):
         lines.append("run                 {}".format(nsteps))
         lines.append("")
 
-        for fix in range(1, nfixes + 1):
-            lines.append("unfix               {}".format(fix))
+        for i in range(1, ncomputes + 1):
+            lines.append(f"uncompute           {i}")
+        for i in range(1, ndumps + 1):
+            lines.append(f"undump              {i}")
+        for i in range(1, nfixes + 1):
+            lines.append(f"unfix               {i}")
         lines.append("")
 
         return {
@@ -215,3 +234,148 @@ class NVE(lammps_step.Energy):
         timestep = lammps_step.to_lammps_units(value, quantity="time")
 
         return (timestep, value)
+
+    def trajectory_input(self, P, timestep, nsteps, ncomputes, ndumps, nfixes):
+        """Create the part of the input handling the trajectories.
+
+        Parameters
+        ----------
+        P : dict
+            The dictionary of options
+        timestep : int
+            The timestep in LAMMPS units
+        nsteps : int
+            Total number of steps in the run
+        ncomputes : int
+            The counter for the computes
+        ndumps : int
+            The counter for the dumps
+        nfixes : int
+            The counter for the fixes
+
+        Returns
+        -------
+        [str]
+            The input lines as array
+        int
+            The counter for the computes
+        int
+            The counter for the dumps
+        int
+            The counter for the fixes
+        """
+        lines = []
+        if P["atomic positions"] != "never":
+            t_s = lammps_step.to_lammps_units(P["atomic positions"], quantity="time")
+            n = max(1, round(t_s / timestep))
+            ndumps += 1
+            filename = f"@{self._id[-1]}+atomic_positions.dump_trj"
+            lines.append(
+                "\n"
+                f"dump                {ndumps} all custom {n} {filename} id xu yu zu\n"
+                f"dump_modify         {ndumps} sort id"
+            )
+        if P["com positions"] != "never":
+            t_s = lammps_step.to_lammps_units(P["com positions"], quantity="time")
+            n = max(1, round(t_s / timestep))
+            filename = f"@{self._id[-1]}+com_positions.trj"
+            ncomputes += 1
+            c1 = ncomputes
+            ncomputes += 1
+            c2 = ncomputes
+            nfixes += 1
+            dt = (n * P["timestep"]).to_compact()
+            text = json.dumps(
+                {
+                    "code": "LAMMPS",
+                    "type": "com positions",
+                    "dt": dt.magnitude,
+                    "tunits": str(dt.u),
+                    "nsteps": nsteps // n,
+                },
+                separators=(",", ":"),
+            )
+            title1 = "!MolSSI vector_trajectory 2.0 " + text
+            title2 = "! timestep n_molecules"
+            title3 = "molecule com_x com_y com_z"
+            lines.append(
+                "\n"
+                f"compute             {c1} all chunk/atom molecule\n"
+                f"compute             {c2} all com/chunk {c1}\n"
+                f"fix                 {nfixes} all ave/time {n} 1 {n} c_{c2}[*] &\n"
+                f"                        title1 '{title1}' &\n"
+                f"                        title2 '{title2}' &\n"
+                f"                        title3 '{title3}' &\n"
+                f"                        file {filename} mode vector"
+            )
+        if P["atomic velocities"] != "never":
+            t_s = lammps_step.to_lammps_units(P["atomic velocities"], quantity="time")
+            n = max(1, round(t_s / timestep))
+            ndumps += 1
+            filename = f"@{self._id[-1]}+atomic_velocities.dump_trj"
+            lines.append(
+                "\n"
+                f"dump                {ndumps} all custom {n} {filename} id vx vy vz\n"
+                f"dump_modify         {ndumps} sort id"
+            )
+        if P["com velocities"] != "never":
+            t_s = lammps_step.to_lammps_units(P["com velocities"], quantity="time")
+            n = max(1, round(t_s / timestep))
+            filename = f"@{self._id[-1]}+com_velocities.trj"
+            ncomputes += 1
+            c1 = ncomputes
+            ncomputes += 1
+            c2 = ncomputes
+            nfixes += 1
+            dt = (n * P["timestep"]).to_compact()
+            text = json.dumps(
+                {
+                    "code": "LAMMPS",
+                    "type": "com velocities",
+                    "dt": dt.magnitude,
+                    "tunits": str(dt.u),
+                    "nsteps": nsteps // n,
+                },
+                separators=(",", ":"),
+            )
+            title1 = "!MolSSI vector_trajectory 2.0 " + text
+            title2 = "! timestep n_molecules"
+            title3 = "molecule com_vx com_vy com_vz"
+            lines.append(
+                "\n"
+                f"compute             {c1} all chunk/atom molecule\n"
+                f"compute             {c2} all vcm/chunk {c1}\n"
+                f"fix                 {nfixes} all ave/time {n} 1 {n} c_{c2}[*] &\n"
+                f"                        title1 '{title1}' &\n"
+                f"                        title2 '{title2}' &\n"
+                f"                        title3 '{title3}' &\n"
+                f"                        file {filename} mode vector"
+            )
+        if P["shear stress"] != "never":
+            t_s = lammps_step.to_lammps_units(P["shear stress"], quantity="time")
+            n = max(1, round(t_s / timestep))
+            filename = f"@{self._id[-1]}+shear_stress.trj"
+            nfixes += 1
+            dt = (n * P["timestep"]).to_compact()
+            text = json.dumps(
+                {
+                    "code": "LAMMPS",
+                    "type": "shear stress",
+                    "dt": dt.magnitude,
+                    "tunits": str(dt.u),
+                    "nsteps": nsteps // n,
+                },
+                separators=(",", ":"),
+            )
+            title1 = "!MolSSI vector_trajectory 2.0 " + text
+            title2 = "Pxy Pxz Pyz"
+            lines.append(
+                "\n"
+                f"fix                 {nfixes} all ave/time {n} 1 {n} "
+                "v_pxy v_pxz v_pyz &\n"
+                f"                        title1 '{title1}' &\n"
+                f"                        title2 '{title2}' &\n"
+                f"                        file {filename}"
+            )
+
+        return lines, ncomputes, ndumps, nfixes
