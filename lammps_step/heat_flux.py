@@ -3,6 +3,8 @@
 """Non-graphical part of the Heat Flux step in a LAMMPS flowchart
 """
 
+import json
+
 import logging
 from pathlib import Path
 import pkg_resources
@@ -198,7 +200,6 @@ class HeatFlux(NVE):
 
         time = lammps_step.to_lammps_units(P["time"], quantity="time")
         timestep, P["timestep"] = self.timestep(P["timestep"])
-        timestep_fs = P["timestep"].m_as("fs")
         nsteps = round(time / timestep)
 
         # Work out the sampling information
@@ -226,7 +227,6 @@ class HeatFlux(NVE):
 
         computes = []
         fixes = []
-        step_id = "_".join(str(e) for e in self._id)
 
         # Unit conversion factor
         if lammps_step.get_lammps_unit_system() == "metal":
@@ -316,25 +316,29 @@ fix_modify          J_filter virial yes
         nevery = max(1, round(sampling / timestep))
         nrepeat = 1
         nfreq = nevery * nrepeat
+        properties = "v_time v_temp v_etotal v_ke v_pe v_Jx v_Jy v_Jz "
+        filename = f"@{self._id[-1]}+heat_flux_state.trj"
 
-        properties = "v_time v_temp v_press v_etotal v_ke v_pe v_Jx v_Jy v_Jz "
-        title1 = (
-            "!MolSSI trajectory 1.0 LAMMPS, Heat Flux "
-            f" {int(nsteps / nevery)} steps of {timestep_fs * nevery} fs"
+        dt = (nevery * P["timestep"]).to_compact()
+        text = json.dumps(
+            {
+                "code": "LAMMPS",
+                "type": "NVE",
+                "dt": dt.magnitude,
+                "tunits": str(dt.u),
+                "nsteps": nsteps // nevery,
+            },
+            separators=(",", ":"),
         )
-        title2 = "tstep t T P Etot Eke Epe Jx Jy Jz "
-
+        title1 = "!MolSSI trajectory 2.0 " + text
+        title2 = "tstep t T Etot Eke Epe Jx Jy Jz "
         lines.append(
-            f"""
-#          The main trajectory
-
-fix                 trajectory all ave/time {nevery} {nrepeat} {nfreq} &
-                       {properties} &
-                       off 2 &
-                       title1 '{title1}' &
-                       title2 '{title2}' &
-                       file trajectory_heatflux_{step_id}.seamm_trj
-"""
+            f"fix                 trajectory all ave/time {nevery} 1 {nfreq} &\n"
+            f"                       {properties} &\n"
+            "                       off 2 &\n"
+            f"                       title1 '{title1}' &\n"
+            f"                       title2 '{title2}' &\n"
+            f"                       file {filename}"
         )
 
         self.description.append(
@@ -352,16 +356,12 @@ fix                 trajectory all ave/time {nevery} {nrepeat} {nfreq} &
         nrepeat = int(nfreq / nevery)
         nfreq = nevery * nrepeat
 
+        filename = f"@{self._id[-1]}+heat_flux_summary.trj"
         lines.append(
-            f"""
-#          summary output written 10 times during run so we can see progress
-
-fix                 summary all ave/time {nevery} {nrepeat} {nfreq} &
-                        {properties} &
-                        off 2 &
-                        title2 '{title2}' &
-                        file summary_heatflux_{step_id}.txt
-"""
+            f"fix                 summary all ave/time {nevery} 1 {nfreq} &\n"
+            f"                       {properties} &\n"
+            "                       off 2 &\n"
+            f"                       file {filename}"
         )
 
         if extras is not None and "shake" in extras:
