@@ -232,6 +232,10 @@ class Initialization(seamm.Node):
             # LAMMPS has problems with bins for small systems
             lines.append("neighbor            2.0 nsq")
         lines.append("")
+        if periodicity == 3:
+            a, b, c, alpha, beta, gamma = configuration.cell.parameters
+            if alpha != 90 or beta != 90 or gamma != 90:
+                lines.append("box                 tilt large")
         lines.append("#    define the style of forcefield")
         lines.append("")
 
