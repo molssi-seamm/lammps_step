@@ -2,6 +2,8 @@
 
 """NVT (canonical) dynamics in LAMMPS"""
 
+import json
+
 import lammps_step
 import logging
 import seamm
@@ -219,6 +221,8 @@ class NVT(lammps_step.NVE):
         lines.append("thermo_style        custom {}".format(thermo_properties))
         lines.append("thermo              {}".format(int(nsteps / 100)))
 
+        ncomputes = 0
+        ndumps = 0
         nfixes = 0
         if P["thermostat"] == "Nose-Hoover":
             Tchain = P["Tchain"]
@@ -306,19 +310,12 @@ class NVT(lammps_step.NVE):
         nrepeat = int(nfreq / nevery)
         nfreq = nevery * nrepeat
         nfixes += 1
+        filename = f"@{self._id[-1]}+nvt_summary.trj"
         lines.append(
-            (
-                "fix                 {} all ave/time {} {} {} {} off 2 "
-                "title2 '{}' file summary_nvt_{}.txt"
-            ).format(
-                nfixes,
-                nevery,
-                nrepeat,
-                nfreq,
-                properties,
-                title2,
-                "_".join(str(e) for e in self._id),
-            )
+            f"fix                 {nfixes} all ave/time {nevery} 1 {nfreq} &\n"
+            f"                       {properties} &\n"
+            "                       off 2 &\n"
+            f"                       file {filename}"
         )
         # instantaneous output written for averaging
         if P["sampling"] == "none":
@@ -336,28 +333,43 @@ class NVT(lammps_step.NVE):
             nfreq = nevery * nrepeat
             nfixes += 1
 
+            dt = (nevery * P["timestep"]).to_compact()
             if T0 == T1:
-                title1 = (
-                    "!MolSSI trajectory 1.0 LAMMPS, NVT {} steps of {} fs, " "T={} K"
-                ).format(int(nsteps / nevery), timestep * nevery, T0)
-            else:
-                title1 = (
-                    "!MolSSI trajectory 1.0 LAMMPS, NVT {} steps of {} fs, " "T={}-{} K"
-                ).format(nsteps, timestep, T0, T1)
-            lines.append(
-                (
-                    "fix                 {} all ave/time {} {} {} {} off 2"
-                    " title1 '{}' title2 '{}' file trajectory_nvt_{}.seamm_trj"
-                ).format(
-                    nfixes,
-                    nevery,
-                    nrepeat,
-                    nfreq,
-                    properties,
-                    title1,
-                    title2,
-                    "_".join(str(e) for e in self._id),
+                text = json.dumps(
+                    {
+                        "code": "LAMMPS",
+                        "type": "NVT",
+                        "dt": dt.magnitude,
+                        "tunits": str(dt.u),
+                        "nsteps": nsteps // nevery,
+                        "T": T0,
+                        "Tunits": "K",
+                    },
+                    separators=(",", ":"),
                 )
+            else:
+                text = json.dumps(
+                    {
+                        "code": "LAMMPS",
+                        "type": "NVT",
+                        "dt": dt.magnitude,
+                        "units": str(dt.u),
+                        "nsteps": nsteps // nevery,
+                        "T0": T0,
+                        "T1": T1,
+                        "Tunits": "K",
+                    },
+                    separators=(",", ":"),
+                )
+            title1 = "!MolSSI trajectory 2.0 " + text
+            filename = f"@{self._id[-1]}+nvt_state.trj"
+            lines.append(
+                f"fix                 {nfixes} all ave/time {nevery} 1 {nfreq} &\n"
+                f"                       {properties} &\n"
+                "                       off 2 &\n"
+                f"                       title1 '{title1}' &\n"
+                f"                       title2 '{title2}' &\n"
+                f"                       file {filename}"
             )
             self.description.append(
                 __(
@@ -371,6 +383,12 @@ class NVT(lammps_step.NVE):
                 )
             )
 
+        # Handle trajectories
+        tmp, ncomputes, ndumps, nfixes = self.trajectory_input(
+            P, timestep, nsteps, ncomputes, ndumps, nfixes
+        )
+        lines.extend(tmp)
+
         if extras is not None and "shake" in extras:
             nfixes += 1
             lines.append(extras["shake"].format(nfixes))
@@ -379,8 +397,12 @@ class NVT(lammps_step.NVE):
         lines.append("run                 {}".format(nsteps))
         lines.append("")
 
-        for fix in range(1, nfixes + 1):
-            lines.append("unfix               {}".format(fix))
+        for i in range(1, ncomputes + 1):
+            lines.append(f"uncompute           {i}")
+        for i in range(1, ndumps + 1):
+            lines.append(f"undump              {i}")
+        for i in range(1, nfixes + 1):
+            lines.append(f"unfix               {i}")
         lines.append("")
 
         return {
