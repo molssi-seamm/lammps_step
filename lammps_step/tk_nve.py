@@ -51,6 +51,23 @@ class TkNVE(lammps_step.TkEnergy):
         # Shortcut for parameters
         P = self.node.parameters
 
+        # Add a tab for the trajectory setup
+        notebook = self["notebook"]
+        tframe = ttk.Frame(notebook)
+        self["trajectory frame"] = tframe
+        notebook.insert(
+            self["results frame"], tframe, text="Trajectories", sticky=tk.NSEW
+        )
+
+        row = 0
+        widgets = []
+        for key in lammps_step.NVE_Parameters.trajectories:
+            self[key] = P[key].widget(tframe)
+            self[key].grid(row=row, column=0)
+            row += 1
+            widgets.append(self[key])
+        sw.align_labels(widgets, sticky=tk.E)
+
         # Frame to isolate widgets
         c_frame = self["control_frame"] = ttk.LabelFrame(
             self["frame"],
