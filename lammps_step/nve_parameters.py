@@ -145,6 +145,19 @@ class NVE_Parameters(lammps_step.EnergyParameters):
                 "which can be used for diffusion calculations."
             ),
         },
+        "heat flux": {
+            "default": "never",
+            "kind": "float",
+            "default_units": "fs",
+            "enumeration": ("never",),
+            "format_string": ".1f",
+            "description": "Sample the heat flux:",
+            "help_text": (
+                "How often to sample the heat flux, usually used for thermal "
+                "conductivity calculations. However, it is recommended to use the "
+                "heat-flux step instead of using this."
+            ),
+        },
         "shear stress": {
             "default": "never",
             "kind": "float",

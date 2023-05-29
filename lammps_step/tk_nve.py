@@ -46,7 +46,7 @@ class TkNVE(lammps_step.TkEnergy):
         """Create the dialog!"""
 
         # Let parent classes do their thing.
-        super().create_dialog(title=title)
+        frame = super().create_dialog(title=title)
 
         # Shortcut for parameters
         P = self.node.parameters
@@ -62,11 +62,16 @@ class TkNVE(lammps_step.TkEnergy):
         row = 0
         widgets = []
         for key in lammps_step.NVE_Parameters.trajectories:
+            if title == "Heat Flux" and key == "heat flux":
+                continue
             self[key] = P[key].widget(tframe)
             self[key].grid(row=row, column=0)
             row += 1
             widgets.append(self[key])
         sw.align_labels(widgets, sticky=tk.E)
+
+        if title == "Heat Flux":
+            return frame
 
         # Frame to isolate widgets
         c_frame = self["control_frame"] = ttk.LabelFrame(
@@ -91,6 +96,8 @@ class TkNVE(lammps_step.TkEnergy):
         self["run_control"].combobox.bind(
             "<<ComboboxSelected>>", self.reset_control_frame
         )
+
+        return frame
 
     def reset_dialog(self, widget=None):
         """Layout the widgets as needed for the current state"""

@@ -60,7 +60,7 @@ class TkEnergy(seamm.TkNode):
     def create_dialog(self, title="Edit LAMMPS Energy Step"):
         """Create the dialog!"""
 
-        super().create_dialog(title=title)
+        frame = super().create_dialog(title=title)
 
         self["message"] = ttk.Label(
             self["frame"],
@@ -70,3 +70,5 @@ class TkEnergy(seamm.TkNode):
         self["message"].grid()
 
         self.setup_results()
+
+        return frame

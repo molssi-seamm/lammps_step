@@ -41,8 +41,20 @@ class NVE(lammps_step.Energy):
         self._metadata = lammps_step.metadata
         self.parameters = lammps_step.NVE_Parameters()
 
-    def description_text(self):
-        """Create the text description of what this step will do."""
+    def description_text(self, P=None):
+        """Return a short description of this step.
+
+        Return a nicely formatted string describing what this step will
+        do.
+
+        Keyword arguments:
+            P: a dictionary of parameter values, which may be variables
+                or final values. If None, then the parameters values will
+                be used as is.
+        """
+
+        if not P:
+            P = self.parameters.values_to_dict()
 
         text = (
             "{time} of microcanonical (NVE) dynamics using a "
@@ -50,7 +62,7 @@ class NVE(lammps_step.Energy):
             "sampled every {sampling}."
         )
 
-        return text
+        return self.header + "\n" + __(text, **P, indent=4 * " ").__str__()
 
     def get_input(self, extras=None):
         """Get the input for an NVE dynamics run in LAMMPS"""
@@ -101,6 +113,37 @@ class NVE(lammps_step.Energy):
         lines.append("thermo              {}".format(int(nsteps / 100)))
         nfixes += 1
         lines.append("fix                 {} all nve".format(nfixes))
+
+        # For the heat flux, if requested, we need extra input
+        if P["heat flux"] != "never":
+            # Unit conversion factor
+            if lammps_step.get_lammps_unit_system() == "metal":
+                factor = Q_("eV/Å^2/ps")
+            else:
+                factor = (
+                    Q_("kcal/Å^2/fs/mol") / Q_("kcal/mol") * Q_("kcal/mol").to("kJ")
+                )
+            factor = factor.m_as("W/m^2")
+            lines.append(
+                f"""
+compute             KE all ke/atom
+compute             PE all pe/atom
+
+#          centroid doesn't work with kspace, so split into pair and non-pair parts
+
+compute             S_p all stress/atom NULL pair kspace
+compute             S_b all centroid/stress/atom NULL bond angle dihedral improper
+compute             flux_p all heat/flux KE PE S_p
+compute             flux_b all heat/flux KE PE S_b
+
+#          Conversion from kcal/Å^2/fs/mol to W/m^2")
+
+variable            factor equal {factor}
+variable            Jx equal v_factor*(c_flux_p[1]+c_flux_b[1])/vol
+variable            Jy equal v_factor*(c_flux_p[2]+c_flux_b[2])/vol
+variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
+"""
+            )
 
         # summary output written 10 times during run so we can see progress
         nevery = 10
@@ -351,6 +394,32 @@ class NVE(lammps_step.Energy):
                 f"                        title3 '{title3}' &\n"
                 f"                        file {filename} mode vector"
             )
+        if P["heat flux"] != "never":
+            t_s = lammps_step.to_lammps_units(P["heat flux"], quantity="time")
+            n = max(1, round(t_s / timestep))
+            filename = f"@{self._id[-1]}+heat_flux.trj"
+            nfixes += 1
+            dt = (n * P["timestep"]).to_compact()
+            text = json.dumps(
+                {
+                    "code": "LAMMPS",
+                    "type": "heat flux",
+                    "dt": dt.magnitude,
+                    "tunits": str(dt.u),
+                    "nsteps": nsteps // n,
+                },
+                separators=(",", ":"),
+            )
+            title1 = "!MolSSI trajectory 2.0 " + text
+            title2 = "Jx Jy Jz"
+            lines.append(
+                "\n"
+                f"fix                 {nfixes} all ave/time {n} 1 {n} "
+                "v_Jx v_Jy v_Jz &\n"
+                f"                        title1 '{title1}' &\n"
+                f"                        title2 '{title2}' &\n"
+                f"                        file {filename}"
+            )
         if P["shear stress"] != "never":
             t_s = lammps_step.to_lammps_units(P["shear stress"], quantity="time")
             n = max(1, round(t_s / timestep))
@@ -367,7 +436,7 @@ class NVE(lammps_step.Energy):
                 },
                 separators=(",", ":"),
             )
-            title1 = "!MolSSI vector_trajectory 2.0 " + text
+            title1 = "!MolSSI trajectory 2.0 " + text
             title2 = "Pxy Pxz Pyz"
             lines.append(
                 "\n"

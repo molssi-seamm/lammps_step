@@ -7,7 +7,7 @@ import json
 import lammps_step
 import logging
 import seamm
-from seamm_util import units_class
+from seamm_util import units_class, Q_
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
 import random
@@ -302,6 +302,36 @@ class NVT(lammps_step.NVE):
                 module="lammps_step",
                 level=1,
                 note="Citation for thermostat.",
+            )
+        # For the heat flux, if requested, we need extra input
+        if P["heat flux"] != "never":
+            # Unit conversion factor
+            if lammps_step.get_lammps_unit_system() == "metal":
+                factor = Q_("eV/Å^2/ps")
+            else:
+                factor = (
+                    Q_("kcal/Å^2/fs/mol") / Q_("kcal/mol") * Q_("kcal/mol").to("kJ")
+                )
+            factor = factor.m_as("W/m^2")
+            lines.append(
+                f"""
+compute             KE all ke/atom
+compute             PE all pe/atom
+
+#          centroid doesn't work with kspace, so split into pair and non-pair parts
+
+compute             S_p all stress/atom NULL pair kspace
+compute             S_b all centroid/stress/atom NULL bond angle dihedral improper
+compute             flux_p all heat/flux KE PE S_p
+compute             flux_b all heat/flux KE PE S_b
+
+#          Conversion from kcal/Å^2/fs/mol to W/m^2")
+
+variable            factor equal {factor}
+variable            Jx equal v_factor*(c_flux_p[1]+c_flux_b[1])/vol
+variable            Jy equal v_factor*(c_flux_p[2]+c_flux_b[2])/vol
+variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
+"""
             )
 
         # summary output written 10 times during run so we can see progress
