@@ -23,13 +23,14 @@
 # html = False
 
 # Information about where/how the executables are installed
-# installation may be 'user', 'conda' or 'module'. If a module is
+# installation may be 'path', 'conda' or 'modules'. If a module is
 # specified it will be loaded and those executables used.  In this
 # case, any path specified using lammps-path will be ignored.
 
 installation = not installed
 conda-environment =
 modules = 
+gpu-modules =
 
 # The path to the executables. Can be empty or not present, in which
 # case the default PATH is used.  If a path is given, lmp_serial and
@@ -49,10 +50,30 @@ lammps-path =
 # values unless you have a special need. These values are combined with
 # lammps-path to get the location of the executables.
 #
+# If you are running from a queueing system such as SLURM, if MPI was compiled
+# to know about the batch system, you should be able to use something like
+# 'srun' or 'mpirun' with no further arguments to run parallel tasks. If
+# you are not lucky, and need the parameters, you can add them to the command
+# line like this:
+#
+# mpiexec = mpirun -n {NTASKS} -H {NODELIST} -npernode {NTASKS_PER_NODE}
+#
+# SEAMM picks up the environment variables such as SLURM_NTASKS, strips the
+# prefix from them and replaces any instances in the command line that are
+# enclosed in braces. Hopefully this lets you construct the correct command
+# line.
+#
 # The LAMMPS installer does not handle these variables! They are here
 # just in case!
 
 # lammps-serial = lmp_serial
 # lammps-mpi = lmp_mpi
 # mpiexec = mpiexec
+
+# Optional command-line arguments for LAMMPS. These are usually used with accelerators
+# such as Kokkos or GPU to automatically apply the accelerator. Again there is a normal
+# and GPU version
+
+# cmd-args = -k on -sf kk
+# gpu-cmd-args = -k on g {ngpus} -sf kk -pk kokkos gpu/aware on newton on neigh full neigh/thread on neigh/transpose off comm device
 
