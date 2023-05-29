@@ -96,9 +96,91 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             ),
         },
     }
+    trajectories = {
+        "atomic positions": {
+            "default": "never",
+            "kind": "float",
+            "default_units": "fs",
+            "enumeration": ("never",),
+            "format_string": ".1f",
+            "description": "Sample the atom positions:",
+            "help_text": (
+                "How often to sample the positions of the atoms, which can be used "
+                "for diffusion calculations."
+            ),
+        },
+        "com positions": {
+            "default": "never",
+            "kind": "float",
+            "default_units": "fs",
+            "enumeration": ("never",),
+            "format_string": ".1f",
+            "description": "Sample the molecular center-of-mass positions:",
+            "help_text": (
+                "How often to sample the positions of the  molecular center-of-masses, "
+                "which can be used for diffusion calculations."
+            ),
+        },
+        "atomic velocities": {
+            "default": "never",
+            "kind": "float",
+            "default_units": "fs",
+            "enumeration": ("never",),
+            "format_string": ".1f",
+            "description": "Sample the atom velocities:",
+            "help_text": (
+                "How often to sample the velocity of the atoms, which can be used for "
+                "diffusion calculations."
+            ),
+        },
+        "com velocities": {
+            "default": "never",
+            "kind": "float",
+            "default_units": "fs",
+            "enumeration": ("never",),
+            "format_string": ".1f",
+            "description": "Sample the molecular center-of-mass velocities:",
+            "help_text": (
+                "How often to sample the velocity of the molecular center-of-masses, "
+                "which can be used for diffusion calculations."
+            ),
+        },
+        "heat flux": {
+            "default": "never",
+            "kind": "float",
+            "default_units": "fs",
+            "enumeration": ("never",),
+            "format_string": ".1f",
+            "description": "Sample the heat flux:",
+            "help_text": (
+                "How often to sample the heat flux, usually used for thermal "
+                "conductivity calculations. However, it is recommended to use the "
+                "heat-flux step instead of using this."
+            ),
+        },
+        "shear stress": {
+            "default": "never",
+            "kind": "float",
+            "default_units": "fs",
+            "enumeration": ("never",),
+            "format_string": ".1f",
+            "description": "Sample the shear stress:",
+            "help_text": (
+                "How often to sample the shear stress, usually used for viscosity "
+                "calculations."
+            ),
+        },
+    }
 
     def __init__(self, defaults={}, data=None):
         """Initialize the instance, by default from the default
         parameters given in the class"""
 
-        super().__init__(defaults={**NVE_Parameters.parameters, **defaults}, data=data)
+        super().__init__(
+            defaults={
+                **NVE_Parameters.parameters,
+                **NVE_Parameters.trajectories,
+                **defaults,
+            },
+            data=data,
+        )

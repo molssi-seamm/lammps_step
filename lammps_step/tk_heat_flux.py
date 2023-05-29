@@ -2,16 +2,13 @@
 
 """The graphical part of a Heat Flux step"""
 
-import pprint  # noqa: F401
 import tkinter as tk
 
-import lammps_step  # noqa: F401, E999
-import seamm
-from seamm_util import ureg, Q_, units_class  # noqa: F401, E999
+import lammps_step
 import seamm_widgets as sw
 
 
-class TkHeatFlux(seamm.TkNode):
+class TkHeatFlux(lammps_step.TkNVE):
     """
     The graphical part of a Heat Flux step in a flowchart.
 
@@ -116,7 +113,7 @@ class TkHeatFlux(seamm.TkNode):
         P = self.node.parameters
 
         # Then create the widgets
-        for key in ("time", "timestep", "sampling"):
+        for key in ("time", "timestep", "heat flux", "sampling"):
             self[key] = P[key].widget(frame)
 
         # and lay them out
@@ -158,7 +155,7 @@ class TkHeatFlux(seamm.TkNode):
         # if e.g. rows are skipped to control such as "method" here
         row = 0
         widgets = []
-        for key in ("time", "timestep", "sampling"):
+        for key in ("time", "timestep", "heat flux", "sampling"):
             self[key].grid(row=row, column=0, sticky=tk.EW)
             widgets.append(self[key])
             row += 1

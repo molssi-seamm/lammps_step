@@ -4,7 +4,7 @@
 
 from contextlib import contextmanager
 import copy
-import glob
+import json
 import logging
 from math import sqrt, exp, degrees, radians, cos, acos
 from pathlib import Path
@@ -12,7 +12,6 @@ import os
 import os.path
 import pkg_resources
 import pprint
-import re
 import shutil
 import string
 import sys
@@ -31,6 +30,7 @@ import molsystem
 import seamm
 import seamm_util
 import seamm_util.printing as printing
+from seamm_util import CompactJSONEncoder
 from seamm_util.printing import FormattedText as __
 
 # from pymbar import timeseries
@@ -266,6 +266,13 @@ class LAMMPS(seamm.Node):
         )
         parser.add_argument(
             parser_name,
+            "--gpu-modules",
+            nargs="*",
+            default=None,
+            help="the environment modules to load for the GPU version of LAMMPS",
+        )
+        parser.add_argument(
+            parser_name,
             "--lammps-path",
             default=None,
             help="the path to the LAMMPS executables",
@@ -281,6 +288,18 @@ class LAMMPS(seamm.Node):
             "--lammps-mpi",
             default="lmp_mpi",
             help="the mpi version of LAMMPS",
+        )
+        parser.add_argument(
+            parser_name,
+            "--cmd-args",
+            default="",
+            help="the command-line arguments for LAMMPS, e.g. '-k on'",
+        )
+        parser.add_argument(
+            parser_name,
+            "--gpu-cmd-args",
+            default="",
+            help="the command-line arguments for GPU version of LAMMPS, e.g. '-k on'",
         )
         parser.add_argument(
             parser_name, "--mpiexec", default="mpiexec", help="the mpi executable"
@@ -393,10 +412,6 @@ class LAMMPS(seamm.Node):
 
         # Print headers and get to work
         printer.important(self.header)
-        if np > 1:
-            printer.important("    LAMMPS using MPI with {} processes.\n".format(np))
-        else:
-            printer.important("   LAMMPS using the serial version.\n")
 
         self.subflowchart.root_directory = self.flowchart.root_directory
 
@@ -559,12 +574,14 @@ class LAMMPS(seamm.Node):
             input_file = base + ".dat"
             new_input_data = []
             new_input_data.append("run          0")
-            new_input_data.append(f"write_restart          {restart}")
+            new_input_data.append(f"write_restart      {restart}")
 
             new_input_data.append(
-                f"write_dump all custom  {dump} id " "xu yu zu modify flush yes sort id"
+                f"write_dump          all custom  {dump} id "
+                "xu yu zu modify flush yes sort id"
             )
             new_input_data.append("")
+            new_input_data.append("info               computes fixes dumps log out")
 
             files["input"]["filename"] = input_file
             files["input"]["data"] += new_input_data
@@ -627,10 +644,12 @@ class LAMMPS(seamm.Node):
         return_files = [
             "summary_*.txt",
             "trajectory_*.seamm_trj",
+            "*.trj",
             "*.restart.*",
             "*.dump.*",
             "*.log",
             "*.dat",
+            "log.lammps",
             "log.cite",
             "run_lammps",
         ]
@@ -638,7 +657,6 @@ class LAMMPS(seamm.Node):
         # Check for already having run
         path = Path(self.directory) / "success.dat"
         if path.exists():
-            run_lammps = False
             result = {}
             path = Path(self.directory) / "log.cite"
             if path.exists():
@@ -650,45 +668,152 @@ class LAMMPS(seamm.Node):
                 result["stdout"] = path.read_text()
             result["stderr"] = ""
         else:
-            run_lammps = True
+            # See if we are running in a batch job: SLURM, etc...
+            batch = {}
+            if "SLURM_JOBID" in os.environ:
+                batch["type"] = "slurm"
+                for item, value in os.environ.items():
+                    if item[0:6] == "SLURM_":
+                        batch[item[6:]] = value
+
+                if np > int(batch["NTASKS"]):
+                    np = int(batch["NTASKS"])
+                batch["NTASKS"] = np
+
+                if "NTASKS_PER_NODE" not in batch:
+                    batch["NTASKS_PER_NODE"] = int(batch["NTASKS"]) // int(
+                        batch["NNODES"]
+                    )
+
+                # Expand `[i-k]` naming in nodelist
+                nodes = batch["NODELIST"].split(",")
+                nodelist = []
+                npernode = batch["NTASKS_PER_NODE"]
+                for node in nodes:
+                    if "[" in node:
+                        node, count = node.split("[")
+                        first, last = count[0:-1].split("-")
+                        for i in range(int(first), int(last) + 1):
+                            nodelist.append(f"{node}{i}:{npernode}")
+                    else:
+                        nodelist.append(f"{node}:{npernode}")
+                nodelist = ",".join(nodelist)
+                batch["NODELIST"] = nodelist
+
+                if "JOB_GPUS" in batch:
+                    batch["ngpus"] = len(batch["JOB_GPUS"].split(","))
+
             local = seamm.ExecLocal()
 
             # Find the executables and if they exist.
-            lammps_path = Path(self.options["lammps_path"]).expanduser().resolve()
-            lmp_serial = lammps_path / self.options["lammps_serial"]
-            lmp_serial = lmp_serial.expanduser().resolve()
-            if not lmp_serial.exists():
-                lmp_serial = None
-
-            lmp_mpi = lammps_path / self.options["lammps_mpi"]
-            lmp_mpi = lmp_mpi.expanduser().resolve()
-            if lmp_mpi.exists():
-                mpiexec = lammps_path / self.options["mpiexec"]
-                mpiexec = mpiexec.expanduser().resolve()
-                if not mpiexec.exists():
-                    # See if it is in the path
-                    mpiexec = shutil.which(self.options["mpiexec"])
-                    if mpiexec is None:
-                        lmp_mpi = None
+            if "ngpus" not in batch:
+                modules = self.options["modules"]
+            else:
+                modules = self.options["gpu_modules"]
+            serial = True
+            if len(modules) > 0:
+                # Use a module for LAMMPS
+                shell = True
+                cmd = []
+                cmd.append(f"module load {modules}")
+                lmp_serial = self.options["lammps_serial"]
+                lmp_mpi = self.options["lammps_mpi"]
+                mpiexec = self.options["mpiexec"]
+                if "python script" in files:
+                    python = "python"
+                    if lmp_mpi != "" and (np > 1 or lmp_serial == ""):
+                        serial = False
+                        text = mpiexec.format(**batch) + " python run_lammps"
                     else:
-                        mpiexec = Path(mpiexec).expanduser().resolve()
+                        text = "python run_lammps"
+                    if "ngpus" not in batch and self.options["cmd_args"] != "":
+                        text += " --cmd-args '"
+                        text += self.options["cmd_args"].format(**batch)
+                        text += "'"
+                    if "ngpus" in batch and self.options["gpu_cmd_args"] != "":
+                        text += " --cmd-args '"
+                        text += self.options["gpu_cmd_args"].format(**batch)
+                        text += "'"
+                else:
+                    if lmp_mpi != "" and (np > 1 or lmp_serial == ""):
+                        serial = False
+                        text = mpiexec.format(**batch) + " " + lmp_mpi
+                    else:
+                        text = lmp_serial
+                    if "ngpus" not in batch and self.options["cmd_args"] != "":
+                        text += " " + self.options["cmd_args"].format(**batch)
+                    if "ngpus" in batch and self.options["gpu_cmd_args"] != "":
+                        text += " " + self.options["gpu_cmd_args"].format(**batch)
+                    text += " -in lammps.dat"
+                cmd.append(text)
+                cmd = "\n".join(cmd)
             else:
-                lmp_mpi = None
+                shell = False
+                lammps_path = Path(self.options["lammps_path"]).expanduser().resolve()
+                lmp_serial = lammps_path / self.options["lammps_serial"]
+                lmp_serial = lmp_serial.expanduser().resolve()
+                if not lmp_serial.exists():
+                    lmp_serial = None
 
-            # Use the parallel executable if the serial does not exist, and vice
-            # versa
-            if "python script" in files:
-                python = lammps_path / "python"
-                if lmp_mpi is not None and (np > 1 or lmp_serial is None):
-                    cmd = [str(mpiexec), "-np", str(np), str(python), "run_lammps"]
+                lmp_mpi = lammps_path / self.options["lammps_mpi"]
+                lmp_mpi = lmp_mpi.expanduser().resolve()
+                if lmp_mpi.exists():
+                    tmp = self.options["mpiexec"].format(**batch).split()
+                    mpiexec = lammps_path / tmp[0]
+                    mpi_options = tmp[1:]
+                    mpiexec = mpiexec.expanduser().resolve()
+                    if not mpiexec.exists():
+                        # See if it is in the path
+                        mpiexec = shutil.which(tmp[0])
+                        if mpiexec is None:
+                            lmp_mpi = None
+                        else:
+                            mpiexec = Path(mpiexec).expanduser().resolve()
                 else:
-                    cmd = [str(python), "run_lammps"]
+                    lmp_mpi = None
+
+                # Use the parallel executable if the serial does not exist, and vice
+                # versa
+                if "python script" in files:
+                    python = lammps_path / "python"
+                    if lmp_mpi is not None and (np > 1 or lmp_serial is None):
+                        serial = False
+                        cmd = [str(mpiexec)]
+                        cmd.extend(mpi_options)
+                        cmd.append(str(python))
+                        cmd.append("run_lammps")
+                    else:
+                        cmd = [str(python), "run_lammps"]
+                    if "ngpus" not in batch and self.options["cmd_args"] != "":
+                        cmd_args = self.options["cmd_args"].format(**batch)
+                        cmd.extend(["--cmd-args", cmd_args])
+                    if "ngpus" in batch and self.options["gpu_cmd_args"] != "":
+                        cmd_args = self.options["gpu_cmd_args"].format(**batch)
+                        cmd.extend(["--cmd-args", cmd_args])
+                else:
+                    if lmp_mpi is not None and (np > 1 or lmp_serial is None):
+                        serial = False
+                        cmd = [str(mpiexec)]
+                        cmd.extend(mpi_options)
+                        cmd.append(str(lmp_mpi))
+                    else:
+                        cmd = [str(lmp_serial)]
+                    if "ngpus" not in batch and self.options["cmd_args"] != "":
+                        cmd.extend(self.options["cmd_args"].format(**batch).split())
+                    if "ngpus" in batch and self.options["gpu_cmd_args"] != "":
+                        cmd.extend(self.options["gpu_cmd_args"].format(**batch).split())
+                    cmd.extend(["-in", files["input"]["filename"]])
+
+            if serial:
+                printer.important("   LAMMPS using the serial version.\n")
             else:
-                if lmp_mpi is not None and (np > 1 or lmp_serial is None):
-                    cmd = [str(mpiexec), "-np", str(np), str(lmp_mpi)]
+                if "ngpus" in batch:
+                    printer.important(
+                        f"    LAMMPS using MPI with {np} processes and "
+                        f"{batch['ngpus']} gpus.\n"
+                    )
                 else:
-                    cmd = [str(lmp_serial)]
-                cmd.extend(["-in", files["input"]["filename"]])
+                    printer.important(f"    LAMMPS using MPI with {np} processes")
 
             result = local.run(
                 cmd=cmd,
@@ -696,6 +821,7 @@ class LAMMPS(seamm.Node):
                 return_files=return_files,
                 in_situ=True,
                 directory=self.directory,
+                shell=shell,
             )
 
             if result is None:
@@ -718,53 +844,8 @@ class LAMMPS(seamm.Node):
         else:
             self._add_lammps_citations(result["stdout"])
 
-        if run_lammps:
-            if result["stderr"] != "":
-                self.logger.warning("stderr:\n" + result["stderr"])
-                f = os.path.join(self.directory, "stderr.txt")
-                with open(f, mode="w") as fd:
-                    fd.write(result["stderr"])
-
-            for filename in result["files"]:
-                f = os.path.join(self.directory, filename)
-                mode = "wb" if type(result[filename]["data"]) is bytes else "w"
-                with open(f, mode=mode) as fd:
-                    if result[filename]["data"] is not None:
-                        fd.write(result[filename]["data"])
-                    else:
-                        fd.write(result[filename]["exception"])
-
         base = os.path.basename(files["input"]["filename"][0:-4])
         dump_file = base + ".dump.0"
-
-        # restart_file = base + ".restart.*"
-        # filename = os.path.join(self.directory, restart_file)
-        # restart_filenames = glob.glob(filename)
-
-        # Probably the step didn't run
-        # if len(restart_filenames) == 0:
-        #     raise FileNotFoundError(
-        #         f"Lammps_step: could not find any file with the pattern {filename}"
-        #     )
-
-        # run_lengths = []
-
-        # for f in restart_filenames:
-        #     try:
-        #         pre, ext = os.path.splitext(f)
-        #         ext = int(ext.strip("."))
-        #     except ValueError:
-        #         raise Exception(f"Lammps_step: could not extract run length from {f}")
-        #     run_lengths.append(ext)
-
-        #     last_snapshot = str(max(run_lengths))
-
-        # restart_file = restart_file.replace("*", last_snapshot)
-        # files["restart"] = {}
-        # files["restart"]["filename"] = restart_file
-        # filename = os.path.join(self.directory, restart_file)
-        # with open(filename, mode="rb") as fd:
-        #     files["restart"]["data"] = fd.read()
 
         files["dump"] = {}
         files["dump"]["filename"] = dump_file
@@ -834,10 +915,12 @@ class LAMMPS(seamm.Node):
             new_input_data.append("reset_timestep      0")
             new_input_data.append("run                 0")
             new_input_data.append(
-                f"write_dump          all custom  {dump} id xu yu zu "
+                f"write_dump         all custom  {dump} id xu yu zu "
                 "modify flush yes sort id"
             )
             new_input_data.append("")
+            new_input_data.append("")
+            new_input_data.append("info               computes fixes dumps log out")
 
         files["input"]["data"] += new_input_data
 
@@ -853,6 +936,7 @@ class LAMMPS(seamm.Node):
                 "modify flush yes sort id"
             )
             postscript.append("")
+            postscript.append("info               computes fixes dumps log out")
             files["postscript"] = {
                 "data": "\n".join(postscript),
                 "filename": "lammps_post.dat",
@@ -1623,48 +1707,43 @@ class LAMMPS(seamm.Node):
 
         ret = {node._id[1]: None for node in nodes}
 
+        run_dir = Path(self.directory)
+
         for node in nodes:
             for value in node.description:
                 printer.important(value)
                 printer.important(" ")
 
+            subdir = run_dir / str(node._id[-1])
+
+            # Move any old style files
             id_str = "_".join(str(e) for e in node._id)
+            paths = sorted(run_dir.glob(f"*trajectory*{id_str}*.seamm_trj"))
+            for path in paths:
+                ensemble = str(path).split("_")[1]
+                path.rename(subdir / f"{ensemble}_state.trj")
 
-            filenames = glob.glob(
-                os.path.join(self.directory, "*trajectory*" + id_str + "*.seamm_trj")
-            )
+            paths = sorted(run_dir.glob(f"*summary*{id_str}*.seamm_trj"))
+            for path in paths:
+                ensemble = str(path).split("_")[1]
+                path.rename(subdir / f"{ensemble}_summary.trj")
 
-            if len(filenames) > 1:
-                filenames.sort(
-                    key=lambda x: int(re.search(r"iter_\d+", x).group().split("_")[1])
-                )
-
-            if len(filenames) > 0:
-                filename = filenames[-1]
-
-            P = node.parameters.current_values_to_dict(
-                context=seamm.flowchart_variables._data
-            )
-
-            node_data = None
-
-            if "run_control" in P:
-                if P["run_control"] == "For a fixed length of simulated time.":
-                    control_properties = lambda x: x not in ["tstep"]  # noqa: E731
-                    # Reset the trajectory data so doesn't carry over
-                    self._trajectory = []
-                else:
-                    if len(P["control_properties"]) == 0:
-                        raise KeyError(
-                            "No physical property selected for automatic",
-                            "equilibration detection",
-                        )
-
-                    control_properties = [prp[0] for prp in P["control_properties"]]
-
+            # Find the state trajectory, if any
+            paths = sorted(subdir.glob("*state.trj"))
+            if len(paths) > 1:
+                raise RuntimeError(f"More than one state.trj file for {id_str}.")
+            elif len(paths) == 1:
+                control_properties = lambda x: x not in ["tstep"]  # noqa: E731
                 node_data, table = self.analyze_trajectory(
-                    filename, control_properties=control_properties, node=node
+                    paths[0], control_properties=control_properties, node=node
                 )
+                # Save the state data as JSON
+                data_file = subdir / "state.json"
+                with data_file.open("w") as fd:
+                    json.dump(
+                        node_data, fd, indent=4, cls=CompactJSONEncoder, sort_keys=True
+                    )
+
                 # Get just the values from the node data
                 values = {k: v["mean"] for k, v in node_data.items()}
                 # And the other key values
@@ -1672,8 +1751,12 @@ class LAMMPS(seamm.Node):
                     for key in ("stderr", "tau", "inefficiency", "n_samples"):
                         if key in v:
                             values[f"{k},{key}"] = v[key]
+            else:
+                node_data = None
+                values = {}
+                table = None
 
-                node.analyze(data=values, properties=node_data, table=table)
+            node.analyze(data=values, properties=node_data, table=table)
 
             ret[node._id[1]] = node_data
 
@@ -1681,7 +1764,7 @@ class LAMMPS(seamm.Node):
 
     def analyze_trajectory(
         self,
-        filename,
+        path,
         sampling_rate=20,
         control_properties=None,
         node=None,
@@ -1689,8 +1772,6 @@ class LAMMPS(seamm.Node):
         """Read a trajectory file and do the statistical analysis"""
 
         write_html = "html" in self.options and self.options["html"]
-
-        rootname = os.path.splitext(filename)[0]
 
         results = {}
 
@@ -1705,11 +1786,8 @@ class LAMMPS(seamm.Node):
             "inefficiency": [],
         }
 
-        if isinstance(control_properties, list) and "t" not in control_properties:
-            control_properties.append("t")
-
         # Process the trajectory data
-        with open(filename, "r") as fd:
+        with path.open() as fd:
             file_data = pandas.read_csv(
                 fd,
                 sep=" ",
@@ -1731,7 +1809,7 @@ class LAMMPS(seamm.Node):
         self.logger.debug("Columns: {}".format(data.columns))
         self.logger.debug("  Types:\n{}".format(data.dtypes))
 
-        printer.normal("       Analysis of " + os.path.basename(filename) + "\n")
+        printer.normal(f"       Analysis of {path.name}\n")
 
         # Work out the time step, rather than give the whole vector
         t = data.index
@@ -1823,8 +1901,8 @@ class LAMMPS(seamm.Node):
 
                 y_n = y_t_equil[indices]
                 n_samples = len(y_n)
-                mean = y_n.mean()
-                std = y_n.std()
+                mean = float(y_n.mean())
+                std = float(y_n.std())
                 sem = std / sqrt(n_samples)
 
                 # Get the autocorrelation function
@@ -1854,13 +1932,13 @@ class LAMMPS(seamm.Node):
                 results[column]["stderr"] = sem
                 results[column]["n_sample"] = n_samples
                 results[column]["short_production"] = have_acf_warning
-                results[column]["tau"] = tau
-                results[column]["inefficiency"] = inefficiency
-                results[column]["timestep"] = dt_fs
-                results[column]["rootname"] = rootname
+                results[column]["tau"] = float(tau)
+                results[column]["inefficiency"] = float(inefficiency)
+                results[column]["timestep"] = float(dt_fs)
+                results[column]["rootname"] = path.stem
                 if have_acf:
-                    results[column]["acf"] = acf
-                    results[column]["acf_confidence"] = confidence
+                    results[column]["acf"] = acf.tolist()
+                    results[column]["acf_confidence"] = confidence.tolist()
 
                 # Don't print or graph some properties, like heat flux
                 if column in ("Jx", "Jy", "Jz"):
@@ -2064,7 +2142,7 @@ class LAMMPS(seamm.Node):
             else:
                 figure.grid_plots("trj")
             if node is None:
-                path = Path(f"{rootname}_{column}.graph")
+                path = Path(f"{path.stem}_{column}.graph")
             else:
                 node_path = Path(node.directory)
                 node_path.mkdir(parents=True, exist_ok=True)

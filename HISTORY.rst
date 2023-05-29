@@ -1,6 +1,13 @@
 =======
 History
 =======
+2023.5.29 -- Self diffusion and other improvements
+   * Added trajectory panel to support diffusion, viscosity and simple thermal
+     conductivity.
+   * Added support for separate GPU versions of LAMMPS.
+   * Added support for command-line arguments to LAMMPS, mainly used for accelerators.
+   * Added support for using modules.
+
 2023.4.24 -- Support for thermal conductivity
    * Internal changes to support thermal conductivity with its embedded flowchart.
    * Added the heat flux substep.

@@ -2,10 +2,12 @@
 
 """NPT (canonical) dynamics in LAMMPS"""
 
+import json
+
 import lammps_step
 import logging
 import seamm
-from seamm_util import units_class
+from seamm_util import units_class, Q_
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
 import random
@@ -197,6 +199,8 @@ class NPT(lammps_step.NVT):
         lines.append("thermo_style        custom {}".format(thermo_properties))
         lines.append("thermo              {}".format(int(nsteps / 100)))
 
+        ncomputes = 0
+        ndumps = 0
         nfixes = 0
         if P["thermostat"] == "Nose-Hoover":
             Tchain = P["Tchain"]
@@ -314,23 +318,49 @@ class NPT(lammps_step.NVT):
                 note="Citation for thermostat.",
             )
 
+        # For the heat flux, if requested, we need extra input
+        if P["heat flux"] != "never":
+            # Unit conversion factor
+            if lammps_step.get_lammps_unit_system() == "metal":
+                factor = Q_("eV/Å^2/ps")
+            else:
+                factor = (
+                    Q_("kcal/Å^2/fs/mol") / Q_("kcal/mol") * Q_("kcal/mol").to("kJ")
+                )
+            factor = factor.m_as("W/m^2")
+            lines.append(
+                f"""
+compute             KE all ke/atom
+compute             PE all pe/atom
+
+#          centroid doesn't work with kspace, so split into pair and non-pair parts
+
+compute             S_p all stress/atom NULL pair kspace
+compute             S_b all centroid/stress/atom NULL bond angle dihedral improper
+compute             flux_p all heat/flux KE PE S_p
+compute             flux_b all heat/flux KE PE S_b
+
+#          Conversion from kcal/Å^2/fs/mol to W/m^2")
+
+variable            factor equal {factor}
+variable            Jx equal v_factor*(c_flux_p[1]+c_flux_b[1])/vol
+variable            Jy equal v_factor*(c_flux_p[2]+c_flux_b[2])/vol
+variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
+"""
+            )
+
         # summary output written 10 times during run so we can see progress
         nevery = 10
         nfreq = int(nsteps / 10)
         nrepeat = int(nfreq / nevery)
         nfreq = nevery * nrepeat
         nfixes += 1
+        filename = f"@{self._id[-1]}+npt_summary.trj"
         lines.append(
-            "fix                 {} ".format(nfixes)
-            + "all ave/time "
-            + "{} {} {} {} off 2 title2 '{}' file summary_npt_{}.txt".format(
-                nevery,
-                nrepeat,
-                nfreq,
-                properties,
-                title2,
-                "_".join(str(e) for e in self._id),
-            )
+            f"fix                 {nfixes} all ave/time {nevery} 1 {nfreq} &\n"
+            f"                       {properties} &\n"
+            "                       off 2 &\n"
+            f"                       file {filename}"
         )
         # instantaneous output written for averaging
         if P["sampling"] == "none":
@@ -348,28 +378,37 @@ class NPT(lammps_step.NVT):
             nrepeat = 1
             nfreq = nevery * nrepeat
             nfixes += 1
-            if T0 == T1:
-                title1 = (
-                    "!MolSSI trajectory 1.0 LAMMPS, NPT {} steps of {} fs, " "T={} K"
-                ).format(int(nsteps / nevery), timestep * nevery, T0)
+            dt = (nevery * P["timestep"]).to_compact()
+            P0tmp = P["Pinitial"].to_compact()
+            P1tmp = P["Pfinal"].to(P0tmp.units)
+            tmp = {
+                "code": "LAMMPS",
+                "type": "NPT",
+                "dt": dt.magnitude,
+                "tunits": str(dt.u),
+                "nsteps": nsteps // nevery,
+                "Tunits": "K",
+                "Punits": str(P0tmp.u),
+            }
+            if P0tmp == P1tmp:
+                tmp["P"] = P0tmp.magnitude
             else:
-                title1 = (
-                    "!MolSSI trajectory 1.0 LAMMPS, NPT {} steps of {} fs, " "T={}-{} K"
-                ).format(int(nsteps / nevery), timestep * nevery, T0, T1)
+                tmp["P0"] = P0tmp.magnitude
+                tmp["T1"] = P1tmp.magnitude
+            if T0 == T1:
+                tmp["T"] = T0
+            else:
+                tmp["T0"] = T0
+                tmp["T1"] = T1
+            title1 = "!MolSSI trajectory 2.0 " + json.dumps(tmp, separators=(",", ":"))
+            filename = f"@{self._id[-1]}+npt_state.trj"
             lines.append(
-                (
-                    "fix                 {} all ave/time {} {} {} {} off 2 "
-                    "title1 '{}' title2 '{}' file trajectory_npt_{}.seamm_trj"
-                ).format(
-                    nfixes,
-                    nevery,
-                    nrepeat,
-                    nfreq,
-                    properties,
-                    title1,
-                    title2,
-                    "_".join(str(e) for e in self._id),
-                )
+                f"fix                 {nfixes} all ave/time {nevery} 1 {nfreq} &\n"
+                f"                       {properties} &\n"
+                "                       off 2 &\n"
+                f"                       title1 '{title1}' &\n"
+                f"                       title2 '{title2}' &\n"
+                f"                       file {filename}"
             )
             self.description.append(
                 __(
@@ -382,6 +421,12 @@ class NPT(lammps_step.NVT):
                     indent=7 * " ",
                 )
             )
+
+        # Handle trajectories
+        tmp, ncomputes, ndumps, nfixes = self.trajectory_input(
+            P, timestep, nsteps, ncomputes, ndumps, nfixes
+        )
+        lines.extend(tmp)
 
         if extras is not None and "shake" in extras:
             nfixes += 1

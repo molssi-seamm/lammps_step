@@ -3,11 +3,11 @@
 """Non-graphical part of the Heat Flux step in a LAMMPS flowchart
 """
 
+import json
+
 import logging
 from pathlib import Path
 import pkg_resources
-
-import numpy as np
 
 import lammps_step
 from .nve import NVE
@@ -37,6 +37,9 @@ if path.exists():
 
 script = """\
 #!/usr/bin/env python
+
+import argparse
+import sys
 
 from lammps import lammps, LMP_STYLE_ATOM, LMP_TYPE_VECTOR, LMP_TYPE_ARRAY
 from mpi4py import MPI
@@ -69,17 +72,26 @@ def J_filter_cb(lmp, ntimestep, nlocal, ids, xyz, fext, args = []):
 
     lmp.numpy.fix_external_set_virial_peratom("J_filter", -S)
 
-def run_thermal_conductivity():
-    lmp = lammps()
+def run_thermal_conductivity(cmd_args=None):
+    if cmd_args is None:
+        lmp = lammps()
+    else:
+        lmp = lammps(cmdargs=cmd_args.split())
     lmp.file("lammps.dat")
 
     lmp.set_fix_external_callback("J_filter", J_filter_cb, lmp)
 
     lmp.file("lammps_post.dat")
 
-run_thermal_conductivity()
+    lmp.close()
+    lmp.finalize()
 
-MPI.Finalize()
+# Get any arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("--cmd-args", help="Command line arguments for LAMMPS")
+kwords = vars(parser.parse_args())
+
+run_thermal_conductivity(**kwords)
 """
 
 
@@ -198,7 +210,6 @@ class HeatFlux(NVE):
 
         time = lammps_step.to_lammps_units(P["time"], quantity="time")
         timestep, P["timestep"] = self.timestep(P["timestep"])
-        timestep_fs = P["timestep"].m_as("fs")
         nsteps = round(time / timestep)
 
         # Work out the sampling information
@@ -217,6 +228,13 @@ class HeatFlux(NVE):
             __(self.description_text(PP), **PP, indent=3 * " ").__str__()
         )
 
+        thermo_properties = (
+            "time temp press etotal ke pe ebond "
+            "eangle edihed eimp evdwl etail ecoul elong"
+        )
+        properties = "v_time v_temp v_press v_etotal v_ke v_pe v_emol v_epair"
+        title2 = "tstep t T P Etot Eke Epe Emol Epair"
+
         lines = []
         lines.append("")
         lines.append("#     Heat Flux")
@@ -224,9 +242,12 @@ class HeatFlux(NVE):
         lines.append("reset_timestep      0")
         lines.append("timestep            {}".format(timestep))
 
+        nfixes = 0
+        ncomputes = 0
+        ndumps = 0
+
         computes = []
         fixes = []
-        step_id = "_".join(str(e) for e in self._id)
 
         # Unit conversion factor
         if lammps_step.get_lammps_unit_system() == "metal":
@@ -292,7 +313,7 @@ unfix               ave
 
 reset_timestep      0
 
-#          Conversion from kcal/Å^2/fs/mol tp W/m^2")
+#          Conversion from kcal/Å^2/fs/mol to W/m^2")
 
 variable            factor equal {factor}
 variable            Jx equal v_factor*(c_flux_p[1]+c_flux_b[1])/vol
@@ -301,9 +322,8 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
 
 #          The thermo output
 
-thermo              1000
-thermo_style        custom time temp press etotal ke pe v_Jx v_Jy v_Jz
-thermo_modify       colname v_Jx Jx colname v_Jy Jy colname v_Jz Jz
+thermo              {nsteps // 100}
+thermo_style        custom {thermo_properties}
 
 #          The external fix to adjust the peratom PE and S
 
@@ -312,57 +332,112 @@ fix_modify          J_filter energy yes
 fix_modify          J_filter virial yes
 """
         )
-        # handling of trajectory
-        nevery = max(1, round(sampling / timestep))
-        nrepeat = 1
-        nfreq = nevery * nrepeat
 
-        properties = "v_time v_temp v_press v_etotal v_ke v_pe v_Jx v_Jy v_Jz "
-        title1 = (
-            "!MolSSI trajectory 1.0 LAMMPS, Heat Flux "
-            f" {int(nsteps / nevery)} steps of {timestep_fs * nevery} fs"
-        )
-        title2 = "tstep t T P Etot Eke Epe Jx Jy Jz "
-
-        lines.append(
-            f"""
-#          The main trajectory
-
-fix                 trajectory all ave/time {nevery} {nrepeat} {nfreq} &
-                       {properties} &
-                       off 2 &
-                       title1 '{title1}' &
-                       title2 '{title2}' &
-                       file trajectory_heatflux_{step_id}.seamm_trj
-"""
-        )
-
-        self.description.append(
-            __(
-                "The run will be {nsteps:,d} steps of dynamics "
-                "sampled every {nevery:n} steps.",
-                nsteps=nsteps,
-                nevery=nevery,
-                indent=7 * " ",
+        # instantaneous output written for averaging
+        if P["sampling"] == "none":
+            self.description.append(
+                __(
+                    "The run will be {nsteps:n} steps of dynamics.",
+                    nsteps=nsteps,
+                    indent=7 * " ",
+                )
             )
-        )
+        else:
+            sampling = lammps_step.to_lammps_units(P["sampling"], quantity="time")
+            nevery = max(1, round(sampling / timestep))
+            nfreq = int(nsteps / nevery)
+            nrepeat = 1
+            nfreq = nevery * nrepeat
+            nfixes += 1
+            dt = (nevery * P["timestep"]).to_compact()
+            text = json.dumps(
+                {
+                    "code": "LAMMPS",
+                    "type": "NVE",
+                    "dt": dt.magnitude,
+                    "tunits": str(dt.u),
+                    "nsteps": nsteps // nevery,
+                },
+                separators=(",", ":"),
+            )
+            title1 = "!MolSSI trajectory 2.0 " + text
+            filename = f"@{self._id[-1]}+heat_flux_state.trj"
+            lines.append(
+                f"fix                 {nfixes} all ave/time {nevery} 1 {nfreq} &\n"
+                f"                       {properties} &\n"
+                "                       off 2 &\n"
+                f"                       title1 '{title1}' &\n"
+                f"                       title2 '{title2}' &\n"
+                f"                       file {filename}"
+            )
+            self.description.append(
+                __(
+                    (
+                        "The run will be {nsteps:,d} steps of dynamics "
+                        "sampled every {nevery:n} steps."
+                    ),
+                    nsteps=nsteps,
+                    nevery=nevery,
+                    indent=7 * " ",
+                )
+            )
+        # # handling of trajectory
+        # nevery = max(1, round(sampling / timestep))
+        # nrepeat = 1
+        # nfreq = nevery * nrepeat
+        # properties = "v_time v_temp v_etotal v_ke v_pe v_Jx v_Jy v_Jz "
+        # filename = f"@{self._id[-1]}+heat_flux_state.trj"
+
+        # dt = (nevery * P["timestep"]).to_compact()
+        # text = json.dumps(
+        #     {
+        #         "code": "LAMMPS",
+        #         "type": "NVE",
+        #         "dt": dt.magnitude,
+        #         "tunits": str(dt.u),
+        #         "nsteps": nsteps // nevery,
+        #     },
+        #     separators=(",", ":"),
+        # )
+        # title1 = "!MolSSI trajectory 2.0 " + text
+        # title2 = "tstep t T Etot Eke Epe Jx Jy Jz "
+        # lines.append(
+        #     f"fix                 trajectory all ave/time {nevery} 1 {nfreq} &\n"
+        #     f"                       {properties} &\n"
+        #     "                       off 2 &\n"
+        #     f"                       title1 '{title1}' &\n"
+        #     f"                       title2 '{title2}' &\n"
+        #     f"                       file {filename}"
+        # )
+
+        # self.description.append(
+        #     __(
+        #         "The run will be {nsteps:,d} steps of dynamics "
+        #         "sampled every {nevery:n} steps.",
+        #         nsteps=nsteps,
+        #         nevery=nevery,
+        #         indent=7 * " ",
+        #     )
+        # )
 
         nevery = 10
         nfreq = int(nsteps / 10)
         nrepeat = int(nfreq / nevery)
         nfreq = nevery * nrepeat
 
+        filename = f"@{self._id[-1]}+heat_flux_summary.trj"
         lines.append(
-            f"""
-#          summary output written 10 times during run so we can see progress
-
-fix                 summary all ave/time {nevery} {nrepeat} {nfreq} &
-                        {properties} &
-                        off 2 &
-                        title2 '{title2}' &
-                        file summary_heatflux_{step_id}.txt
-"""
+            f"fix                 summary all ave/time {nevery} 1 {nfreq} &\n"
+            f"                       {properties} &\n"
+            "                       off 2 &\n"
+            f"                       file {filename}"
         )
+
+        # Handle trajectories
+        tmp, ncomputes, ndumps, nfixes = self.trajectory_input(
+            P, timestep, nsteps, ncomputes, ndumps, nfixes
+        )
+        lines.extend(tmp)
 
         if extras is not None and "shake" in extras:
             lines.append(extras["shake"].format("constraint"))
@@ -383,19 +458,20 @@ variable            Jx delete
 variable            Jy delete
 variable            Jz delete
 unfix               summary
-unfix               trajectory
 unfix               J_filter
 unfix               S_b0
 unfix               S_p0
 unfix               PE0
+unfix               S_b_ave
+unfix               S_p_ave
 unfix               PE_ave
+unfix               dynamics
 uncompute           flux_b
 uncompute           flux_p
 uncompute           S_b
 uncompute           S_p
 uncompute           PE
 uncompute           KE
-unfix               dynamics
 
 """
         ]
@@ -403,6 +479,12 @@ unfix               dynamics
             post_lines.append(f"uncompute           {compute}")
         for fix in fixes:
             post_lines.append(f"unfix               {fix}")
+        for n in range(1, nfixes + 1):
+            post_lines.append(f"unfix               {n}")
+        for n in range(1, ncomputes + 1):
+            post_lines.append(f"uncompute           {n}")
+        for n in range(1, ndumps + 1):
+            post_lines.append(f"undump              {n}")
 
         return {
             "script": lines,
@@ -410,39 +492,3 @@ unfix               dynamics
             "use python": True,
             "python script": script,
         }
-
-    def analyze(self, indent="", data={}, properties=None, table=None, **kwargs):
-        """Save the heat flux for the thermal conductivity step
-
-        Also print important results to the local step.out file using
-        "printer".
-
-        Parameters
-        ----------
-        indent: str
-            An extra indentation for the output
-        """
-        dir_path = Path(self.directory)
-        dir_path.mkdir(parents=True, exist_ok=True)
-
-        # Get the configuration
-        _, configuration = self.get_system_configuration(None)
-
-        # We need properties like the temperature and volume.
-        dt = Q_(properties["Jx"]["timestep"], "fs")
-
-        Jx = properties["Jx"]["values"]
-        Jy = properties["Jy"]["values"]
-        Jz = properties["Jz"]["values"]
-
-        # Write out the Heat Flux and related data to a compressed numpy file.
-        np.savez_compressed(
-            dir_path / "HeatFlux.npz",
-            J=np.stack((Jx, Jy, Jz)),
-            T=np.double(data["T"]),
-            V=np.double(configuration.volume),
-            timestep=np.double(dt.magnitude),
-        )
-
-        # Pass the property data up to the superclass to handle.
-        super().analyze(data=data, table=table)

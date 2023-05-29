@@ -98,3 +98,17 @@ class HeatFluxParameters(NVE_Parameters):
         super().__init__(
             defaults={**HeatFluxParameters.parameters, **defaults}, data=data
         )
+
+        hf = self["heat flux"]
+        if hf.value == "never":
+            hf.update(
+                {
+                    "value": "50",
+                    "default": "50",
+                    "enumeration": ("50",),
+                    "description": (
+                        "How often to sample the heat flux, usually used for thermal "
+                        "conductivity calculations."
+                    ),
+                }
+            )
