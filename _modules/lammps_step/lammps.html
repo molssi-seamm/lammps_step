@@ -8,7 +8,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2023.4.24 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2023.5.29 documentation</title>
   
   
   
@@ -46,9 +46,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- End Google Tag Manager -->
 
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
@@ -485,7 +482,7 @@ document.write(`
 
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">degrees</span><span class="p">,</span> <span class="n">radians</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">acos</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
@@ -493,7 +490,6 @@ document.write(`
 <span class="kn">import</span> <span class="nn">os.path</span>
 <span class="kn">import</span> <span class="nn">pkg_resources</span>
 <span class="kn">import</span> <span class="nn">pprint</span>
-<span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">import</span> <span class="nn">string</span>
 <span class="kn">import</span> <span class="nn">sys</span>
@@ -512,6 +508,7 @@ document.write(`
 <span class="kn">import</span> <span class="nn">seamm</span>
 <span class="kn">import</span> <span class="nn">seamm_util</span>
 <span class="kn">import</span> <span class="nn">seamm_util.printing</span> <span class="k">as</span> <span class="nn">printing</span>
+<span class="kn">from</span> <span class="nn">seamm_util</span> <span class="kn">import</span> <span class="n">CompactJSONEncoder</span>
 <span class="kn">from</span> <span class="nn">seamm_util.printing</span> <span class="kn">import</span> <span class="n">FormattedText</span> <span class="k">as</span> <span class="n">__</span>
 
 <span class="c1"># from pymbar import timeseries</span>
@@ -747,6 +744,13 @@ document.write(`
         <span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
             <span class="n">parser_name</span><span class="p">,</span>
+            <span class="s2">&quot;--gpu-modules&quot;</span><span class="p">,</span>
+            <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;the environment modules to load for the GPU version of LAMMPS&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="n">parser_name</span><span class="p">,</span>
             <span class="s2">&quot;--lammps-path&quot;</span><span class="p">,</span>
             <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;the path to the LAMMPS executables&quot;</span><span class="p">,</span>
@@ -762,6 +766,18 @@ document.write(`
             <span class="s2">&quot;--lammps-mpi&quot;</span><span class="p">,</span>
             <span class="n">default</span><span class="o">=</span><span class="s2">&quot;lmp_mpi&quot;</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;the mpi version of LAMMPS&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="n">parser_name</span><span class="p">,</span>
+            <span class="s2">&quot;--cmd-args&quot;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;the command-line arguments for LAMMPS, e.g. &#39;-k on&#39;&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="n">parser_name</span><span class="p">,</span>
+            <span class="s2">&quot;--gpu-cmd-args&quot;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;the command-line arguments for GPU version of LAMMPS, e.g. &#39;-k on&#39;&quot;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
             <span class="n">parser_name</span><span class="p">,</span> <span class="s2">&quot;--mpiexec&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;mpiexec&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;the mpi executable&quot;</span>
@@ -874,10 +890,6 @@ document.write(`
 
         <span class="c1"># Print headers and get to work</span>
         <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">np</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="s2">&quot;    LAMMPS using MPI with </span><span class="si">{}</span><span class="s2"> processes.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">np</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="s2">&quot;   LAMMPS using the serial version.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">subflowchart</span><span class="o">.</span><span class="n">root_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span>
 
@@ -1040,12 +1052,14 @@ document.write(`
             <span class="n">input_file</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;.dat&quot;</span>
             <span class="n">new_input_data</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;run          0&quot;</span><span class="p">)</span>
-            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;write_restart          </span><span class="si">{</span><span class="n">restart</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;write_restart      </span><span class="si">{</span><span class="n">restart</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;write_dump all custom  </span><span class="si">{</span><span class="n">dump</span><span class="si">}</span><span class="s2"> id &quot;</span> <span class="s2">&quot;xu yu zu modify flush yes sort id&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;write_dump          all custom  </span><span class="si">{</span><span class="n">dump</span><span class="si">}</span><span class="s2"> id &quot;</span>
+                <span class="s2">&quot;xu yu zu modify flush yes sort id&quot;</span>
             <span class="p">)</span>
             <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;info               computes fixes dumps log out&quot;</span><span class="p">)</span>
 
             <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_file</span>
             <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_input_data</span>
@@ -1108,10 +1122,12 @@ document.write(`
         <span class="n">return_files</span> <span class="o">=</span> <span class="p">[</span>
             <span class="s2">&quot;summary_*.txt&quot;</span><span class="p">,</span>
             <span class="s2">&quot;trajectory_*.seamm_trj&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;*.trj&quot;</span><span class="p">,</span>
             <span class="s2">&quot;*.restart.*&quot;</span><span class="p">,</span>
             <span class="s2">&quot;*.dump.*&quot;</span><span class="p">,</span>
             <span class="s2">&quot;*.log&quot;</span><span class="p">,</span>
             <span class="s2">&quot;*.dat&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;log.lammps&quot;</span><span class="p">,</span>
             <span class="s2">&quot;log.cite&quot;</span><span class="p">,</span>
             <span class="s2">&quot;run_lammps&quot;</span><span class="p">,</span>
         <span class="p">]</span>
@@ -1119,7 +1135,6 @@ document.write(`
         <span class="c1"># Check for already having run</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;success.dat&quot;</span>
         <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="n">run_lammps</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;log.cite&quot;</span>
             <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
@@ -1131,45 +1146,152 @@ document.write(`
                 <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stdout&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
             <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stderr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">run_lammps</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="c1"># See if we are running in a batch job: SLURM, etc...</span>
+            <span class="n">batch</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="s2">&quot;SLURM_JOBID&quot;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+                <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;slurm&quot;</span>
+                <span class="k">for</span> <span class="n">item</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;SLURM_&quot;</span><span class="p">:</span>
+                        <span class="n">batch</span><span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="mi">6</span><span class="p">:]]</span> <span class="o">=</span> <span class="n">value</span>
+
+                <span class="k">if</span> <span class="n">np</span> <span class="o">&gt;</span> <span class="nb">int</span><span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;NTASKS&quot;</span><span class="p">]):</span>
+                    <span class="n">np</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;NTASKS&quot;</span><span class="p">])</span>
+                <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;NTASKS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span>
+
+                <span class="k">if</span> <span class="s2">&quot;NTASKS_PER_NODE&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">:</span>
+                    <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;NTASKS_PER_NODE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;NTASKS&quot;</span><span class="p">])</span> <span class="o">//</span> <span class="nb">int</span><span class="p">(</span>
+                        <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;NNODES&quot;</span><span class="p">]</span>
+                    <span class="p">)</span>
+
+                <span class="c1"># Expand `[i-k]` naming in nodelist</span>
+                <span class="n">nodes</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;NODELIST&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+                <span class="n">nodelist</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">npernode</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;NTASKS_PER_NODE&quot;</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s2">&quot;[&quot;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
+                        <span class="n">node</span><span class="p">,</span> <span class="n">count</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">)</span>
+                        <span class="n">first</span><span class="p">,</span> <span class="n">last</span> <span class="o">=</span> <span class="n">count</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">first</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">last</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                            <span class="n">nodelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">node</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">npernode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">nodelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">npernode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">nodelist</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">nodelist</span><span class="p">)</span>
+                <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;NODELIST&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nodelist</span>
+
+                <span class="k">if</span> <span class="s2">&quot;JOB_GPUS&quot;</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">:</span>
+                    <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;ngpus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;JOB_GPUS&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
+
             <span class="n">local</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">ExecLocal</span><span class="p">()</span>
 
             <span class="c1"># Find the executables and if they exist.</span>
-            <span class="n">lammps_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;lammps_path&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-            <span class="n">lmp_serial</span> <span class="o">=</span> <span class="n">lammps_path</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;lammps_serial&quot;</span><span class="p">]</span>
-            <span class="n">lmp_serial</span> <span class="o">=</span> <span class="n">lmp_serial</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">lmp_serial</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-                <span class="n">lmp_serial</span> <span class="o">=</span> <span class="kc">None</span>
-
-            <span class="n">lmp_mpi</span> <span class="o">=</span> <span class="n">lammps_path</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;lammps_mpi&quot;</span><span class="p">]</span>
-            <span class="n">lmp_mpi</span> <span class="o">=</span> <span class="n">lmp_mpi</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">lmp_mpi</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-                <span class="n">mpiexec</span> <span class="o">=</span> <span class="n">lammps_path</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;mpiexec&quot;</span><span class="p">]</span>
-                <span class="n">mpiexec</span> <span class="o">=</span> <span class="n">mpiexec</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">mpiexec</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-                    <span class="c1"># See if it is in the path</span>
-                    <span class="n">mpiexec</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;mpiexec&quot;</span><span class="p">])</span>
-                    <span class="k">if</span> <span class="n">mpiexec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">lmp_mpi</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="s2">&quot;ngpus&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">:</span>
+                <span class="n">modules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;modules&quot;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">modules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;gpu_modules&quot;</span><span class="p">]</span>
+            <span class="n">serial</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">modules</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># Use a module for LAMMPS</span>
+                <span class="n">shell</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">cmd</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;module load </span><span class="si">{</span><span class="n">modules</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">lmp_serial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;lammps_serial&quot;</span><span class="p">]</span>
+                <span class="n">lmp_mpi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;lammps_mpi&quot;</span><span class="p">]</span>
+                <span class="n">mpiexec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;mpiexec&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s2">&quot;python script&quot;</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                    <span class="n">python</span> <span class="o">=</span> <span class="s2">&quot;python&quot;</span>
+                    <span class="k">if</span> <span class="n">lmp_mpi</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">lmp_serial</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+                        <span class="n">serial</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="n">text</span> <span class="o">=</span> <span class="n">mpiexec</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; python run_lammps&quot;</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">mpiexec</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">mpiexec</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+                        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;python run_lammps&quot;</span>
+                    <span class="k">if</span> <span class="s2">&quot;ngpus&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">batch</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;cmd_args&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot; --cmd-args &#39;&quot;</span>
+                        <span class="n">text</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;cmd_args&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span>
+                        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;&#39;&quot;</span>
+                    <span class="k">if</span> <span class="s2">&quot;ngpus&quot;</span> <span class="ow">in</span> <span class="n">batch</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;gpu_cmd_args&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot; --cmd-args &#39;&quot;</span>
+                        <span class="n">text</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;gpu_cmd_args&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span>
+                        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;&#39;&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">lmp_mpi</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">lmp_serial</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+                        <span class="n">serial</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="n">text</span> <span class="o">=</span> <span class="n">mpiexec</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">lmp_mpi</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">text</span> <span class="o">=</span> <span class="n">lmp_serial</span>
+                    <span class="k">if</span> <span class="s2">&quot;ngpus&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">batch</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;cmd_args&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;cmd_args&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="s2">&quot;ngpus&quot;</span> <span class="ow">in</span> <span class="n">batch</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;gpu_cmd_args&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;gpu_cmd_args&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span>
+                    <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot; -in lammps.dat&quot;</span>
+                <span class="n">cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+                <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">lmp_mpi</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">shell</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">lammps_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;lammps_path&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+                <span class="n">lmp_serial</span> <span class="o">=</span> <span class="n">lammps_path</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;lammps_serial&quot;</span><span class="p">]</span>
+                <span class="n">lmp_serial</span> <span class="o">=</span> <span class="n">lmp_serial</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">lmp_serial</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                    <span class="n">lmp_serial</span> <span class="o">=</span> <span class="kc">None</span>
 
-            <span class="c1"># Use the parallel executable if the serial does not exist, and vice</span>
-            <span class="c1"># versa</span>
-            <span class="k">if</span> <span class="s2">&quot;python script&quot;</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-                <span class="n">python</span> <span class="o">=</span> <span class="n">lammps_path</span> <span class="o">/</span> <span class="s2">&quot;python&quot;</span>
-                <span class="k">if</span> <span class="n">lmp_mpi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">lmp_serial</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-                    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mpiexec</span><span class="p">),</span> <span class="s2">&quot;-np&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">python</span><span class="p">),</span> <span class="s2">&quot;run_lammps&quot;</span><span class="p">]</span>
+                <span class="n">lmp_mpi</span> <span class="o">=</span> <span class="n">lammps_path</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;lammps_mpi&quot;</span><span class="p">]</span>
+                <span class="n">lmp_mpi</span> <span class="o">=</span> <span class="n">lmp_mpi</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">lmp_mpi</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                    <span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;mpiexec&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="n">mpiexec</span> <span class="o">=</span> <span class="n">lammps_path</span> <span class="o">/</span> <span class="n">tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">mpi_options</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+                    <span class="n">mpiexec</span> <span class="o">=</span> <span class="n">mpiexec</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">mpiexec</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                        <span class="c1"># See if it is in the path</span>
+                        <span class="n">mpiexec</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                        <span class="k">if</span> <span class="n">mpiexec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">lmp_mpi</span> <span class="o">=</span> <span class="kc">None</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">mpiexec</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">mpiexec</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">python</span><span class="p">),</span> <span class="s2">&quot;run_lammps&quot;</span><span class="p">]</span>
+                    <span class="n">lmp_mpi</span> <span class="o">=</span> <span class="kc">None</span>
+
+                <span class="c1"># Use the parallel executable if the serial does not exist, and vice</span>
+                <span class="c1"># versa</span>
+                <span class="k">if</span> <span class="s2">&quot;python script&quot;</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                    <span class="n">python</span> <span class="o">=</span> <span class="n">lammps_path</span> <span class="o">/</span> <span class="s2">&quot;python&quot;</span>
+                    <span class="k">if</span> <span class="n">lmp_mpi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">lmp_serial</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+                        <span class="n">serial</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mpiexec</span><span class="p">)]</span>
+                        <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">mpi_options</span><span class="p">)</span>
+                        <span class="n">cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">python</span><span class="p">))</span>
+                        <span class="n">cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;run_lammps&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">python</span><span class="p">),</span> <span class="s2">&quot;run_lammps&quot;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="s2">&quot;ngpus&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">batch</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;cmd_args&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">cmd_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;cmd_args&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span>
+                        <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;--cmd-args&quot;</span><span class="p">,</span> <span class="n">cmd_args</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="s2">&quot;ngpus&quot;</span> <span class="ow">in</span> <span class="n">batch</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;gpu_cmd_args&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">cmd_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;gpu_cmd_args&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span>
+                        <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;--cmd-args&quot;</span><span class="p">,</span> <span class="n">cmd_args</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">lmp_mpi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">lmp_serial</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+                        <span class="n">serial</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mpiexec</span><span class="p">)]</span>
+                        <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">mpi_options</span><span class="p">)</span>
+                        <span class="n">cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">lmp_mpi</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">lmp_serial</span><span class="p">)]</span>
+                    <span class="k">if</span> <span class="s2">&quot;ngpus&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">batch</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;cmd_args&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;cmd_args&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+                    <span class="k">if</span> <span class="s2">&quot;ngpus&quot;</span> <span class="ow">in</span> <span class="n">batch</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;gpu_cmd_args&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;gpu_cmd_args&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+                    <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;-in&quot;</span><span class="p">,</span> <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]])</span>
+
+            <span class="k">if</span> <span class="n">serial</span><span class="p">:</span>
+                <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="s2">&quot;   LAMMPS using the serial version.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">lmp_mpi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">lmp_serial</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-                    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mpiexec</span><span class="p">),</span> <span class="s2">&quot;-np&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">lmp_mpi</span><span class="p">)]</span>
+                <span class="k">if</span> <span class="s2">&quot;ngpus&quot;</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">:</span>
+                    <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;    LAMMPS using MPI with </span><span class="si">{</span><span class="n">np</span><span class="si">}</span><span class="s2"> processes and &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">batch</span><span class="p">[</span><span class="s1">&#39;ngpus&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> gpus.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">lmp_serial</span><span class="p">)]</span>
-                <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;-in&quot;</span><span class="p">,</span> <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]])</span>
+                    <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    LAMMPS using MPI with </span><span class="si">{</span><span class="n">np</span><span class="si">}</span><span class="s2"> processes&quot;</span><span class="p">)</span>
 
             <span class="n">result</span> <span class="o">=</span> <span class="n">local</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
                 <span class="n">cmd</span><span class="o">=</span><span class="n">cmd</span><span class="p">,</span>
@@ -1177,6 +1299,7 @@ document.write(`
                 <span class="n">return_files</span><span class="o">=</span><span class="n">return_files</span><span class="p">,</span>
                 <span class="n">in_situ</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">directory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span>
+                <span class="n">shell</span><span class="o">=</span><span class="n">shell</span><span class="p">,</span>
             <span class="p">)</span>
 
             <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1199,53 +1322,8 @@ document.write(`
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_lammps_citations</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;stdout&quot;</span><span class="p">])</span>
 
-        <span class="k">if</span> <span class="n">run_lammps</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stderr&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;stderr:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stderr&quot;</span><span class="p">])</span>
-                <span class="n">f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="s2">&quot;stderr.txt&quot;</span><span class="p">)</span>
-                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
-                    <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;stderr&quot;</span><span class="p">])</span>
-
-            <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;files&quot;</span><span class="p">]:</span>
-                <span class="n">f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
-                <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;wb&quot;</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">filename</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">bytes</span> <span class="k">else</span> <span class="s2">&quot;w&quot;</span>
-                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="n">filename</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">filename</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">])</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">filename</span><span class="p">][</span><span class="s2">&quot;exception&quot;</span><span class="p">])</span>
-
         <span class="n">base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">])</span>
         <span class="n">dump_file</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;.dump.0&quot;</span>
-
-        <span class="c1"># restart_file = base + &quot;.restart.*&quot;</span>
-        <span class="c1"># filename = os.path.join(self.directory, restart_file)</span>
-        <span class="c1"># restart_filenames = glob.glob(filename)</span>
-
-        <span class="c1"># Probably the step didn&#39;t run</span>
-        <span class="c1"># if len(restart_filenames) == 0:</span>
-        <span class="c1">#     raise FileNotFoundError(</span>
-        <span class="c1">#         f&quot;Lammps_step: could not find any file with the pattern {filename}&quot;</span>
-        <span class="c1">#     )</span>
-
-        <span class="c1"># run_lengths = []</span>
-
-        <span class="c1"># for f in restart_filenames:</span>
-        <span class="c1">#     try:</span>
-        <span class="c1">#         pre, ext = os.path.splitext(f)</span>
-        <span class="c1">#         ext = int(ext.strip(&quot;.&quot;))</span>
-        <span class="c1">#     except ValueError:</span>
-        <span class="c1">#         raise Exception(f&quot;Lammps_step: could not extract run length from {f}&quot;)</span>
-        <span class="c1">#     run_lengths.append(ext)</span>
-
-        <span class="c1">#     last_snapshot = str(max(run_lengths))</span>
-
-        <span class="c1"># restart_file = restart_file.replace(&quot;*&quot;, last_snapshot)</span>
-        <span class="c1"># files[&quot;restart&quot;] = {}</span>
-        <span class="c1"># files[&quot;restart&quot;][&quot;filename&quot;] = restart_file</span>
-        <span class="c1"># filename = os.path.join(self.directory, restart_file)</span>
-        <span class="c1"># with open(filename, mode=&quot;rb&quot;) as fd:</span>
-        <span class="c1">#     files[&quot;restart&quot;][&quot;data&quot;] = fd.read()</span>
 
         <span class="n">files</span><span class="p">[</span><span class="s2">&quot;dump&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">files</span><span class="p">[</span><span class="s2">&quot;dump&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dump_file</span>
@@ -1315,10 +1393,12 @@ document.write(`
             <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;reset_timestep      0&quot;</span><span class="p">)</span>
             <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;run                 0&quot;</span><span class="p">)</span>
             <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;write_dump          all custom  </span><span class="si">{</span><span class="n">dump</span><span class="si">}</span><span class="s2"> id xu yu zu &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;write_dump         all custom  </span><span class="si">{</span><span class="n">dump</span><span class="si">}</span><span class="s2"> id xu yu zu &quot;</span>
                 <span class="s2">&quot;modify flush yes sort id&quot;</span>
             <span class="p">)</span>
             <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;info               computes fixes dumps log out&quot;</span><span class="p">)</span>
 
         <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_input_data</span>
 
@@ -1334,6 +1414,7 @@ document.write(`
                 <span class="s2">&quot;modify flush yes sort id&quot;</span>
             <span class="p">)</span>
             <span class="n">postscript</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">postscript</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;info               computes fixes dumps log out&quot;</span><span class="p">)</span>
             <span class="n">files</span><span class="p">[</span><span class="s2">&quot;postscript&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">postscript</span><span class="p">),</span>
                 <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="s2">&quot;lammps_post.dat&quot;</span><span class="p">,</span>
@@ -2104,48 +2185,43 @@ document.write(`
 
         <span class="n">ret</span> <span class="o">=</span> <span class="p">{</span><span class="n">node</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">}</span>
 
+        <span class="n">run_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span>
+
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
 
+            <span class="n">subdir</span> <span class="o">=</span> <span class="n">run_dir</span> <span class="o">/</span> <span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+            <span class="c1"># Move any old style files</span>
             <span class="n">id_str</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">run_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;*trajectory*</span><span class="si">{</span><span class="n">id_str</span><span class="si">}</span><span class="s2">*.seamm_trj&quot;</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+                <span class="n">ensemble</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">path</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">subdir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ensemble</span><span class="si">}</span><span class="s2">_state.trj&quot;</span><span class="p">)</span>
 
-            <span class="n">filenames</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="s2">&quot;*trajectory*&quot;</span> <span class="o">+</span> <span class="n">id_str</span> <span class="o">+</span> <span class="s2">&quot;*.seamm_trj&quot;</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">run_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;*summary*</span><span class="si">{</span><span class="n">id_str</span><span class="si">}</span><span class="s2">*.seamm_trj&quot;</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+                <span class="n">ensemble</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">path</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">subdir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ensemble</span><span class="si">}</span><span class="s2">_summary.trj&quot;</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">filenames</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span>
-                    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;iter_\d+&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
-                <span class="p">)</span>
-
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">filename</span> <span class="o">=</span> <span class="n">filenames</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-
-            <span class="n">P</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">current_values_to_dict</span><span class="p">(</span>
-                <span class="n">context</span><span class="o">=</span><span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">_data</span>
-            <span class="p">)</span>
-
-            <span class="n">node_data</span> <span class="o">=</span> <span class="kc">None</span>
-
-            <span class="k">if</span> <span class="s2">&quot;run_control&quot;</span> <span class="ow">in</span> <span class="n">P</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;run_control&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;For a fixed length of simulated time.&quot;</span><span class="p">:</span>
-                    <span class="n">control_properties</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;tstep&quot;</span><span class="p">]</span>  <span class="c1"># noqa: E731</span>
-                    <span class="c1"># Reset the trajectory data so doesn&#39;t carry over</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;control_properties&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-                            <span class="s2">&quot;No physical property selected for automatic&quot;</span><span class="p">,</span>
-                            <span class="s2">&quot;equilibration detection&quot;</span><span class="p">,</span>
-                        <span class="p">)</span>
-
-                    <span class="n">control_properties</span> <span class="o">=</span> <span class="p">[</span><span class="n">prp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">prp</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;control_properties&quot;</span><span class="p">]]</span>
-
+            <span class="c1"># Find the state trajectory, if any</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">subdir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*state.trj&quot;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;More than one state.trj file for </span><span class="si">{</span><span class="n">id_str</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">control_properties</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;tstep&quot;</span><span class="p">]</span>  <span class="c1"># noqa: E731</span>
                 <span class="n">node_data</span><span class="p">,</span> <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_trajectory</span><span class="p">(</span>
-                    <span class="n">filename</span><span class="p">,</span> <span class="n">control_properties</span><span class="o">=</span><span class="n">control_properties</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="n">node</span>
+                    <span class="n">paths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">control_properties</span><span class="o">=</span><span class="n">control_properties</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="n">node</span>
                 <span class="p">)</span>
+                <span class="c1"># Save the state data as JSON</span>
+                <span class="n">data_file</span> <span class="o">=</span> <span class="n">subdir</span> <span class="o">/</span> <span class="s2">&quot;state.json&quot;</span>
+                <span class="k">with</span> <span class="n">data_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+                    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span>
+                        <span class="n">node_data</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">CompactJSONEncoder</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span>
+                    <span class="p">)</span>
+
                 <span class="c1"># Get just the values from the node data</span>
                 <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">node_data</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
                 <span class="c1"># And the other key values</span>
@@ -2153,8 +2229,12 @@ document.write(`
                     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;stderr&quot;</span><span class="p">,</span> <span class="s2">&quot;tau&quot;</span><span class="p">,</span> <span class="s2">&quot;inefficiency&quot;</span><span class="p">,</span> <span class="s2">&quot;n_samples&quot;</span><span class="p">):</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
                             <span class="n">values</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">node_data</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">table</span> <span class="o">=</span> <span class="kc">None</span>
 
-                <span class="n">node</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">node_data</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">)</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">node_data</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">)</span>
 
             <span class="n">ret</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">node_data</span>
 
@@ -2162,7 +2242,7 @@ document.write(`
 
 <div class="viewcode-block" id="LAMMPS.analyze_trajectory"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.analyze_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">analyze_trajectory</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">filename</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">,</span>
         <span class="n">sampling_rate</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
         <span class="n">control_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">node</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -2170,8 +2250,6 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a trajectory file and do the statistical analysis&quot;&quot;&quot;</span>
 
         <span class="n">write_html</span> <span class="o">=</span> <span class="s2">&quot;html&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;html&quot;</span><span class="p">]</span>
-
-        <span class="n">rootname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -2186,11 +2264,8 @@ document.write(`
             <span class="s2">&quot;inefficiency&quot;</span><span class="p">:</span> <span class="p">[],</span>
         <span class="p">}</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">control_properties</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;t&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">control_properties</span><span class="p">:</span>
-            <span class="n">control_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">)</span>
-
         <span class="c1"># Process the trajectory data</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">()</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
             <span class="n">file_data</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
                 <span class="n">fd</span><span class="p">,</span>
                 <span class="n">sep</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span>
@@ -2212,7 +2287,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Columns: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;  Types:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dtypes</span><span class="p">))</span>
 
-        <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;       Analysis of &quot;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;       Analysis of </span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Work out the time step, rather than give the whole vector</span>
         <span class="n">t</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span>
@@ -2304,8 +2379,8 @@ document.write(`
 
                 <span class="n">y_n</span> <span class="o">=</span> <span class="n">y_t_equil</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
                 <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_n</span><span class="p">)</span>
-                <span class="n">mean</span> <span class="o">=</span> <span class="n">y_n</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-                <span class="n">std</span> <span class="o">=</span> <span class="n">y_n</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+                <span class="n">mean</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">y_n</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+                <span class="n">std</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">y_n</span><span class="o">.</span><span class="n">std</span><span class="p">())</span>
                 <span class="n">sem</span> <span class="o">=</span> <span class="n">std</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
 
                 <span class="c1"># Get the autocorrelation function</span>
@@ -2335,13 +2410,13 @@ document.write(`
                 <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;stderr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sem</span>
                 <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;n_sample&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_samples</span>
                 <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;short_production&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">have_acf_warning</span>
-                <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;tau&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tau</span>
-                <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;inefficiency&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inefficiency</span>
-                <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;timestep&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dt_fs</span>
-                <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;rootname&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rootname</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;tau&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tau</span><span class="p">)</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;inefficiency&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">inefficiency</span><span class="p">)</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;timestep&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dt_fs</span><span class="p">)</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;rootname&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span>
                 <span class="k">if</span> <span class="n">have_acf</span><span class="p">:</span>
-                    <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;acf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">acf</span>
-                    <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;acf_confidence&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">confidence</span>
+                    <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;acf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">acf</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                    <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">&quot;acf_confidence&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">confidence</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
                 <span class="c1"># Don&#39;t print or graph some properties, like heat flux</span>
                 <span class="k">if</span> <span class="n">column</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;Jx&quot;</span><span class="p">,</span> <span class="s2">&quot;Jy&quot;</span><span class="p">,</span> <span class="s2">&quot;Jz&quot;</span><span class="p">):</span>
@@ -2545,7 +2620,7 @@ document.write(`
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">figure</span><span class="o">.</span><span class="n">grid_plots</span><span class="p">(</span><span class="s2">&quot;trj&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rootname</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">.graph&quot;</span><span class="p">)</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">.graph&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">node_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span>
                 <span class="n">node_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>

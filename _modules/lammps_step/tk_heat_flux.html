@@ -8,7 +8,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.tk_heat_flux &#8212; SEAMM LAMMPS Plug-in 2023.4.24 documentation</title>
+    <title>lammps_step.tk_heat_flux &#8212; SEAMM LAMMPS Plug-in 2023.5.29 documentation</title>
   
   
   
@@ -46,9 +46,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- End Google Tag Manager -->
 
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
@@ -483,16 +480,13 @@ document.write(`
 
 <span class="sd">&quot;&quot;&quot;The graphical part of a Heat Flux step&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">pprint</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">import</span> <span class="nn">tkinter</span> <span class="k">as</span> <span class="nn">tk</span>
 
-<span class="kn">import</span> <span class="nn">lammps_step</span>  <span class="c1"># noqa: F401, E999</span>
-<span class="kn">import</span> <span class="nn">seamm</span>
-<span class="kn">from</span> <span class="nn">seamm_util</span> <span class="kn">import</span> <span class="n">ureg</span><span class="p">,</span> <span class="n">Q_</span><span class="p">,</span> <span class="n">units_class</span>  <span class="c1"># noqa: F401, E999</span>
+<span class="kn">import</span> <span class="nn">lammps_step</span>
 <span class="kn">import</span> <span class="nn">seamm_widgets</span> <span class="k">as</span> <span class="nn">sw</span>
 
 
-<div class="viewcode-block" id="TkHeatFlux"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_heat_flux.TkHeatFlux">[docs]</a><span class="k">class</span> <span class="nc">TkHeatFlux</span><span class="p">(</span><span class="n">seamm</span><span class="o">.</span><span class="n">TkNode</span><span class="p">):</span>
+<div class="viewcode-block" id="TkHeatFlux"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_heat_flux.TkHeatFlux">[docs]</a><span class="k">class</span> <span class="nc">TkHeatFlux</span><span class="p">(</span><span class="n">lammps_step</span><span class="o">.</span><span class="n">TkNVE</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The graphical part of a Heat Flux step in a flowchart.</span>
 
@@ -597,7 +591,7 @@ document.write(`
         <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">parameters</span>
 
         <span class="c1"># Then create the widgets</span>
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;timestep&quot;</span><span class="p">,</span> <span class="s2">&quot;sampling&quot;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;timestep&quot;</span><span class="p">,</span> <span class="s2">&quot;heat flux&quot;</span><span class="p">,</span> <span class="s2">&quot;sampling&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
 
         <span class="c1"># and lay them out</span>
@@ -639,7 +633,7 @@ document.write(`
         <span class="c1"># if e.g. rows are skipped to control such as &quot;method&quot; here</span>
         <span class="n">row</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">widgets</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;timestep&quot;</span><span class="p">,</span> <span class="s2">&quot;sampling&quot;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;timestep&quot;</span><span class="p">,</span> <span class="s2">&quot;heat flux&quot;</span><span class="p">,</span> <span class="s2">&quot;sampling&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">EW</span><span class="p">)</span>
             <span class="n">widgets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
             <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>

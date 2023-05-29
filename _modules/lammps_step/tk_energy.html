@@ -8,7 +8,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.tk_energy &#8212; SEAMM LAMMPS Plug-in 2023.4.24 documentation</title>
+    <title>lammps_step.tk_energy &#8212; SEAMM LAMMPS Plug-in 2023.5.29 documentation</title>
   
   
   
@@ -46,9 +46,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- End Google Tag Manager -->
 
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
@@ -541,7 +538,7 @@ document.write(`
 <div class="viewcode-block" id="TkEnergy.create_dialog"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_energy.TkEnergy.create_dialog">[docs]</a>    <span class="k">def</span> <span class="nf">create_dialog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Edit LAMMPS Energy Step&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the dialog!&quot;&quot;&quot;</span>
 
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">create_dialog</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">create_dialog</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">[</span><span class="s2">&quot;frame&quot;</span><span class="p">],</span>
@@ -550,7 +547,9 @@ document.write(`
         <span class="p">)</span>
         <span class="bp">self</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">setup_results</span><span class="p">()</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_results</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">frame</span></div></div>
 </pre></div>
 
                 </article>

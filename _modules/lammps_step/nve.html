@@ -8,7 +8,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2023.4.24 documentation</title>
+    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2023.5.29 documentation</title>
   
   
   
@@ -46,9 +46,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- End Google Tag Manager -->
 
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
@@ -483,6 +480,8 @@ document.write(`
 
 <span class="sd">&quot;&quot;&quot;NVE (microcanonical) dynamics in LAMMPS&quot;&quot;&quot;</span>
 
+<span class="kn">import</span> <span class="nn">json</span>
+
 <span class="kn">import</span> <span class="nn">lammps_step</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">seamm</span>
@@ -520,8 +519,20 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">metadata</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">NVE_Parameters</span><span class="p">()</span>
 
-<div class="viewcode-block" id="NVE.description_text"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nve.NVE.description_text">[docs]</a>    <span class="k">def</span> <span class="nf">description_text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the text description of what this step will do.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="NVE.description_text"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nve.NVE.description_text">[docs]</a>    <span class="k">def</span> <span class="nf">description_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a short description of this step.</span>
+
+<span class="sd">        Return a nicely formatted string describing what this step will</span>
+<span class="sd">        do.</span>
+
+<span class="sd">        Keyword arguments:</span>
+<span class="sd">            P: a dictionary of parameter values, which may be variables</span>
+<span class="sd">                or final values. If None, then the parameters values will</span>
+<span class="sd">                be used as is.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">P</span><span class="p">:</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values_to_dict</span><span class="p">()</span>
 
         <span class="n">text</span> <span class="o">=</span> <span class="p">(</span>
             <span class="s2">&quot;</span><span class="si">{time}</span><span class="s2"> of microcanonical (NVE) dynamics using a &quot;</span>
@@ -529,7 +540,7 @@ document.write(`
             <span class="s2">&quot;sampled every </span><span class="si">{sampling}</span><span class="s2">.&quot;</span>
         <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">text</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">P</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="NVE.get_input"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nve.NVE.get_input">[docs]</a>    <span class="k">def</span> <span class="nf">get_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the input for an NVE dynamics run in LAMMPS&quot;&quot;&quot;</span>
@@ -569,6 +580,8 @@ document.write(`
 
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">nfixes</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">ncomputes</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">ndumps</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;#     NVE dynamics&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -578,18 +591,52 @@ document.write(`
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;thermo              </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">nsteps</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)))</span>
         <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> all nve&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">))</span>
+
+        <span class="c1"># For the heat flux, if requested, we need extra input</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;heat flux&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
+            <span class="c1"># Unit conversion factor</span>
+            <span class="k">if</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">get_lammps_unit_system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;metal&quot;</span><span class="p">:</span>
+                <span class="n">factor</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;eV/Å^2/ps&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">factor</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;kcal/Å^2/fs/mol&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;kJ&quot;</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;W/m^2&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">compute             KE all ke/atom</span>
+<span class="s2">compute             PE all pe/atom</span>
+
+<span class="s2">#          centroid doesn&#39;t work with kspace, so split into pair and non-pair parts</span>
+
+<span class="s2">compute             S_p all stress/atom NULL pair kspace</span>
+<span class="s2">compute             S_b all centroid/stress/atom NULL bond angle dihedral improper</span>
+<span class="s2">compute             flux_p all heat/flux KE PE S_p</span>
+<span class="s2">compute             flux_b all heat/flux KE PE S_b</span>
+
+<span class="s2">#          Conversion from kcal/Å^2/fs/mol to W/m^2&quot;)</span>
+
+<span class="s2">variable            factor equal </span><span class="si">{</span><span class="n">factor</span><span class="si">}</span>
+<span class="s2">variable            Jx equal v_factor*(c_flux_p[1]+c_flux_b[1])/vol</span>
+<span class="s2">variable            Jy equal v_factor*(c_flux_p[2]+c_flux_b[2])/vol</span>
+<span class="s2">variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol</span>
+<span class="s2">&quot;&quot;&quot;</span>
+            <span class="p">)</span>
+
         <span class="c1"># summary output written 10 times during run so we can see progress</span>
         <span class="n">nevery</span> <span class="o">=</span> <span class="mi">10</span>
         <span class="n">nfreq</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nsteps</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span>
         <span class="n">nrepeat</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nfreq</span> <span class="o">/</span> <span class="n">nevery</span><span class="p">)</span>
         <span class="n">nfreq</span> <span class="o">=</span> <span class="n">nevery</span> <span class="o">*</span> <span class="n">nrepeat</span>
         <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+nve_summary.trj&quot;</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;all  ave/time &quot;</span>
-            <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> file summary_nve_</span><span class="si">{}</span><span class="s2">_iter_0.txt&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">nevery</span><span class="p">,</span> <span class="n">nrepeat</span><span class="p">,</span> <span class="n">nfreq</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="sa">f</span><span class="s2">&quot;fix                 </span><span class="si">{</span><span class="n">nfixes</span><span class="si">}</span><span class="s2"> all ave/time </span><span class="si">{</span><span class="n">nevery</span><span class="si">}</span><span class="s2"> 1 </span><span class="si">{</span><span class="n">nfreq</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;                       </span><span class="si">{</span><span class="n">properties</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;                       off 2 &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;                       file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
+
         <span class="c1"># instantaneous output written for averaging</span>
         <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;sampling&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
@@ -606,24 +653,26 @@ document.write(`
             <span class="n">nrepeat</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="n">nfreq</span> <span class="o">=</span> <span class="n">nevery</span> <span class="o">*</span> <span class="n">nrepeat</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">title1</span> <span class="o">=</span> <span class="s2">&quot;!MolSSI trajectory 1.0 LAMMPS, NVE </span><span class="si">{}</span><span class="s2"> steps of </span><span class="si">{}</span><span class="s2"> fs&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="nb">int</span><span class="p">(</span><span class="n">nsteps</span> <span class="o">/</span> <span class="n">nevery</span><span class="p">),</span> <span class="n">timestep</span> <span class="o">*</span> <span class="n">nevery</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">nevery</span> <span class="o">*</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">to_compact</span><span class="p">()</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;LAMMPS&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;NVE&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span>
+                    <span class="s2">&quot;tunits&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">u</span><span class="p">),</span>
+                    <span class="s2">&quot;nsteps&quot;</span><span class="p">:</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">nevery</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">),</span>
             <span class="p">)</span>
+            <span class="n">title1</span> <span class="o">=</span> <span class="s2">&quot;!MolSSI trajectory 2.0 &quot;</span> <span class="o">+</span> <span class="n">text</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+nve_state.trj&quot;</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="p">(</span>
-                    <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> all ave/time </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> off 2 &quot;</span>
-                    <span class="s2">&quot;title1 &#39;</span><span class="si">{}</span><span class="s2">&#39; title2 &#39;</span><span class="si">{}</span><span class="s2">&#39; file &quot;</span>
-                    <span class="s2">&quot;trajectory_nve_</span><span class="si">{}</span><span class="s2">_iter_0.seamm_trj&quot;</span>
-                <span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">nfixes</span><span class="p">,</span>
-                    <span class="n">nevery</span><span class="p">,</span>
-                    <span class="n">nrepeat</span><span class="p">,</span>
-                    <span class="n">nfreq</span><span class="p">,</span>
-                    <span class="n">properties</span><span class="p">,</span>
-                    <span class="n">title1</span><span class="p">,</span>
-                    <span class="n">title2</span><span class="p">,</span>
-                    <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">),</span>
-                <span class="p">)</span>
+                <span class="sa">f</span><span class="s2">&quot;fix                 </span><span class="si">{</span><span class="n">nfixes</span><span class="si">}</span><span class="s2"> all ave/time </span><span class="si">{</span><span class="n">nevery</span><span class="si">}</span><span class="s2"> 1 </span><span class="si">{</span><span class="n">nfreq</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                       </span><span class="si">{</span><span class="n">properties</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;                       off 2 &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                       title1 &#39;</span><span class="si">{</span><span class="n">title1</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                       title2 &#39;</span><span class="si">{</span><span class="n">title2</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                       file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="n">__</span><span class="p">(</span>
@@ -637,6 +686,12 @@ document.write(`
                 <span class="p">)</span>
             <span class="p">)</span>
 
+        <span class="c1"># Handle trajectories</span>
+        <span class="n">tmp</span><span class="p">,</span> <span class="n">ncomputes</span><span class="p">,</span> <span class="n">ndumps</span><span class="p">,</span> <span class="n">nfixes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trajectory_input</span><span class="p">(</span>
+            <span class="n">P</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">ncomputes</span><span class="p">,</span> <span class="n">ndumps</span><span class="p">,</span> <span class="n">nfixes</span>
+        <span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">extras</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;shake&quot;</span> <span class="ow">in</span> <span class="n">extras</span><span class="p">:</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extras</span><span class="p">[</span><span class="s2">&quot;shake&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">))</span>
@@ -645,8 +700,12 @@ document.write(`
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;run                 </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nsteps</span><span class="p">))</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">fix</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nfixes</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;unfix               </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fix</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ncomputes</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;uncompute           </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndumps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;undump              </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nfixes</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unfix               </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
@@ -695,7 +754,178 @@ document.write(`
 
         <span class="n">timestep</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="p">(</span><span class="n">timestep</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">timestep</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NVE.trajectory_input"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nve.NVE.trajectory_input">[docs]</a>    <span class="k">def</span> <span class="nf">trajectory_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">ncomputes</span><span class="p">,</span> <span class="n">ndumps</span><span class="p">,</span> <span class="n">nfixes</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the part of the input handling the trajectories.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        P : dict</span>
+<span class="sd">            The dictionary of options</span>
+<span class="sd">        timestep : int</span>
+<span class="sd">            The timestep in LAMMPS units</span>
+<span class="sd">        nsteps : int</span>
+<span class="sd">            Total number of steps in the run</span>
+<span class="sd">        ncomputes : int</span>
+<span class="sd">            The counter for the computes</span>
+<span class="sd">        ndumps : int</span>
+<span class="sd">            The counter for the dumps</span>
+<span class="sd">        nfixes : int</span>
+<span class="sd">            The counter for the fixes</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        [str]</span>
+<span class="sd">            The input lines as array</span>
+<span class="sd">        int</span>
+<span class="sd">            The counter for the computes</span>
+<span class="sd">        int</span>
+<span class="sd">            The counter for the dumps</span>
+<span class="sd">        int</span>
+<span class="sd">            The counter for the fixes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;atomic positions&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
+            <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;atomic positions&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+            <span class="n">ndumps</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+atomic_positions.dump_trj&quot;</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;dump                </span><span class="si">{</span><span class="n">ndumps</span><span class="si">}</span><span class="s2"> all custom </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> id xu yu zu</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;dump_modify         </span><span class="si">{</span><span class="n">ndumps</span><span class="si">}</span><span class="s2"> sort id&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;com positions&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
+            <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;com positions&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+com_positions.trj&quot;</span>
+            <span class="n">ncomputes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">c1</span> <span class="o">=</span> <span class="n">ncomputes</span>
+            <span class="n">ncomputes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">c2</span> <span class="o">=</span> <span class="n">ncomputes</span>
+            <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">to_compact</span><span class="p">()</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;LAMMPS&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;com positions&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span>
+                    <span class="s2">&quot;tunits&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">u</span><span class="p">),</span>
+                    <span class="s2">&quot;nsteps&quot;</span><span class="p">:</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">n</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">title1</span> <span class="o">=</span> <span class="s2">&quot;!MolSSI vector_trajectory 2.0 &quot;</span> <span class="o">+</span> <span class="n">text</span>
+            <span class="n">title2</span> <span class="o">=</span> <span class="s2">&quot;! timestep n_molecules&quot;</span>
+            <span class="n">title3</span> <span class="o">=</span> <span class="s2">&quot;molecule com_x com_y com_z&quot;</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;compute             </span><span class="si">{</span><span class="n">c1</span><span class="si">}</span><span class="s2"> all chunk/atom molecule</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;compute             </span><span class="si">{</span><span class="n">c2</span><span class="si">}</span><span class="s2"> all com/chunk </span><span class="si">{</span><span class="n">c1</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;fix                 </span><span class="si">{</span><span class="n">nfixes</span><span class="si">}</span><span class="s2"> all ave/time </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> 1 </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> c_</span><span class="si">{</span><span class="n">c2</span><span class="si">}</span><span class="s2">[*] &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        title1 &#39;</span><span class="si">{</span><span class="n">title1</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        title2 &#39;</span><span class="si">{</span><span class="n">title2</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        title3 &#39;</span><span class="si">{</span><span class="n">title3</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> mode vector&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;atomic velocities&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
+            <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;atomic velocities&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+            <span class="n">ndumps</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+atomic_velocities.dump_trj&quot;</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;dump                </span><span class="si">{</span><span class="n">ndumps</span><span class="si">}</span><span class="s2"> all custom </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> id vx vy vz</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;dump_modify         </span><span class="si">{</span><span class="n">ndumps</span><span class="si">}</span><span class="s2"> sort id&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;com velocities&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
+            <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;com velocities&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+com_velocities.trj&quot;</span>
+            <span class="n">ncomputes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">c1</span> <span class="o">=</span> <span class="n">ncomputes</span>
+            <span class="n">ncomputes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">c2</span> <span class="o">=</span> <span class="n">ncomputes</span>
+            <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">to_compact</span><span class="p">()</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;LAMMPS&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;com velocities&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span>
+                    <span class="s2">&quot;tunits&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">u</span><span class="p">),</span>
+                    <span class="s2">&quot;nsteps&quot;</span><span class="p">:</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">n</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">title1</span> <span class="o">=</span> <span class="s2">&quot;!MolSSI vector_trajectory 2.0 &quot;</span> <span class="o">+</span> <span class="n">text</span>
+            <span class="n">title2</span> <span class="o">=</span> <span class="s2">&quot;! timestep n_molecules&quot;</span>
+            <span class="n">title3</span> <span class="o">=</span> <span class="s2">&quot;molecule com_vx com_vy com_vz&quot;</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;compute             </span><span class="si">{</span><span class="n">c1</span><span class="si">}</span><span class="s2"> all chunk/atom molecule</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;compute             </span><span class="si">{</span><span class="n">c2</span><span class="si">}</span><span class="s2"> all vcm/chunk </span><span class="si">{</span><span class="n">c1</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;fix                 </span><span class="si">{</span><span class="n">nfixes</span><span class="si">}</span><span class="s2"> all ave/time </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> 1 </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> c_</span><span class="si">{</span><span class="n">c2</span><span class="si">}</span><span class="s2">[*] &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        title1 &#39;</span><span class="si">{</span><span class="n">title1</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        title2 &#39;</span><span class="si">{</span><span class="n">title2</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        title3 &#39;</span><span class="si">{</span><span class="n">title3</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> mode vector&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;heat flux&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
+            <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;heat flux&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+heat_flux.trj&quot;</span>
+            <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">to_compact</span><span class="p">()</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;LAMMPS&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;heat flux&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span>
+                    <span class="s2">&quot;tunits&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">u</span><span class="p">),</span>
+                    <span class="s2">&quot;nsteps&quot;</span><span class="p">:</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">n</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">title1</span> <span class="o">=</span> <span class="s2">&quot;!MolSSI trajectory 2.0 &quot;</span> <span class="o">+</span> <span class="n">text</span>
+            <span class="n">title2</span> <span class="o">=</span> <span class="s2">&quot;Jx Jy Jz&quot;</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;fix                 </span><span class="si">{</span><span class="n">nfixes</span><span class="si">}</span><span class="s2"> all ave/time </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> 1 </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot;v_Jx v_Jy v_Jz &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        title1 &#39;</span><span class="si">{</span><span class="n">title1</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        title2 &#39;</span><span class="si">{</span><span class="n">title2</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;shear stress&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
+            <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;shear stress&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+shear_stress.trj&quot;</span>
+            <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">to_compact</span><span class="p">()</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;LAMMPS&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;shear stress&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span>
+                    <span class="s2">&quot;tunits&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">u</span><span class="p">),</span>
+                    <span class="s2">&quot;nsteps&quot;</span><span class="p">:</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">n</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">title1</span> <span class="o">=</span> <span class="s2">&quot;!MolSSI trajectory 2.0 &quot;</span> <span class="o">+</span> <span class="n">text</span>
+            <span class="n">title2</span> <span class="o">=</span> <span class="s2">&quot;Pxy Pxz Pyz&quot;</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;fix                 </span><span class="si">{</span><span class="n">nfixes</span><span class="si">}</span><span class="s2"> all ave/time </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> 1 </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot;v_pxy v_pxz v_pyz &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        title1 &#39;</span><span class="si">{</span><span class="n">title1</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        title2 &#39;</span><span class="si">{</span><span class="n">title2</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lines</span><span class="p">,</span> <span class="n">ncomputes</span><span class="p">,</span> <span class="n">ndumps</span><span class="p">,</span> <span class="n">nfixes</span></div></div>
 </pre></div>
 
                 </article>
