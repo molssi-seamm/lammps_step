@@ -89,7 +89,7 @@ class Installer(seamm_installer.InstallerBase):
         The information in the configuration file is:
 
             installation
-                How LAMMPS is installed. One of `user`, `modules` or `conda`
+                How LAMMPS is installed. One of `path`, `modules` or `conda`
             conda-environment
                 The Conda environment if and only if `installation` = `conda`
             modules
@@ -97,7 +97,7 @@ class Installer(seamm_installer.InstallerBase):
             lammps-path
                 The path where the LAMMPS executables are. Automatically
                 defined if `installation` is `conda` or `modules`, but given
-                by the user is it is `user`.
+                by the user is it is `path`.
 
         Returns
         -------
@@ -154,7 +154,7 @@ class Installer(seamm_installer.InstallerBase):
         self.logger.debug(f"initial-lammps-path = {initial_lammps_path}.")
 
         # Is there an installation indicated?
-        if initial_installation in ("user", "conda", "modules"):
+        if initial_installation in ("path", "conda", "modules"):
             installation = initial_installation
         else:
             installation = None
@@ -296,7 +296,7 @@ class Installer(seamm_installer.InstallerBase):
                         default="yes",
                     ):
                         self.configuration.set_value(
-                            self.section, "installation", "user"
+                            self.section, "installation", "path"
                         )
                         self.configuration.set_value(
                             self.section, "conda-environment", ""
@@ -307,9 +307,7 @@ class Installer(seamm_installer.InstallerBase):
 
             if lammps_path is None:
                 # Can't find LAMMPS
-                print(
-                    "Cannot find LAMMPS executables. You will need to install " "them."
-                )
+                print("Cannot find LAMMPS executables. You will need to install them.")
                 if (
                     initial_installation is not None
                     and initial_installation != "not installed"
@@ -387,13 +385,26 @@ class Installer(seamm_installer.InstallerBase):
 
     def install(self):
         """Install LAMMPS using a Conda environment."""
+        if self.configuration.section_exists(self.section):
+            # Get the values from the configuration
+            data = self.configuration.get_values(self.section)
+            if "installation" in data:
+                initial_installation = data["installation"]
+                if initial_installation == "path":
+                    print("Using LAMMPS for the path given by the user.")
+                    return
+                elif initial_installation == "modules":
+                    print("Using LAMMPS from the modules given by the user.")
+                    return
+        else:
+            # Update the configuration file.
+            self.check_configuration_file()
+
         print(
             f"Installing Conda environment '{self.environment}'. This "
             "may take a minute or two."
         )
         self.conda.create_environment(self.environment_file, name=self.environment)
-        # Update the configuration file.
-        self.check_configuration_file()
         path = self.conda.path(self.environment) / "bin"
         self.configuration.set_value(self.section, "lammps-path", str(path))
         self.configuration.set_value(self.section, "installation", "conda")
@@ -450,11 +461,13 @@ class Installer(seamm_installer.InstallerBase):
                         extra = "from an unknown Conda environment."
                 elif installation == "modules":
                     if "modules" in data and data["modules"] != "":
-                        extra = f"from module(s) {data['modules']}."
+                        print(f"from module(s) {data['modules']}.")
                     else:
-                        extra = "from unknown modules."
-                elif installation == "user":
-                    extra = f"from user-defined path {conf_path}."
+                        print("from unknown modules.")
+                    return
+                elif installation == "path":
+                    print(f"from user-defined path {conf_path}.")
+                    return
 
             if serial is not None:
                 if mpi is not None:
