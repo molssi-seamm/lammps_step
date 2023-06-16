@@ -1,6 +1,8 @@
 =======
 History
 =======
+2023.6.16 -- Heat flux with PCFF
+   * centroid/stress/atom does not work with Class 2 forcefields, so don't use for PCFF.
 2023.5.29 -- Self diffusion and other improvements
    * Added trajectory panel to support diffusion, viscosity and simple thermal
      conductivity.
