@@ -8,7 +8,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.heat_flux &#8212; SEAMM LAMMPS Plug-in 2023.5.29 documentation</title>
+    <title>lammps_step.heat_flux &#8212; SEAMM LAMMPS Plug-in 2023.6.16 documentation</title>
   
   
   
@@ -572,6 +572,53 @@ document.write(`
 <span class="s2">run_thermal_conductivity(**kwords)</span>
 <span class="s2">&quot;&quot;&quot;</span>
 
+<span class="n">script2</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s2">#!/usr/bin/env python</span>
+
+<span class="s2">import argparse</span>
+<span class="s2">import sys</span>
+
+<span class="s2">from lammps import lammps, LMP_STYLE_ATOM, LMP_TYPE_VECTOR, LMP_TYPE_ARRAY</span>
+<span class="s2">from mpi4py import MPI</span>
+<span class="s2">import numpy as np</span>
+
+<span class="s2">def J_filter_cb(lmp, ntimestep, nlocal, ids, xyz, fext, args = []):</span>
+<span class="s2">    # Set forces to 0.0</span>
+<span class="s2">    fext.fill(0.0)</span>
+
+<span class="s2">    # update energy</span>
+<span class="s2">    PE0 = lmp.numpy.extract_fix(&quot;PE_ave&quot;, LMP_STYLE_ATOM, LMP_TYPE_VECTOR)</span>
+<span class="s2">    lmp.numpy.fix_external_set_energy_peratom(&quot;J_filter&quot;, -PE0);</span>
+
+<span class="s2">    # and stress</span>
+<span class="s2">    S_p0 = lmp.numpy.extract_fix(&quot;S_p_ave&quot;, LMP_STYLE_ATOM, LMP_TYPE_ARRAY)</span>
+
+<span class="s2">    S = np.reshape(S_p0, (nlocal, 6))</span>
+
+<span class="s2">    lmp.numpy.fix_external_set_virial_peratom(&quot;J_filter&quot;, -S)</span>
+
+<span class="s2">def run_thermal_conductivity(cmd_args=None):</span>
+<span class="s2">    if cmd_args is None:</span>
+<span class="s2">        lmp = lammps()</span>
+<span class="s2">    else:</span>
+<span class="s2">        lmp = lammps(cmdargs=cmd_args.split())</span>
+<span class="s2">    lmp.file(&quot;lammps.dat&quot;)</span>
+
+<span class="s2">    lmp.set_fix_external_callback(&quot;J_filter&quot;, J_filter_cb, lmp)</span>
+
+<span class="s2">    lmp.file(&quot;lammps_post.dat&quot;)</span>
+
+<span class="s2">    lmp.close()</span>
+<span class="s2">    lmp.finalize()</span>
+
+<span class="s2"># Get any arguments</span>
+<span class="s2">parser = argparse.ArgumentParser()</span>
+<span class="s2">parser.add_argument(&quot;--cmd-args&quot;, help=&quot;Command line arguments for LAMMPS&quot;)</span>
+<span class="s2">kwords = vars(parser.parse_args())</span>
+
+<span class="s2">run_thermal_conductivity(**kwords)</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
 
 <div class="viewcode-block" id="HeatFlux"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.heat_flux.HeatFlux">[docs]</a><span class="k">class</span> <span class="nc">HeatFlux</span><span class="p">(</span><span class="n">NVE</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -679,6 +726,12 @@ document.write(`
 
 <div class="viewcode-block" id="HeatFlux.get_input"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.heat_flux.HeatFlux.get_input">[docs]</a>    <span class="k">def</span> <span class="nf">get_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the input for a heat flux run in LAMMPS&quot;&quot;&quot;</span>
+        <span class="c1"># See what type of forcefield we have and handle it</span>
+        <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_forcefield&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;OpenKIM&quot;</span><span class="p">:</span>
+            <span class="n">ffname</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ffname</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">current_forcefield</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -734,8 +787,75 @@ document.write(`
             <span class="n">factor</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;kcal/Å^2/fs/mol&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;kJ&quot;</span><span class="p">)</span>
         <span class="n">factor</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;W/m^2&quot;</span><span class="p">)</span>
 
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;cff&quot;</span> <span class="ow">in</span> <span class="n">ffname</span><span class="p">:</span>
+            <span class="c1"># Centroid/stress/atom does not handle class2 ff ... cross-terms?</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">#          Green-Kubo method</span>
+
+<span class="s2">fix                 dynamics all nve</span>
+
+<span class="s2">compute             KE all ke/atom</span>
+<span class="s2">compute             PE all pe/atom</span>
+
+<span class="s2">#          centroid doesn&#39;t work with kspace, so split into pair and non-pair parts</span>
+
+<span class="s2">compute             S_p all stress/atom NULL virial</span>
+<span class="s2">compute             flux_p all heat/flux KE PE S_p</span>
+
+<span class="s2">#          An initial run to settle things down.</span>
+
+<span class="s2">run                 1000 post no</span>
+
+<span class="s2">#          A run to get the averages for PE and S for scheme 2</span>
+
+<span class="s2">fix                 ave all ave/atom 1 1000 1000 c_PE</span>
+<span class="s2">fix                 p_ave all ave/atom 1 1000 1000 c_S_p[1] c_S_p[2] c_S_p[3] &amp;</span>
+<span class="s2">                                                   c_S_p[4] c_S_p[5] c_S_p[6]</span>
+
+<span class="s2">run                 1000 post no</span>
+
+<span class="s2">fix                 PE_ave all store/state 0 f_ave</span>
+<span class="s2">fix                 S_p_ave all store/state 0 f_p_ave[1] f_p_ave[2] f_p_ave[3] &amp;</span>
+<span class="s2">                                              f_p_ave[4] f_p_ave[5] f_p_ave[6]</span>
+
+<span class="s2">#          Store the initial values for scheme 1</span>
+
+<span class="s2">fix                 PE0 all store/state 0 c_PE</span>
+<span class="s2">fix                 S_p0 all store/state 0 c_S_p[1] c_S_p[2] c_S_p[3] &amp;</span>
+<span class="s2">                                           c_S_p[4] c_S_p[5] c_S_p[6]</span>
+
+<span class="s2">#          The run is need to capture the store/state fixes</span>
+
+<span class="s2">run                 0</span>
+
+<span class="s2">unfix               p_ave</span>
+<span class="s2">unfix               ave</span>
+
+<span class="s2">reset_timestep      0</span>
+
+<span class="s2">#          Conversion from kcal/Å^2/fs/mol to W/m^2&quot;)</span>
+
+<span class="s2">variable            factor equal </span><span class="si">{</span><span class="n">factor</span><span class="si">}</span>
+<span class="s2">variable            Jx equal v_factor*c_flux_p[1]/vol</span>
+<span class="s2">variable            Jy equal v_factor*c_flux_p[2]/vol</span>
+<span class="s2">variable            Jz equal v_factor*c_flux_p[3]/vol</span>
+
+<span class="s2">#          The thermo output</span>
+
+<span class="s2">thermo              </span><span class="si">{</span><span class="n">nsteps</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="mi">100</span><span class="si">}</span>
+<span class="s2">thermo_style        custom </span><span class="si">{</span><span class="n">thermo_properties</span><span class="si">}</span>
+
+<span class="s2">#          The external fix to adjust the peratom PE and S</span>
+
+<span class="s2">fix                 J_filter all external pf/callback 1 1</span>
+<span class="s2">fix_modify          J_filter energy yes</span>
+<span class="s2">fix_modify          J_filter virial yes</span>
+<span class="s2">&quot;&quot;&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">#          Green-Kubo method</span>
 
 <span class="s2">fix                 dynamics all nve</span>
@@ -809,7 +929,7 @@ document.write(`
 <span class="s2">fix_modify          J_filter energy yes</span>
 <span class="s2">fix_modify          J_filter virial yes</span>
 <span class="s2">&quot;&quot;&quot;</span>
-        <span class="p">)</span>
+            <span class="p">)</span>
 
         <span class="c1"># instantaneous output written for averaging</span>
         <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;sampling&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
@@ -859,44 +979,6 @@ document.write(`
                     <span class="n">indent</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">)</span>
-        <span class="c1"># # handling of trajectory</span>
-        <span class="c1"># nevery = max(1, round(sampling / timestep))</span>
-        <span class="c1"># nrepeat = 1</span>
-        <span class="c1"># nfreq = nevery * nrepeat</span>
-        <span class="c1"># properties = &quot;v_time v_temp v_etotal v_ke v_pe v_Jx v_Jy v_Jz &quot;</span>
-        <span class="c1"># filename = f&quot;@{self._id[-1]}+heat_flux_state.trj&quot;</span>
-
-        <span class="c1"># dt = (nevery * P[&quot;timestep&quot;]).to_compact()</span>
-        <span class="c1"># text = json.dumps(</span>
-        <span class="c1">#     {</span>
-        <span class="c1">#         &quot;code&quot;: &quot;LAMMPS&quot;,</span>
-        <span class="c1">#         &quot;type&quot;: &quot;NVE&quot;,</span>
-        <span class="c1">#         &quot;dt&quot;: dt.magnitude,</span>
-        <span class="c1">#         &quot;tunits&quot;: str(dt.u),</span>
-        <span class="c1">#         &quot;nsteps&quot;: nsteps // nevery,</span>
-        <span class="c1">#     },</span>
-        <span class="c1">#     separators=(&quot;,&quot;, &quot;:&quot;),</span>
-        <span class="c1"># )</span>
-        <span class="c1"># title1 = &quot;!MolSSI trajectory 2.0 &quot; + text</span>
-        <span class="c1"># title2 = &quot;tstep t T Etot Eke Epe Jx Jy Jz &quot;</span>
-        <span class="c1"># lines.append(</span>
-        <span class="c1">#     f&quot;fix                 trajectory all ave/time {nevery} 1 {nfreq} &amp;\n&quot;</span>
-        <span class="c1">#     f&quot;                       {properties} &amp;\n&quot;</span>
-        <span class="c1">#     &quot;                       off 2 &amp;\n&quot;</span>
-        <span class="c1">#     f&quot;                       title1 &#39;{title1}&#39; &amp;\n&quot;</span>
-        <span class="c1">#     f&quot;                       title2 &#39;{title2}&#39; &amp;\n&quot;</span>
-        <span class="c1">#     f&quot;                       file {filename}&quot;</span>
-        <span class="c1"># )</span>
-
-        <span class="c1"># self.description.append(</span>
-        <span class="c1">#     __(</span>
-        <span class="c1">#         &quot;The run will be {nsteps:,d} steps of dynamics &quot;</span>
-        <span class="c1">#         &quot;sampled every {nevery:n} steps.&quot;,</span>
-        <span class="c1">#         nsteps=nsteps,</span>
-        <span class="c1">#         nevery=nevery,</span>
-        <span class="c1">#         indent=7 * &quot; &quot;,</span>
-        <span class="c1">#     )</span>
-        <span class="c1"># )</span>
 
         <span class="n">nevery</span> <span class="o">=</span> <span class="mi">10</span>
         <span class="n">nfreq</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nsteps</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span>
@@ -964,12 +1046,20 @@ document.write(`
         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndumps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="n">post_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;undump              </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;script&quot;</span><span class="p">:</span> <span class="n">lines</span><span class="p">,</span>
-            <span class="s2">&quot;postscript&quot;</span><span class="p">:</span> <span class="n">post_lines</span><span class="p">,</span>
-            <span class="s2">&quot;use python&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="s2">&quot;python script&quot;</span><span class="p">:</span> <span class="n">script</span><span class="p">,</span>
-        <span class="p">}</span></div></div>
+        <span class="k">if</span> <span class="s2">&quot;cff&quot;</span> <span class="ow">in</span> <span class="n">ffname</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;script&quot;</span><span class="p">:</span> <span class="n">lines</span><span class="p">,</span>
+                <span class="s2">&quot;postscript&quot;</span><span class="p">:</span> <span class="n">post_lines</span><span class="p">,</span>
+                <span class="s2">&quot;use python&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;python script&quot;</span><span class="p">:</span> <span class="n">script2</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;script&quot;</span><span class="p">:</span> <span class="n">lines</span><span class="p">,</span>
+                <span class="s2">&quot;postscript&quot;</span><span class="p">:</span> <span class="n">post_lines</span><span class="p">,</span>
+                <span class="s2">&quot;use python&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;python script&quot;</span><span class="p">:</span> <span class="n">script</span><span class="p">,</span>
+            <span class="p">}</span></div></div>
 </pre></div>
 
                 </article>
