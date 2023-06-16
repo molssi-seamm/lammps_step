@@ -94,6 +94,53 @@ kwords = vars(parser.parse_args())
 run_thermal_conductivity(**kwords)
 """
 
+script2 = """\
+#!/usr/bin/env python
+
+import argparse
+import sys
+
+from lammps import lammps, LMP_STYLE_ATOM, LMP_TYPE_VECTOR, LMP_TYPE_ARRAY
+from mpi4py import MPI
+import numpy as np
+
+def J_filter_cb(lmp, ntimestep, nlocal, ids, xyz, fext, args = []):
+    # Set forces to 0.0
+    fext.fill(0.0)
+
+    # update energy
+    PE0 = lmp.numpy.extract_fix("PE_ave", LMP_STYLE_ATOM, LMP_TYPE_VECTOR)
+    lmp.numpy.fix_external_set_energy_peratom("J_filter", -PE0);
+
+    # and stress
+    S_p0 = lmp.numpy.extract_fix("S_p_ave", LMP_STYLE_ATOM, LMP_TYPE_ARRAY)
+
+    S = np.reshape(S_p0, (nlocal, 6))
+
+    lmp.numpy.fix_external_set_virial_peratom("J_filter", -S)
+
+def run_thermal_conductivity(cmd_args=None):
+    if cmd_args is None:
+        lmp = lammps()
+    else:
+        lmp = lammps(cmdargs=cmd_args.split())
+    lmp.file("lammps.dat")
+
+    lmp.set_fix_external_callback("J_filter", J_filter_cb, lmp)
+
+    lmp.file("lammps_post.dat")
+
+    lmp.close()
+    lmp.finalize()
+
+# Get any arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("--cmd-args", help="Command line arguments for LAMMPS")
+kwords = vars(parser.parse_args())
+
+run_thermal_conductivity(**kwords)
+"""
+
 
 class HeatFlux(NVE):
     """
@@ -201,6 +248,12 @@ class HeatFlux(NVE):
 
     def get_input(self, extras=None):
         """Get the input for a heat flux run in LAMMPS"""
+        # See what type of forcefield we have and handle it
+        ff = self.get_variable("_forcefield")
+        if ff == "OpenKIM":
+            ffname = ""
+        else:
+            ffname = ff.current_forcefield
 
         self.description = []
 
@@ -256,8 +309,75 @@ class HeatFlux(NVE):
             factor = Q_("kcal/Å^2/fs/mol") / Q_("kcal/mol") * Q_("kcal/mol").to("kJ")
         factor = factor.m_as("W/m^2")
 
-        lines.append(
-            f"""
+        if "cff" in ffname:
+            # Centroid/stress/atom does not handle class2 ff ... cross-terms?
+            lines.append(
+                f"""
+#          Green-Kubo method
+
+fix                 dynamics all nve
+
+compute             KE all ke/atom
+compute             PE all pe/atom
+
+#          centroid doesn't work with kspace, so split into pair and non-pair parts
+
+compute             S_p all stress/atom NULL virial
+compute             flux_p all heat/flux KE PE S_p
+
+#          An initial run to settle things down.
+
+run                 1000 post no
+
+#          A run to get the averages for PE and S for scheme 2
+
+fix                 ave all ave/atom 1 1000 1000 c_PE
+fix                 p_ave all ave/atom 1 1000 1000 c_S_p[1] c_S_p[2] c_S_p[3] &
+                                                   c_S_p[4] c_S_p[5] c_S_p[6]
+
+run                 1000 post no
+
+fix                 PE_ave all store/state 0 f_ave
+fix                 S_p_ave all store/state 0 f_p_ave[1] f_p_ave[2] f_p_ave[3] &
+                                              f_p_ave[4] f_p_ave[5] f_p_ave[6]
+
+#          Store the initial values for scheme 1
+
+fix                 PE0 all store/state 0 c_PE
+fix                 S_p0 all store/state 0 c_S_p[1] c_S_p[2] c_S_p[3] &
+                                           c_S_p[4] c_S_p[5] c_S_p[6]
+
+#          The run is need to capture the store/state fixes
+
+run                 0
+
+unfix               p_ave
+unfix               ave
+
+reset_timestep      0
+
+#          Conversion from kcal/Å^2/fs/mol to W/m^2")
+
+variable            factor equal {factor}
+variable            Jx equal v_factor*c_flux_p[1]/vol
+variable            Jy equal v_factor*c_flux_p[2]/vol
+variable            Jz equal v_factor*c_flux_p[3]/vol
+
+#          The thermo output
+
+thermo              {nsteps // 100}
+thermo_style        custom {thermo_properties}
+
+#          The external fix to adjust the peratom PE and S
+
+fix                 J_filter all external pf/callback 1 1
+fix_modify          J_filter energy yes
+fix_modify          J_filter virial yes
+"""
+            )
+        else:
+            lines.append(
+                f"""
 #          Green-Kubo method
 
 fix                 dynamics all nve
@@ -331,7 +451,7 @@ fix                 J_filter all external pf/callback 1 1
 fix_modify          J_filter energy yes
 fix_modify          J_filter virial yes
 """
-        )
+            )
 
         # instantaneous output written for averaging
         if P["sampling"] == "none":
@@ -381,44 +501,6 @@ fix_modify          J_filter virial yes
                     indent=7 * " ",
                 )
             )
-        # # handling of trajectory
-        # nevery = max(1, round(sampling / timestep))
-        # nrepeat = 1
-        # nfreq = nevery * nrepeat
-        # properties = "v_time v_temp v_etotal v_ke v_pe v_Jx v_Jy v_Jz "
-        # filename = f"@{self._id[-1]}+heat_flux_state.trj"
-
-        # dt = (nevery * P["timestep"]).to_compact()
-        # text = json.dumps(
-        #     {
-        #         "code": "LAMMPS",
-        #         "type": "NVE",
-        #         "dt": dt.magnitude,
-        #         "tunits": str(dt.u),
-        #         "nsteps": nsteps // nevery,
-        #     },
-        #     separators=(",", ":"),
-        # )
-        # title1 = "!MolSSI trajectory 2.0 " + text
-        # title2 = "tstep t T Etot Eke Epe Jx Jy Jz "
-        # lines.append(
-        #     f"fix                 trajectory all ave/time {nevery} 1 {nfreq} &\n"
-        #     f"                       {properties} &\n"
-        #     "                       off 2 &\n"
-        #     f"                       title1 '{title1}' &\n"
-        #     f"                       title2 '{title2}' &\n"
-        #     f"                       file {filename}"
-        # )
-
-        # self.description.append(
-        #     __(
-        #         "The run will be {nsteps:,d} steps of dynamics "
-        #         "sampled every {nevery:n} steps.",
-        #         nsteps=nsteps,
-        #         nevery=nevery,
-        #         indent=7 * " ",
-        #     )
-        # )
 
         nevery = 10
         nfreq = int(nsteps / 10)
@@ -486,9 +568,17 @@ uncompute           KE
         for n in range(1, ndumps + 1):
             post_lines.append(f"undump              {n}")
 
-        return {
-            "script": lines,
-            "postscript": post_lines,
-            "use python": True,
-            "python script": script,
-        }
+        if "cff" in ffname:
+            return {
+                "script": lines,
+                "postscript": post_lines,
+                "use python": True,
+                "python script": script2,
+            }
+        else:
+            return {
+                "script": lines,
+                "postscript": post_lines,
+                "use python": True,
+                "python script": script,
+            }
