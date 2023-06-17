@@ -8,7 +8,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.tk_nve &#8212; SEAMM LAMMPS Plug-in 2023.6.16 documentation</title>
+    <title>lammps_step.tk_nve &#8212; SEAMM LAMMPS Plug-in 2023.6.17 documentation</title>
   
   
   
@@ -540,7 +540,7 @@ document.write(`
         <span class="n">row</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">widgets</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">NVE_Parameters</span><span class="o">.</span><span class="n">trajectories</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">title</span> <span class="o">==</span> <span class="s2">&quot;Heat Flux&quot;</span> <span class="ow">and</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;heat flux&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">title</span> <span class="o">==</span> <span class="s2">&quot;Heat Flux&quot;</span> <span class="ow">and</span> <span class="p">(</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;heat flux&quot;</span> <span class="ow">or</span> <span class="s2">&quot;centroid&quot;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">):</span>
                 <span class="k">continue</span>
             <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span><span class="p">(</span><span class="n">tframe</span><span class="p">)</span>
             <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>

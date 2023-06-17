@@ -8,7 +8,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2023.6.16 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2023.6.17 documentation</title>
   
   
   
@@ -1398,7 +1398,7 @@ document.write(`
             <span class="p">)</span>
             <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;info               computes fixes dumps log out&quot;</span><span class="p">)</span>
+            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;info               computes fixes dumps out log&quot;</span><span class="p">)</span>
 
         <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_input_data</span>
 
@@ -1414,7 +1414,7 @@ document.write(`
                 <span class="s2">&quot;modify flush yes sort id&quot;</span>
             <span class="p">)</span>
             <span class="n">postscript</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-            <span class="n">postscript</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;info               computes fixes dumps log out&quot;</span><span class="p">)</span>
+            <span class="n">postscript</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;info               computes fixes dumps out log&quot;</span><span class="p">)</span>
             <span class="n">files</span><span class="p">[</span><span class="s2">&quot;postscript&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">postscript</span><span class="p">),</span>
                 <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="s2">&quot;lammps_post.dat&quot;</span><span class="p">,</span>

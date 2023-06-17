@@ -8,7 +8,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2023.6.16 documentation</title>
+    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2023.6.17 documentation</title>
   
   
   
@@ -545,6 +545,13 @@ document.write(`
 <div class="viewcode-block" id="NVE.get_input"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nve.NVE.get_input">[docs]</a>    <span class="k">def</span> <span class="nf">get_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the input for an NVE dynamics run in LAMMPS&quot;&quot;&quot;</span>
 
+        <span class="c1"># See what type of forcefield we have and handle it</span>
+        <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_forcefield&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;OpenKIM&quot;</span><span class="p">:</span>
+            <span class="n">ffname</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ffname</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">current_forcefield</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
 
@@ -602,8 +609,29 @@ document.write(`
                     <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;kcal/Å^2/fs/mol&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;kJ&quot;</span><span class="p">)</span>
                 <span class="p">)</span>
             <span class="n">factor</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;W/m^2&quot;</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="s2">&quot;cff&quot;</span> <span class="ow">in</span> <span class="n">ffname</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;use centroid stress&quot;</span><span class="p">]:</span>
+                <span class="c1"># Centroid/stress/atom does not handle class2 ff ... cross-terms?</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">compute             KE all ke/atom</span>
+<span class="s2">compute             PE all pe/atom</span>
+
+<span class="s2">#          centroid doesn&#39;t work with kspace, so split into pair and non-pair parts</span>
+
+<span class="s2">compute             S_p all stress/atom NULL virial</span>
+<span class="s2">compute             flux_p all heat/flux KE PE S_p</span>
+
+<span class="s2">#          Conversion from kcal/Å^2/fs/mol to W/m^2&quot;)</span>
+
+<span class="s2">variable            factor equal </span><span class="si">{</span><span class="n">factor</span><span class="si">}</span>
+<span class="s2">variable            Jx equal v_factor*c_flux_p[1]/vol</span>
+<span class="s2">variable            Jy equal v_factor*c_flux_p[2]/vol</span>
+<span class="s2">variable            Jz equal v_factor*c_flux_p[3]/vol</span>
+<span class="s2">&quot;&quot;&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">compute             KE all ke/atom</span>
 <span class="s2">compute             PE all pe/atom</span>
 
@@ -621,7 +649,7 @@ document.write(`
 <span class="s2">variable            Jy equal v_factor*(c_flux_p[2]+c_flux_b[2])/vol</span>
 <span class="s2">variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol</span>
 <span class="s2">&quot;&quot;&quot;</span>
-            <span class="p">)</span>
+                <span class="p">)</span>
 
         <span class="c1"># summary output written 10 times during run so we can see progress</span>
         <span class="n">nevery</span> <span class="o">=</span> <span class="mi">10</span>
@@ -706,6 +734,18 @@ document.write(`
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;undump              </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nfixes</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unfix               </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;heat flux&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;cff&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ffname</span> <span class="ow">and</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;use centroid stress&quot;</span><span class="p">]:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;uncompute           flux_b&quot;</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;uncompute           S_b&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;uncompute           flux_p&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;uncompute           S_p&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;uncompute           PE&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;uncompute           KE&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;variable            factor delete&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;variable            Jx delete&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;variable            Jy delete&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;variable            Jz delete&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
