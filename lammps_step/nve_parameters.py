@@ -158,6 +158,15 @@ class NVE_Parameters(lammps_step.EnergyParameters):
                 "heat-flux step instead of using this."
             ),
         },
+        "use centroid stress": {
+            "default": "yes",
+            "kind": "boolean",
+            "default_units": None,
+            "enumeration": ("yes", "no"),
+            "format_string": "",
+            "description": "Use centroid/stress/atom:",
+            "help_text": "Whether to use centroid/stress/atom",
+        },
         "shear stress": {
             "default": "never",
             "kind": "float",

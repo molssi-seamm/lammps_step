@@ -920,7 +920,7 @@ class LAMMPS(seamm.Node):
             )
             new_input_data.append("")
             new_input_data.append("")
-            new_input_data.append("info               computes fixes dumps log out")
+            new_input_data.append("info               computes fixes dumps out log")
 
         files["input"]["data"] += new_input_data
 
@@ -936,7 +936,7 @@ class LAMMPS(seamm.Node):
                 "modify flush yes sort id"
             )
             postscript.append("")
-            postscript.append("info               computes fixes dumps log out")
+            postscript.append("info               computes fixes dumps out log")
             files["postscript"] = {
                 "data": "\n".join(postscript),
                 "filename": "lammps_post.dat",
