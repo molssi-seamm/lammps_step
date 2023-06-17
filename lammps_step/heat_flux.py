@@ -541,20 +541,11 @@ variable            Jy delete
 variable            Jz delete
 unfix               summary
 unfix               J_filter
-unfix               S_b0
 unfix               S_p0
 unfix               PE0
-unfix               S_b_ave
 unfix               S_p_ave
 unfix               PE_ave
 unfix               dynamics
-uncompute           flux_b
-uncompute           flux_p
-uncompute           S_b
-uncompute           S_p
-uncompute           PE
-uncompute           KE
-
 """
         ]
         for compute in computes:
@@ -567,6 +558,16 @@ uncompute           KE
             post_lines.append(f"uncompute           {n}")
         for n in range(1, ndumps + 1):
             post_lines.append(f"undump              {n}")
+        if P["heat flux"] != "never":
+            if "cff" not in ffname:
+                post_lines.append("uncompute           flux_b")
+                post_lines.append("uncompute           S_b")
+                post_lines.append("unfix               S_b0")
+                post_lines.append("unfix               S_b_ave")
+            post_lines.append("uncompute           flux_p")
+            post_lines.append("uncompute           S_p")
+            post_lines.append("uncompute           PE")
+            post_lines.append("uncompute           KE")
 
         if "cff" in ffname:
             return {

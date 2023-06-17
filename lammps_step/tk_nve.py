@@ -62,7 +62,7 @@ class TkNVE(lammps_step.TkEnergy):
         row = 0
         widgets = []
         for key in lammps_step.NVE_Parameters.trajectories:
-            if title == "Heat Flux" and key == "heat flux":
+            if title == "Heat Flux" and (key == "heat flux" or "centroid" in key):
                 continue
             self[key] = P[key].widget(tframe)
             self[key].grid(row=row, column=0)

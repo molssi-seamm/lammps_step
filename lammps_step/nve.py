@@ -67,6 +67,13 @@ class NVE(lammps_step.Energy):
     def get_input(self, extras=None):
         """Get the input for an NVE dynamics run in LAMMPS"""
 
+        # See what type of forcefield we have and handle it
+        ff = self.get_variable("_forcefield")
+        if ff == "OpenKIM":
+            ffname = ""
+        else:
+            ffname = ff.current_forcefield
+
         self.description = []
         self.description.append(__(self.header, indent=3 * " "))
 
@@ -124,8 +131,29 @@ class NVE(lammps_step.Energy):
                     Q_("kcal/Å^2/fs/mol") / Q_("kcal/mol") * Q_("kcal/mol").to("kJ")
                 )
             factor = factor.m_as("W/m^2")
-            lines.append(
-                f"""
+            if "cff" in ffname or not P["use centroid stress"]:
+                # Centroid/stress/atom does not handle class2 ff ... cross-terms?
+                lines.append(
+                    f"""
+compute             KE all ke/atom
+compute             PE all pe/atom
+
+#          centroid doesn't work with kspace, so split into pair and non-pair parts
+
+compute             S_p all stress/atom NULL virial
+compute             flux_p all heat/flux KE PE S_p
+
+#          Conversion from kcal/Å^2/fs/mol to W/m^2")
+
+variable            factor equal {factor}
+variable            Jx equal v_factor*c_flux_p[1]/vol
+variable            Jy equal v_factor*c_flux_p[2]/vol
+variable            Jz equal v_factor*c_flux_p[3]/vol
+"""
+                )
+            else:
+                lines.append(
+                    f"""
 compute             KE all ke/atom
 compute             PE all pe/atom
 
@@ -143,7 +171,7 @@ variable            Jx equal v_factor*(c_flux_p[1]+c_flux_b[1])/vol
 variable            Jy equal v_factor*(c_flux_p[2]+c_flux_b[2])/vol
 variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
 """
-            )
+                )
 
         # summary output written 10 times during run so we can see progress
         nevery = 10
@@ -228,6 +256,18 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
             lines.append(f"undump              {i}")
         for i in range(1, nfixes + 1):
             lines.append(f"unfix               {i}")
+        if P["heat flux"] != "never":
+            if "cff" not in ffname and P["use centroid stress"]:
+                lines.append("uncompute           flux_b")
+                lines.append("uncompute           S_b")
+            lines.append("uncompute           flux_p")
+            lines.append("uncompute           S_p")
+            lines.append("uncompute           PE")
+            lines.append("uncompute           KE")
+            lines.append("variable            factor delete")
+            lines.append("variable            Jx delete")
+            lines.append("variable            Jy delete")
+            lines.append("variable            Jz delete")
         lines.append("")
 
         return {

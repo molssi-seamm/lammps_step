@@ -1,6 +1,10 @@
 =======
 History
 =======
+2023.6.17 -- Bugfix: more centroid/stress/atom issues
+   * Avoided using centroid/stress/atom for heat flux in standard NVE, NVT, ... dynamics
+     with Class 2 forcefield.
+   * Added option to not use centroid/stress/atom for any forcefield.
 2023.6.16 -- Heat flux with PCFF
    * centroid/stress/atom does not work with Class 2 forcefields, so don't use for PCFF.
 2023.5.29 -- Self diffusion and other improvements
