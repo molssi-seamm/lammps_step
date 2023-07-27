@@ -241,7 +241,7 @@ class HeatFlux(NVE):
         text = (
             "Calculate the heat flux using a microcanonical ensemble (NVE), "
             "running for {time} with a timestep of {timestep}. The "
-            "heat flux will be sampled every {sampling}."
+            "heat flux will be sampled every {heat flux}."
         )
 
         return self.header + "\n" + __(text, **P, indent=4 * " ").__str__()
@@ -405,7 +405,20 @@ fix                 b_ave all ave/atom 1 1000 1000 c_S_b[1] c_S_b[2] c_S_b[3] &
                                                    c_S_b[4] c_S_b[5] c_S_b[6] &
                                                    c_S_b[7] c_S_b[8] c_S_b[9]
 
-run                 1000 post no
+run                 5000 post no
+
+dump                dPE all custom 6000 dPE.dump.* id f_ave
+dump_modify         dPE sort id
+
+variable            Sxx atom f_p_ave[1]+f_b_ave[1]
+variable            Syy atom f_p_ave[2]+f_b_ave[2]
+variable            Szz atom f_p_ave[3]+f_b_ave[3]
+variable            Sxy atom f_p_ave[4]+(f_b_ave[4]+f_b_ave[7])/2
+variable            Sxz atom f_p_ave[5]+(f_b_ave[5]+f_b_ave[8])/2
+variable            Syz atom f_p_ave[6]+(f_b_ave[6]+f_b_ave[9])/2
+
+dump                dS all custom 6000 dS.dump.* id v_Sxx v_Syy v_Szz v_Sxy v_Sxz v_Syz
+dump_modify         dS sort id format float %9.0f
 
 fix                 PE_ave all store/state 0 f_ave
 fix                 S_p_ave all store/state 0 f_p_ave[1] f_p_ave[2] f_p_ave[3] &
@@ -426,6 +439,16 @@ fix                 S_b0 all store/state 0 c_S_b[1] c_S_b[2] c_S_b[3] &
 #          The run is need to capture the store/state fixes
 
 run                 0
+
+undump              dPE
+undump              dS
+
+variable            Sxx delete
+variable            Syy delete
+variable            Szz delete
+variable            Sxy delete
+variable            Sxz delete
+variable            Syz delete
 
 unfix               b_ave
 unfix               p_ave

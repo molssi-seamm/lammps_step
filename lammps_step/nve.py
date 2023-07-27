@@ -138,12 +138,10 @@ class NVE(lammps_step.Energy):
 compute             KE all ke/atom
 compute             PE all pe/atom
 
-#          centroid doesn't work with kspace, so split into pair and non-pair parts
-
 compute             S_p all stress/atom NULL virial
 compute             flux_p all heat/flux KE PE S_p
 
-#          Conversion from kcal/Å^2/fs/mol to W/m^2")
+#          Conversion from kcal/Å^2/fs/mol to W/m^2
 
 variable            factor equal {factor}
 variable            Jx equal v_factor*c_flux_p[1]/vol
@@ -164,7 +162,7 @@ compute             S_b all centroid/stress/atom NULL bond angle dihedral improp
 compute             flux_p all heat/flux KE PE S_p
 compute             flux_b all heat/flux KE PE S_b
 
-#          Conversion from kcal/Å^2/fs/mol to W/m^2")
+#          Conversion from kcal/Å^2/fs/mol to W/m^2
 
 variable            factor equal {factor}
 variable            Jx equal v_factor*(c_flux_p[1]+c_flux_b[1])/vol
