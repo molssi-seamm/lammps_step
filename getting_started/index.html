@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 
 
@@ -7,9 +6,9 @@
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM LAMMPS Plug-in 2023.6.17 documentation</title>
+    <title>Getting Started &#8212; SEAMM LAMMPS Plug-in 2023.8.21 documentation</title>
   
   
   
@@ -29,10 +28,10 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=c224919a" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
@@ -46,12 +45,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/sphinx_highlight.js"></script>
-    <script src="../_static/clipboard.min.js"></script>
-    <script src="../_static/copybutton.js"></script>
-    <script src="../_static/design-tabs.js"></script>
+    <script src="../_static/documentation_options.js?v=ebff8f66"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'getting_started/index';</script>
 
     <link rel="index" title="Index" href="../genindex.html" />
@@ -480,9 +479,9 @@ document.write(`
                 <article class="bd-article" role="main">
                   
   <section id="getting-started">
-<h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this heading">#</a></h1>
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">#</a></h1>
 <section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">#</a></h2>
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
 <p>The LAMMPS step is probably already installed in your SEAMM environment, but
 if not or if you wish to check, follow the directions for the <a class="reference external" href="https://molssi-seamm.github.io/installation/index.html">SEAMM Installer</a>. The
 graphical installer is the easiest to use. In the SEAMM conda environment, simply type:</p>
@@ -499,7 +498,7 @@ next to it and click <cite>Install selected</cite> or <cite>Update selected</cit
 <p>will ensure both that it is installed and up-to-date.</p>
 </section>
 <section id="example-of-npt-dynamics">
-<h2>Example of NPT dynamics<a class="headerlink" href="#example-of-npt-dynamics" title="Permalink to this heading">#</a></h2>
+<h2>Example of NPT dynamics<a class="headerlink" href="#example-of-npt-dynamics" title="Link to this heading">#</a></h2>
 <p>Here is a simple example that will run quickly on any machine, including your
 laptop. We’ll simulate an argon fluid at 110 K and 30 atm pressure using a periodic cell
 containing 1000 atoms.</p>
@@ -508,7 +507,7 @@ needs to have three steps:</p>
 <figure class="align-center" id="id1">
 <a class="reference internal image-reference" href="../_images/flowchart.png"><img alt="Flowchart for Ar fluid simulation" src="../_images/flowchart.png" style="width: 300px;" /></a>
 <figcaption>
-<p><span class="caption-text">Flowchart for Ar fluid NPT simulation</span><a class="headerlink" href="#id1" title="Permalink to this image">#</a></p>
+<p><span class="caption-text">Flowchart for Ar fluid NPT simulation</span><a class="headerlink" href="#id1" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <p>Create a flowchart that looks like the above. If you need help doing this, please go to
@@ -522,7 +521,7 @@ will create the fluid system of argon; and the LAMMPS step, run the molecular dy
 <figure class="align-center" id="id2">
 <a class="reference internal image-reference" href="../_images/edit_forcefield.png"><img alt="Setting the forcefield" src="../_images/edit_forcefield.png" style="width: 600px;" /></a>
 <figcaption>
-<p><span class="caption-text">Setting the forcefield for the simulation</span><a class="headerlink" href="#id2" title="Permalink to this image">#</a></p>
+<p><span class="caption-text">Setting the forcefield for the simulation</span><a class="headerlink" href="#id2" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <p>You will need to change the forcefield repository to <cite>oplsaa.frc</cite>. Each forcefield may
@@ -532,7 +531,7 @@ need.</p>
 <figure class="align-center" id="id3">
 <a class="reference internal image-reference" href="../_images/edit_packmol.png"><img alt="Building the Ar fluid system" src="../_images/edit_packmol.png" style="width: 600px;" /></a>
 <figcaption>
-<p><span class="caption-text">Building the Ar fluid system</span><a class="headerlink" href="#id3" title="Permalink to this image">#</a></p>
+<p><span class="caption-text">Building the Ar fluid system</span><a class="headerlink" href="#id3" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <p>Here you will need to change to a periodic system. Check that Packmol will build a cubic
@@ -547,7 +546,7 @@ flowchart like this:</p>
 <figure class="align-center" id="id4">
 <a class="reference internal image-reference" href="../_images/lammps_flowchart.png"><img alt="Subflowchart for LAMMPS" src="../_images/lammps_flowchart.png" style="width: 300px;" /></a>
 <figcaption>
-<p><span class="caption-text">Subflowchart for LAMMPS</span><a class="headerlink" href="#id4" title="Permalink to this image">#</a></p>
+<p><span class="caption-text">Subflowchart for LAMMPS</span><a class="headerlink" href="#id4" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <p>Now edit the steps. There is actually nothing that you need to change in the
@@ -555,14 +554,14 @@ flowchart like this:</p>
 <figure class="align-center" id="id5">
 <a class="reference internal image-reference" href="../_images/edit_initialization.png"><img alt="The LAMMPS initialization step" src="../_images/edit_initialization.png" style="width: 600px;" /></a>
 <figcaption>
-<p><span class="caption-text">The LAMMPS initialization step</span><a class="headerlink" href="#id5" title="Permalink to this image">#</a></p>
+<p><span class="caption-text">The LAMMPS initialization step</span><a class="headerlink" href="#id5" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <p>There is more needed in the NPT dynamics step:</p>
 <figure class="align-center" id="id6">
 <a class="reference internal image-reference" href="../_images/edit_npt.png"><img alt="Dialog for the LAMMPS NPT step" src="../_images/edit_npt.png" style="width: 600px;" /></a>
 <figcaption>
-<p><span class="caption-text">The LAMMPS NPT step</span><a class="headerlink" href="#id6" title="Permalink to this image">#</a></p>
+<p><span class="caption-text">The LAMMPS NPT step</span><a class="headerlink" href="#id6" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <p>Here you need to change the two temperatures on the left side to 110 K and the pressure,
@@ -571,7 +570,7 @@ we can see at the nice <a class="reference external" href="https://webbook.nist.
 <figure class="align-center" id="id7">
 <a class="reference internal image-reference" href="../_images/nist.png"><img alt="Table for the NIST fluid properties website" src="../_images/nist.png" style="width: 600px;" /></a>
 <figcaption>
-<p><span class="caption-text">Tabulation of Argon fluid properties at NIST</span><a class="headerlink" href="#id7" title="Permalink to this image">#</a></p>
+<p><span class="caption-text">Tabulation of Argon fluid properties at NIST</span><a class="headerlink" href="#id7" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <p>Experimentally the density should be about 1.256 at the temperature and pressure that we
@@ -618,7 +617,7 @@ see a graph like the following:</p>
 <figure class="align-center" id="id8">
 <a class="reference internal image-reference" href="../_images/density.png"><img alt="The plot of the density vs time in the simulation" src="../_images/density.png" style="width: 800px;" /></a>
 <figcaption>
-<p><span class="caption-text">The density of the Argon during the simulation</span><a class="headerlink" href="#id8" title="Permalink to this image">#</a></p>
+<p><span class="caption-text">The density of the Argon during the simulation</span><a class="headerlink" href="#id8" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <p>The subgraph on the left shows the density vs time as a green line. It started at a low

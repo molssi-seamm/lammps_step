@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 
 
@@ -8,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.tk_npt &#8212; SEAMM LAMMPS Plug-in 2023.6.17 documentation</title>
+    <title>lammps_step.tk_npt &#8212; SEAMM LAMMPS Plug-in 2023.8.21 documentation</title>
   
   
   
@@ -28,10 +27,10 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=c224919a" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
@@ -45,12 +44,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
-    <script src="../../_static/clipboard.min.js"></script>
-    <script src="../../_static/copybutton.js"></script>
-    <script src="../../_static/design-tabs.js"></script>
+    <script src="../../_static/documentation_options.js?v=ebff8f66"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lammps_step/tk_npt';</script>
 
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -486,7 +485,9 @@ document.write(`
 <span class="kn">import</span> <span class="nn">tkinter.ttk</span> <span class="k">as</span> <span class="nn">ttk</span>
 
 
-<div class="viewcode-block" id="TkNPT"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_npt.TkNPT">[docs]</a><span class="k">class</span> <span class="nc">TkNPT</span><span class="p">(</span><span class="n">lammps_step</span><span class="o">.</span><span class="n">TkNVT</span><span class="p">):</span>
+<div class="viewcode-block" id="TkNPT">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_npt.TkNPT">[docs]</a>
+<span class="k">class</span> <span class="nc">TkNPT</span><span class="p">(</span><span class="n">lammps_step</span><span class="o">.</span><span class="n">TkNVT</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">tk_flowchart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">canvas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">50</span>
     <span class="p">):</span>
@@ -499,7 +500,9 @@ document.write(`
             <span class="n">tk_flowchart</span><span class="o">=</span><span class="n">tk_flowchart</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">,</span> <span class="n">canvas</span><span class="o">=</span><span class="n">canvas</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">h</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="TkNPT.create_dialog"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_npt.TkNPT.create_dialog">[docs]</a>    <span class="k">def</span> <span class="nf">create_dialog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Edit NPT dynamics parameters&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="TkNPT.create_dialog">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_npt.TkNPT.create_dialog">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_dialog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Edit NPT dynamics parameters&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the edit dialog!</span>
 
 <span class="sd">        This is reasonably complicated, so a bit of description</span>
@@ -591,7 +594,10 @@ document.write(`
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;Panneal&quot;</span><span class="p">,</span> <span class="s2">&quot;use_stress&quot;</span><span class="p">,</span> <span class="s2">&quot;couple&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">combobox</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s2">&quot;&lt;&lt;ComboboxSelected&gt;&gt;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset_stress_frame</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="TkNPT.reset_dialog"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_npt.TkNPT.reset_dialog">[docs]</a>    <span class="k">def</span> <span class="nf">reset_dialog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TkNPT.reset_dialog">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_npt.TkNPT.reset_dialog">[docs]</a>
+    <span class="k">def</span> <span class="nf">reset_dialog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Layout the widgets as needed for the current state&quot;&quot;&quot;</span>
 
         <span class="n">row</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset_dialog</span><span class="p">()</span>
@@ -607,7 +613,10 @@ document.write(`
 
         <span class="k">return</span> <span class="mi">2</span></div>
 
-<div class="viewcode-block" id="TkNPT.reset_pressure_frame"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_npt.TkNPT.reset_pressure_frame">[docs]</a>    <span class="k">def</span> <span class="nf">reset_pressure_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TkNPT.reset_pressure_frame">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_npt.TkNPT.reset_pressure_frame">[docs]</a>
+    <span class="k">def</span> <span class="nf">reset_pressure_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Layout the widgets for the pressure/stress control</span>
 <span class="sd">        as needed for the current state&quot;&quot;&quot;</span>
 
@@ -669,7 +678,10 @@ document.write(`
         <span class="c1"># and lay out the pressure or stress terms</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_stress_frame</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="TkNPT.reset_stress_frame"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_npt.TkNPT.reset_stress_frame">[docs]</a>    <span class="k">def</span> <span class="nf">reset_stress_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TkNPT.reset_stress_frame">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_npt.TkNPT.reset_stress_frame">[docs]</a>
+    <span class="k">def</span> <span class="nf">reset_stress_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Layout the widgets for the pressure/stress</span>
 <span class="sd">        as needed for the current state.</span>
 
@@ -1206,7 +1218,10 @@ document.write(`
                 <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">sw</span><span class="o">.</span><span class="n">align_labels</span><span class="p">(</span><span class="n">widgets</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">E</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="TkNPT.handle_dialog"><a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_npt.TkNPT.handle_dialog">[docs]</a>    <span class="k">def</span> <span class="nf">handle_dialog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TkNPT.handle_dialog">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_npt.TkNPT.handle_dialog">[docs]</a>
+    <span class="k">def</span> <span class="nf">handle_dialog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle when the user clicks a button on the dialog,</span>
 <span class="sd">        which can either be &#39;Cancel&#39;, &#39;Help&#39; or &#39;OK&#39;, or they can</span>
 <span class="sd">        close the dialog with the &#39;x&#39; button == &#39;Cancel&#39;&quot;&quot;&quot;</span>
@@ -1222,7 +1237,9 @@ document.write(`
                     <span class="n">P</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">set_from_widget</span><span class="p">()</span>
 
         <span class="c1"># Let base classes reap their parameters</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">handle_dialog</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">handle_dialog</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
+</div>
+
 </pre></div>
 
                 </article>
