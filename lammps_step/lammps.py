@@ -1815,7 +1815,6 @@ class LAMMPS(seamm.Node):
         t = data.index
         t_units = "fs"
         len_trj = (len(t) - 1) * dt_fs
-        divisor = 1
         if len_trj >= 4000000000:
             t_units = "ms"
         elif len_trj >= 4000000:
@@ -2108,7 +2107,7 @@ class LAMMPS(seamm.Node):
 
             if is_converged:
                 # the partly transparent error band
-                t_min = t0 / divisor
+                t_min = t0 / dt_fs * dt.m_as(t_units)
                 plot.add_trace(
                     x_axis=x_axis,
                     y_axis=y_axis,
