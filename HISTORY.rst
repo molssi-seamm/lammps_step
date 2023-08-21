@@ -1,6 +1,11 @@
 =======
 History
 =======
+2023.8.21 -- Bugfix: x-axes length on graphics incorrect
+   * The size of the x-axes of the trajectory graphs were wrong, often much too large,
+     compressing the actual data near the beginning of the graph.
+   * Fixed an issue with systems with no non-bonds.
+
 2023.6.17 -- Bugfix: more centroid/stress/atom issues
    * Avoided using centroid/stress/atom for heat flux in standard NVE, NVT, ... dynamics
      with Class 2 forcefield.

@@ -438,7 +438,7 @@ class Initialization(seamm.Node):
                         P["kspace_method"]
                     ].format(**P)
 
-        if "bond" in terms and eex["n_bonds"] > 0:
+        if "n_bonds" in eex and eex["n_bonds"] > 0:
             forms = set([v[0] for v in eex["bond parameters"]])
             if len(forms) == 1:
                 bond_style = lammps_step.bond_style[[*forms][0]]
