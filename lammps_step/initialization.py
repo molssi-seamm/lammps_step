@@ -452,11 +452,18 @@ class Initialization(seamm.Node):
             forms = set([v[0] for v in eex["angle parameters"]])
             if len(forms) == 1:
                 angle_style = lammps_step.angle_style[[*forms][0]]
-                lines.append("angle_style         " + angle_style)
+                if angle_style == "table":
+                    lines.append(f"angle_style         {angle_style} linear 901")
+                else:
+                    lines.append("angle_style         " + angle_style)
             else:
                 line = "angle_style         hybrid"
                 for term in forms:
-                    line += " " + lammps_step.angle_style[term]
+                    angle_style = lammps_step.angle_style[term]
+                    if angle_style == "table":
+                        line += f" {angle_style} linear 901"
+                    else:
+                        line += " " + angle_style
                 lines.append(line)
         if "torsion" in terms and eex["n_torsions"] > 0:
             forms = set([v[0] for v in eex["torsion parameters"]])
