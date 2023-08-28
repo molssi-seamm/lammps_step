@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2023.8.21 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2023.8.27 documentation</title>
   
   
   
@@ -44,7 +44,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=ebff8f66"></script>
+    <script src="../../_static/documentation_options.js?v=aa9cbab0"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -505,6 +505,7 @@ document.write(`
 <span class="kn">import</span> <span class="nn">lammps_step</span>
 <span class="kn">import</span> <span class="nn">molsystem</span>
 <span class="kn">import</span> <span class="nn">seamm</span>
+<span class="kn">from</span> <span class="nn">seamm_ff_util</span> <span class="kn">import</span> <span class="n">tabulate_angle</span>
 <span class="kn">import</span> <span class="nn">seamm_util</span>
 <span class="kn">import</span> <span class="nn">seamm_util.printing</span> <span class="k">as</span> <span class="nn">printing</span>
 <span class="kn">from</span> <span class="nn">seamm_util</span> <span class="kn">import</span> <span class="n">CompactJSONEncoder</span>
@@ -568,6 +569,7 @@ document.write(`
     <span class="s2">&quot;quadratic_angle&quot;</span><span class="p">:</span> <span class="s2">&quot;harmonic&quot;</span><span class="p">,</span>
     <span class="s2">&quot;quartic_angle&quot;</span><span class="p">:</span> <span class="s2">&quot;class2&quot;</span><span class="p">,</span>
     <span class="s2">&quot;simple_fourier_angle&quot;</span><span class="p">:</span> <span class="s2">&quot;fourier/simple&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tabulated_angle&quot;</span><span class="p">:</span> <span class="s2">&quot;table&quot;</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="n">dihedral_style</span> <span class="o">=</span> <span class="p">{</span>
@@ -936,7 +938,30 @@ document.write(`
                 <span class="p">)</span>
                 <span class="n">files</span><span class="p">[</span><span class="s2">&quot;structure&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
                 <span class="n">files</span><span class="p">[</span><span class="s2">&quot;structure&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;structure.dat&quot;</span>
-                <span class="n">files</span><span class="p">[</span><span class="s2">&quot;structure&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">structure_data</span><span class="p">(</span><span class="n">eex</span><span class="p">))</span>
+                <span class="p">(</span>
+                    <span class="n">structure_data</span><span class="p">,</span>
+                    <span class="n">pair_table</span><span class="p">,</span>
+                    <span class="n">bond_table</span><span class="p">,</span>
+                    <span class="n">angle_table</span><span class="p">,</span>
+                    <span class="n">dihedral_table</span><span class="p">,</span>
+                <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">structure_data</span><span class="p">(</span><span class="n">eex</span><span class="p">)</span>
+
+                <span class="n">files</span><span class="p">[</span><span class="s2">&quot;structure&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">structure_data</span>
+                <span class="k">if</span> <span class="n">bond_table</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="n">files</span><span class="p">[</span><span class="s2">&quot;tabulated_bonds&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="s2">&quot;tabulated_bonds.dat&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">bond_table</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="k">if</span> <span class="n">angle_table</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="n">files</span><span class="p">[</span><span class="s2">&quot;tabulated_angles&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="s2">&quot;tabulated_angles.dat&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">angle_table</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="k">if</span> <span class="n">dihedral_table</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="n">files</span><span class="p">[</span><span class="s2">&quot;tabulated_dihedrals&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="s2">&quot;tabulated_dihedrals.dat&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">dihedral_table</span><span class="p">,</span>
+                    <span class="p">}</span>
 
                 <span class="n">f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">files</span><span class="p">[</span><span class="s2">&quot;structure&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">])</span>
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
@@ -1020,7 +1045,6 @@ document.write(`
                                     <span class="n">mean</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span>
                                     <span class="n">ci</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">interval</span><span class="p">(</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">dof</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
                                     <span class="n">interval</span> <span class="o">=</span> <span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;sem&quot;</span><span class="p">]</span>
-                                    <span class="nb">print</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">interval</span> <span class="o">/</span> <span class="n">mean</span><span class="p">))</span>
                                     <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">interval</span> <span class="o">/</span> <span class="n">mean</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">accuracy</span><span class="p">:</span>
                                         <span class="n">control_properties</span><span class="p">[</span><span class="n">prp</span><span class="p">][</span>
                                             <span class="s2">&quot;enough_accuracy&quot;</span>
@@ -1477,6 +1501,10 @@ document.write(`
     <span class="k">def</span> <span class="nf">structure_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eex</span><span class="p">,</span> <span class="n">triclinic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the LAMMPS structure file from the energy expression&quot;&quot;&quot;</span>
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">pair_table</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">bond_table</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">angle_table</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">dihedral_table</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Structure file for LAMMPS generated by a MolSSI flowchart&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:10d}</span><span class="s2"> atoms&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_atoms&quot;</span><span class="p">]))</span>
@@ -1685,6 +1713,11 @@ document.write(`
                 <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;simple_fourier_angle&quot;</span><span class="p">:</span>
                     <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;fourier/simple&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
                     <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> -1 </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;n&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;tabulated_angle&quot;</span><span class="p">:</span>
+                    <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;table&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                    <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> tabulated_angles.dat </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">angle_table</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angle_table</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
                 <span class="n">line</span> <span class="o">+=</span> <span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="sa">f</span><span class="s2">&quot; --&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -2200,7 +2233,13 @@ document.write(`
 
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">lines</span></div>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">),</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pair_table</span><span class="p">),</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bond_table</span><span class="p">),</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">angle_table</span><span class="p">),</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dihedral_table</span><span class="p">),</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="LAMMPS.analyze">
@@ -2943,7 +2982,56 @@ document.write(`
                     <span class="n">module</span><span class="o">=</span><span class="s2">&quot;lammps_step&quot;</span><span class="p">,</span>
                     <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                     <span class="n">note</span><span class="o">=</span><span class="s2">&quot;LAMMPS citations from log.cite.&quot;</span><span class="p">,</span>
-                <span class="p">)</span></div>
+                <span class="p">)</span>
+
+<div class="viewcode-block" id="LAMMPS.angle_table">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.angle_table">[docs]</a>
+    <span class="k">def</span> <span class="nf">angle_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a section of the tabulated angle file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        key : str</span>
+<span class="sd">            The name for this section in the file.</span>
+
+<span class="sd">        values : {str: int, float, or str}</span>
+<span class="sd">            The dictionary of the constants for this angle term.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        [str]</span>
+<span class="sd">            A list of lines of the tabulated angle file.</span>
+
+<span class="sd">        values looks like this::</span>
+
+<span class="sd">            {</span>
+<span class="sd">                &#39;reference&#39;: &#39;5&#39;,</span>
+<span class="sd">                &#39;Eqn&#39;: &#39;K/8*(1-cos(n*Theta)) + A/(2*Rb*sin(Theta/2))**12&#39;,</span>
+<span class="sd">                &#39;K&#39;: 278.4416826003824,</span>
+<span class="sd">                &#39;n&#39;: 4,</span>
+<span class="sd">                &#39;Rb&#39;: 1.606,</span>
+<span class="sd">                &#39;A&#39;: 11.950286806883364,</span>
+<span class="sd">                &#39;zero-shift&#39;: 0.001</span>
+<span class="sd">            }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">values</span><span class="p">}</span>
+        <span class="k">if</span> <span class="s2">&quot;reference&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;reference&quot;</span><span class="p">]</span>
+        <span class="n">eqn</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;Eqn&quot;</span><span class="p">)</span>
+        <span class="n">thetas</span><span class="p">,</span> <span class="n">Es</span><span class="p">,</span> <span class="n">dEs</span> <span class="o">=</span> <span class="n">tabulate_angle</span><span class="p">(</span><span class="n">eqn</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;N </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">thetas</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">thetas</span><span class="p">,</span> <span class="n">Es</span><span class="p">,</span> <span class="n">dEs</span><span class="p">),</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">theta</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">dE</span> <span class="o">=</span> <span class="n">data</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">5d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">theta</span><span class="si">:</span><span class="s2">9.4f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">E</span><span class="si">:</span><span class="s2">40</span><span class="si">}{</span><span class="o">-</span><span class="n">dE</span><span class="si">:</span><span class="s2">40</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lines</span></div>
+</div>
 
 </pre></div>
 
