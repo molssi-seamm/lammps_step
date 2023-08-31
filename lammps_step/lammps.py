@@ -868,12 +868,12 @@ class LAMMPS(seamm.Node):
         else:
             self._add_lammps_citations(result["stdout"])
 
-        base = os.path.basename(files["input"]["filename"][0:-4])
-        dump_file = base + ".dump.0"
+        # base = os.path.basename(files["input"]["filename"][0:-4])
+        # dump_file = base + ".dump.0"
 
-        files["dump"] = {}
-        files["dump"]["filename"] = dump_file
-        files["dump"]["data"] = None
+        # files["dump"] = {}
+        # files["dump"]["filename"] = dump_file
+        # files["dump"]["data"] = None
 
         files["input"] = {}
         files["input"]["filename"] = None

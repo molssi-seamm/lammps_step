@@ -1,6 +1,8 @@
 =======
 History
 =======
+2023.8.31 -- Bugfix: not reading structure correctly after dynamics
+
 2023.8.27 -- Added support for tabulated angle potentials.
    * Support for the CL&P-OPLSAA potential for octahedral PF6-
      
