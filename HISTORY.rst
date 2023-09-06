@@ -1,6 +1,11 @@
 =======
 History
 =======
+2023.9.6 -- Corrected issues with final coordinates; added velocities
+   * There was a problem with getting the final coordinates from a dump file. 
+   * Added saving and reusing velocities so now a second LAMMPS step will by default use
+     the velocities from the previous step, which is what you would expect.
+
 2023.8.31 -- Bugfix: not reading structure correctly after dynamics
 
 2023.8.27 -- Added support for tabulated angle potentials.

@@ -594,16 +594,22 @@ class LAMMPS(seamm.Node):
             base = "lammps"
 
             restart = base + ".restart.*"
-            dump = base + ".dump.*"
+            dump = base + ".dump"
             input_file = base + ".dat"
             new_input_data = []
             new_input_data.append("run          0")
             new_input_data.append(f"write_restart      {restart}")
 
-            new_input_data.append(
-                f"write_dump          all custom  {dump} id "
-                "xu yu zu modify flush yes sort id"
-            )
+            if configuration.periodicity == 0:
+                new_input_data.append(
+                    f"write_dump         all custom  {dump} id xu yu zu vx vy vz"
+                    " modify flush yes sort id"
+                )
+            else:
+                new_input_data.append(
+                    f"write_dump         all custom  {dump} id xsu ysu zsu vx vy vz"
+                    " modify flush yes sort id"
+                )
             new_input_data.append("")
             new_input_data.append("info               computes fixes dumps log out")
 
@@ -632,9 +638,10 @@ class LAMMPS(seamm.Node):
 
             self._trajectory = []
 
-        if "dump" in files:
+        dump_file = Path(self.directory) / "final.dump"
+        if dump_file.exists:
             try:
-                self.read_dump(os.path.join(self.directory, files["dump"]["filename"]))
+                self.read_dump(dump_file)
             except Exception as e:
                 printer.normal("Warning: unable to read the LAMMPS dumpfile")
                 logger.warning(f"The was a problem reading the LAMMPS dumpfile: {e}")
@@ -670,6 +677,7 @@ class LAMMPS(seamm.Node):
             "trajectory_*.seamm_trj",
             "*.trj",
             "*.restart.*",
+            "*.dump",
             "*.dump.*",
             "*.log",
             "*.dat",
@@ -833,11 +841,11 @@ class LAMMPS(seamm.Node):
             else:
                 if "ngpus" in batch:
                     printer.important(
-                        f"    LAMMPS using MPI with {np} processes and "
+                        f"   LAMMPS using MPI with {np} processes and "
                         f"{batch['ngpus']} gpus.\n"
                     )
                 else:
-                    printer.important(f"    LAMMPS using MPI with {np} processes")
+                    printer.important(f"   LAMMPS using MPI with {np} processes")
 
             result = local.run(
                 cmd=cmd,
@@ -868,13 +876,6 @@ class LAMMPS(seamm.Node):
         else:
             self._add_lammps_citations(result["stdout"])
 
-        # base = os.path.basename(files["input"]["filename"][0:-4])
-        # dump_file = base + ".dump.0"
-
-        # files["dump"] = {}
-        # files["dump"]["filename"] = dump_file
-        # files["dump"]["data"] = None
-
         files["input"] = {}
         files["input"]["filename"] = None
         initialization_header, eex = self._get_node_input(
@@ -898,6 +899,7 @@ class LAMMPS(seamm.Node):
         write_restart=False,
         extras=None,
     ):
+        _, configuration = self.get_system_configuration()
         python_script = None
         postscript = None
         if isinstance(nodes, list) is False:
@@ -921,11 +923,7 @@ class LAMMPS(seamm.Node):
                     python_script = todo["python script"]
 
         # base = "lammps_substep_%s_iter_%d" % ("_".join(node_ids), iteration)
-        base = "lammps"
-
-        input_file = base + ".dat"
         # restart = base + ".restart.*"
-        dump = base + ".dump.*"
 
         # if read_restart:
         #     new_input_data.insert(
@@ -936,29 +934,37 @@ class LAMMPS(seamm.Node):
         #     new_input_data.append(f"write_restart          {restart}")
 
         if postscript is None:
-            new_input_data.append("reset_timestep      0")
-            new_input_data.append("run                 0")
-            new_input_data.append(
-                f"write_dump         all custom  {dump} id xu yu zu "
-                "modify flush yes sort id"
-            )
+            if configuration.periodicity == 0:
+                new_input_data.append(
+                    "write_dump         all custom  final.dump id xu yu zu vx vy vz"
+                    " modify flush yes sort id"
+                )
+            else:
+                new_input_data.append(
+                    "write_dump         all custom  final.dump id xsu ysu zsu vx vy vz"
+                    " modify flush yes sort id"
+                )
             new_input_data.append("")
             new_input_data.append("")
             new_input_data.append("info               computes fixes dumps out log")
 
         files["input"]["data"] += new_input_data
 
-        files["input"]["filename"] = input_file
+        files["input"]["filename"] = "input.dat"
         files["input"]["data"] = "\n".join(files["input"]["data"])
         self.logger.debug(files["input"]["filename"] + ":\n" + files["input"]["data"])
 
         if postscript is not None:
-            postscript.append("reset_timestep      0")
-            postscript.append("run                 0")
-            postscript.append(
-                f"write_dump          all custom  {dump} id xu yu zu "
-                "modify flush yes sort id"
-            )
+            if configuration.periodicity == 0:
+                postscript.append(
+                    "write_dump         all custom  final.dump id xu yu zu vx vy vz"
+                    " modify flush yes sort id"
+                )
+            else:
+                postscript.append(
+                    "write_dump         all custom  final.dump id xsu ysu zsu vx vy vz"
+                    " modify flush yes sort id"
+                )
             postscript.append("")
             postscript.append("info               computes fixes dumps out log")
             files["postscript"] = {
@@ -1091,6 +1097,17 @@ class LAMMPS(seamm.Node):
             for i, xyz_index in enumerate(eex["atoms"]):
                 x, y, z, index = xyz_index
                 lines.append(f"{i+1:6d} {index:6d} {x:12.7f} {y:12.7f} {z:12.7f}")
+
+        _, configuration = self.get_system_configuration()
+        if configuration.atoms.have_velocities:
+            lines.append("")
+            lines.append("Velocities")
+            lines.append("")
+            for i, vxyz in enumerate(
+                configuration.atoms.get_velocities(fractionals=False), start=1
+            ):
+                vx, vy, vz = vxyz
+                lines.append(f"{i:6d} {vx:12.7f} {vy:12.7f} {vz:12.7f}")
 
         lines.append("")
         lines.append("Masses")
@@ -1826,6 +1843,8 @@ class LAMMPS(seamm.Node):
         }
 
         # Process the trajectory data
+        # temporary until we sort out multiple runs
+        self._trajectory = []
         with path.open() as fd:
             file_data = pandas.read_csv(
                 fd,
@@ -2303,9 +2322,6 @@ class LAMMPS(seamm.Node):
 
         section = ""
         section_lines = []
-        xs = []
-        ys = []
-        zs = []
         with open(dumpfile, "r") as fd:
             lineno = 0
             for line in fd:
@@ -2369,11 +2385,42 @@ class LAMMPS(seamm.Node):
                                 )
                             )
                     elif "ATOMS" in section:
-                        for tmp in section_lines:
-                            id, x, y, z = tmp.split()
-                            xs.append(float(x))
-                            ys.append(float(y))
-                            zs.append(float(z))
+                        xyz = []
+                        vxyz = []
+                        keys = section.split()[1:]
+                        if keys[1:4] == ["x", "y", "z"] or keys[1:4] == [
+                            "xu",
+                            "yu",
+                            "zu",
+                        ]:
+                            fractional = False
+                        elif keys[1:4] == ["xs", "ys", "zs"] or keys[1:4] == [
+                            "xsu",
+                            "ysu",
+                            "zsu",
+                        ]:
+                            fractional = True
+                        else:
+                            logger.error(f"Can't handle dump file, {keys=}")
+                        if len(keys) >= 7 and keys[4:7] == ["vx", "vy", "vz"]:
+                            have_velocities = True
+                            factor = lammps_step.from_lammps_units(1, "fs").magnitude
+                            factor = 1 / factor
+                            for tmp in section_lines:
+                                x, y, z, vx, vy, vz = tmp.split()[1:7]
+                                xyz.append([float(x), float(y), float(z)])
+                                vxyz.append(
+                                    [
+                                        factor * float(vx),
+                                        factor * float(vy),
+                                        factor * float(vz),
+                                    ]
+                                )
+                        else:
+                            have_velocities = False
+                            for tmp in section_lines:
+                                x, y, z = tmp.split()[1:4]
+                                xyz.append([float(x), float(y), float(z)])
                     section = line[6:].strip()
                     section_lines = []
                 else:
@@ -2381,16 +2428,38 @@ class LAMMPS(seamm.Node):
 
         # Clean up the last section
         xyz = []
+        vxyz = []
         if "ATOMS" in section:
             self.logger.debug("  processing section '{}'".format(section))
             self.logger.debug("  handling the atoms")
-            for tmp in section_lines:
-                id, x, y, z = tmp.split()
-                xyz.append([float(x), float(y), float(z)])
+            keys = section.split()[1:]
+            if keys[1:4] == ["x", "y", "z"] or keys[1:4] == ["xu", "yu", "zu"]:
+                fractional = False
+            elif keys[1:4] == ["xs", "ys", "zs"] or keys[1:4] == ["xsu", "ysu", "zsu"]:
+                fractional = True
+            else:
+                logger.error(f"Can't handle dump file, {keys=}")
+            if len(keys) >= 7 and keys[4:7] == ["vx", "vy", "vz"]:
+                have_velocities = True
+                factor = 1.0 / lammps_step.from_lammps_units(1, "fs").magnitude
+                for tmp in section_lines:
+                    x, y, z, vx, vy, vz = tmp.split()[1:7]
+                    xyz.append([float(x), float(y), float(z)])
+                    vxyz.append(
+                        [factor * float(vx), factor * float(vy), factor * float(vz)]
+                    )
+            else:
+                have_velocities = False
+                for tmp in section_lines:
+                    x, y, z = tmp.split()[1:4]
+                    xyz.append([float(x), float(y), float(z)])
 
         if periodicity == 3:
             configuration.cell.parameters = cell
-        configuration.atoms.set_coordinates(xyz, fractionals=False)
+        configuration.atoms.set_coordinates(xyz, fractionals=fractional)
+        if have_velocities:
+            # LAMMPS only has Cartesian velocities
+            configuration.atoms.set_velocities(vxyz, fractionals=False)
 
     def _add_lammps_citations(self, text, cite=None):
         """Add the two main citations for LAMMPS, getting the version from stdout

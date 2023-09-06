@@ -59,7 +59,7 @@ class TkVelocities(seamm.TkNode):
             widgets.append(self[key])
             row += 1
 
-        if "scaling" in method:
+        if "scaling" not in method:
             self["seed"].grid(row=row, column=0, sticky=tk.EW)
             widgets.append(self["seed"])
             row += 1
