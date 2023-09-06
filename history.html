@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2023.8.31 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2023.9.6 documentation</title>
   
   
   
@@ -45,7 +45,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=4f870b7f"></script>
+    <script src="_static/documentation_options.js?v=e8e07d49"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -479,6 +479,14 @@ document.write(`
                   
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
+<dl class="simple">
+<dt>2023.9.6 – Corrected issues with final coordinates; added velocities</dt><dd><ul class="simple">
+<li><p>There was a problem with getting the final coordinates from a dump file.</p></li>
+<li><p>Added saving and reusing velocities so now a second LAMMPS step will by default use
+the velocities from the previous step, which is what you would expect.</p></li>
+</ul>
+</dd>
+</dl>
 <p>2023.8.31 – Bugfix: not reading structure correctly after dynamics</p>
 <dl class="simple">
 <dt>2023.8.27 – Added support for tabulated angle potentials.</dt><dd><ul class="simple">

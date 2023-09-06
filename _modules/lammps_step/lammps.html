@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2023.8.31 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2023.9.6 documentation</title>
   
   
   
@@ -44,7 +44,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=4f870b7f"></script>
+    <script src="../../_static/documentation_options.js?v=e8e07d49"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -1093,16 +1093,22 @@ document.write(`
             <span class="n">base</span> <span class="o">=</span> <span class="s2">&quot;lammps&quot;</span>
 
             <span class="n">restart</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;.restart.*&quot;</span>
-            <span class="n">dump</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;.dump.*&quot;</span>
+            <span class="n">dump</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;.dump&quot;</span>
             <span class="n">input_file</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;.dat&quot;</span>
             <span class="n">new_input_data</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;run          0&quot;</span><span class="p">)</span>
             <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;write_restart      </span><span class="si">{</span><span class="n">restart</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;write_dump          all custom  </span><span class="si">{</span><span class="n">dump</span><span class="si">}</span><span class="s2"> id &quot;</span>
-                <span class="s2">&quot;xu yu zu modify flush yes sort id&quot;</span>
-            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;write_dump         all custom  </span><span class="si">{</span><span class="n">dump</span><span class="si">}</span><span class="s2"> id xu yu zu vx vy vz&quot;</span>
+                    <span class="s2">&quot; modify flush yes sort id&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;write_dump         all custom  </span><span class="si">{</span><span class="n">dump</span><span class="si">}</span><span class="s2"> id xsu ysu zsu vx vy vz&quot;</span>
+                    <span class="s2">&quot; modify flush yes sort id&quot;</span>
+                <span class="p">)</span>
             <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;info               computes fixes dumps log out&quot;</span><span class="p">)</span>
 
@@ -1131,9 +1137,10 @@ document.write(`
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="k">if</span> <span class="s2">&quot;dump&quot;</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+        <span class="n">dump_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;final.dump&quot;</span>
+        <span class="k">if</span> <span class="n">dump_file</span><span class="o">.</span><span class="n">exists</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">read_dump</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">files</span><span class="p">[</span><span class="s2">&quot;dump&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">read_dump</span><span class="p">(</span><span class="n">dump_file</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;Warning: unable to read the LAMMPS dumpfile&quot;</span><span class="p">)</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The was a problem reading the LAMMPS dumpfile: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1170,6 +1177,7 @@ document.write(`
             <span class="s2">&quot;trajectory_*.seamm_trj&quot;</span><span class="p">,</span>
             <span class="s2">&quot;*.trj&quot;</span><span class="p">,</span>
             <span class="s2">&quot;*.restart.*&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;*.dump&quot;</span><span class="p">,</span>
             <span class="s2">&quot;*.dump.*&quot;</span><span class="p">,</span>
             <span class="s2">&quot;*.log&quot;</span><span class="p">,</span>
             <span class="s2">&quot;*.dat&quot;</span><span class="p">,</span>
@@ -1333,11 +1341,11 @@ document.write(`
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="s2">&quot;ngpus&quot;</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">:</span>
                     <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;    LAMMPS using MPI with </span><span class="si">{</span><span class="n">np</span><span class="si">}</span><span class="s2"> processes and &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;   LAMMPS using MPI with </span><span class="si">{</span><span class="n">np</span><span class="si">}</span><span class="s2"> processes and &quot;</span>
                         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">batch</span><span class="p">[</span><span class="s1">&#39;ngpus&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> gpus.</span><span class="se">\n</span><span class="s2">&quot;</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    LAMMPS using MPI with </span><span class="si">{</span><span class="n">np</span><span class="si">}</span><span class="s2"> processes&quot;</span><span class="p">)</span>
+                    <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   LAMMPS using MPI with </span><span class="si">{</span><span class="n">np</span><span class="si">}</span><span class="s2"> processes&quot;</span><span class="p">)</span>
 
             <span class="n">result</span> <span class="o">=</span> <span class="n">local</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
                 <span class="n">cmd</span><span class="o">=</span><span class="n">cmd</span><span class="p">,</span>
@@ -1368,13 +1376,6 @@ document.write(`
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_lammps_citations</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;stdout&quot;</span><span class="p">])</span>
 
-        <span class="c1"># base = os.path.basename(files[&quot;input&quot;][&quot;filename&quot;][0:-4])</span>
-        <span class="c1"># dump_file = base + &quot;.dump.0&quot;</span>
-
-        <span class="c1"># files[&quot;dump&quot;] = {}</span>
-        <span class="c1"># files[&quot;dump&quot;][&quot;filename&quot;] = dump_file</span>
-        <span class="c1"># files[&quot;dump&quot;][&quot;data&quot;] = None</span>
-
         <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">initialization_header</span><span class="p">,</span> <span class="n">eex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_node_input</span><span class="p">(</span>
@@ -1398,6 +1399,7 @@ document.write(`
         <span class="n">write_restart</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">extras</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">()</span>
         <span class="n">python_script</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">postscript</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
@@ -1421,11 +1423,7 @@ document.write(`
                     <span class="n">python_script</span> <span class="o">=</span> <span class="n">todo</span><span class="p">[</span><span class="s2">&quot;python script&quot;</span><span class="p">]</span>
 
         <span class="c1"># base = &quot;lammps_substep_%s_iter_%d&quot; % (&quot;_&quot;.join(node_ids), iteration)</span>
-        <span class="n">base</span> <span class="o">=</span> <span class="s2">&quot;lammps&quot;</span>
-
-        <span class="n">input_file</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;.dat&quot;</span>
         <span class="c1"># restart = base + &quot;.restart.*&quot;</span>
-        <span class="n">dump</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;.dump.*&quot;</span>
 
         <span class="c1"># if read_restart:</span>
         <span class="c1">#     new_input_data.insert(</span>
@@ -1436,29 +1434,37 @@ document.write(`
         <span class="c1">#     new_input_data.append(f&quot;write_restart          {restart}&quot;)</span>
 
         <span class="k">if</span> <span class="n">postscript</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;reset_timestep      0&quot;</span><span class="p">)</span>
-            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;run                 0&quot;</span><span class="p">)</span>
-            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;write_dump         all custom  </span><span class="si">{</span><span class="n">dump</span><span class="si">}</span><span class="s2"> id xu yu zu &quot;</span>
-                <span class="s2">&quot;modify flush yes sort id&quot;</span>
-            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;write_dump         all custom  final.dump id xu yu zu vx vy vz&quot;</span>
+                    <span class="s2">&quot; modify flush yes sort id&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;write_dump         all custom  final.dump id xsu ysu zsu vx vy vz&quot;</span>
+                    <span class="s2">&quot; modify flush yes sort id&quot;</span>
+                <span class="p">)</span>
             <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;info               computes fixes dumps out log&quot;</span><span class="p">)</span>
 
         <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_input_data</span>
 
-        <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_file</span>
+        <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;input.dat&quot;</span>
         <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="n">postscript</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">postscript</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;reset_timestep      0&quot;</span><span class="p">)</span>
-            <span class="n">postscript</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;run                 0&quot;</span><span class="p">)</span>
-            <span class="n">postscript</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;write_dump          all custom  </span><span class="si">{</span><span class="n">dump</span><span class="si">}</span><span class="s2"> id xu yu zu &quot;</span>
-                <span class="s2">&quot;modify flush yes sort id&quot;</span>
-            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">postscript</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;write_dump         all custom  final.dump id xu yu zu vx vy vz&quot;</span>
+                    <span class="s2">&quot; modify flush yes sort id&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">postscript</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;write_dump         all custom  final.dump id xsu ysu zsu vx vy vz&quot;</span>
+                    <span class="s2">&quot; modify flush yes sort id&quot;</span>
+                <span class="p">)</span>
             <span class="n">postscript</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="n">postscript</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;info               computes fixes dumps out log&quot;</span><span class="p">)</span>
             <span class="n">files</span><span class="p">[</span><span class="s2">&quot;postscript&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
@@ -1593,6 +1599,17 @@ document.write(`
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">xyz_index</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;atoms&quot;</span><span class="p">]):</span>
                 <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">xyz_index</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">index</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">12.7f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">y</span><span class="si">:</span><span class="s2">12.7f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">z</span><span class="si">:</span><span class="s2">12.7f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">have_velocities</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Velocities&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">vxyz</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+                <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_velocities</span><span class="p">(</span><span class="n">fractionals</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">):</span>
+                <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="n">vxyz</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">vx</span><span class="si">:</span><span class="s2">12.7f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">vy</span><span class="si">:</span><span class="s2">12.7f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">vz</span><span class="si">:</span><span class="s2">12.7f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Masses&quot;</span><span class="p">)</span>
@@ -2334,6 +2351,8 @@ document.write(`
         <span class="p">}</span>
 
         <span class="c1"># Process the trajectory data</span>
+        <span class="c1"># temporary until we sort out multiple runs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">()</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
             <span class="n">file_data</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
                 <span class="n">fd</span><span class="p">,</span>
@@ -2817,9 +2836,6 @@ document.write(`
 
         <span class="n">section</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="n">section_lines</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">xs</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">ys</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">zs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dumpfile</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
             <span class="n">lineno</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fd</span><span class="p">:</span>
@@ -2883,11 +2899,42 @@ document.write(`
                                 <span class="p">)</span>
                             <span class="p">)</span>
                     <span class="k">elif</span> <span class="s2">&quot;ATOMS&quot;</span> <span class="ow">in</span> <span class="n">section</span><span class="p">:</span>
-                        <span class="k">for</span> <span class="n">tmp</span> <span class="ow">in</span> <span class="n">section_lines</span><span class="p">:</span>
-                            <span class="nb">id</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-                            <span class="n">xs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-                            <span class="n">ys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
-                            <span class="n">zs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+                        <span class="n">xyz</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="n">vxyz</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="n">keys</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]</span>
+                        <span class="k">if</span> <span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span>
+                            <span class="s2">&quot;xu&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;yu&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;zu&quot;</span><span class="p">,</span>
+                        <span class="p">]:</span>
+                            <span class="n">fractional</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="k">elif</span> <span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;xs&quot;</span><span class="p">,</span> <span class="s2">&quot;ys&quot;</span><span class="p">,</span> <span class="s2">&quot;zs&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span>
+                            <span class="s2">&quot;xsu&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;ysu&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;zsu&quot;</span><span class="p">,</span>
+                        <span class="p">]:</span>
+                            <span class="n">fractional</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Can&#39;t handle dump file, </span><span class="si">{</span><span class="n">keys</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">7</span> <span class="ow">and</span> <span class="n">keys</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;vx&quot;</span><span class="p">,</span> <span class="s2">&quot;vy&quot;</span><span class="p">,</span> <span class="s2">&quot;vz&quot;</span><span class="p">]:</span>
+                            <span class="n">have_velocities</span> <span class="o">=</span> <span class="kc">True</span>
+                            <span class="n">factor</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">from_lammps_units</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;fs&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+                            <span class="n">factor</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">factor</span>
+                            <span class="k">for</span> <span class="n">tmp</span> <span class="ow">in</span> <span class="n">section_lines</span><span class="p">:</span>
+                                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span>
+                                <span class="n">xyz</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">)])</span>
+                                <span class="n">vxyz</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                    <span class="p">[</span>
+                                        <span class="n">factor</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">vx</span><span class="p">),</span>
+                                        <span class="n">factor</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">vy</span><span class="p">),</span>
+                                        <span class="n">factor</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">vz</span><span class="p">),</span>
+                                    <span class="p">]</span>
+                                <span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">have_velocities</span> <span class="o">=</span> <span class="kc">False</span>
+                            <span class="k">for</span> <span class="n">tmp</span> <span class="ow">in</span> <span class="n">section_lines</span><span class="p">:</span>
+                                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+                                <span class="n">xyz</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">)])</span>
                     <span class="n">section</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">6</span><span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
                     <span class="n">section_lines</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -2895,16 +2942,38 @@ document.write(`
 
         <span class="c1"># Clean up the last section</span>
         <span class="n">xyz</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">vxyz</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="s2">&quot;ATOMS&quot;</span> <span class="ow">in</span> <span class="n">section</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;  processing section &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">section</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;  handling the atoms&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">tmp</span> <span class="ow">in</span> <span class="n">section_lines</span><span class="p">:</span>
-                <span class="nb">id</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-                <span class="n">xyz</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">)])</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="k">if</span> <span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;xu&quot;</span><span class="p">,</span> <span class="s2">&quot;yu&quot;</span><span class="p">,</span> <span class="s2">&quot;zu&quot;</span><span class="p">]:</span>
+                <span class="n">fractional</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;xs&quot;</span><span class="p">,</span> <span class="s2">&quot;ys&quot;</span><span class="p">,</span> <span class="s2">&quot;zs&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;xsu&quot;</span><span class="p">,</span> <span class="s2">&quot;ysu&quot;</span><span class="p">,</span> <span class="s2">&quot;zsu&quot;</span><span class="p">]:</span>
+                <span class="n">fractional</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Can&#39;t handle dump file, </span><span class="si">{</span><span class="n">keys</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">7</span> <span class="ow">and</span> <span class="n">keys</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;vx&quot;</span><span class="p">,</span> <span class="s2">&quot;vy&quot;</span><span class="p">,</span> <span class="s2">&quot;vz&quot;</span><span class="p">]:</span>
+                <span class="n">have_velocities</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">factor</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">from_lammps_units</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;fs&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+                <span class="k">for</span> <span class="n">tmp</span> <span class="ow">in</span> <span class="n">section_lines</span><span class="p">:</span>
+                    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span>
+                    <span class="n">xyz</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">)])</span>
+                    <span class="n">vxyz</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">[</span><span class="n">factor</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">vx</span><span class="p">),</span> <span class="n">factor</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">vy</span><span class="p">),</span> <span class="n">factor</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">vz</span><span class="p">)]</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">have_velocities</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">for</span> <span class="n">tmp</span> <span class="ow">in</span> <span class="n">section_lines</span><span class="p">:</span>
+                    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+                    <span class="n">xyz</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">)])</span>
 
         <span class="k">if</span> <span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
             <span class="n">configuration</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">cell</span>
-        <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">fractionals</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+        <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">fractionals</span><span class="o">=</span><span class="n">fractional</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">have_velocities</span><span class="p">:</span>
+            <span class="c1"># LAMMPS only has Cartesian velocities</span>
+            <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_velocities</span><span class="p">(</span><span class="n">vxyz</span><span class="p">,</span> <span class="n">fractionals</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
 
     <span class="k">def</span> <span class="nf">_add_lammps_citations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">cite</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
