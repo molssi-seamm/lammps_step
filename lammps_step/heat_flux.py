@@ -77,11 +77,11 @@ def run_thermal_conductivity(cmd_args=None):
         lmp = lammps()
     else:
         lmp = lammps(cmdargs=cmd_args.split())
-    lmp.file("lammps.dat")
+    lmp.file("input.dat")
 
     lmp.set_fix_external_callback("J_filter", J_filter_cb, lmp)
 
-    lmp.file("lammps_post.dat")
+    lmp.file("input_post.dat")
 
     lmp.close()
     lmp.finalize()
@@ -124,11 +124,11 @@ def run_thermal_conductivity(cmd_args=None):
         lmp = lammps()
     else:
         lmp = lammps(cmdargs=cmd_args.split())
-    lmp.file("lammps.dat")
+    lmp.file("input.dat")
 
     lmp.set_fix_external_callback("J_filter", J_filter_cb, lmp)
 
-    lmp.file("lammps_post.dat")
+    lmp.file("input_post.dat")
 
     lmp.close()
     lmp.finalize()

@@ -776,7 +776,7 @@ class LAMMPS(seamm.Node):
                         text += " " + self.options["cmd_args"].format(**batch)
                     if "ngpus" in batch and self.options["gpu_cmd_args"] != "":
                         text += " " + self.options["gpu_cmd_args"].format(**batch)
-                    text += " -in lammps.dat"
+                    text += " -in input.dat"
                 cmd.append(text)
                 cmd = "\n".join(cmd)
             else:
@@ -969,7 +969,7 @@ class LAMMPS(seamm.Node):
             postscript.append("info               computes fixes dumps out log")
             files["postscript"] = {
                 "data": "\n".join(postscript),
-                "filename": "lammps_post.dat",
+                "filename": "input_post.dat",
             }
         if python_script is not None:
             files["python script"] = {

@@ -1,6 +1,9 @@
 =======
 History
 =======
+2023.11.6 -- Bugfix in thermal conductivity
+   * Due to change in input file name.
+
 2023.9.6 -- Corrected issues with final coordinates; added velocities
    * There was a problem with getting the final coordinates from a dump file. 
    * Added saving and reusing velocities so now a second LAMMPS step will by default use
