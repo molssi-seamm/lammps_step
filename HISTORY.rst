@@ -1,6 +1,12 @@
 =======
 History
 =======
+2023.11.7 -- Bugfix: properties that are constant
+   * A property, such as the total energy, can be a constant over an MD run due to
+     precision of the trajectory. This caused errors because the autocorrelation
+     function is not defined. These cases are now detected and the ACF not calculated
+     for them.
+     
 2023.11.6 -- Bugfix in thermal conductivity
    * Due to change in input file name.
 
