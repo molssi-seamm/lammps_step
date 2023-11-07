@@ -1967,6 +1967,10 @@ class LAMMPS(seamm.Node):
                     have_acf = False
                     have_acf_warning = True
                     acf_warning = "^"
+                elif all(y_t_equil == y_t_equil[0]):
+                    # A constant value, so no ACF
+                    have_acf = False
+                    acf_warning = ""
                 else:
                     have_acf = True
                     acf_warning = ""
