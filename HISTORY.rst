@@ -1,6 +1,8 @@
 =======
 History
 =======
+2024.1.18 -- Restructured to support running in containers.
+
 2023.11.7 -- Bugfix: properties that are constant
    * A property, such as the total energy, can be a constant over an MD run due to
      precision of the trajectory. This caused errors because the autocorrelation

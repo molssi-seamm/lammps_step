@@ -2,6 +2,7 @@
 
 """A node or step for LAMMPS in a flowchart"""
 
+import configparser
 from contextlib import contextmanager
 import copy
 import json
@@ -12,7 +13,6 @@ import os
 import os.path
 import pkg_resources
 import pprint
-import shutil
 import string
 import sys
 import traceback
@@ -21,13 +21,13 @@ import warnings
 import bibtexparser
 import numpy as np
 import pandas
-import psutil
 from scipy import stats
 import statsmodels.tsa.stattools as stattools
 
 import lammps_step
 import molsystem
 import seamm
+import seamm_exec
 from seamm_ff_util import tabulate_angle
 import seamm_util
 import seamm_util.printing as printing
@@ -393,20 +393,7 @@ class LAMMPS(seamm.Node):
                 np = global_options["ncores"]
 
             if np == "available":
-                np = int(round(n_atoms / o["atoms_per_core"]))
-                if np < 1:
-                    np = 1
-
-                # How many processors does this node have?
-                n_cores = psutil.cpu_count(logical=False)
-                self.logger.info("The number of cores is {}".format(n_cores))
-
-                if np > n_cores:
-                    self.logger.info(
-                        f"LAMMPS could use {np} cores, but only {n_cores} are "
-                        "available"
-                    )
-                    np = n_cores
+                np = n_atoms // o["atoms_per_core"] + 1
             else:
                 np = int(np)
         else:
@@ -437,8 +424,6 @@ class LAMMPS(seamm.Node):
                 initialization_header, eex = self._get_node_input(
                     node=node, extras={"read_data": True}
                 )
-                files["structure"] = {}
-                files["structure"]["filename"] = "structure.dat"
                 (
                     structure_data,
                     pair_table,
@@ -446,37 +431,20 @@ class LAMMPS(seamm.Node):
                     angle_table,
                     dihedral_table,
                 ) = self.structure_data(eex)
+                files["structure.dat"] = structure_data
 
-                files["structure"]["data"] = structure_data
                 if bond_table != "":
-                    files["tabulated_bonds"] = {
-                        "filename": "tabulated_bonds.dat",
-                        "data": bond_table,
-                    }
+                    files["tabulated_bonds.dat"] = bond_table
                 if angle_table != "":
-                    files["tabulated_angles"] = {
-                        "filename": "tabulated_angles.dat",
-                        "data": angle_table,
-                    }
+                    files["tabulated_angles.dat"] = angle_table
                 if dihedral_table != "":
-                    files["tabulated_dihedrals"] = {
-                        "filename": "tabulated_dihedrals.dat",
-                        "data": dihedral_table,
-                    }
+                    files["tabulated_dihedrals.dat"] = dihedral_table
 
-                f = os.path.join(self.directory, files["structure"]["filename"])
-                with open(f, mode="w") as fd:
-                    fd.write(files["structure"]["data"])
-
-                self.logger.debug(
-                    files["structure"]["filename"] + ": " + files["structure"]["data"]
-                )
+                self.logger.debug("structure.dat:\n" + files["structure.dat"])
 
                 self._initialization_node = node
 
-                files["input"] = {}
-                files["input"]["filename"] = None
-                files["input"]["data"] = copy.deepcopy(initialization_header)
+                files["input.dat"] = copy.deepcopy(initialization_header)
 
                 # Find the bond & angle types as needed for shake/rattle
                 P = node.parameters.current_values_to_dict(
@@ -561,10 +529,8 @@ class LAMMPS(seamm.Node):
                                 node=self._initialization_node,
                                 extras={"read_data": False},
                             )
-                            files["input"]["data"] = copy.deepcopy(
-                                initialization_header
-                            )
-                            files["input"]["data"].append(
+                            files["input.dat"] = copy.deepcopy(initialization_header)
+                            files["input.dat"].append(
                                 "read_restart       %s"
                                 % (os.path.join(files["restart"]["filename"]))
                             )
@@ -595,7 +561,6 @@ class LAMMPS(seamm.Node):
 
             restart = base + ".restart.*"
             dump = base + ".dump"
-            input_file = base + ".dat"
             new_input_data = []
             new_input_data.append("run          0")
             new_input_data.append(f"write_restart      {restart}")
@@ -613,13 +578,9 @@ class LAMMPS(seamm.Node):
             new_input_data.append("")
             new_input_data.append("info               computes fixes dumps log out")
 
-            files["input"]["filename"] = input_file
-            files["input"]["data"] += new_input_data
-            files["input"]["data"] = "\n".join(files["input"]["data"])
+            files["input.dat"] += "\n".join(new_input_data)
 
-            self.logger.debug(
-                files["input"]["filename"] + ":\n" + files["input"]["data"]
-            )
+            self.logger.debug("input.dat:\n" + files["input"]["data"])
 
             files = self._execute_single_sim(files, np=np)
 
@@ -655,22 +616,8 @@ class LAMMPS(seamm.Node):
 
     def _execute_single_sim(self, files, np=1, return_files=None):
         """
-        Step #1: Dump input file
-        Step #2: Execute input file
-        Step #3: Dump stderr
-        Step #4: Dump output files
+        Step #1: Execute input file
         """
-        tmpdict = {}
-        for k, v in files.items():
-            if v["filename"] is None or v["data"] is None:
-                continue
-
-            filename = os.path.join(self.directory, v["filename"])
-            mode = "w" if type(v["data"]) is str else "wb"
-            with open(filename, mode=mode) as fd:
-                fd.write(v["data"])
-
-            tmpdict[v["filename"]] = v["data"]
 
         return_files = [
             "summary_*.txt",
@@ -700,169 +647,75 @@ class LAMMPS(seamm.Node):
                 result["stdout"] = path.read_text()
             result["stderr"] = ""
         else:
-            # See if we are running in a batch job: SLURM, etc...
-            batch = {}
-            if "SLURM_JOBID" in os.environ:
-                batch["type"] = "slurm"
-                for item, value in os.environ.items():
-                    if item[0:6] == "SLURM_":
-                        batch[item[6:]] = value
+            # Set up the computational limits and get the computational enviroment
+            cl = {"NTASKS": np}
+            ce = seamm_exec.computational_environment(cl)
 
-                if np > int(batch["NTASKS"]):
-                    np = int(batch["NTASKS"])
-                batch["NTASKS"] = np
+            # Get the configuration for the LAMMPS executables, and the executor
+            ini_dir = Path(self.global_options["root"]).expanduser()
+            full_config = configparser.ConfigParser()
+            full_config.read(ini_dir / "lammps.ini")
 
-                if "NTASKS_PER_NODE" not in batch:
-                    batch["NTASKS_PER_NODE"] = int(batch["NTASKS"]) // int(
-                        batch["NNODES"]
-                    )
+            executor = self.flowchart.executor
 
-                # Expand `[i-k]` naming in nodelist
-                nodes = batch["NODELIST"].split(",")
-                nodelist = []
-                npernode = batch["NTASKS_PER_NODE"]
-                for node in nodes:
-                    if "[" in node:
-                        node, count = node.split("[")
-                        first, last = count[0:-1].split("-")
-                        for i in range(int(first), int(last) + 1):
-                            nodelist.append(f"{node}{i}:{npernode}")
-                    else:
-                        nodelist.append(f"{node}:{npernode}")
-                nodelist = ",".join(nodelist)
-                batch["NODELIST"] = nodelist
+            executor_type = executor.name
+            if executor_type not in full_config:
+                raise RuntimeError(
+                    f"No section for '{executor_type}' in LAMMPS ini file "
+                    f"({ini_dir / 'lammps.ini'})"
+                )
+            config = dict(full_config.items(executor_type))
 
-                if "JOB_GPUS" in batch:
-                    batch["ngpus"] = len(batch["JOB_GPUS"].split(","))
+            # Setup the command lines
+            cmd = []
 
-            local = seamm.ExecLocal()
-
-            # Find the executables and if they exist.
-            if "ngpus" not in batch:
-                modules = self.options["modules"]
+            if "python script" in files:
+                cmd = ["{python}", "run_lammps"]
+                if "GPUS" not in ce and config["cmd_args"] != "":
+                    cmd.extend(["--cmd-args", config["cmd_args"]])
+                if "GPUS" in ce and config["gpu_cmd_args"] != "":
+                    cmd.extend(["--cmd-args", config["gpu_cmd_args"]])
             else:
-                modules = self.options["gpu_modules"]
-            serial = True
-            if len(modules) > 0:
-                # Use a module for LAMMPS
-                shell = True
-                cmd = []
-                cmd.append(f"module load {modules}")
-                lmp_serial = self.options["lammps_serial"]
-                lmp_mpi = self.options["lammps_mpi"]
-                mpiexec = self.options["mpiexec"]
-                if "python script" in files:
-                    python = "python"
-                    if lmp_mpi != "" and (np > 1 or lmp_serial == ""):
-                        serial = False
-                        text = mpiexec.format(**batch) + " python run_lammps"
-                    else:
-                        text = "python run_lammps"
-                    if "ngpus" not in batch and self.options["cmd_args"] != "":
-                        text += " --cmd-args '"
-                        text += self.options["cmd_args"].format(**batch)
-                        text += "'"
-                    if "ngpus" in batch and self.options["gpu_cmd_args"] != "":
-                        text += " --cmd-args '"
-                        text += self.options["gpu_cmd_args"].format(**batch)
-                        text += "'"
-                else:
-                    if lmp_mpi != "" and (np > 1 or lmp_serial == ""):
-                        serial = False
-                        text = mpiexec.format(**batch) + " " + lmp_mpi
-                    else:
-                        text = lmp_serial
-                    if "ngpus" not in batch and self.options["cmd_args"] != "":
-                        text += " " + self.options["cmd_args"].format(**batch)
-                    if "ngpus" in batch and self.options["gpu_cmd_args"] != "":
-                        text += " " + self.options["gpu_cmd_args"].format(**batch)
-                    text += " -in input.dat"
-                cmd.append(text)
-                cmd = "\n".join(cmd)
+                cmd = ["{code}"]
+                if (
+                    "GPUS" not in ce
+                    and "cmd_args" in config
+                    and config["cmd_args"] != ""
+                ):
+                    cmd.extend(config["cmd_args"].split())
+                if (
+                    "GPUS" in ce
+                    and config["gpu_cmd_args"] != ""
+                    and config["gpu_cmd_args"] != ""
+                ):
+                    cmd.extend(config["gpu_cmd_args"].split())
+                cmd.extend(["-in", "input.dat"])
+
+            if "NGPUS" in ce:
+                printer.important(
+                    f"   LAMMPS running with {np} processes and {ce['NGPUS']} gpus."
+                )
             else:
-                shell = False
-                lammps_path = Path(self.options["lammps_path"]).expanduser().resolve()
-                lmp_serial = lammps_path / self.options["lammps_serial"]
-                lmp_serial = lmp_serial.expanduser().resolve()
-                if not lmp_serial.exists():
-                    lmp_serial = None
+                printer.important(f"   LAMMPS using MPI with {np} processes.")
+            printer.important("")
 
-                lmp_mpi = lammps_path / self.options["lammps_mpi"]
-                lmp_mpi = lmp_mpi.expanduser().resolve()
-                if lmp_mpi.exists():
-                    tmp = self.options["mpiexec"].format(**batch).split()
-                    mpiexec = lammps_path / tmp[0]
-                    mpi_options = tmp[1:]
-                    mpiexec = mpiexec.expanduser().resolve()
-                    if not mpiexec.exists():
-                        # See if it is in the path
-                        mpiexec = shutil.which(tmp[0])
-                        if mpiexec is None:
-                            lmp_mpi = None
-                        else:
-                            mpiexec = Path(mpiexec).expanduser().resolve()
-                else:
-                    lmp_mpi = None
-
-                # Use the parallel executable if the serial does not exist, and vice
-                # versa
-                if "python script" in files:
-                    python = lammps_path / "python"
-                    if lmp_mpi is not None and (np > 1 or lmp_serial is None):
-                        serial = False
-                        cmd = [str(mpiexec)]
-                        cmd.extend(mpi_options)
-                        cmd.append(str(python))
-                        cmd.append("run_lammps")
-                    else:
-                        cmd = [str(python), "run_lammps"]
-                    if "ngpus" not in batch and self.options["cmd_args"] != "":
-                        cmd_args = self.options["cmd_args"].format(**batch)
-                        cmd.extend(["--cmd-args", cmd_args])
-                    if "ngpus" in batch and self.options["gpu_cmd_args"] != "":
-                        cmd_args = self.options["gpu_cmd_args"].format(**batch)
-                        cmd.extend(["--cmd-args", cmd_args])
-                else:
-                    if lmp_mpi is not None and (np > 1 or lmp_serial is None):
-                        serial = False
-                        cmd = [str(mpiexec)]
-                        cmd.extend(mpi_options)
-                        cmd.append(str(lmp_mpi))
-                    else:
-                        cmd = [str(lmp_serial)]
-                    if "ngpus" not in batch and self.options["cmd_args"] != "":
-                        cmd.extend(self.options["cmd_args"].format(**batch).split())
-                    if "ngpus" in batch and self.options["gpu_cmd_args"] != "":
-                        cmd.extend(self.options["gpu_cmd_args"].format(**batch).split())
-                    cmd.extend(["-in", files["input"]["filename"]])
-
-            if serial:
-                printer.important("   LAMMPS using the serial version.\n")
-            else:
-                if "ngpus" in batch:
-                    printer.important(
-                        f"   LAMMPS using MPI with {np} processes and "
-                        f"{batch['ngpus']} gpus.\n"
-                    )
-                else:
-                    printer.important(f"   LAMMPS using MPI with {np} processes")
-
-            result = local.run(
+            cmd.extend([">", "stdout.txt", "2>", "stderr.txt"])
+            result = executor.run(
                 cmd=cmd,
-                files=tmpdict,
+                config=config,
+                directory=self.directory,
+                files=files,
                 return_files=return_files,
                 in_situ=True,
-                directory=self.directory,
-                shell=shell,
+                shell=True,
+                ce=ce,
             )
 
-            if result is None:
+            if not result:
                 self.logger.error("There was an error running LAMMPS")
                 return None
 
             self.logger.debug("\n" + pprint.pformat(result))
-
-            self.logger.debug("stdout:\n" + result["stdout"])
 
             f = os.path.join(self.directory, "stdout.txt")
             with open(f, mode="w") as fd:
@@ -876,12 +729,10 @@ class LAMMPS(seamm.Node):
         else:
             self._add_lammps_citations(result["stdout"])
 
-        files["input"] = {}
-        files["input"]["filename"] = None
         initialization_header, eex = self._get_node_input(
             node=self._initialization_node, extras={"read_data": False}
         )
-        files["input"]["data"] = copy.deepcopy(initialization_header)
+        files["input.dat"] = copy.deepcopy(initialization_header)
 
         # Write a small file to say that LAMMPS ran successfully, so cancel
         # skip if rerunning.
@@ -948,11 +799,10 @@ class LAMMPS(seamm.Node):
             new_input_data.append("")
             new_input_data.append("info               computes fixes dumps out log")
 
-        files["input"]["data"] += new_input_data
+        files["input.dat"] += new_input_data
 
-        files["input"]["filename"] = "input.dat"
-        files["input"]["data"] = "\n".join(files["input"]["data"])
-        self.logger.debug(files["input"]["filename"] + ":\n" + files["input"]["data"])
+        files["input.dat"] = "\n".join(files["input.dat"])
+        self.logger.debug("input.dat:\n" + files["input.dat"])
 
         if postscript is not None:
             if configuration.periodicity == 0:
@@ -967,15 +817,9 @@ class LAMMPS(seamm.Node):
                 )
             postscript.append("")
             postscript.append("info               computes fixes dumps out log")
-            files["postscript"] = {
-                "data": "\n".join(postscript),
-                "filename": "input_post.dat",
-            }
+            files["input_post.dat"] = "\n".join(postscript)
         if python_script is not None:
-            files["python script"] = {
-                "data": python_script,
-                "filename": "run_lammps",
-            }
+            files["run_lammps"] = python_script
 
         return files
 
