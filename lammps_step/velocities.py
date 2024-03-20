@@ -94,13 +94,13 @@ class Velocities(seamm.Node):
             system_db = self.get_variable("_system_db")
             configuration = system_db.system.configuration
             if configuration.periodicity == 3:
-                P[
-                    "remove_momentum"
-                ] = "remove translational but not rotational momentum"
+                P["remove_momentum"] = (
+                    "remove translational but not rotational momentum"
+                )
             else:
-                P[
-                    "remove_momentum"
-                ] = "remove both translational and rotational momentum"
+                P["remove_momentum"] = (
+                    "remove both translational and rotational momentum"
+                )
         if P["seed"] == "random":
             P["seed"] = int(random.random() * 2**31)
 
