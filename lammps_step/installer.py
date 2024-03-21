@@ -7,9 +7,10 @@ package `lammps-step`.
 """
 
 import logging
-import pkg_resources
+import os
 from pathlib import Path
-import shutil
+import pkg_resources
+import platform
 import subprocess
 
 import seamm_installer
@@ -64,507 +65,194 @@ class Installer(seamm_installer.InstallerBase):
         logger.debug("Initializing the LAMMPS installer object.")
 
         self.section = "lammps-step"
-        self.path_name = "lammps-path"
-        self.executables = ["lmp_serial", "lmp_mpi"]
+        self.executables = ["lmp"]
         self.resource_path = Path(pkg_resources.resource_filename(__name__, "data/"))
+
+        # The environment.yaml file for Conda installations.
+        logger.debug(f"data directory: {self.resource_path}")
+        self.environment_file = self.resource_path / "seamm-lammps.yml"
+
+    def check(self):
+        """Check the status of the LAMMPS installation."""
+        print("Checking the LAMMPS installation.")
+
         # What Conda environment is the default?
-        data = self.configuration.get_values(self.section)
+        path = self.configuration.path.parent / "lammps.ini"
+        if not path.exists():
+            text = (self.resource_path / "lammps.ini").read_text()
+            path.write_text(text)
+            print(f"    The lammps.ini file did not exist. Created {path}")
+
+        self.exe_config.path = path
+
+        # Get the current values
+        data = self.exe_config.get_values("local")
+
         if "conda-environment" in data and data["conda-environment"] != "":
             self.environment = data["conda-environment"]
         else:
             self.environment = "seamm-lammps"
 
-        # The environment.yaml file for Conda installations.
-        path = Path(pkg_resources.resource_filename(__name__, "data/"))
-        logger.debug(f"data directory: {path}")
-        self.environment_file = path / "seamm-lammps.yml"
-
-    def check(self):
-        """Check the installation and fix errors if requested.
-
-        If the option `yes` is present and True, this method will attempt to
-        correct any errors in the configuration file. Use `--yes` on the
-        command line to enable this.
-
-        The information in the configuration file is:
-
-            installation
-                How LAMMPS is installed. One of `path`, `modules` or `conda`
-            conda-environment
-                The Conda environment if and only if `installation` = `conda`
-            modules
-                The environment modules if `installation` = `modules`
-            lammps-path
-                The path where the LAMMPS executables are. Automatically
-                defined if `installation` is `conda` or `modules`, but given
-                by the user is it is `path`.
-
-        Returns
-        -------
-        bool
-            True if everything is OK, False otherwise. If `yes` is given as an
-            option, the return value is after fixing the configuration.
-        """
-        self.logger.debug("Entering check method.")
-        if not self.configuration.section_exists(self.section):
-            if self.options.yes or self.ask_yes_no(
-                "There is no section for the LAMMPS step in the configuration "
-                f" file ({self.configuration.path}).\nAdd one?",
-                default="yes",
-            ):
-                self.check_configuration_file()
-                print(
-                    f"Added the {self.section} section to the configuration file "
-                    f"{self.configuration.path}"
-                )
-
-        # Get the values from the configuration
-        data = self.configuration.get_values(self.section)
-
-        # Save the initial values, if any, of the key configuration variables
-        if "lammps-path" in data and data["lammps-path"] != "":
-            path = Path(data["lammps-path"]).expanduser().resolve()
-            initial_lammps_path = path
-        else:
-            initial_lammps_path = None
-        if "installation" in data and data["installation"] != "":
-            initial_installation = data["installation"]
-        else:
-            initial_installation = None
-        if "conda-environment" in data and data["conda-environment"] != "":
-            initial_conda_environment = data["conda-environment"]
-        else:
-            initial_conda_environment = None
-        if "modules" in data and data["modules"] != "":
-            initial_modules = data["modules"]
-        else:
-            initial_modules = None
-
-        # Is there a valid lammps-path?
-        self.logger.debug(
-            "Checking for executables in the initial lammps-path "
-            f"{initial_lammps_path}."
-        )
-        if initial_lammps_path is None or not self.have_executables(
-            initial_lammps_path
-        ):
-            lammps_path = None
-        else:
-            lammps_path = initial_lammps_path
-        self.logger.debug(f"initial-lammps-path = {initial_lammps_path}.")
-
-        # Is there an installation indicated?
-        if initial_installation in ("path", "conda", "modules"):
-            installation = initial_installation
-        else:
-            installation = None
-        self.logger.debug(f"initial-installation = {initial_installation}.")
-
-        if installation == "conda":
-            # Is there a conda environment?
-            conda_environment = None
-            if initial_conda_environment is None or not self.conda.exists(
-                initial_conda_environment
-            ):
-                if lammps_path is not None:
-                    # see if this path corresponds to a Conda environment
-                    for tmp in self.conda.environments:
-                        tmp_path = self.conda.path(tmp) / "bin"
-                        if tmp_path == lammps_path:
-                            conda_environment = tmp
-                            break
-                    if conda_environment is not None:
-                        if self.options.yes or self.ask_yes_no(
-                            "The Conda environment in the config file "
-                            "is not correct.\n"
-                            f"It should be {conda_environment}. Fix?",
-                            default="yes",
-                        ):
-                            self.configuration.set_value(
-                                self.section, "installation", "conda"
-                            )
-                            self.configuration.set_value(
-                                self.section, "conda-environment", conda_environment
-                            )
-                            self.configuration.set_value(self.section, "modules", "")
-                            self.configuration.save()
-                            print(
-                                "Corrected the conda environment to "
-                                f"{conda_environment}"
-                            )
-            else:
-                # Have a Conda environment!
-                conda_path = self.conda.path(initial_conda_environment) / "bin"
-                self.logger.debug(
-                    f"Checking for executables in conda-path: {conda_path}."
-                )
-                if self.have_executables(conda_path):
-                    # All is good!
-                    conda_environment = initial_conda_environment
-                    if lammps_path is None:
-                        if self.options.yes or self.ask_yes_no(
-                            "The lammps-path in the config file is not set,"
-                            f"but the Conda environment {conda_environment} "
-                            "is.\nFix the lammps-path?",
-                            default="yes",
-                        ):
-                            lammps_path = conda_path
-                            self.configuration.set_value(
-                                self.section, "lammps-path", lammps_path
-                            )
-                            self.configuration.set_value(self.section, "modules", "")
-                            self.configuration.save()
-                            print(f"Set the lammps-path to {conda_path}")
-                    elif lammps_path != conda_path:
-                        if self.options.yes or self.ask_yes_no(
-                            f"The lammps-path in the config file {lammps_path}"
-                            "is different from that for  the Conda "
-                            f"environment {conda_environment} is.\n"
-                            "Use the path from the Conda environment?",
-                            default="yes",
-                        ):
-                            lammps_path = conda_path
-                            self.configuration.set_value(
-                                self.section, "lammps-path", lammps_path
-                            )
-                            self.configuration.set_value(self.section, "modules", "")
-                            self.configuration.save()
-                            print(f"Changed the lammps-path to {conda_path}")
-                    else:
-                        # Everything is fine!
-                        pass
-        if installation == "modules":
-            print(f"Can't check the actual modules {initial_modules} yet")
-            if initial_conda_environment is not None:
-                if self.options.yes or self.ask_yes_no(
-                    "A Conda environment is given: "
-                    f"{initial_conda_environment}.\n"
-                    "A Conda environment should not be used when using "
-                    "modules. Remove it from the configuration?",
-                    default="yes",
-                ):
-                    self.configuration.set_value(self.section, "conda-environment", "")
-                    self.configuration.save()
-                    print(
-                        "Using modules, so removed the conda-environment from "
-                        "the configuration"
-                    )
-        else:
-            if lammps_path is None:
-                # No path or executables in the path!
-                environments = self.conda.environments
-                if self.environment in environments:
-                    # Make sure it is first!
-                    environments.remove(self.environment)
-                    environments.insert(0, self.environment)
-                for tmp in environments:
-                    tmp_path = self.conda.path(tmp) / "bin"
-                    if self.have_executables(tmp_path):
-                        if self.options.yes or self.ask_yes_no(
-                            "There are no valid executables in the lammps-path"
-                            " in the config file, but there are in the Conda "
-                            f"environment {tmp}.\n"
-                            "Use them?",
-                            default="yes",
-                        ):
-                            conda_environment = tmp
-                            lammps_path = tmp_path
-                            self.configuration.set_value(
-                                self.section, "lammps-path", lammps_path
-                            )
-                            self.configuration.set_value(
-                                self.section, "installation", "conda"
-                            )
-                            self.configuration.set_value(
-                                self.section, "conda-environment", conda_environment
-                            )
-                            self.configuration.set_value(self.section, "modules", "")
-                            self.configuration.save()
-                            print(
-                                "Will use the conda environment "
-                                f"'{conda_environment}'"
-                            )
-                            break
-            if lammps_path is None:
-                # Haven't found it. Check in the path.
-                lammps_path = self.executables_in_path()
-                if lammps_path is not None:
-                    if self.options.yes or self.ask_yes_no(
-                        "Found LAMMPS executables in the PATH at "
-                        f"{lammps_path}\n"
-                        "Use them?",
-                        default="yes",
-                    ):
-                        self.configuration.set_value(
-                            self.section, "installation", "path"
-                        )
-                        self.configuration.set_value(
-                            self.section, "conda-environment", ""
-                        )
-                        self.configuration.set_value(self.section, "modules", "")
-                        self.configuration.save()
-                        print("Using the LAMMPS executables at {lammps_path}")
-
-            if lammps_path is None:
-                # Can't find LAMMPS
-                print("Cannot find LAMMPS executables. You will need to install them.")
-                if (
-                    initial_installation is not None
-                    and initial_installation != "not installed"
-                ):
-                    if self.options.yes or self.ask_yes_no(
-                        "The configuration file indicates that LAMMPS "
-                        "is installed, but it can't be found.\n"
-                        "Fix the configuration file?",
-                        default="yes",
-                    ):
-                        self.configuration.set_value(
-                            self.section, "installation", "not installed"
-                        )
-                        self.configuration.set_value(self.section, "lammps-path", "")
-                        self.configuration.set_value(
-                            self.section, "conda-environment", ""
-                        )
-                        self.configuration.set_value(self.section, "modules", "")
-                        self.configuration.save()
-                        print(
-                            "Since no LAMMPS executables were found, cleared "
-                            "the configuration."
-                        )
-            else:
-                print("The check completed successfully.")
-
-    def check_configuration_file(self):
-        """Checks that the lammps-step section is in the configuration file."""
-        if not self.configuration.section_exists(self.section):
-            # Get the text of the data
-            path = Path(pkg_resources.resource_filename(__name__, "data/"))
-            path = path / "configuration.txt"
-            text = path.read_text()
-
-            # Add it to the configuration file and write to disk.
-            self.configuration.add_section(self.section, text)
-            self.configuration.save()
-
-    def have_executables(self, path):
-        """Check whether the executables are found at the given path.
-
-        Parameters
-        ----------
-        path : pathlib.Path
-            The directory to check.
-
-        Returns
-        -------
-        bool
-            True if at least one of the LAMMPS executables is found.
-        """
-        for executable in self.executables:
-            tmp_path = path / executable
-            if tmp_path.exists():
-                self.logger.debug(f"Found executables in {path}")
-                return True
-        self.logger.debug(f"Did not find executables in {path}")
-        return False
-
-    def executables_in_path(self):
-        """Check whether the executables are found in the PATH.
-
-        Returns
-        -------
-        pathlib.Path
-            The path where the executables are, or None.
-        """
-        path = None
-        for executable in self.executables:
-            path = shutil.which(executable)
-            if path is not None:
-                path = Path(path).expanduser().resolve()
-                break
-        return path
+        super().check()
 
     def install(self):
-        """Install LAMMPS using a Conda environment."""
-        if self.configuration.section_exists(self.section):
-            # Get the values from the configuration
-            data = self.configuration.get_values(self.section)
-            if "installation" in data:
-                initial_installation = data["installation"]
-                if initial_installation == "path":
-                    print("Using LAMMPS for the path given by the user.")
-                    return
-                elif initial_installation == "modules":
-                    print("Using LAMMPS from the modules given by the user.")
-                    return
-        else:
-            # Update the configuration file.
-            self.check_configuration_file()
+        """Install LAMMPS in a conda environment."""
+        print("Installing LAMMPS.")
 
-        print(
-            f"Installing Conda environment '{self.environment}'. This "
-            "may take a minute or two."
-        )
-        self.conda.create_environment(self.environment_file, name=self.environment)
-        path = self.conda.path(self.environment) / "bin"
-        self.configuration.set_value(self.section, "lammps-path", str(path))
-        self.configuration.set_value(self.section, "installation", "conda")
-        self.configuration.set_value(
-            self.section, "conda-environment", self.environment
-        )
-        self.configuration.set_value(self.section, "modules", "")
-        self.configuration.save()
-        print("Done!\n")
+        # What Conda environment is the default?
+        path = self.configuration.path.parent / "lammps.ini"
+        if not path.exists():
+            text = (self.resource_path / "lammps.ini").read_text()
+            path.write_text(text)
+            print(f"    The lammps.ini file did not exist. Created {path}")
+
+        self.exe_config.path = path
+
+        # Get the current values
+        data = self.exe_config.get_values("local")
+
+        if "conda-environment" in data and data["conda-environment"] != "":
+            self.environment = data["conda-environment"]
+        else:
+            self.environment = "seamm-lammps"
+
+        if platform.system() == "Darwin" and platform.machine() == "arm64":
+            os.environ["CONDA_SUBDIR"] = "osx-64"
+        elif platform.system() == "Linux" and platform.machine() == "arm64":
+            os.environ["CONDA_SUBDIR"] = "linux-64"
+
+        super().install()
 
     def show(self):
-        """Show the current installation status."""
-        self.logger.debug("Entering show")
+        """Show the status of the LAMMPS installation."""
+        print("Showing the LAMMPS installation.")
 
-        # See if LAMMPS is already registered in the configuration file
-        if not self.configuration.section_exists(self.section):
+        # What Conda environment is the default?
+        path = self.configuration.path.parent / "lammps.ini"
+        if not path.exists():
+            text = (self.resource_path / "lammps.ini").read_text()
+            path.write_text(text)
+            print(f"    The lammps.ini file does not exist at {path}")
+            print("    The 'check' command will create it if LAMMPS is installed.")
+            print("    Otherwise 'install' will install LAMMPS.")
+            return
+
+        self.exe_config.path = path
+
+        if not self.exe_config.section_exists("local"):
             print(
-                "There is no section in the configuration file for the "
-                "LAMMPS step (lammps-step)."
+                "    LAMMPS is not configured: there is no 'local' section in "
+                f"     {path}."
             )
-        data = self.configuration.get_values(self.section)
+            return
 
-        # Keep track of where executables are
-        serial = None
-        mpi = None
-        mpiexec = None
+        # Get the current values
+        data = self.exe_config.get_values("local")
 
-        # Is the path in the configuration file?
-        if "lammps-path" in data:
-            conf_path = Path(data["lammps-path"]).expanduser().resolve()
-            if (conf_path / "lmp_serial").exists():
-                serial = conf_path / "lmp_serial"
-                serial_version = self.exe_version(serial)
-            if (conf_path / "mpiexec").exists():
-                mpiexec = conf_path / "mpiexec"
-            else:
-                mpiexec = shutil.which("mpiexec")
-            if (conf_path / "lmp_mpi").exists():
-                mpi = conf_path / "lmp_mpi"
-                if mpiexec is None:
-                    mpi_version = "unknown"
-                else:
-                    mpi_version = self.exe_version(mpi, mpiexec)
-
-            extra = f"from path {conf_path}."
-            if "installation" in data:
-                installation = data["installation"]
-                if installation == "conda":
-                    if "conda-environment" in data and data["conda-environment"] != "":
-                        extra = (
-                            "from Conda environment " f"{data['conda-environment']}."
-                        )
-                    else:
-                        extra = "from an unknown Conda environment."
-                elif installation == "modules":
-                    if "modules" in data and data["modules"] != "":
-                        print(f"from module(s) {data['modules']}.")
-                    else:
-                        print("from unknown modules.")
-                    return
-                elif installation == "path":
-                    print(f"from user-defined path {conf_path}.")
-                    return
-
-            if serial is not None:
-                if mpi is not None:
-                    if serial_version == mpi_version:
-                        print(
-                            "LAMMPS serial and mpi executables, version "
-                            f"'{serial_version}'"
-                        )
-                    else:
-                        print(
-                            "LAMMPS serial executable, version "
-                            f"'{serial_version}', and mpi executable, "
-                            f"version {mpi_version}"
-                        )
-                    print(extra)
-                else:
-                    print(f"LAMMPS serial executable, version {serial_version}")
-                    print(extra)
-            elif mpi is not None:
-                print(f"LAMMPS mpi executable, version {mpi_version}")
-                print(extra)
-            else:
-                print("LAMMPS is not configured to run.")
+        if "conda-environment" in data and data["conda-environment"] != "":
+            self.environment = data["conda-environment"]
         else:
-            print("LAMMPS is not configured to run.")
+            self.environment = "seamm-lammps"
 
-        # Look in the PATH, but only record if not same as in the conf file
-        tmp = shutil.which("lmp_serial")
-        if tmp is not None:
-            tmp = Path(tmp).expanduser().resolve()
-            if serial is not None and serial != tmp:
-                version = self.exe_version(tmp)
-                print(
-                    f"Another serial executable of LAMMPS (version {version}) "
-                    "is in the PATH:\n"
-                    f"    {tmp}"
-                )
-        tmp = shutil.which("lmp_mpi")
-        if tmp is not None:
-            tmp = Path(tmp).expanduser().resolve()
-            if mpi is not None and mpi != tmp:
-                if mpiexec is None:
-                    version = "unknown"
-                else:
-                    version = self.exe_version(tmp, mpiexec)
-                print(
-                    f"Another mpi executable of LAMMPS (version {version}) "
-                    "is in the PATH:\n"
-                    f"    {tmp}"
-                )
+        super().show()
 
-    def exe_version(self, path, mpiexec=None):
+    def uninstall(self):
+        """Uninstall the LAMMPS installation."""
+        print("Uninstall the LAMMPS installation.")
+
+        # What Conda environment is the default?
+        path = self.configuration.path.parent / "lammps.ini"
+        if not path.exists():
+            text = (self.resource_path / "lammps.ini").read_text()
+            path.write_text(text)
+            print(
+                f""""    The lammps.ini file does not exist at {path}
+    Perhaps LAMMPS is not installed, but if it is the 'check' command may locate it
+    and create the ini file, after which 'uninstall' will remove it."""
+            )
+            return
+
+        self.exe_config.path = path
+
+        if not self.exe_config.section_exists("local"):
+            print(
+                f""""    The lammps.ini file at {path} does not have local section.
+    Perhaps LAMMPS is not installed, but if it is the 'check' command may locate it
+    and update the ini file, after which 'uninstall' will remove it."""
+            )
+            return
+
+        # Get the current values
+        data = self.exe_config.get_values("local")
+
+        if "conda-environment" in data and data["conda-environment"] != "":
+            self.environment = data["conda-environment"]
+        else:
+            self.environment = "seamm-lammps"
+
+        super().uninstall()
+
+    def update(self):
+        """Updates the LAMMPS installation."""
+        print("Updating the LAMMPS installation.")
+
+        # What Conda environment is the default?
+        path = self.configuration.path.parent / "lammps.ini"
+        if not path.exists():
+            text = (self.resource_path / "lammps.ini").read_text()
+            path.write_text(text)
+            print(f"    The lammps.ini file did not exist. Created {path}")
+
+        self.exe_config.path = path
+
+        # Get the current values
+        data = self.exe_config.get_values("local")
+
+        if "conda-environment" in data and data["conda-environment"] != "":
+            self.environment = data["conda-environment"]
+        else:
+            self.environment = "seamm-lammps"
+
+        super().update()
+
+    def exe_version(self, config):
         """Get the version of the LAMMPS executable.
 
         Parameters
         ----------
-        path : pathlib.Path
-            Path to the executable.
+        config : dict
+            Dictionary of options for running LAMMPS
 
         Returns
         -------
-        str
+        "LAMMPS", str
             The version reported by LAMMPS, or 'unknown'.
         """
-        if mpiexec is not None:
-            try:
-                result = subprocess.run(
-                    [mpiexec, str(path), "-log", "none"],
-                    stdin=subprocess.DEVNULL,
-                    capture_output=True,
-                    text=True,
-                )
-            except Exception:
-                version = "unknown"
-            else:
-                version = "unknown"
-                lines = result.stdout.splitlines()
-                if len(lines) > 0:
-                    line = lines[0]
-                    if line[0:8] == "LAMMPS (":
-                        version = line[8:].rstrip(")")
+        environment = config["conda-environment"]
+        conda = config["conda"]
+        if environment[0] == "~":
+            environment = str(Path(environment).expanduser())
+            command = f"'{conda}' run --live-stream -p '{environment}'"
+        elif Path(environment).is_absolute():
+            command = f"'{conda}' run --live-stream -p '{environment}'"
         else:
-            try:
-                result = subprocess.run(
-                    [str(path), "-log", "none"],
-                    stdin=subprocess.DEVNULL,
-                    capture_output=True,
-                    text=True,
-                )
-            except Exception:
-                version = "unknown"
-            else:
-                version = "unknown"
-                lines = result.stdout.splitlines()
-                if len(lines) > 0:
-                    line = lines[0]
-                    if line[0:8] == "LAMMPS (":
-                        version = line[8:].rstrip(")")
+            command = f"'{conda}' run --live-stream -n '{environment}'"
+        command += " lmp -h"
+        try:
+            result = subprocess.run(
+                command,
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                text=True,
+                shell=True,
+            )
+        except Exception:
+            version = "unknown"
+        else:
+            version = "unknown"
+            lines = result.stdout.splitlines()
+            if len(lines) > 1:
+                line = lines[1]
+                version = " ".join(line.split()[6:])
 
-        return version
+        return "LAMMPS", version

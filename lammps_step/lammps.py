@@ -5,6 +5,7 @@
 import configparser
 from contextlib import contextmanager
 import copy
+import importlib
 import json
 import logging
 from math import sqrt, exp, degrees, radians, cos, acos
@@ -13,6 +14,7 @@ import os
 import os.path
 import pkg_resources
 import pprint
+import shutil
 import string
 import sys
 import traceback
@@ -651,12 +653,48 @@ class LAMMPS(seamm.Node):
             cl = {"NTASKS": np}
             ce = seamm_exec.computational_environment(cl)
 
-            # Get the configuration for the LAMMPS executables, and the executor
-            ini_dir = Path(self.global_options["root"]).expanduser()
-            full_config = configparser.ConfigParser()
-            full_config.read(ini_dir / "lammps.ini")
-
             executor = self.flowchart.executor
+
+            # Read configuration file for LAMMPS if it exists
+            executor_type = executor.name
+            full_config = configparser.ConfigParser()
+            ini_dir = Path(self.global_options["root"]).expanduser()
+            path = ini_dir / "lammps.ini"
+
+            if path.exists():
+                full_config.read(ini_dir / "lammps.ini")
+
+            # If the section we need doesn't exists, get the default
+            if not path.exists() or executor_type not in full_config:
+                resources = importlib.resources.files("lammps_step") / "data"
+                ini_text = (resources / "lammps.ini").read_text()
+                full_config.read_string(ini_text)
+
+            # Getting desperate! Look for an executable in the path
+            if executor_type not in full_config:
+                path = shutil.which("lammps")
+                if path is None:
+                    raise RuntimeError(
+                        f"No section for '{executor_type}' in LAMMPS ini file "
+                        f"({ini_dir / 'lammps.ini'}), nor in the defaults, nor "
+                        "in the path!"
+                    )
+                else:
+                    full_config[executor_type] = {
+                        "installation": "local",
+                        "code": str(path),
+                    }
+
+            # If the ini file does not exist, write it out!
+            if not path.exists():
+                with path.open("w") as fd:
+                    full_config.write(fd)
+                printer.normal(f"Wrote the LAMMPS configuration file to {path}")
+                printer.normal("")
+
+            config = dict(full_config.items(executor_type))
+            # Use the matching version of the seamm-mopac image by default.
+            config["version"] = self.version
 
             executor_type = executor.name
             if executor_type not in full_config:
