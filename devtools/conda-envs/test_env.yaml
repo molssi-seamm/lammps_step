@@ -11,7 +11,6 @@ dependencies:
 
   # SEAMM
   - kim-query
-  - pymbar>=4.0
   - seamm
   - seamm-ff-util
   - statsmodels
@@ -30,6 +29,7 @@ dependencies:
 
   # Pip-only installs
   - pip:
+    - pymbar>=4.0
     - seamm-exec
     # Documentation
     - sphinx-copybutton
