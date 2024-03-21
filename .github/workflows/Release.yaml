@@ -13,3 +13,14 @@ jobs:
     with:
       src : lammps_step
     secrets: inherit
+
+  docker:
+    name: Docker
+    needs: release
+    uses: molssi-seamm/devops/.github/workflows/Docker.yaml@main
+    with:
+      image : molssi-seamm/seamm-lammps
+      description: A LAMMPS executable packaged for use with SEAMM or standalone
+      # Can limit platforms, e.g., linux/amd64, linux/arm64
+      platforms: linux/amd64
+    secrets: inherit
