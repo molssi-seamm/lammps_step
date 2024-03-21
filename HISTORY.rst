@@ -1,7 +1,7 @@
 =======
 History
 =======
-2024.3.20 -- Switched to new installation scheme
+2024.3.21 -- Switched to new installation scheme
    * Fully support ~/SEAMM/lammps.ini
    * Updated to new installer
    * Support for Conda and Docker installation.
