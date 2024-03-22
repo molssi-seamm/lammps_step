@@ -663,16 +663,18 @@ class LAMMPS(seamm.Node):
 
             if path.exists():
                 full_config.read(ini_dir / "lammps.ini")
+                full_config.set("local", "_origin_", f"{ini_dir / 'lammps.ini'}")
 
             # If the section we need doesn't exists, get the default
             if not path.exists() or executor_type not in full_config:
                 resources = importlib.resources.files("lammps_step") / "data"
                 ini_text = (resources / "lammps.ini").read_text()
                 full_config.read_string(ini_text)
+                full_config.set("local", "_origin_", "lammps default ini file")
 
             # Getting desperate! Look for an executable in the path
             if executor_type not in full_config:
-                path = shutil.which("lammps")
+                path = shutil.which("lmp")
                 if path is None:
                     raise RuntimeError(
                         f"No section for '{executor_type}' in LAMMPS ini file "
@@ -680,10 +682,15 @@ class LAMMPS(seamm.Node):
                         "in the path!"
                     )
                 else:
-                    full_config[executor_type] = {
-                        "installation": "local",
-                        "code": str(path),
-                    }
+                    full_config.add_section(executor_type)
+                    full_config.set(executor_type, "installation", "local")
+                    full_config.set(executor_type, "code", str(path))
+
+            # And we may need python!
+            full_config.set("local", "items", f"{full_config.items('local')}")
+            if not full_config.has_option(executor_type, "python"):
+                full_config.set(executor_type, "python", "mpirun -np {NTASKS} python")
+                full_config.set(executor_type, "_python source_", "default value")
 
             # If the ini file does not exist, write it out!
             if not path.exists():
@@ -707,11 +714,19 @@ class LAMMPS(seamm.Node):
             # Setup the command lines
             cmd = []
 
-            if "python script" in files:
+            if "run_lammps" in files:
                 cmd = ["{python}", "run_lammps"]
-                if "GPUS" not in ce and config["cmd_args"] != "":
+                if (
+                    "GPUS" not in ce
+                    and "cmd_args" in config
+                    and config["cmd_args"] != ""
+                ):
                     cmd.extend(["--cmd-args", config["cmd_args"]])
-                if "GPUS" in ce and config["gpu_cmd_args"] != "":
+                if (
+                    "GPUS" in ce
+                    and "gpu_cmd_args" in config
+                    and config["gpu_cmd_args"] != ""
+                ):
                     cmd.extend(["--cmd-args", config["gpu_cmd_args"]])
             else:
                 cmd = ["{code}"]
@@ -723,7 +738,7 @@ class LAMMPS(seamm.Node):
                     cmd.extend(config["cmd_args"].split())
                 if (
                     "GPUS" in ce
-                    and config["gpu_cmd_args"] != ""
+                    and "gpu_cmd_args" in config
                     and config["gpu_cmd_args"] != ""
                 ):
                     cmd.extend(config["gpu_cmd_args"].split())
