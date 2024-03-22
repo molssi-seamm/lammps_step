@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2024.3.21 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2024.3.22 documentation</title>
   
   
   
@@ -45,7 +45,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=307b711c"></script>
+    <script src="../../_static/documentation_options.js?v=0783fb76"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -1177,16 +1177,18 @@ document.write(`
 
             <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
                 <span class="n">full_config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">ini_dir</span> <span class="o">/</span> <span class="s2">&quot;lammps.ini&quot;</span><span class="p">)</span>
+                <span class="n">full_config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="s2">&quot;_origin_&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ini_dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">&#39;lammps.ini&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="c1"># If the section we need doesn&#39;t exists, get the default</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">or</span> <span class="n">executor_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">full_config</span><span class="p">:</span>
                 <span class="n">resources</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="s2">&quot;lammps_step&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span>
                 <span class="n">ini_text</span> <span class="o">=</span> <span class="p">(</span><span class="n">resources</span> <span class="o">/</span> <span class="s2">&quot;lammps.ini&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
                 <span class="n">full_config</span><span class="o">.</span><span class="n">read_string</span><span class="p">(</span><span class="n">ini_text</span><span class="p">)</span>
+                <span class="n">full_config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="s2">&quot;_origin_&quot;</span><span class="p">,</span> <span class="s2">&quot;lammps default ini file&quot;</span><span class="p">)</span>
 
             <span class="c1"># Getting desperate! Look for an executable in the path</span>
             <span class="k">if</span> <span class="n">executor_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">full_config</span><span class="p">:</span>
-                <span class="n">path</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">&quot;lammps&quot;</span><span class="p">)</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">&quot;lmp&quot;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;No section for &#39;</span><span class="si">{</span><span class="n">executor_type</span><span class="si">}</span><span class="s2">&#39; in LAMMPS ini file &quot;</span>
@@ -1194,10 +1196,15 @@ document.write(`
                         <span class="s2">&quot;in the path!&quot;</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">full_config</span><span class="p">[</span><span class="n">executor_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                        <span class="s2">&quot;installation&quot;</span><span class="p">:</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span>
-                    <span class="p">}</span>
+                    <span class="n">full_config</span><span class="o">.</span><span class="n">add_section</span><span class="p">(</span><span class="n">executor_type</span><span class="p">)</span>
+                    <span class="n">full_config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">executor_type</span><span class="p">,</span> <span class="s2">&quot;installation&quot;</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">)</span>
+                    <span class="n">full_config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">executor_type</span><span class="p">,</span> <span class="s2">&quot;code&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+
+            <span class="c1"># And we may need python!</span>
+            <span class="n">full_config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="s2">&quot;items&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">full_config</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="s1">&#39;local&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">full_config</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="n">executor_type</span><span class="p">,</span> <span class="s2">&quot;python&quot;</span><span class="p">):</span>
+                <span class="n">full_config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">executor_type</span><span class="p">,</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="s2">&quot;mpirun -np </span><span class="si">{NTASKS}</span><span class="s2"> python&quot;</span><span class="p">)</span>
+                <span class="n">full_config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">executor_type</span><span class="p">,</span> <span class="s2">&quot;_python source_&quot;</span><span class="p">,</span> <span class="s2">&quot;default value&quot;</span><span class="p">)</span>
 
             <span class="c1"># If the ini file does not exist, write it out!</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
@@ -1221,11 +1228,19 @@ document.write(`
             <span class="c1"># Setup the command lines</span>
             <span class="n">cmd</span> <span class="o">=</span> <span class="p">[]</span>
 
-            <span class="k">if</span> <span class="s2">&quot;python script&quot;</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;run_lammps&quot;</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
                 <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">{python}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;run_lammps&quot;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="s2">&quot;GPUS&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ce</span> <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;cmd_args&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="s2">&quot;GPUS&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ce</span>
+                    <span class="ow">and</span> <span class="s2">&quot;cmd_args&quot;</span> <span class="ow">in</span> <span class="n">config</span>
+                    <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;cmd_args&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span>
+                <span class="p">):</span>
                     <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;--cmd-args&quot;</span><span class="p">,</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;cmd_args&quot;</span><span class="p">]])</span>
-                <span class="k">if</span> <span class="s2">&quot;GPUS&quot;</span> <span class="ow">in</span> <span class="n">ce</span> <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;gpu_cmd_args&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="s2">&quot;GPUS&quot;</span> <span class="ow">in</span> <span class="n">ce</span>
+                    <span class="ow">and</span> <span class="s2">&quot;gpu_cmd_args&quot;</span> <span class="ow">in</span> <span class="n">config</span>
+                    <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;gpu_cmd_args&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span>
+                <span class="p">):</span>
                     <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;--cmd-args&quot;</span><span class="p">,</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;gpu_cmd_args&quot;</span><span class="p">]])</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">{code}</span><span class="s2">&quot;</span><span class="p">]</span>
@@ -1237,7 +1252,7 @@ document.write(`
                     <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;cmd_args&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
                 <span class="k">if</span> <span class="p">(</span>
                     <span class="s2">&quot;GPUS&quot;</span> <span class="ow">in</span> <span class="n">ce</span>
-                    <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;gpu_cmd_args&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="ow">and</span> <span class="s2">&quot;gpu_cmd_args&quot;</span> <span class="ow">in</span> <span class="n">config</span>
                     <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;gpu_cmd_args&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span>
                 <span class="p">):</span>
                     <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;gpu_cmd_args&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
