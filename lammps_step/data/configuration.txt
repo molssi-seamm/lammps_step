@@ -21,24 +21,3 @@
 # they can be viewed without the SEAMM Dashboard.
 
 # html = False
-
-#
-# SEAMM picks up the environment variables such as SLURM_NTASKS, strips the
-# prefix from them and replaces any instances in the command line that are
-# enclosed in braces. Hopefully this lets you construct the correct command
-# line.
-#
-# The LAMMPS installer does not handle these variables! They are here
-# just in case!
-
-# lammps-serial = lmp_serial
-# lammps-mpi = lmp_mpi
-# mpiexec = mpiexec
-
-# Optional command-line arguments for LAMMPS. These are usually used with accelerators
-# such as Kokkos or GPU to automatically apply the accelerator. Again there is a normal
-# and GPU version
-
-# cmd-args = -k on -sf kk
-# gpu-cmd-args = -k on g {ngpus} -sf kk -pk kokkos gpu/aware on newton on neigh full neigh/thread on neigh/transpose off comm device
-
