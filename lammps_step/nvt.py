@@ -214,7 +214,7 @@ class NVT(lammps_step.NVE):
 
         lines = []
         lines.append("")
-        lines.append("#     NVT dynamics")
+        lines.append(f"# {self.header}")
         lines.append("")
         lines.append("reset_timestep      0")
         lines.append("timestep            {}".format(timestep))

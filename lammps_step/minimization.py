@@ -132,7 +132,7 @@ class Minimization(lammps_step.Energy):
         )
 
         lines.append("")
-        lines.append("#     Minimization")
+        lines.append(f"# {self.header}")
         lines.append("")
         lines.append("thermo_style        custom {}".format(thermo_properties))
         lines.append("thermo              {}".format(100))

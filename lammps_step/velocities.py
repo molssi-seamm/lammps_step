@@ -115,7 +115,7 @@ class Velocities(seamm.Node):
         # Get the input lines
         lines = []
         lines.append("")
-        lines.append("#     velocities")
+        lines.append(f"# {self.header}")
         lines.append("")
 
         if P["remove_momentum"] == "remove translational but not rotational momentum":
