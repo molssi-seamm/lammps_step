@@ -146,6 +146,10 @@ class NPT(lammps_step.NVT):
 
         self.description = []
 
+        _, configuration = self.get_system_configuration()
+        if configuration.periodicity == 0:
+            raise RuntimeError("Cannot run NPT dynamics on non-periodic system!")
+
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data
         )

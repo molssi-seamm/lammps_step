@@ -1,6 +1,8 @@
 =======
 History
 =======
+2024.6.28.1 -- Internal release to fix issue making Docker image.
+
 2024.6.28 -- Added energy and forces to properties
    * Added ability to get the energy and forces from single point calculations to supprt
      e.g. energy scans.
@@ -9,7 +11,7 @@ History
    * Improved analsys based on the output file.
      
 2024.3.22 -- Corrected issue with e.g. heat flux calculations
-   * Corrected an issue running LAMMPS via Python, intorduced in the new scheme for
+   * Corrected an issue running LAMMPS via Python, introduced in the new scheme for
      executing. It ignored parallelism.
      
 2024.3.21 -- Switched to new installation scheme
