@@ -11,7 +11,7 @@ History
    * Improved analsys based on the output file.
      
 2024.3.22 -- Corrected issue with e.g. heat flux calculations
-   * Corrected an issue running LAMMPS via Python, intorduced in the new scheme for
+   * Corrected an issue running LAMMPS via Python, introduced in the new scheme for
      executing. It ignored parallelism.
      
 2024.3.21 -- Switched to new installation scheme
