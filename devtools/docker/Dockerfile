@@ -1,6 +1,6 @@
 FROM molssi/mamba141
 
-COPY ./environment.yml /root/environment.yml
+COPY ./lammps_step/data/seamm-lammps.yml /root/environment.yml
 
 RUN mamba env update -f /root/environment.yml
 

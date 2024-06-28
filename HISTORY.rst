@@ -1,6 +1,8 @@
 =======
 History
 =======
+2024.6.28.1 -- Internal release to fix issue making Docker image.
+
 2024.6.28 -- Added energy and forces to properties
    * Added ability to get the energy and forces from single point calculations to supprt
      e.g. energy scans.
