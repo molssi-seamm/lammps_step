@@ -14,6 +14,7 @@ dependencies:
   - rdkit
   - seamm
   - seamm-ff-util
+  - seamm-installer
   - statsmodels
   - tabulate
 
