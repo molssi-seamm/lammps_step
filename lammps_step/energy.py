@@ -3,6 +3,7 @@
 """A single-point energy in LAMMPS"""
 
 import logging
+from pathlib import Path
 
 from tabulate import tabulate
 
@@ -85,10 +86,13 @@ class Energy(seamm.Node):
 
         lines = []
 
+        filename = f"@{self._id[-1]}+forces.dump"
         lines.append("")
-        lines.append("#     single-point energy")
+        lines.append(f"# {self.header}")
         lines.append("")
+        lines.append(f"dump                1 all custom 1 {filename} id fx fy fz")
         lines.append("run                 0")
+        lines.append("undump              1")
 
         return {
             "script": lines,
@@ -96,7 +100,7 @@ class Energy(seamm.Node):
             "use python": False,
         }
 
-    def analyze(self, indent="", data={}, table=None, **kwargs):
+    def analyze(self, indent="", data={}, table=None, output=[], **kwargs):
         """Parse the output and generating the text output and store the
         data in variables for other stages to access
         """
@@ -160,6 +164,40 @@ class Energy(seamm.Node):
                         dedent=False,
                     )
                 )
+
+        # Process the output to get the energy
+        lines = iter(output)
+        for line in lines:
+            if "   Step" in line:
+                tmp = line.split()
+                try:
+                    i = tmp.index("TotEng")
+                except ValueError:
+                    pass
+                else:
+                    line = next(lines)
+                    tmp = line.split()
+                    energy = float(tmp[i])
+                    data["energy"] = energy
+                    data["energy,units"] = "kcal/mol"
+
+        # See if forces have been dumped
+        wdir = Path(self.directory)
+        path = wdir / "forces.dump"
+        if path.exists():
+            tmp = self.parent.get_dump(path)
+
+            fields = tmp["fields"]
+            if "fx" in fields and "fy" in fields and "fz" in fields:
+                ix = fields.index("fx")
+                iy = fields.index("fy")
+                iz = fields.index("fz")
+                fxs = tmp["data"][-1][ix]
+                fys = tmp["data"][-1][iy]
+                fzs = tmp["data"][-1][iz]
+                gradients = [[-fx, -fy, -fz] for fx, fy, fz in zip(fxs, fys, fzs)]
+                data["gradients"] = gradients
+                data["gradients,units"] = "kcal/mol/angstrom"
 
         # Get the configuration
         _, configuration = self.get_system_configuration(None)

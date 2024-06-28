@@ -1662,6 +1662,20 @@ class LAMMPS(seamm.Node):
 
         run_dir = Path(self.directory)
 
+        # Divide the log file into sections for the steps
+        log_file = run_dir / "log.lammps"
+        if not log_file.is_file():
+            raise RuntimeError(f"Log file {log_file} is missing!")
+        lines = log_file.read_text().split("\n")
+        sections = {}
+        section = None
+        for line in lines:
+            if line.startswith("# Step "):
+                section = line[2:]
+                sections[section] = []
+            elif section is not None:
+                sections[section].append(line)
+
         for node in nodes:
             for value in node.description:
                 printer.important(value)
@@ -1709,7 +1723,12 @@ class LAMMPS(seamm.Node):
                 values = {}
                 table = None
 
-            node.analyze(data=values, properties=node_data, table=table)
+            node.analyze(
+                data=values,
+                properties=node_data,
+                table=table,
+                output=sections[node.header],
+            )
 
             ret[node._id[1]] = node_data
 
@@ -1799,15 +1818,14 @@ class LAMMPS(seamm.Node):
             have_warning = False
             have_acf_warning = False
             # Ignore first point, t=0, cause it might not be right.
-            y = data[column][1:]
+            yy = data[column].to_numpy()[1:]
 
-            self.logger.info("Analyzing {}, nsamples = {}".format(column, len(y)))
+            self.logger.info("Analyzing {}, nsamples = {}".format(column, len(yy)))
 
             # compute indices of uncorrelated timeseries using pymbar
             # Their algorithm is quadratic in length of Y unless you
             # use 'nskip'. I set it so there are about 100 time origins, so
             # the convergence time is accurate to about 1%.
-            yy = y.to_numpy()
             nskip = yy.size // 100 + 1
             conv, inefficiency, Neff_max = timeseries.detect_equilibration(
                 yy, nskip=nskip
@@ -2484,3 +2502,148 @@ class LAMMPS(seamm.Node):
         lines.append("")
 
         return lines
+
+    def get_dump(self, dumpfile):
+        """Read the LAMMPS dumpfile and return the data.
+
+        Parameters
+        ----------
+        dumpfile : str
+            The filename (or path) to the dumpfile.
+        """
+        self.logger.info("Reading dump file '{}'".format(dumpfile))
+
+        # system_db = self.get_variable("_system_db")
+        # configuration = system_db.system.configuration
+        # periodicity = configuration.periodicity
+        # n_atoms = configuration.n_atoms
+
+        result = {
+            "timestep": [],
+            "n_atoms": [],
+            "cell": [],
+            "data": [],
+        }
+        section = ""
+        section_lines = []
+        with open(dumpfile, "r") as fd:
+            lineno = 0
+            for line in fd:
+                line = line.strip()
+                lineno += 1
+                if lineno == 1:
+                    if line[0:5] != "ITEM:":
+                        raise RuntimeError(
+                            "Error reading dump file '" + dumpfile + "': The "
+                            "first line is incorrect! (" + line + ")"
+                        )
+                    section = line[6:].strip()
+                    section_lines = []
+                    self.logger.debug("   section = " + section)
+                    continue
+
+                if line[0:5] == "ITEM:":
+                    # end a section
+                    self.logger.debug("  processing section '{}'".format(section))
+                    if section == "TIMESTEP":
+                        result["timestep"].append(int(section_lines[0]))
+                    elif section == "NUMBER OF ATOMS":
+                        n_atoms = int(section_lines[0])
+                        result["n_atoms"].append(n_atoms)
+                    elif "BOX BOUNDS" in section:
+                        if len(section.split()) == 8:
+                            xlo_bound, xhi_bound, xy = section_lines[0].split()
+                            ylo_bound, yhi_bound, xz = section_lines[1].split()
+                            zlo, zhi, yz = section_lines[2].split()
+
+                            xlo_bound = float(xlo_bound)
+                            xhi_bound = float(xhi_bound)
+                            ylo_bound = float(ylo_bound)
+                            yhi_bound = float(yhi_bound)
+                            zlo = float(zlo)
+                            zhi = float(zhi)
+                            xy = float(xy)
+                            xz = float(xz)
+                            yz = float(yz)
+
+                            xlo = xlo_bound - min(0.0, xy, xz, xy + xz)
+                            xhi = xhi_bound - max(0.0, xy, xz, xy + xz)
+                            ylo = ylo_bound - min(0.0, yz)
+                            yhi = yhi_bound - max(0.0, yz)
+                            cell = LAMMPS.box_to_cell(
+                                xhi - xlo, yhi - ylo, zhi - zlo, xy, xz, yz
+                            )
+                        else:
+                            xlo, xhi = section_lines[0].split()
+                            ylo, yhi = section_lines[1].split()
+                            zlo, zhi = section_lines[2].split()
+
+                            xlo = float(xlo)
+                            xhi = float(xhi)
+                            ylo = float(ylo)
+                            yhi = float(yhi)
+                            zlo = float(zlo)
+                            zhi = float(zhi)
+
+                            cell = (xhi - xlo, yhi - ylo, zhi - zlo, 90, 90, 90)
+                        result["cell"].append(cell)
+                    elif "ATOMS" in section:
+                        keys = section.split()[2:]
+                        if "fields" not in result:
+                            result["fields"] = keys
+                        elif keys != result["fields"]:
+                            raise ValueError(
+                                f"Error reading dump file '{dumpfile}': The fields in "
+                                "the ATOMS section do not match the previous fields!\n"
+                                f"  timestep: {result['timestep'][-1]}\n"
+                                f"  previous: {result['fields']=}\n"
+                                f"   current: {keys=}"
+                            )
+                        tmp = [[None] * n_atoms for key in keys]
+                        for line in section_lines:
+                            values = line.split()
+                            _id = int(values[0]) - 1
+                            for index, value in enumerate(values[1:]):
+                                key = keys[index]
+                                if key in ("mol", "proc", "procp1", "type"):
+                                    value = int(value)
+                                elif key in ("element",):
+                                    value = value.strip()
+                                else:
+                                    value = float(value)
+                                tmp[index][_id] = value
+                        result["data"].append(tmp)
+                    section = line[6:].strip()
+                    section_lines = []
+                else:
+                    section_lines.append(line)
+
+        # Clean up the last section
+        if "ATOMS" in section:
+            keys = section.split()[2:]
+            if "fields" not in result:
+                result["fields"] = keys
+            elif keys != result["fields"]:
+                raise ValueError(
+                    f"Error reading dump file '{dumpfile}': The fields in "
+                    "the ATOMS section do not match the previous fields!\n"
+                    f"  timestep: {result['timestep'][-1]}\n"
+                    f"  previous: {result['fields']=}\n"
+                    f"   current: {keys=}"
+                )
+            tmp = [[None] * n_atoms for key in keys]
+            for line in section_lines:
+                values = line.split()
+                _id = int(values[0]) - 1
+                for index, value in enumerate(values[1:]):
+                    key = keys[index]
+                    if key in ("mol", "proc", "procp1", "type"):
+                        value = int(value)
+                    elif key in ("element",):
+                        value = value.strip()
+                    else:
+                        value = float(value)
+                    tmp[index][_id] = value
+            result["data"].append(tmp)
+
+        return result

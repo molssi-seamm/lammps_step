@@ -8,6 +8,20 @@ metadata = {}
 """
 
 metadata["results"] = {
+    "energy": {
+        "calculation": ["energy"],
+        "description": "The total energy",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "kcal/mol",
+    },
+    "gradients": {
+        "calculation": ["energy"],
+        "description": "The gradients",
+        "dimensionality": "[3, n_atoms]",
+        "type": "float",
+        "units": "kcal/mol/Å",
+    },
     "T": {
         "calculation": [
             "nve",

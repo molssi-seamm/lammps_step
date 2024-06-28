@@ -1,6 +1,13 @@
 =======
 History
 =======
+2024.6.28 -- Added energy and forces to properties
+   * Added ability to get the energy and forces from single point calculations to supprt
+     e.g. energy scans.
+   * Fixed issue with assigning atoms types if they have not been assigned but are None
+   * Updated for change in the order of units in the new version of pint
+   * Improved analsys based on the output file.
+     
 2024.3.22 -- Corrected issue with e.g. heat flux calculations
    * Corrected an issue running LAMMPS via Python, intorduced in the new scheme for
      executing. It ignored parallelism.

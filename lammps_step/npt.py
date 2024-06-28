@@ -192,7 +192,7 @@ class NPT(lammps_step.NVT):
         # and build the LAMMPS script
         lines = []
         lines.append("")
-        lines.append("#     NPT dynamics")
+        lines.append(f"# {self.header}")
         lines.append("")
         lines.append("reset_timestep      0")
         lines.append("timestep            {}".format(timestep))

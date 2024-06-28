@@ -183,6 +183,9 @@ class Initialization(seamm.Node):
         if key not in configuration.atoms:
             logger.debug("Atom typing")
             ff.assign_forcefield(configuration)
+        else:
+            if any(typ is None for typ in configuration.atoms[key]):
+                ff.assign_forcefield(configuration)
 
         # Get the energy expression.
         style = "LAMMPS-class2" if "cff" in ffname else "LAMMPS"
@@ -206,7 +209,7 @@ class Initialization(seamm.Node):
 
         lines = []
         lines.append("")
-        lines.append("#     initialization of LAMMPS")
+        lines.append(f"# {self.header}")
         lines.append("")
         lines.append("units               real")
 
@@ -516,7 +519,7 @@ class Initialization(seamm.Node):
 
         lines = []
         lines.append("")
-        lines.append("#     initialization of LAMMPS")
+        lines.append(f"# {self.header}")
         lines.append("")
         lines.append("newton              on")
         lines.append("")

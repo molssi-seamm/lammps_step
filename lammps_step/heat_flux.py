@@ -290,7 +290,7 @@ class HeatFlux(NVE):
 
         lines = []
         lines.append("")
-        lines.append("#     Heat Flux")
+        lines.append(f"# {self.header}")
         lines.append("")
         lines.append("reset_timestep      0")
         lines.append("timestep            {}".format(timestep))

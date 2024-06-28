@@ -11,8 +11,10 @@ dependencies:
 
   # SEAMM
   - kim-query
+  - rdkit
   - seamm
   - seamm-ff-util
+  - seamm-installer
   - statsmodels
   - tabulate
 

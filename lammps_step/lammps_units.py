@@ -156,6 +156,7 @@ dimensionality_to_quantity = {
     "[length]": ["distance"],
     "[time]": ["time"],
     "[length] ** 2 * [mass] / [substance] / [time] ** 2": ["energy", "torque"],
+    "[mass] * [length] ** 2 / [time] ** 2 / [substance]": ["energy", "torque"],
     "[length] ** 2 * [mass] / [time] ** 2": ["energy", "torque"],
     "[length] / [time]": ["velocity"],
     "[length] * [mass] / [substance] / [time] ** 2": ["force"],

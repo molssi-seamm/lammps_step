@@ -112,7 +112,7 @@ class NVE(lammps_step.Energy):
         ncomputes = 0
         ndumps = 0
         lines.append("")
-        lines.append("#     NVE dynamics")
+        lines.append(f"# {self.header}")
         lines.append("")
         lines.append("reset_timestep      0")
         lines.append("timestep            {}".format(timestep))
