@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2024.6.28.1 documentation</title>
+    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2024.7.21 documentation</title>
   
   
   
@@ -45,7 +45,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=26d15995"></script>
+    <script src="../../_static/documentation_options.js?v=7b638174"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -848,9 +848,15 @@ document.write(`
 <span class="sd">            The counter for the fixes</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;atomic positions&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
-            <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;atomic positions&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
-            <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+        <span class="n">sampling</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;atomic positions&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">sampling</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;interval&quot;</span> <span class="ow">in</span> <span class="n">sampling</span><span class="p">:</span>
+                <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                    <span class="n">P</span><span class="p">[</span><span class="s2">&quot;atomic positions rate&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span>
+                <span class="p">)</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;atomic positions number of samples&quot;</span><span class="p">])</span>
             <span class="n">ndumps</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+atomic_positions.dump_trj&quot;</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
@@ -858,9 +864,16 @@ document.write(`
                 <span class="sa">f</span><span class="s2">&quot;dump                </span><span class="si">{</span><span class="n">ndumps</span><span class="si">}</span><span class="s2"> all custom </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> id xu yu zu</span><span class="se">\n</span><span class="s2">&quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;dump_modify         </span><span class="si">{</span><span class="n">ndumps</span><span class="si">}</span><span class="s2"> sort id&quot;</span>
             <span class="p">)</span>
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;com positions&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
-            <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;com positions&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
-            <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+        <span class="n">sampling</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;com positions&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">sampling</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;interval&quot;</span> <span class="ow">in</span> <span class="n">sampling</span><span class="p">:</span>
+                <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                    <span class="n">P</span><span class="p">[</span><span class="s2">&quot;com positions rate&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span>
+                <span class="p">)</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;com positions number of samples&quot;</span><span class="p">])</span>
+
             <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+com_positions.trj&quot;</span>
             <span class="n">ncomputes</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">c1</span> <span class="o">=</span> <span class="n">ncomputes</span>
@@ -891,9 +904,15 @@ document.write(`
                 <span class="sa">f</span><span class="s2">&quot;                        title3 &#39;</span><span class="si">{</span><span class="n">title3</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;                        file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> mode vector&quot;</span>
             <span class="p">)</span>
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;atomic velocities&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
-            <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;atomic velocities&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
-            <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+        <span class="n">sampling</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;atomic velocities&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">sampling</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;interval&quot;</span> <span class="ow">in</span> <span class="n">sampling</span><span class="p">:</span>
+                <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                    <span class="n">P</span><span class="p">[</span><span class="s2">&quot;atomic velocities rate&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span>
+                <span class="p">)</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;atomic velocities number of samples&quot;</span><span class="p">])</span>
             <span class="n">ndumps</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+atomic_velocities.dump_trj&quot;</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
@@ -901,9 +920,15 @@ document.write(`
                 <span class="sa">f</span><span class="s2">&quot;dump                </span><span class="si">{</span><span class="n">ndumps</span><span class="si">}</span><span class="s2"> all custom </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> id vx vy vz</span><span class="se">\n</span><span class="s2">&quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;dump_modify         </span><span class="si">{</span><span class="n">ndumps</span><span class="si">}</span><span class="s2"> sort id&quot;</span>
             <span class="p">)</span>
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;com velocities&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
-            <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;com velocities&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
-            <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+        <span class="n">sampling</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;com velocities&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">sampling</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;interval&quot;</span> <span class="ow">in</span> <span class="n">sampling</span><span class="p">:</span>
+                <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                    <span class="n">P</span><span class="p">[</span><span class="s2">&quot;com velocities rate&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span>
+                <span class="p">)</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;com velocities number of samples&quot;</span><span class="p">])</span>
             <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+com_velocities.trj&quot;</span>
             <span class="n">ncomputes</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">c1</span> <span class="o">=</span> <span class="n">ncomputes</span>
@@ -934,9 +959,13 @@ document.write(`
                 <span class="sa">f</span><span class="s2">&quot;                        title3 &#39;</span><span class="si">{</span><span class="n">title3</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;                        file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> mode vector&quot;</span>
             <span class="p">)</span>
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;heat flux&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
-            <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;heat flux&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
-            <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+        <span class="n">sampling</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;heat flux&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">sampling</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;interval&quot;</span> <span class="ow">in</span> <span class="n">sampling</span><span class="p">:</span>
+                <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;heat flux rate&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;heat flux number of samples&quot;</span><span class="p">])</span>
             <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+heat_flux.trj&quot;</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">to_compact</span><span class="p">()</span>
@@ -960,9 +989,15 @@ document.write(`
                 <span class="sa">f</span><span class="s2">&quot;                        title2 &#39;</span><span class="si">{</span><span class="n">title2</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;                        file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;shear stress&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
-            <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;shear stress&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
-            <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+        <span class="n">sampling</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;shear stress&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">sampling</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;interval&quot;</span> <span class="ow">in</span> <span class="n">sampling</span><span class="p">:</span>
+                <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
+                    <span class="n">P</span><span class="p">[</span><span class="s2">&quot;shear stress rate&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span>
+                <span class="p">)</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;shear stress number of samples&quot;</span><span class="p">])</span>
             <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+shear_stress.trj&quot;</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">to_compact</span><span class="p">()</span>
