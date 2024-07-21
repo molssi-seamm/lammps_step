@@ -289,10 +289,9 @@ class TkNVE(lammps_step.TkEnergy):
                 widgets2.append(self["shear stress rate"])
                 row += 1
 
-        sw.align_labels(widgets, sticky=tk.E)
-        sw.align_labels(widgets2, sticky=tk.E)
-        label_width = self["atomic positions"].grid_bbox(0, 0)[2] - 30
-        frame.columnconfigure(0, minsize=label_width)
+        width1 = sw.align_labels(widgets, sticky=tk.E)
+        width2 = sw.align_labels(widgets2, sticky=tk.E)
+        frame.columnconfigure(0, minsize=width1 - width2 + 30)
 
     def handle_dialog(self, result):
         if result == "OK":
