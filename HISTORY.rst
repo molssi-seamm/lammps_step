@@ -1,6 +1,14 @@
 =======
 History
 =======
+2024.7.21 -- Improved handling of trajectories and results
+   * Improved control over the trajectories of positions, veloicties, etc. to allow the
+     user to give the number of points in the trajectory rather than the time interval
+     of samples
+   * Added volume of the cell to properties, and the cell lengths, density, and volume
+     for NVE and NVT, where those parameters don't vary but are nontheless useful in
+     subsequent analysis.
+     
 2024.6.28.1 -- Internal release to fix issue making Docker image.
 
 2024.6.28 -- Added energy and forces to properties

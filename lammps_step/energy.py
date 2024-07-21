@@ -202,6 +202,18 @@ class Energy(seamm.Node):
         # Get the configuration
         _, configuration = self.get_system_configuration(None)
 
+        # Add static properties such as density for e.g NVE and NVT calculations
+        if "density" not in data and configuration.periodicity == 3:
+            data["density"] = configuration.density
+        if "a" not in data and configuration.periodicity == 3:
+            data["a"] = configuration.cell.a
+        if "b" not in data and configuration.periodicity == 3:
+            data["b"] = configuration.cell.b
+        if "c" not in data and configuration.periodicity == 3:
+            data["c"] = configuration.cell.c
+        if "volume" not in data and configuration.periodicity == 3:
+            data["volume"] = configuration.cell.volume
+
         # Need to set the model for properties.
         # See what type of forcefield we have and handle it
         ff = self.get_variable("_forcefield")
