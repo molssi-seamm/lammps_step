@@ -99,64 +99,156 @@ class NVE_Parameters(lammps_step.EnergyParameters):
     trajectories = {
         "atomic positions": {
             "default": "never",
-            "kind": "float",
-            "default_units": "fs",
-            "enumeration": ("never",),
-            "format_string": ".1f",
+            "kind": "string",
+            "enumeration": ("never", "by number of samples", "by time interval"),
+            "format_string": "",
             "description": "Sample the atom positions:",
             "help_text": (
-                "How often to sample the positions of the atoms, which can be used "
+                "How to sample the positions of the atoms, which can be used "
                 "for diffusion calculations."
             ),
         },
-        "com positions": {
-            "default": "never",
+        "atomic positions rate": {
+            "default": 100,
             "kind": "float",
             "default_units": "fs",
-            "enumeration": ("never",),
+            "enumeration": tuple(),
             "format_string": ".1f",
-            "description": "Sample the molecular center-of-mass positions:",
+            "description": "Time interval:",
+            "help_text": "How often to sample the positions of the atoms",
+        },
+        "atomic positions number of samples": {
+            "default": 1000,
+            "kind": "integer",
+            "enumeration": tuple(),
+            "format_string": "",
+            "description": "Number of samples:",
+            "help_text": "How many samples of the positions of the atoms to collect",
+        },
+        "com positions": {
+            "default": "never",
+            "kind": "string",
+            "enumeration": ("never", "by number of samples", "by time interval"),
+            "format_string": "",
+            "description": "Sample the positions of the molecules' COM:",
             "help_text": (
-                "How often to sample the positions of the  molecular center-of-masses, "
-                "which can be used for diffusion calculations."
+                "How to sample the positions of the molecules' COM, which can be used "
+                "for diffusion calculations."
+            ),
+        },
+        "com positions rate": {
+            "default": 100,
+            "kind": "float",
+            "default_units": "fs",
+            "enumeration": tuple(),
+            "format_string": ".1f",
+            "description": "Time interval:",
+            "help_text": (
+                "How often to sample the positions of the centers of mass of the "
+                "molecules"
+            ),
+        },
+        "com positions number of samples": {
+            "default": 1000,
+            "kind": "integer",
+            "enumeration": tuple(),
+            "format_string": "",
+            "description": "Number of samples:",
+            "help_text": (
+                "How many samples of the positions of the centers of mass of the "
+                "molecules to collect"
             ),
         },
         "atomic velocities": {
             "default": "never",
-            "kind": "float",
-            "default_units": "fs",
-            "enumeration": ("never",),
-            "format_string": ".1f",
+            "kind": "string",
+            "enumeration": ("never", "by number of samples", "by time interval"),
+            "format_string": "",
             "description": "Sample the atom velocities:",
             "help_text": (
-                "How often to sample the velocity of the atoms, which can be used for "
-                "diffusion calculations."
+                "How to sample the velocities of the atoms, which can be used "
+                "for diffusion calculations."
             ),
+        },
+        "atomic velocities rate": {
+            "default": 100,
+            "kind": "float",
+            "default_units": "fs",
+            "enumeration": tuple(),
+            "format_string": ".1f",
+            "description": "Time interval:",
+            "help_text": "How often to sample the velocities of the atoms",
+        },
+        "atomic velocities number of samples": {
+            "default": 1000,
+            "kind": "integer",
+            "enumeration": tuple(),
+            "format_string": "",
+            "description": "Number of samples:",
+            "help_text": "How many samples of the velocities of the atoms to collect",
         },
         "com velocities": {
             "default": "never",
+            "kind": "string",
+            "enumeration": ("never", "by number of samples", "by time interval"),
+            "format_string": "",
+            "description": "Sample the velocities of the molecules' COM:",
+            "help_text": (
+                "How to sample the velocities of the molecules' COM, which can be used "
+                "for diffusion calculations."
+            ),
+        },
+        "com velocities rate": {
+            "default": 100,
             "kind": "float",
             "default_units": "fs",
-            "enumeration": ("never",),
+            "enumeration": tuple(),
             "format_string": ".1f",
-            "description": "Sample the molecular center-of-mass velocities:",
+            "description": "Time interval:",
             "help_text": (
-                "How often to sample the velocity of the molecular center-of-masses, "
-                "which can be used for diffusion calculations."
+                "How often to sample the velocities of the centers of mass of the "
+                "molecules"
+            ),
+        },
+        "com velocities number of samples": {
+            "default": 1000,
+            "kind": "integer",
+            "enumeration": tuple(),
+            "format_string": "",
+            "description": "Number of samples:",
+            "help_text": (
+                "How many samples of the velocities of the centers of mass of the "
+                "molecules to collect"
             ),
         },
         "heat flux": {
             "default": "never",
-            "kind": "float",
-            "default_units": "fs",
-            "enumeration": ("never",),
-            "format_string": ".1f",
+            "kind": "string",
+            "enumeration": ("never", "by number of samples", "by time interval"),
+            "format_string": "",
             "description": "Sample the heat flux:",
             "help_text": (
-                "How often to sample the heat flux, usually used for thermal "
+                "How to sample the heat flux, usually used for thermal "
                 "conductivity calculations. However, it is recommended to use the "
                 "heat-flux step instead of using this."
             ),
+        },
+        "heat flux rate": {
+            "default": 100,
+            "kind": "float",
+            "default_units": "fs",
+            "enumeration": tuple(),
+            "format_string": ".1f",
+            "description": "Time interval:",
+            "help_text": "How often to sample the heat flux",
+        },
+        "heat flux number of samples": {
+            "default": 1000,
+            "kind": "integer",
+            "enumeration": tuple(),
+            "format_string": "",
+            "description": "Number of samples:",
+            "help_text": "How many samples of the heat flux to collect",
         },
         "use centroid stress": {
             "default": "yes",
@@ -169,15 +261,31 @@ class NVE_Parameters(lammps_step.EnergyParameters):
         },
         "shear stress": {
             "default": "never",
-            "kind": "float",
-            "default_units": "fs",
-            "enumeration": ("never",),
-            "format_string": ".1f",
+            "kind": "string",
+            "enumeration": ("never", "by number of samples", "by time interval"),
+            "format_string": "",
             "description": "Sample the shear stress:",
             "help_text": (
-                "How often to sample the shear stress, usually used for viscosity "
+                "How to sample the shear stress, usually used for viscosity "
                 "calculations."
             ),
+        },
+        "shear stress rate": {
+            "default": 100,
+            "kind": "float",
+            "default_units": "fs",
+            "enumeration": tuple(),
+            "format_string": ".1f",
+            "description": "Time interval:",
+            "help_text": "How often to sample the shear stress",
+        },
+        "shear stress number of samples": {
+            "default": 1000,
+            "kind": "integer",
+            "enumeration": tuple(),
+            "format_string": "",
+            "description": "Number of samples:",
+            "help_text": "How many samples of the shear stress to collect",
         },
     }
 

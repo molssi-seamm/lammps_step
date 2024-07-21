@@ -119,8 +119,12 @@ metadata["results"] = {
         "units": "",
     },
     "density": {
-        "calculation": ["npt"],
-        "description": "pressure",
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "density",
         "dimensionality": "scalar",
         "property": "density#LAMMPS#{model}",
         "type": "float",
@@ -150,8 +154,48 @@ metadata["results"] = {
         "type": "float",
         "units": "",
     },
-    "a": {
+    "V": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": "V",
+        "dimensionality": "scalar",
+        "property": "V#LAMMPS#{model}",
+        "type": "float",
+        "units": "g/ml",
+    },
+    "V,stderr": {
         "calculation": ["npt"],
+        "description": "stderr of V",
+        "dimensionality": "scalar",
+        "property": "V, stderr#LAMMPS#{model}",
+        "type": "float",
+        "units": "g/ml",
+    },
+    "V,tau": {
+        "calculation": ["npt"],
+        "description": "autocorrelation time of V",
+        "dimensionality": "scalar",
+        "property": "V, tau#LAMMPS#{model}",
+        "type": "float",
+        "units": "fs",
+    },
+    "V,inefficiency": {
+        "calculation": ["npt"],
+        "description": "statistical inefficiency of V sampling",
+        "dimensionality": "scalar",
+        "property": "volume, inefficiency#LAMMPS#{model}",
+        "type": "float",
+        "units": "",
+    },
+    "a": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
         "description": "cell parameter 'a'",
         "dimensionality": "scalar",
         "property": "cell_a#LAMMPS#{model}",
@@ -183,7 +227,11 @@ metadata["results"] = {
         "units": "",
     },
     "b": {
-        "calculation": ["npt"],
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
         "description": "cell parameter 'b'",
         "dimensionality": "scalar",
         "property": "cell_b#LAMMPS#{model}",
@@ -215,7 +263,11 @@ metadata["results"] = {
         "units": "",
     },
     "c": {
-        "calculation": ["npt"],
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
         "description": "cell parameter 'c'",
         "dimensionality": "scalar",
         "property": "cell_c#LAMMPS#{model}",

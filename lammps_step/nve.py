@@ -346,9 +346,15 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
             The counter for the fixes
         """
         lines = []
-        if P["atomic positions"] != "never":
-            t_s = lammps_step.to_lammps_units(P["atomic positions"], quantity="time")
-            n = max(1, round(t_s / timestep))
+        sampling = P["atomic positions"]
+        if sampling != "never":
+            if "interval" in sampling:
+                t_s = lammps_step.to_lammps_units(
+                    P["atomic positions rate"], quantity="time"
+                )
+                n = max(1, round(t_s / timestep))
+            else:
+                n = max(1, nsteps // P["atomic positions number of samples"])
             ndumps += 1
             filename = f"@{self._id[-1]}+atomic_positions.dump_trj"
             lines.append(
@@ -356,9 +362,16 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
                 f"dump                {ndumps} all custom {n} {filename} id xu yu zu\n"
                 f"dump_modify         {ndumps} sort id"
             )
-        if P["com positions"] != "never":
-            t_s = lammps_step.to_lammps_units(P["com positions"], quantity="time")
-            n = max(1, round(t_s / timestep))
+        sampling = P["com positions"]
+        if sampling != "never":
+            if "interval" in sampling:
+                t_s = lammps_step.to_lammps_units(
+                    P["com positions rate"], quantity="time"
+                )
+                n = max(1, round(t_s / timestep))
+            else:
+                n = max(1, nsteps // P["com positions number of samples"])
+
             filename = f"@{self._id[-1]}+com_positions.trj"
             ncomputes += 1
             c1 = ncomputes
@@ -389,9 +402,15 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
                 f"                        title3 '{title3}' &\n"
                 f"                        file {filename} mode vector"
             )
-        if P["atomic velocities"] != "never":
-            t_s = lammps_step.to_lammps_units(P["atomic velocities"], quantity="time")
-            n = max(1, round(t_s / timestep))
+        sampling = P["atomic velocities"]
+        if sampling != "never":
+            if "interval" in sampling:
+                t_s = lammps_step.to_lammps_units(
+                    P["atomic velocities rate"], quantity="time"
+                )
+                n = max(1, round(t_s / timestep))
+            else:
+                n = max(1, nsteps // P["atomic velocities number of samples"])
             ndumps += 1
             filename = f"@{self._id[-1]}+atomic_velocities.dump_trj"
             lines.append(
@@ -399,9 +418,15 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
                 f"dump                {ndumps} all custom {n} {filename} id vx vy vz\n"
                 f"dump_modify         {ndumps} sort id"
             )
-        if P["com velocities"] != "never":
-            t_s = lammps_step.to_lammps_units(P["com velocities"], quantity="time")
-            n = max(1, round(t_s / timestep))
+        sampling = P["com velocities"]
+        if sampling != "never":
+            if "interval" in sampling:
+                t_s = lammps_step.to_lammps_units(
+                    P["com velocities rate"], quantity="time"
+                )
+                n = max(1, round(t_s / timestep))
+            else:
+                n = max(1, nsteps // P["com velocities number of samples"])
             filename = f"@{self._id[-1]}+com_velocities.trj"
             ncomputes += 1
             c1 = ncomputes
@@ -432,9 +457,13 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
                 f"                        title3 '{title3}' &\n"
                 f"                        file {filename} mode vector"
             )
-        if P["heat flux"] != "never":
-            t_s = lammps_step.to_lammps_units(P["heat flux"], quantity="time")
-            n = max(1, round(t_s / timestep))
+        sampling = P["heat flux"]
+        if sampling != "never":
+            if "interval" in sampling:
+                t_s = lammps_step.to_lammps_units(P["heat flux rate"], quantity="time")
+                n = max(1, round(t_s / timestep))
+            else:
+                n = max(1, nsteps // P["heat flux number of samples"])
             filename = f"@{self._id[-1]}+heat_flux.trj"
             nfixes += 1
             dt = (n * P["timestep"]).to_compact()
@@ -458,9 +487,15 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
                 f"                        title2 '{title2}' &\n"
                 f"                        file {filename}"
             )
-        if P["shear stress"] != "never":
-            t_s = lammps_step.to_lammps_units(P["shear stress"], quantity="time")
-            n = max(1, round(t_s / timestep))
+        sampling = P["shear stress"]
+        if sampling != "never":
+            if "interval" in sampling:
+                t_s = lammps_step.to_lammps_units(
+                    P["shear stress rate"], quantity="time"
+                )
+                n = max(1, round(t_s / timestep))
+            else:
+                n = max(1, nsteps // P["shear stress number of samples"])
             filename = f"@{self._id[-1]}+shear_stress.trj"
             nfixes += 1
             dt = (n * P["timestep"]).to_compact()

@@ -59,16 +59,40 @@ class TkNVE(lammps_step.TkEnergy):
             self["results frame"], tframe, text="Trajectories", sticky=tk.NSEW
         )
 
-        row = 0
-        widgets = []
-        for key in lammps_step.NVE_Parameters.trajectories:
+        for key in (
+            "atomic positions",
+            "com positions",
+            "atomic velocities",
+            "com velocities",
+            "heat flux",
+            "shear stress",
+        ):
             if title == "Heat Flux" and (key == "heat flux" or "centroid" in key):
                 continue
             self[key] = P[key].widget(tframe)
-            self[key].grid(row=row, column=0)
-            row += 1
-            widgets.append(self[key])
-        sw.align_labels(widgets, sticky=tk.E)
+            self[key].combobox.bind("<<ComboboxSelected>>", self.reset_trajectory_frame)
+            self[key].combobox.bind("<Return>", self.reset_trajectory_frame)
+            self[key].combobox.bind("<FocusOut>", self.reset_trajectory_frame)
+
+        for key in (
+            "atomic positions rate",
+            "atomic positions number of samples",
+            "com positions rate",
+            "com positions number of samples",
+            "atomic velocities rate",
+            "atomic velocities number of samples",
+            "com velocities rate",
+            "com velocities number of samples",
+            "heat flux rate",
+            "heat flux number of samples",
+            "shear stress rate",
+            "shear stress number of samples",
+        ):
+            if title == "Heat Flux" and (key == "heat flux" or "centroid" in key):
+                continue
+            self[key] = P[key].widget(tframe)
+
+        self.reset_trajectory_frame()
 
         if title == "Heat Flux":
             return frame
@@ -153,6 +177,122 @@ class TkNVE(lammps_step.TkEnergy):
             row += 1
 
         sw.align_labels(widgets, sticky=tk.E)
+
+    def reset_trajectory_frame(self, widget=None):
+        """Layout the trajectory frame according to its contents."""
+        atomic_positions = self["atomic positions"].get()
+        com_positions = self["com positions"].get()
+        atomic_velocities = self["atomic velocities"].get()
+        com_velocities = self["com velocities"].get()
+        heat_flux = self["heat flux"].get()
+        shear_stress = self["shear stress"].get()
+
+        # Clear out the previous widgets
+        frame = self["trajectory frame"]
+        for slave in frame.grid_slaves():
+            slave.grid_forget()
+
+        row = 0
+        widgets = []
+        widgets2 = []
+
+        self["atomic positions"].grid(row=row, column=0, columnspan=2, sticky=tk.EW)
+        widgets.append(self["atomic positions"])
+        row += 1
+        if atomic_positions != "never":
+            if self.is_expr(atomic_positions) or "number" in atomic_positions:
+                self["atomic positions number of samples"].grid(
+                    row=row, column=1, sticky=tk.EW
+                )
+                widgets2.append(self["atomic positions number of samples"])
+                row += 1
+            if self.is_expr(atomic_positions) or "interval" in atomic_positions:
+                self["atomic positions rate"].grid(row=row, column=1, sticky=tk.EW)
+                widgets2.append(self["atomic positions rate"])
+                row += 1
+
+        self["com positions"].grid(row=row, column=0, columnspan=2, sticky=tk.EW)
+        widgets.append(self["com positions"])
+        row += 1
+        if com_positions != "never":
+            if self.is_expr(com_positions) or "number" in com_positions:
+                self["com positions number of samples"].grid(
+                    row=row, column=1, sticky=tk.EW
+                )
+                widgets2.append(self["com positions number of samples"])
+                row += 1
+            if self.is_expr(com_positions) or "interval" in com_positions:
+                self["com positions rate"].grid(row=row, column=1, sticky=tk.EW)
+                widgets2.append(self["com positions rate"])
+                row += 1
+
+        self["atomic velocities"].grid(row=row, column=0, columnspan=2, sticky=tk.EW)
+        widgets.append(self["atomic velocities"])
+        row += 1
+        if atomic_velocities != "never":
+            if self.is_expr(atomic_velocities) or "number" in atomic_velocities:
+                self["atomic velocities number of samples"].grid(
+                    row=row, column=1, sticky=tk.EW
+                )
+                widgets2.append(self["atomic velocities number of samples"])
+                row += 1
+            if self.is_expr(atomic_velocities) or "interval" in atomic_velocities:
+                self["atomic velocities rate"].grid(row=row, column=1, sticky=tk.EW)
+                widgets2.append(self["atomic velocities rate"])
+                row += 1
+
+        self["com velocities"].grid(row=row, column=0, columnspan=2, sticky=tk.EW)
+        widgets.append(self["com velocities"])
+        row += 1
+        if com_velocities != "never":
+            if self.is_expr(com_velocities) or "number" in com_velocities:
+                self["com velocities number of samples"].grid(
+                    row=row, column=1, sticky=tk.EW
+                )
+                widgets2.append(self["com velocities number of samples"])
+                row += 1
+            if self.is_expr(com_velocities) or "interval" in com_velocities:
+                self["com velocities rate"].grid(row=row, column=1, sticky=tk.EW)
+                widgets2.append(self["com velocities rate"])
+                row += 1
+
+        if self.__class__.__name__ == "TkHeatFlux":
+            pass
+        else:
+            self["heat flux"].grid(row=row, column=0, columnspan=2, sticky=tk.EW)
+            widgets.append(self["heat flux"])
+            row += 1
+            if heat_flux != "never":
+                if self.is_expr(heat_flux) or "number" in heat_flux:
+                    self["heat flux number of samples"].grid(
+                        row=row, column=1, sticky=tk.EW
+                    )
+                    widgets2.append(self["heat flux number of samples"])
+                    row += 1
+                if self.is_expr(heat_flux) or "interval" in heat_flux:
+                    self["heat flux rate"].grid(row=row, column=1, sticky=tk.EW)
+                    widgets2.append(self["heat flux rate"])
+                    row += 1
+
+        self["shear stress"].grid(row=row, column=0, columnspan=2, sticky=tk.EW)
+        widgets.append(self["shear stress"])
+        row += 1
+        if shear_stress != "never":
+            if self.is_expr(shear_stress) or "number" in shear_stress:
+                self["shear stress number of samples"].grid(
+                    row=row, column=1, sticky=tk.EW
+                )
+                widgets2.append(self["shear stress number of samples"])
+                row += 1
+            if self.is_expr(shear_stress) or "interval" in shear_stress:
+                self["shear stress rate"].grid(row=row, column=1, sticky=tk.EW)
+                widgets2.append(self["shear stress rate"])
+                row += 1
+
+        sw.align_labels(widgets, sticky=tk.E)
+        sw.align_labels(widgets2, sticky=tk.E)
+        label_width = self["atomic positions"].grid_bbox(0, 0)[2] - 30
+        frame.columnconfigure(0, minsize=label_width)
 
     def handle_dialog(self, result):
         if result == "OK":
