@@ -1,12 +1,16 @@
 =======
 History
 =======
+2024.7.21.1 -- Minor internal change for GUI
+   * Switched to new functionality in the SEAMM widgets to simplify the layout of the
+     trajectories panel.
+     
 2024.7.21 -- Improved handling of trajectories and results
-   * Improved control over the trajectories of positions, veloicties, etc. to allow the
+   * Improved control over the trajectories of positions, velocities, etc. to allow the
      user to give the number of points in the trajectory rather than the time interval
      of samples
    * Added volume of the cell to properties, and the cell lengths, density, and volume
-     for NVE and NVT, where those parameters don't vary but are nontheless useful in
+     for NVE and NVT, where those parameters don't vary but are nonetheless useful in
      subsequent analysis.
      
 2024.6.28.1 -- Internal release to fix issue making Docker image.
