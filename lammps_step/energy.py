@@ -51,6 +51,11 @@ class Energy(seamm.Node):
         return "Step {}: {}".format(".".join(str(e) for e in self._id), self.title)
 
     @property
+    def results(self):
+        """The storage for the results in the main LAMMPS step."""
+        return self.flowchart.parent._results
+
+    @property
     def version(self):
         """The semantic version of this module."""
         return lammps_step.__version__
@@ -180,6 +185,20 @@ class Energy(seamm.Node):
                     energy = float(tmp[i])
                     data["energy"] = energy
                     data["energy,units"] = "kcal/mol"
+            if line.startswith("Loop time of"):
+                try:
+                    tmp = line.split()
+                    _time = round(float(tmp[3]), 2)
+                    _procs = int(tmp[5])
+                    _steps = int(tmp[8])
+                    _natoms = int(tmp[11])
+                    _type = self._calculation
+                    self.results[f"t_{_type}"] = _time
+                    self.results[f"np_{_type}"] = _procs
+                    self.results[f"steps_{_type}"] = _steps
+                    self.results[f"natoms_{_type}"] = _natoms
+                except Exception as _e:
+                    print(f"LAMMPS loop time: {_e}")
 
         # See if forces have been dumped
         wdir = Path(self.directory)
@@ -226,6 +245,6 @@ class Energy(seamm.Node):
         # Put any requested results into variables or tables
         self.store_results(
             configuration=configuration,
-            data=data,
+            data=data | self.results,
             create_tables=self.parameters["create tables"].get(),
         )
