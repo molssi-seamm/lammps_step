@@ -1,6 +1,13 @@
 =======
 History
 =======
+2024.7.25 -- Bugfix and improvements
+   * Bugfix: Fixed issue with the initial seamm.ini file, created if it is missing from
+     the installation.
+   * Added the ability to set the number of points in the trajectories rather than the
+     sampling rate.
+   * Added diagnositic information and timings to available results.
+     
 2024.7.21.1 -- Minor internal change for GUI
    * Switched to new functionality in the SEAMM widgets to simplify the layout of the
      trajectories panel.

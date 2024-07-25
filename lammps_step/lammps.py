@@ -33,7 +33,7 @@ import seamm_exec
 from seamm_ff_util import tabulate_angle
 import seamm_util
 import seamm_util.printing as printing
-from seamm_util import CompactJSONEncoder
+from seamm_util import CompactJSONEncoder, Configuration
 from seamm_util.printing import FormattedText as __
 
 # from pymbar import timeseries
@@ -171,6 +171,8 @@ class LAMMPS(seamm.Node):
         self._trajectory = []
         self._data = {}
 
+        self._results = {}  # Sotrage for computational and timing results
+
         super().__init__(
             flowchart=flowchart, title="LAMMPS", extension=extension, logger=logger
         )
@@ -184,6 +186,11 @@ class LAMMPS(seamm.Node):
     def git_revision(self):
         """The git version of this module."""
         return lammps_step.__git_revision__
+
+    @property
+    def results(self):
+        """The storage for results."""
+        return self._results
 
     @staticmethod
     def box_to_cell(lx, ly, lz, xy, xz, yz):
@@ -261,53 +268,56 @@ class LAMMPS(seamm.Node):
             action="store_true",
             help="whether to write out html files for graphs, etc.",
         )
-        parser.add_argument(
-            parser_name,
-            "--modules",
-            nargs="*",
-            default=None,
-            help="the environment modules to load for LAMMPS",
-        )
-        parser.add_argument(
-            parser_name,
-            "--gpu-modules",
-            nargs="*",
-            default=None,
-            help="the environment modules to load for the GPU version of LAMMPS",
-        )
-        parser.add_argument(
-            parser_name,
-            "--lammps-path",
-            default=None,
-            help="the path to the LAMMPS executables",
-        )
-        parser.add_argument(
-            parser_name,
-            "--lammps-serial",
-            default="lmp_serial",
-            help="the serial version of LAMMPS",
-        )
-        parser.add_argument(
-            parser_name,
-            "--lammps-mpi",
-            default="lmp_mpi",
-            help="the mpi version of LAMMPS",
-        )
-        parser.add_argument(
-            parser_name,
-            "--cmd-args",
-            default="",
-            help="the command-line arguments for LAMMPS, e.g. '-k on'",
-        )
-        parser.add_argument(
-            parser_name,
-            "--gpu-cmd-args",
-            default="",
-            help="the command-line arguments for GPU version of LAMMPS, e.g. '-k on'",
-        )
-        parser.add_argument(
-            parser_name, "--mpiexec", default="mpiexec", help="the mpi executable"
-        )
+        if False:
+            parser.add_argument(
+                parser_name,
+                "--modules",
+                nargs="*",
+                default=None,
+                help="the environment modules to load for LAMMPS",
+            )
+            parser.add_argument(
+                parser_name,
+                "--gpu-modules",
+                nargs="*",
+                default=None,
+                help="the environment modules to load for the GPU version of LAMMPS",
+            )
+            parser.add_argument(
+                parser_name,
+                "--lammps-path",
+                default=None,
+                help="the path to the LAMMPS executables",
+            )
+            parser.add_argument(
+                parser_name,
+                "--lammps-serial",
+                default="lmp_serial",
+                help="the serial version of LAMMPS",
+            )
+            parser.add_argument(
+                parser_name,
+                "--lammps-mpi",
+                default="lmp_mpi",
+                help="the mpi version of LAMMPS",
+            )
+            parser.add_argument(
+                parser_name,
+                "--cmd-args",
+                default="",
+                help="the command-line arguments for LAMMPS, e.g. '-k on'",
+            )
+            parser.add_argument(
+                parser_name,
+                "--gpu-cmd-args",
+                default="",
+                help=(
+                    "the command-line arguments for GPU version of LAMMPS, e.g. '-k on'"
+                ),
+            )
+            parser.add_argument(
+                parser_name, "--mpiexec", default="mpiexec", help="the mpi executable"
+            )
 
         return result
 
@@ -381,6 +391,9 @@ class LAMMPS(seamm.Node):
         if n_atoms == 0:
             self.logger.error("LAMMPS run(): there is no structure!")
             raise RuntimeError("LAMMPS run(): there is no structure!")
+
+        # Initialize storage
+        self._results = {}
 
         next_node = super().run(printer)
 
@@ -661,43 +674,50 @@ class LAMMPS(seamm.Node):
             ini_dir = Path(self.global_options["root"]).expanduser()
             path = ini_dir / "lammps.ini"
 
-            if path.exists():
-                full_config.read(ini_dir / "lammps.ini")
-                full_config.set("local", "_origin_", f"{ini_dir / 'lammps.ini'}")
-
-            # If the section we need doesn't exists, get the default
-            if not path.exists() or executor_type not in full_config:
+            # If the config file doesn't exists, get the default
+            if not path.exists():
                 resources = importlib.resources.files("lammps_step") / "data"
                 ini_text = (resources / "lammps.ini").read_text()
-                full_config.read_string(ini_text)
-                full_config.set("local", "_origin_", "lammps default ini file")
+                txt_config = Configuration(path)
+                txt_config.from_string(ini_text)
 
-            # Getting desperate! Look for an executable in the path
+                # Work out the conda info needed
+                txt_config.set_value("local", "conda", os.environ["CONDA_EXE"])
+                txt_config.set_value("local", "conda-environment", "seamm-lammps")
+                txt_config.save()
+                printer.normal(f"Wrote the LAMMPS configuration file to {path}")
+                printer.normal("")
+
+            full_config.read(ini_dir / "lammps.ini")
+
             if executor_type not in full_config:
                 path = shutil.which("lmp")
-                if path is None:
+                mpi_path = shutil.which("mpirun")
+                if path is None or mpi_path is None:
                     raise RuntimeError(
                         f"No section for '{executor_type}' in LAMMPS ini file "
                         f"({ini_dir / 'lammps.ini'}), nor in the defaults, nor "
                         "in the path!"
                     )
                 else:
-                    full_config.add_section(executor_type)
-                    full_config.set(executor_type, "installation", "local")
+                    txt_config = Configuration(path)
+                    txt_config.add_section(executor_type)
+                    txt_config.set_value(executor_type, "installation", "local")
+                    txt_config.set_value(
+                        executor_type,
+                        "code",
+                        f"{mpi_path} -np {{NTASKS}} {path}",
+                    )
+                    txt_config.set_value(
+                        executor_type,
+                        "python",
+                        f"mpirun -np {{NTASKS}} {shutil.which('python')}",
+                    )
+                    txt_config.save()
+                    printer.normal(f"Wrote the LAMMPS configuration file to {path}")
+                    printer.normal("")
+                    full_config.read(ini_dir / "lammps.ini")
                     full_config.set(executor_type, "code", str(path))
-
-            # And we may need python!
-            full_config.set("local", "items", f"{full_config.items('local')}")
-            if not full_config.has_option(executor_type, "python"):
-                full_config.set(executor_type, "python", "mpirun -np {NTASKS} python")
-                full_config.set(executor_type, "_python source_", "default value")
-
-            # If the ini file does not exist, write it out!
-            if not path.exists():
-                with path.open("w") as fd:
-                    full_config.write(fd)
-                printer.normal(f"Wrote the LAMMPS configuration file to {path}")
-                printer.normal("")
 
             config = dict(full_config.items(executor_type))
             # Use the matching version of the seamm-mopac image by default.
@@ -1675,6 +1695,13 @@ class LAMMPS(seamm.Node):
                 sections[section] = []
             elif section is not None:
                 sections[section].append(line)
+            if line.startswith("Total wall time:"):
+                try:
+                    h, m, s = line.split()[3].split(":")
+                    _time = 3600 * float(h) + 60 * float(m) + float(s)
+                    self.results["t_lammps_wall"] = _time
+                except Exception as _e:
+                    print(f"Wall time exception {_e}")
 
         for node in nodes:
             for value in node.description:
