@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2024.7.25 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2024.7.31 documentation</title>
   
   
   
@@ -45,7 +45,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=87129bd3"></script>
+    <script src="../../_static/documentation_options.js?v=1fac5130"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -914,14 +914,11 @@ document.write(`
 
         <span class="c1"># Whether to run parallel and if so, how many mpi processes</span>
         <span class="k">if</span> <span class="n">global_options</span><span class="p">[</span><span class="s2">&quot;parallelism&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;any&quot;</span><span class="p">,</span> <span class="s2">&quot;mpi&quot;</span><span class="p">):</span>
-            <span class="n">np</span> <span class="o">=</span> <span class="n">o</span><span class="p">[</span><span class="s2">&quot;ncores&quot;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">np</span> <span class="o">==</span> <span class="s2">&quot;available&quot;</span><span class="p">:</span>
-                <span class="n">np</span> <span class="o">=</span> <span class="n">global_options</span><span class="p">[</span><span class="s2">&quot;ncores&quot;</span><span class="p">]</span>
-
-            <span class="k">if</span> <span class="n">np</span> <span class="o">==</span> <span class="s2">&quot;available&quot;</span><span class="p">:</span>
-                <span class="n">np</span> <span class="o">=</span> <span class="n">n_atoms</span> <span class="o">//</span> <span class="n">o</span><span class="p">[</span><span class="s2">&quot;atoms_per_core&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">np</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="p">)</span>
+            <span class="n">np</span> <span class="o">=</span> <span class="n">n_atoms</span> <span class="o">//</span> <span class="n">o</span><span class="p">[</span><span class="s2">&quot;atoms_per_core&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">o</span><span class="p">[</span><span class="s2">&quot;ncores&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;available&quot;</span><span class="p">:</span>
+                <span class="n">np</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="p">,</span> <span class="n">o</span><span class="p">[</span><span class="s2">&quot;ncores&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">global_options</span><span class="p">[</span><span class="s2">&quot;ncores&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;available&quot;</span><span class="p">:</span>
+                <span class="n">np</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="p">,</span> <span class="n">global_options</span><span class="p">[</span><span class="s2">&quot;ncores&quot;</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">np</span> <span class="o">=</span> <span class="mi">1</span>
 
