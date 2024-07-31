@@ -403,14 +403,11 @@ class LAMMPS(seamm.Node):
 
         # Whether to run parallel and if so, how many mpi processes
         if global_options["parallelism"] in ("any", "mpi"):
-            np = o["ncores"]
-            if np == "available":
-                np = global_options["ncores"]
-
-            if np == "available":
-                np = n_atoms // o["atoms_per_core"] + 1
-            else:
-                np = int(np)
+            np = n_atoms // o["atoms_per_core"] + 1
+            if o["ncores"] != "available":
+                np = min(np, o["ncores"])
+            if global_options["ncores"] != "available":
+                np = min(np, global_options["ncores"])
         else:
             np = 1
 

@@ -1,6 +1,13 @@
 =======
 History
 =======
+2024.7.31 -- Bugfix and improvements for parallel runs
+   * There was an issue saving the pressure and volume as properties due to a mismatch
+     in the names used. This has been corrected.
+   * Improved how the code determines the number of processors to use for parallel runs,
+     giving salience to the number of atoms in the system, but limiting to the LAMMPS and
+     global limits on numbers of cores as well as the hardware available.
+     
 2024.7.25 -- Bugfix and improvements
    * Bugfix: Fixed issue with the initial seamm.ini file, created if it is missing from
      the installation.

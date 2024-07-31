@@ -15,10 +15,10 @@ Property,Type,Units,Description,URL
 "density, stderr#LAMMPS#{model}",float,g/mL,"The standard error of the density.",https://en.wikipedia.org/wiki/Standard_error
 "density, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the density.",https://en.wikipedia.org/wiki/Autocorrelation
 "density, inefficiency#LAMMPS#{model}",float,,"The statistical inefficiency of the density sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
-"V#LAMMPS#{model}",float,g/mL,"The volume.",https://en.wikipedia.org/wiki/volume
-"V, stderr#LAMMPS#{model}",float,g/mL,"The standard error of the volume.",https://en.wikipedia.org/wiki/Standard_error
-"V, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the volume.",https://en.wikipedia.org/wiki/Autocorrelation
-"V, inefficiency#LAMMPS#{model}",float,,"The statistical inefficiency of the volume sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+"volume#LAMMPS#{model}",float,g/mL,"The volume.",https://en.wikipedia.org/wiki/volume
+"volume, stderr#LAMMPS#{model}",float,g/mL,"The standard error of the volume.",https://en.wikipedia.org/wiki/Standard_error
+"volume, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the volume.",https://en.wikipedia.org/wiki/Autocorrelation
+"volume, inefficiency#LAMMPS#{model}",float,,"The statistical inefficiency of the volume sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
 "pressure#LAMMPS#{model}",float,atm,"The pressure.",https://en.wikipedia.org/wiki/Pressure
 "pressure, stderr#LAMMPS#{model}",float,atm,"The standard error of the pressure.",https://en.wikipedia.org/wiki/Standard_error
 "pressure, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the pressure.",https://en.wikipedia.org/wiki/Autocorrelation
