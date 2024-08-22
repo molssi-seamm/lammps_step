@@ -405,9 +405,9 @@ class LAMMPS(seamm.Node):
         if global_options["parallelism"] in ("any", "mpi"):
             np = n_atoms // o["atoms_per_core"] + 1
             if o["ncores"] != "available":
-                np = min(np, o["ncores"])
+                np = min(np, int(o["ncores"]))
             if global_options["ncores"] != "available":
-                np = min(np, global_options["ncores"])
+                np = min(np, int(global_options["ncores"]))
         else:
             np = 1
 

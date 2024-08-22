@@ -1,6 +1,9 @@
 =======
 History
 =======
+2024.8.22 -- Bugfix: error in number of cores.
+   * Fixed an error if options for number of cores were strings, not numbers.
+     
 2024.7.31 -- Bugfix and improvements for parallel runs
    * There was an issue saving the pressure and volume as properties due to a mismatch
      in the names used. This has been corrected.
