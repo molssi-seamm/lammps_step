@@ -1,6 +1,11 @@
 =======
 History
 =======
+2025.2.7 -- Installation issue
+   * Encountered problems with the OpenMPI version of LAMMPS and with the installation
+     of OpenKIM, so fixed the CONDA environment file to correct.
+   * Changed logging at the INFO level to DEBUG to reduce the output when using geomeTRIC.
+
 2024.8.22 -- Bugfix: error in number of cores.
    * Fixed an error if options for number of cores were strings, not numbers.
      

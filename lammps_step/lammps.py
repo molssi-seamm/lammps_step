@@ -2256,7 +2256,7 @@ class LAMMPS(seamm.Node):
         dumpfile : str
             The filename (or path) to the dumpfile.
         """
-        self.logger.info("Reading dump file '{}'".format(dumpfile))
+        self.logger.debug("Reading dump file '{}'".format(dumpfile))
 
         system_db = self.get_variable("_system_db")
         configuration = system_db.system.configuration
@@ -2535,7 +2535,7 @@ class LAMMPS(seamm.Node):
         dumpfile : str
             The filename (or path) to the dumpfile.
         """
-        self.logger.info("Reading dump file '{}'".format(dumpfile))
+        self.logger.debug("Reading dump file '{}'".format(dumpfile))
 
         # system_db = self.get_variable("_system_db")
         # configuration = system_db.system.configuration
