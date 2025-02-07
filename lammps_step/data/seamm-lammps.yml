@@ -4,7 +4,6 @@ channels:
 dependencies:
   - python
     # Executables, etc.
-  - openmpi
-  - lammps * *mpi_openmpi*
-  - openkim-models
+  - lammps * *mpi_mpich*
+  - kim-api
   - mpi4py
