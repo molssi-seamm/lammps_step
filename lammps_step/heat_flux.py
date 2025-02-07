@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Non-graphical part of the Heat Flux step in a LAMMPS flowchart
-"""
+"""Non-graphical part of the Heat Flux step in a LAMMPS flowchart"""
 
 import json
 
