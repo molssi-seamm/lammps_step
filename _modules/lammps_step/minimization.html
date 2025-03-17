@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.minimization &#8212; SEAMM LAMMPS Plug-in 2025.2.7 documentation</title>
+    <title>lammps_step.minimization &#8212; SEAMM LAMMPS Plug-in 2025.3.16 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=3c0199e2"></script>
+    <script src="../../_static/documentation_options.js?v=c9e00587"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.2.7" />
+  <meta name="docsearch:version" content="2025.3.16" />
   </head>
   
   
@@ -474,12 +474,31 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">&quot;&quot;&quot;Minimization step in LAMMPS&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util</span><span class="w"> </span><span class="kn">import</span> <span class="n">Q_</span><span class="p">,</span> <span class="n">units_class</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tabulate</span><span class="w"> </span><span class="kn">import</span> <span class="n">tabulate</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">molsystem</span><span class="w"> </span><span class="kn">import</span> <span class="n">RMSD</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seamm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util</span><span class="w"> </span><span class="kn">import</span> <span class="n">units_class</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seamm_util.printing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">printing</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util.printing</span><span class="w"> </span><span class="kn">import</span> <span class="n">FormattedText</span> <span class="k">as</span> <span class="n">__</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">lammps_step</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">job</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">()</span>
+<span class="n">printer</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">(</span><span class="s2">&quot;lammps&quot;</span><span class="p">)</span>
+
+<span class="n">minimization_style</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Conjugate Gradient&quot;</span><span class="p">:</span> <span class="s2">&quot;cg&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Steepest Descent&quot;</span><span class="p">:</span> <span class="s2">&quot;sd&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Hessian-Free truncated Newton&quot;</span><span class="p">:</span> <span class="s2">&quot;hftn&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;QuickMin&quot;</span><span class="p">:</span> <span class="s2">&quot;quickmin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Fire&quot;</span><span class="p">:</span> <span class="s2">&quot;fire&quot;</span><span class="p">,</span>
+<span class="p">}</span>
 
 
 <div class="viewcode-block" id="Minimization">
@@ -497,32 +516,248 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="bp">self</span><span class="o">.</span><span class="n">_calculation</span> <span class="o">=</span> <span class="s2">&quot;minimization&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">MinimizationParameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">convergence</span> <span class="o">=</span> <span class="s2">&quot;normal&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">etol_method</span> <span class="o">=</span> <span class="s2">&quot;is&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">etol</span> <span class="o">=</span> <span class="mf">1.0e-06</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">etol_variable</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ftol_method</span> <span class="o">=</span> <span class="s2">&quot;is&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ftol</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;kcal/mol/Å&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ftol_variable</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">maxiters_method</span> <span class="o">=</span> <span class="s2">&quot;is&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">maxiters</span> <span class="o">=</span> <span class="mi">10000</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">maxiters_variable</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">maxevals_method</span> <span class="o">=</span> <span class="s2">&quot;is&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">maxevals</span> <span class="o">=</span> <span class="mi">30000</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">maxevals_variable</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<div class="viewcode-block" id="Minimization.analyze">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.minimization.Minimization.analyze">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">analyze</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{},</span> <span class="n">properties</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Analyze the results of the simulation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">current_values_to_dict</span><span class="p">(</span>
+            <span class="n">context</span><span class="o">=</span><span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">_data</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Get the initial structure</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">initial_configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">()</span>
+
+        <span class="c1"># Handle the new structure as needed</span>
+        <span class="n">system</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+
+        <span class="c1"># Read the dump file and get the structure</span>
+        <span class="n">dump_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;minimization.dump&quot;</span>
+        <span class="k">if</span> <span class="n">dump_file</span><span class="o">.</span><span class="n">exists</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">xyz</span><span class="p">,</span> <span class="n">fractional</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">vxyz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">read_dump</span><span class="p">(</span><span class="n">dump_file</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">xyz</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">cell</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">vxyz</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;Warning: unable to read the LAMMPS dumpfile&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The was a problem reading the LAMMPS dumpfile: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;Warning: there is no &#39;dump&#39; file from LAMMPS&quot;</span><span class="p">)</span>
+            <span class="n">xyz</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">cell</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">vxyz</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">cell</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">configuration</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">cell</span>
+            <span class="k">if</span> <span class="n">xyz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">fractionals</span><span class="o">=</span><span class="n">fractional</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">vxyz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># LAMMPS only has Cartesian velocities</span>
+                <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_velocities</span><span class="p">(</span><span class="n">vxyz</span><span class="p">,</span> <span class="n">fractionals</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="c1"># And the name of the configuration.</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">standard_parameters</span><span class="o">.</span><span class="n">set_names</span><span class="p">(</span>
+                <span class="n">system</span><span class="p">,</span>
+                <span class="n">configuration</span><span class="p">,</span>
+                <span class="n">P</span><span class="p">,</span>
+                <span class="n">_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Get the RMSD of the initial and final structures</span>
+        <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">initial</span> <span class="o">=</span> <span class="n">initial_configuration</span><span class="o">.</span><span class="n">to_RDKMol</span><span class="p">()</span>
+            <span class="n">final</span> <span class="o">=</span> <span class="n">initial_configuration</span><span class="o">.</span><span class="n">to_RDKMol</span><span class="p">()</span>
+            <span class="n">final</span><span class="o">.</span><span class="n">GetConformer</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">SetPositions</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">xyz</span><span class="p">))</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="n">RMSD</span><span class="p">(</span><span class="n">final</span><span class="p">,</span> <span class="n">initial</span><span class="p">,</span> <span class="n">symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">include_h</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;RMSD with H&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;RMSD&quot;</span><span class="p">]</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;displaced atom with H&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;displaced atom&quot;</span><span class="p">]</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;maximum displacement with H&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;maximum displacement&quot;</span><span class="p">]</span>
+
+            <span class="c1"># Align the structure</span>
+            <span class="k">if</span> <span class="n">configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">configuration</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="n">final</span><span class="o">.</span><span class="n">GetConformer</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">GetPositions</span><span class="p">()</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="n">RMSD</span><span class="p">(</span><span class="n">final</span><span class="p">,</span> <span class="n">initial</span><span class="p">,</span> <span class="n">symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;RMSD&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;RMSD&quot;</span><span class="p">]</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;displaced atom&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;displaced atom&quot;</span><span class="p">]</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;maximum displacement&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;maximum displacement&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;Property&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;Value&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;Units&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="p">}</span>
+
+        <span class="n">first</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">first</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;Minimization stats:&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="n">first</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="n">first</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;Stopping criterion =&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">criterion</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">3</span><span class="p">:])</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Converged&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">criterion</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;energy tolerance&quot;</span><span class="p">,</span> <span class="s2">&quot;force tolerance&quot;</span><span class="p">):</span>
+                    <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;True&quot;</span><span class="p">)</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;optimization is converged&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;False&quot;</span><span class="p">)</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;optimization is converged&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Stopped because&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">criterion</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+            <span class="n">line</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="n">first</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;Energy initial, next-to-last, final =&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">Es</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">output</span><span class="p">[</span><span class="n">first</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Final Energy&quot;</span><span class="p">)</span>
+                <span class="n">E</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">from_lammps_units</span><span class="p">(</span><span class="n">Es</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">E</span><span class="o">.</span><span class="n">magnitude</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">E</span><span class="o">.</span><span class="n">magnitude</span>
+
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Initial Energy&quot;</span><span class="p">)</span>
+                <span class="n">E</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">from_lammps_units</span><span class="p">(</span><span class="n">Es</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">E</span><span class="o">.</span><span class="n">magnitude</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span>
+
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Last Energy Change&quot;</span><span class="p">)</span>
+                <span class="n">E</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">from_lammps_units</span><span class="p">(</span><span class="n">Es</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">Es</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">E</span><span class="o">.</span><span class="n">magnitude</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;energy change&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">E</span><span class="o">.</span><span class="n">magnitude</span>
+
+            <span class="n">line</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="n">first</span> <span class="o">+</span> <span class="mi">7</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;Iterations, force evaluations =&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">F0</span><span class="p">,</span> <span class="n">F1</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">4</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span>
+
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Number of Steps&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">F0</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;N steps optimization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">F0</span>
+
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Number of Force Evaluations&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">F1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;N force evaluations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">F1</span>
+
+        <span class="k">if</span> <span class="s2">&quot;RMSD&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;RMSD&quot;</span><span class="p">]</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;RMSD in Geometry&quot;</span><span class="p">)</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tmp</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Å&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;maximum displacement&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;maximum displacement&quot;</span><span class="p">]</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Largest Displacement&quot;</span><span class="p">)</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tmp</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Å&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;displaced atom&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;displaced atom&quot;</span><span class="p">]</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Displaced Atom&quot;</span><span class="p">)</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tmp</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">first</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="n">first</span> <span class="o">+</span> <span class="mi">4</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;Force two-norm initial, final =&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">F0</span><span class="p">,</span> <span class="n">F1</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">5</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span>
+
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Final Force Norm&quot;</span><span class="p">)</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">from_lammps_units</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">F1</span><span class="p">),</span> <span class="s2">&quot;kcal/mol/Å&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tmp</span><span class="o">.</span><span class="n">magnitude</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kcal/mol/Å&quot;</span><span class="p">)</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;force norm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">magnitude</span>
+
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Initial Force Norm&quot;</span><span class="p">)</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">from_lammps_units</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">F0</span><span class="p">),</span> <span class="s2">&quot;kcal/mol/Å&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tmp</span><span class="o">.</span><span class="n">magnitude</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kcal/mol/Å&quot;</span><span class="p">)</span>
+
+            <span class="n">line</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="n">first</span> <span class="o">+</span> <span class="mi">5</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;Force max component initial, final =&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">F0</span><span class="p">,</span> <span class="n">F1</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">6</span><span class="p">:</span><span class="mi">8</span><span class="p">]</span>
+
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Final Maximum Force&quot;</span><span class="p">)</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">from_lammps_units</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">F1</span><span class="p">),</span> <span class="s2">&quot;kcal/mol/Å&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tmp</span><span class="o">.</span><span class="n">magnitude</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kcal/mol/Å&quot;</span><span class="p">)</span>
+
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Initial Maximum Force&quot;</span><span class="p">)</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">from_lammps_units</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">F0</span><span class="p">),</span> <span class="s2">&quot;kcal/mol/Å&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tmp</span><span class="o">.</span><span class="n">magnitude</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kcal/mol/Å&quot;</span><span class="p">)</span>
+
+            <span class="n">line</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="n">first</span> <span class="o">+</span> <span class="mi">6</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;Final line search alpha, max atom move =&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">F0</span><span class="p">,</span> <span class="n">F1</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">8</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span>
+
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Final Line Search Alpha&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">F0</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Final Maximum Displacement&quot;</span><span class="p">)</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">from_lammps_units</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">F1</span><span class="p">),</span> <span class="s2">&quot;Å&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tmp</span><span class="o">.</span><span class="n">magnitude</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Å&quot;</span><span class="p">)</span>
+
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;force norm threshold&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save</span><span class="p">[</span><span class="s2">&quot;ftol&quot;</span><span class="p">]</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;energy threshold&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save</span><span class="p">[</span><span class="s2">&quot;etol&quot;</span><span class="p">]</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;minimizer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save</span><span class="p">[</span><span class="s2">&quot;minimizer&quot;</span><span class="p">]</span>
+
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">tabulate</span><span class="p">(</span>
+            <span class="n">table</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="s2">&quot;keys&quot;</span><span class="p">,</span>
+            <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;rounded_outline&quot;</span><span class="p">,</span>
+            <span class="n">colalign</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="s2">&quot;decimal&quot;</span><span class="p">,</span> <span class="s2">&quot;left&quot;</span><span class="p">),</span>
+            <span class="n">disable_numparse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">text_lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">text_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Convergence&quot;</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">length</span><span class="p">))</span>
+        <span class="n">text_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+        <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">text_lines</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">7</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
+        <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">store_results</span><span class="p">(</span><span class="n">configuration</span><span class="o">=</span><span class="n">configuration</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="Minimization.description_text">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.minimization.Minimization.description_text">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">description_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the text description of what this step will do.&quot;&quot;&quot;</span>
 
-        <span class="c1"># if not P:</span>
-        <span class="c1">#     P = self.parameters.values_to_dict()</span>
+        <span class="k">if</span> <span class="n">P</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values_to_dict</span><span class="p">()</span>
 
-        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;Structure optimization calculation.&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;The structure will be minimized using the </span><span class="si">{minimizer}</span><span class="s2"> approach &quot;</span>
+            <span class="s2">&quot;to a &#39;</span><span class="si">{convergence}</span><span class="s2">&#39; convergence. The number of steps will be limited &quot;</span>
+            <span class="s2">&quot;to </span><span class="si">{nsteps}</span><span class="s2"> steps and no more than </span><span class="si">{nevaluations}</span><span class="s2"> energy and force &quot;</span>
+            <span class="s2">&quot;evaluations.&quot;</span>
+        <span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">P</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="Minimization.get_input">
@@ -530,7 +765,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="k">def</span><span class="w"> </span><span class="nf">get_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the input for a minimization in LAMMPS&quot;&quot;&quot;</span>
 
-        <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values_to_dict</span><span class="p">()</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">current_values_to_dict</span><span class="p">(</span>
+            <span class="n">context</span><span class="o">=</span><span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">_data</span>
+        <span class="p">)</span>
 
         <span class="c1"># Have to fix formatting for printing...</span>
         <span class="n">PP</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
@@ -539,83 +776,73 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;{:~P}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description_text</span><span class="p">(</span><span class="n">PP</span><span class="p">),</span> <span class="o">**</span><span class="n">PP</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description_text</span><span class="p">(</span><span class="n">PP</span><span class="p">),</span> <span class="o">**</span><span class="n">PP</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
 
-        <span class="n">system_db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_system_db&quot;</span><span class="p">)</span>
-        <span class="n">configuration</span> <span class="o">=</span> <span class="n">system_db</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">configuration</span>
-        <span class="n">n_atoms</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">n_atoms</span>
-        <span class="n">nDOF</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">n_atoms</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">()</span>
+        <span class="n">nAtoms</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">n_atoms</span>  <span class="c1"># noqa: F841</span>
 
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="n">etol</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="n">ftol</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">maxiters</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">maxevals</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">convergence</span> <span class="o">==</span> <span class="s2">&quot;normal&quot;</span><span class="p">:</span>
+        <span class="n">convergence</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;convergence&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">convergence</span> <span class="o">==</span> <span class="s2">&quot;normal&quot;</span><span class="p">:</span>
             <span class="n">etol</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="n">ftol</span> <span class="o">=</span> <span class="mf">0.1</span>
-            <span class="n">maxiters</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">nDOF</span>
-            <span class="n">maxevals</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">maxiters</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">convergence</span> <span class="o">==</span> <span class="s2">&quot;tight&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">convergence</span> <span class="o">==</span> <span class="s2">&quot;tight&quot;</span><span class="p">:</span>
             <span class="n">etol</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="n">ftol</span> <span class="o">=</span> <span class="mf">0.01</span>
-            <span class="n">maxiters</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">nDOF</span>
-            <span class="n">maxevals</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">maxiters</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">convergence</span> <span class="o">==</span> <span class="s2">&quot;loose&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">convergence</span> <span class="o">==</span> <span class="s2">&quot;loose&quot;</span><span class="p">:</span>
             <span class="n">etol</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="n">ftol</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="n">maxiters</span> <span class="o">=</span> <span class="n">nDOF</span>
-            <span class="n">maxevals</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">maxiters</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">convergence</span> <span class="o">==</span> <span class="s2">&quot;crude&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">convergence</span> <span class="o">==</span> <span class="s2">&quot;crude&quot;</span><span class="p">:</span>
             <span class="n">etol</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="n">ftol</span> <span class="o">=</span> <span class="mi">10</span>
-            <span class="n">maxiters</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nDOF</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span>
-            <span class="n">maxevals</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">maxiters</span>
-        <span class="k">elif</span> <span class="s2">&quot;energy&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">convergence</span><span class="p">:</span>
-            <span class="c1"># energy tolerance</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">etol_method</span> <span class="o">==</span> <span class="s2">&quot;is&quot;</span><span class="p">:</span>
-                <span class="n">etol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">etol</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Variable handling not implemented for etol&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="s2">&quot;forces&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">convergence</span><span class="p">:</span>
-            <span class="c1"># force tolerance</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ftol_method</span> <span class="o">==</span> <span class="s2">&quot;is&quot;</span><span class="p">:</span>
-                <span class="n">ftol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ftol</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;kcal/mol/Å&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Variable handling not implemented for ftol&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">convergence</span> <span class="o">==</span> <span class="s2">&quot;custom&quot;</span><span class="p">:</span>
+            <span class="n">etol</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;etol&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span>
+            <span class="n">ftol</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;ftol&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Variable handling not implemented for convergence&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Don&#39;t understand convergence &#39;</span><span class="si">{</span><span class="n">convergence</span><span class="si">}</span><span class="s2">&#39;!&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save</span><span class="p">[</span><span class="s2">&quot;etol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">etol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save</span><span class="p">[</span><span class="s2">&quot;ftol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ftol</span>
 
         <span class="c1"># maximum number of iterations</span>
-        <span class="k">if</span> <span class="n">maxiters</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxiters_method</span> <span class="o">==</span> <span class="s2">&quot;default&quot;</span><span class="p">:</span>
-                <span class="n">maxiters</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">nDOF</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxiters_method</span> <span class="o">==</span> <span class="s2">&quot;is&quot;</span><span class="p">:</span>
-                <span class="n">maxiters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxiters</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Variable handling not implemented for maxiters&quot;</span><span class="p">)</span>
+        <span class="n">nSteps</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;nsteps&quot;</span><span class="p">])</span>
+        <span class="n">nEvals</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;nevaluations&quot;</span><span class="p">])</span>
 
-        <span class="c1"># maximum number of energy evaluations</span>
-        <span class="k">if</span> <span class="n">maxevals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxevals_method</span> <span class="o">==</span> <span class="s2">&quot;default&quot;</span><span class="p">:</span>
-                <span class="n">maxevals</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">nDOF</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxevals_method</span> <span class="o">==</span> <span class="s2">&quot;is&quot;</span><span class="p">:</span>
-                <span class="n">maxevals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxevals</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Variable handling not implemented for maxevals&quot;</span><span class="p">)</span>
+        <span class="c1"># Minimization style</span>
+        <span class="n">minimizer</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;minimizer&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">minimizer</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">minimization_style</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Don&#39;t recognize minimizer &#39;</span><span class="si">{</span><span class="n">minimizer</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        <span class="n">min_style</span> <span class="o">=</span> <span class="n">minimization_style</span><span class="p">[</span><span class="n">minimizer</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save</span><span class="p">[</span><span class="s2">&quot;minimizer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">minimizer</span>
+
+        <span class="n">timestep</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
 
         <span class="n">thermo_properties</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="s2">&quot;press etotal ke pe ebond &quot;</span> <span class="s2">&quot;eangle edihed eimp evdwl etail ecoul elong&quot;</span>
+            <span class="s2">&quot;fmax fnorm press etotal ke pe ebond eangle edihed eimp evdwl etail ecoul &quot;</span>
+            <span class="s2">&quot;elong&quot;</span>
         <span class="p">)</span>
+        <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_forcefield&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ff</span><span class="o">.</span><span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;dreiding&quot;</span><span class="p">:</span>
+            <span class="n">thermo_properties</span> <span class="o">+=</span> <span class="s2">&quot; v_N_hbond v_E_hbond&quot;</span>
 
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;thermo_style        custom </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">thermo_properties</span><span class="p">))</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;thermo              </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;thermo_style        custom </span><span class="si">{</span><span class="n">thermo_properties</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;thermo              100&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;min_style           </span><span class="si">{</span><span class="n">min_style</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">min_style</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;quickmin&quot;</span><span class="p">,</span> <span class="s2">&quot;fire&quot;</span><span class="p">):</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;timestep            </span><span class="si">{</span><span class="n">timestep</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;minimize            </span><span class="si">{</span><span class="n">etol</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">ftol</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">nSteps</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">nEvals</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+minimization.dump&quot;</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="s2">&quot;minimize            </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">etol</span><span class="p">,</span> <span class="n">ftol</span><span class="p">,</span> <span class="n">maxiters</span><span class="p">,</span> <span class="n">maxevals</span><span class="p">)</span>
+            <span class="sa">f</span><span class="s2">&quot;write_dump          all custom  </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> id xu yu zu fx fy fz&quot;</span>
+            <span class="s2">&quot; modify flush yes sort id&quot;</span>
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2025.2.7 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2025.3.16 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=3c0199e2"></script>
+    <script src="../../_static/documentation_options.js?v=c9e00587"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.2.7" />
+  <meta name="docsearch:version" content="2025.3.16" />
   </head>
   
   
@@ -476,6 +476,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="kn">import</span><span class="w"> </span><span class="nn">configparser</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timezone</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -484,17 +486,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pkg_resources</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">platform</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pprint</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">bibtexparser</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cpuinfo</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_cpu_info</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">statsmodels.tsa.stattools</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stattools</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">lammps_step</span>
@@ -504,7 +508,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_ff_util</span><span class="w"> </span><span class="kn">import</span> <span class="n">tabulate_angle</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seamm_util</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seamm_util.printing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">printing</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util</span><span class="w"> </span><span class="kn">import</span> <span class="n">CompactJSONEncoder</span><span class="p">,</span> <span class="n">Configuration</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util</span><span class="w"> </span><span class="kn">import</span> <span class="n">CompactJSONEncoder</span><span class="p">,</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">units_class</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util.printing</span><span class="w"> </span><span class="kn">import</span> <span class="n">FormattedText</span> <span class="k">as</span> <span class="n">__</span>
 
 <span class="c1"># from pymbar import timeseries</span>
@@ -564,6 +568,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="n">angle_style</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;quadratic_angle&quot;</span><span class="p">:</span> <span class="s2">&quot;harmonic&quot;</span><span class="p">,</span>
     <span class="s2">&quot;quartic_angle&quot;</span><span class="p">:</span> <span class="s2">&quot;class2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;cosine&quot;</span><span class="p">:</span> <span class="s2">&quot;cosine&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;cosine/squared&quot;</span><span class="p">:</span> <span class="s2">&quot;cosine/squared&quot;</span><span class="p">,</span>
     <span class="s2">&quot;simple_fourier_angle&quot;</span><span class="p">:</span> <span class="s2">&quot;fourier/simple&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tabulated_angle&quot;</span><span class="p">:</span> <span class="s2">&quot;table&quot;</span><span class="p">,</span>
 <span class="p">}</span>
@@ -572,11 +578,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="s2">&quot;torsion_1&quot;</span><span class="p">:</span> <span class="s2">&quot;harmonic&quot;</span><span class="p">,</span>
     <span class="s2">&quot;torsion_3&quot;</span><span class="p">:</span> <span class="s2">&quot;class2&quot;</span><span class="p">,</span>
     <span class="s2">&quot;torsion_opls&quot;</span><span class="p">:</span> <span class="s2">&quot;opls&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;torsion_charmm&quot;</span><span class="p">:</span> <span class="s2">&quot;charmm&quot;</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="n">improper_style</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;wilson_out_of_plane&quot;</span><span class="p">:</span> <span class="s2">&quot;class2&quot;</span><span class="p">,</span>
     <span class="s2">&quot;improper_opls&quot;</span><span class="p">:</span> <span class="s2">&quot;cvff&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;dreiding_out_of_plane&quot;</span><span class="p">:</span> <span class="s2">&quot;umbrella&quot;</span><span class="p">,</span>
 <span class="p">}</span>
 
 
@@ -605,6 +613,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="s2">&quot;Kappa_z&quot;</span><span class="p">:</span> <span class="s2">&quot;W/K/m&quot;</span><span class="p">,</span>
         <span class="s2">&quot;Kappa&quot;</span><span class="p">:</span> <span class="s2">&quot;W/K/m&quot;</span><span class="p">,</span>
         <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="s2">&quot;kcal/mol&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;N_hbond&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;E_hbond&quot;</span><span class="p">:</span> <span class="s2">&quot;kcal/mol&quot;</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="n">display_title</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;T&quot;</span><span class="p">:</span> <span class="s2">&quot;Temperature&quot;</span><span class="p">,</span>
@@ -628,6 +638,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="s2">&quot;Kappa_z&quot;</span><span class="p">:</span> <span class="s2">&quot;thermal conductivity in z&quot;</span><span class="p">,</span>
         <span class="s2">&quot;Kappa&quot;</span><span class="p">:</span> <span class="s2">&quot;thermal conductivity&quot;</span><span class="p">,</span>
         <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="s2">&quot;atom PE&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;N_hbond&quot;</span><span class="p">:</span> <span class="s2">&quot;Number of H-bonds&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;E_hbond&quot;</span><span class="p">:</span> <span class="s2">&quot;Energy of H-bonds&quot;</span><span class="p">,</span>
     <span class="p">}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -652,6 +664,47 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">flowchart</span><span class="o">=</span><span class="n">flowchart</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;LAMMPS&quot;</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
         <span class="p">)</span>
+
+        <span class="c1"># Set up the timing information</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timing_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;~/.seamm.d/timing/lammps.csv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timing_header</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;node&quot;</span><span class="p">,</span>  <span class="c1"># 0</span>
+            <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>  <span class="c1"># 1</span>
+            <span class="s2">&quot;cpu_version&quot;</span><span class="p">,</span>  <span class="c1"># 2</span>
+            <span class="s2">&quot;cpu_count&quot;</span><span class="p">,</span>  <span class="c1"># 3</span>
+            <span class="s2">&quot;cpu_speed&quot;</span><span class="p">,</span>  <span class="c1"># 4</span>
+            <span class="s2">&quot;date&quot;</span><span class="p">,</span>  <span class="c1"># 5</span>
+            <span class="s2">&quot;H_SMILES&quot;</span><span class="p">,</span>  <span class="c1"># 6</span>
+            <span class="s2">&quot;ISOMERIC_SMILES&quot;</span><span class="p">,</span>  <span class="c1"># 7</span>
+            <span class="s2">&quot;formula&quot;</span><span class="p">,</span>  <span class="c1"># 8</span>
+            <span class="s2">&quot;net_charge&quot;</span><span class="p">,</span>  <span class="c1"># 9</span>
+            <span class="s2">&quot;spin_multiplicity&quot;</span><span class="p">,</span>  <span class="c1"># 10</span>
+            <span class="s2">&quot;keywords&quot;</span><span class="p">,</span>  <span class="c1"># 11</span>
+            <span class="s2">&quot;nproc&quot;</span><span class="p">,</span>  <span class="c1"># 12</span>
+            <span class="s2">&quot;time&quot;</span><span class="p">,</span>  <span class="c1"># 13</span>
+        <span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_timing_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span> <span class="o">=</span> <span class="mi">14</span> <span class="o">*</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">node</span><span class="p">()</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">get_cpu_info</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s2">&quot;arch&quot;</span> <span class="ow">in</span> <span class="n">tmp</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;arch&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;cpuinfo_version_string&quot;</span> <span class="ow">in</span> <span class="n">tmp</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;cpuinfo_version_string&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;count&quot;</span> <span class="ow">in</span> <span class="n">tmp</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="s2">&quot;hz_advertized_friendly&quot;</span> <span class="ow">in</span> <span class="n">tmp</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;hz_advertized_friendly&quot;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timing_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timing_path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+                    <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+                    <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_timing_header</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -841,7 +894,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <span class="k">while</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">+=</span> <span class="n">__</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">description_text</span><span class="p">(),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+                <span class="n">text</span> <span class="o">+=</span> <span class="n">__</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">description_text</span><span class="p">(),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span>
                     <span class="s2">&quot;Error describing LAMMPS flowchart: </span><span class="si">{}</span><span class="s2"> in </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
@@ -924,7 +977,27 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <span class="n">files</span> <span class="o">=</span> <span class="p">{}</span>
 
+        <span class="n">control</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_forcefield&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;OpenKIM&quot;</span><span class="p">:</span>
+            <span class="n">potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_OpenKIM_Potential&quot;</span><span class="p">)</span>
+            <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s2">&quot;forcefield&quot;</span><span class="p">,</span> <span class="s2">&quot;OpenKIM &quot;</span> <span class="o">+</span> <span class="n">potential</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s2">&quot;forcefield&quot;</span><span class="p">,</span> <span class="n">ff</span><span class="o">.</span><span class="n">current_forcefield</span><span class="p">])</span>
         <span class="k">while</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">current_values_to_dict</span><span class="p">(</span>
+                <span class="n">context</span><span class="o">=</span><span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">_data</span>
+            <span class="p">)</span>
+
+            <span class="c1"># For the timing data, get the parameters used</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">title</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">P</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">units_class</span><span class="p">):</span>
+                    <span class="n">tmp</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">~P</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">tmp</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+            <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">Initialization</span><span class="p">):</span>
                 <span class="n">initialization_header</span><span class="p">,</span> <span class="n">eex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_node_input</span><span class="p">(</span>
                     <span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;read_data&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
@@ -952,168 +1025,29 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input.dat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">initialization_header</span><span class="p">)</span>
 
                 <span class="c1"># Find the bond &amp; angle types as needed for shake/rattle</span>
-                <span class="n">P</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">current_values_to_dict</span><span class="p">(</span>
-                    <span class="n">context</span><span class="o">=</span><span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">_data</span>
-                <span class="p">)</span>
-
                 <span class="n">shake</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shake_fix</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">eex</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">shake</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
                     <span class="n">extras</span><span class="p">[</span><span class="s2">&quot;shake&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">shake</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">P</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">current_values_to_dict</span><span class="p">(</span>
-                    <span class="n">context</span><span class="o">=</span><span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">_data</span>
-                <span class="p">)</span>
-
-                <span class="k">if</span> <span class="s2">&quot;run_control&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">P</span> <span class="ow">or</span> <span class="s2">&quot;Until&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;run_control&quot;</span><span class="p">]:</span>
-                    <span class="n">history_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">history_nodes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># if imcccc</span>
-                        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_input</span><span class="p">(</span>
-                            <span class="n">files</span><span class="p">,</span>
-                            <span class="n">nodes</span><span class="o">=</span><span class="n">history_nodes</span><span class="p">,</span>
-                            <span class="n">read_restart</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                            <span class="n">write_restart</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                            <span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">,</span>
-                        <span class="p">)</span>
-                        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_single_sim</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="n">np</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">nodes</span><span class="o">=</span><span class="n">history_nodes</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
-                    <span class="n">iteration</span> <span class="o">=</span> <span class="mi">0</span>
-
-                    <span class="n">extras</span><span class="p">[</span><span class="s2">&quot;nsteps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">666</span>
-
-                    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-                        <span class="n">extras</span><span class="p">[</span><span class="s2">&quot;nsteps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">extras</span><span class="p">[</span><span class="s2">&quot;nsteps&quot;</span><span class="p">])</span>
-                        <span class="n">control_properties</span> <span class="o">=</span> <span class="p">{}</span>
-                        <span class="k">for</span> <span class="n">prp</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;control_properties&quot;</span><span class="p">]:</span>
-                            <span class="n">k</span> <span class="o">=</span> <span class="n">prp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                            <span class="n">control_properties</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                                <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">prp</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;%&quot;</span><span class="p">)),</span>
-                                <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="n">prp</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="s2">&quot;enough_accuracy&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-                            <span class="p">}</span>
-
-                        <span class="n">P</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">current_values_to_dict</span><span class="p">(</span>
-                            <span class="n">context</span><span class="o">=</span><span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">_data</span>
-                        <span class="p">)</span>
-
-                        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_input</span><span class="p">(</span>
-                            <span class="n">files</span><span class="p">,</span>
-                            <span class="n">nodes</span><span class="o">=</span><span class="n">node</span><span class="p">,</span>
-                            <span class="n">iteration</span><span class="o">=</span><span class="n">iteration</span><span class="p">,</span>
-                            <span class="n">read_restart</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                            <span class="n">write_restart</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                            <span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">,</span>
-                        <span class="p">)</span>
-
-                        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_single_sim</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="n">np</span><span class="p">)</span>
-
-                        <span class="c1"># Analyze the results</span>
-                        <span class="n">analysis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">nodes</span><span class="o">=</span><span class="n">node</span><span class="p">)</span>
-                        <span class="n">node_id</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-                        <span class="k">for</span> <span class="n">prp</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">analysis</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                            <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;short_production&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
-                                <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;few_neff&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
-                                    <span class="n">accuracy</span> <span class="o">=</span> <span class="n">control_properties</span><span class="p">[</span><span class="n">prp</span><span class="p">][</span><span class="s2">&quot;accuracy&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">100</span>
-                                    <span class="n">dof</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;n_sample&quot;</span><span class="p">]</span>
-                                    <span class="n">mean</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span>
-                                    <span class="n">ci</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">interval</span><span class="p">(</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">dof</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-                                    <span class="n">interval</span> <span class="o">=</span> <span class="p">(</span><span class="n">ci</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;sem&quot;</span><span class="p">]</span>
-                                    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">interval</span> <span class="o">/</span> <span class="n">mean</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">accuracy</span><span class="p">:</span>
-                                        <span class="n">control_properties</span><span class="p">[</span><span class="n">prp</span><span class="p">][</span>
-                                            <span class="s2">&quot;enough_accuracy&quot;</span>
-                                        <span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-                        <span class="n">enough_acc</span> <span class="o">=</span> <span class="p">[</span>
-                            <span class="n">v</span><span class="p">[</span><span class="s2">&quot;enough_accuracy&quot;</span><span class="p">]</span>
-                            <span class="k">for</span> <span class="n">prp</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">control_properties</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-                        <span class="p">]</span>
-                        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">enough_acc</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-                            <span class="n">history_nodes</span> <span class="o">=</span> <span class="p">[]</span>
-
-                            <span class="n">initialization_header</span><span class="p">,</span> <span class="n">eex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_node_input</span><span class="p">(</span>
-                                <span class="n">node</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_initialization_node</span><span class="p">,</span>
-                                <span class="n">extras</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;read_data&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
-                            <span class="p">)</span>
-                            <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input.dat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">initialization_header</span><span class="p">)</span>
-                            <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input.dat&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                                <span class="s2">&quot;read_restart       </span><span class="si">%s</span><span class="s2">&quot;</span>
-                                <span class="o">%</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s2">&quot;restart&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">]))</span>
-                            <span class="p">)</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
-                            <span class="k">break</span>
-
-                        <span class="n">iteration</span> <span class="o">=</span> <span class="n">iteration</span> <span class="o">+</span> <span class="mi">1</span>
-
+                <span class="n">history_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
             <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">history_nodes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">node_initialization</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subflowchart</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="s2">&quot;1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_input</span><span class="p">(</span>
+            <span class="n">files</span><span class="p">,</span>
+            <span class="n">nodes</span><span class="o">=</span><span class="n">history_nodes</span><span class="p">,</span>
+            <span class="n">read_restart</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">write_restart</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">,</span>
+        <span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">node_initialization</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                    <span class="s2">&quot;The initial node in a LAMMPS workflow should be an &quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;initialization node&quot;</span><span class="p">,</span>
-                <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">control</span><span class="p">)</span>
+        <span class="n">control</span> <span class="o">=</span> <span class="p">[]</span>
 
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node_initialization</span><span class="p">,</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">Initialization</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                    <span class="s2">&quot;The initial node in a LAMMPS workflow should be an &quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;initialization node&quot;</span><span class="p">,</span>
-                <span class="p">)</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_single_sim</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="n">np</span><span class="p">)</span>
 
-            <span class="c1"># base = &quot;lammps_substep_%s_iter_%d&quot; % (node_initialization._id[1], 0)</span>
-            <span class="n">base</span> <span class="o">=</span> <span class="s2">&quot;lammps&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">nodes</span><span class="o">=</span><span class="n">history_nodes</span><span class="p">)</span>
 
-            <span class="n">restart</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;.restart.*&quot;</span>
-            <span class="n">dump</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;.dump&quot;</span>
-            <span class="n">new_input_data</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;run          0&quot;</span><span class="p">)</span>
-            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;write_restart      </span><span class="si">{</span><span class="n">restart</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;write_dump         all custom  </span><span class="si">{</span><span class="n">dump</span><span class="si">}</span><span class="s2"> id xu yu zu vx vy vz&quot;</span>
-                    <span class="s2">&quot; modify flush yes sort id&quot;</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;write_dump         all custom  </span><span class="si">{</span><span class="n">dump</span><span class="si">}</span><span class="s2"> id xsu ysu zsu vx vy vz&quot;</span>
-                    <span class="s2">&quot; modify flush yes sort id&quot;</span>
-                <span class="p">)</span>
-            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-            <span class="n">new_input_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;info               computes fixes dumps log out&quot;</span><span class="p">)</span>
-
-            <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input.dat&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">new_input_data</span><span class="p">)</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;input.dat:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">files</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">])</span>
-
-            <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_single_sim</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="n">np</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">history_nodes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_input</span><span class="p">(</span>
-                <span class="n">files</span><span class="p">,</span>
-                <span class="n">nodes</span><span class="o">=</span><span class="n">history_nodes</span><span class="p">,</span>
-                <span class="n">read_restart</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="n">write_restart</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">,</span>
-            <span class="p">)</span>
-
-            <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_single_sim</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="n">np</span><span class="p">)</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">nodes</span><span class="o">=</span><span class="n">history_nodes</span><span class="p">)</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
-
-        <span class="n">dump_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;final.dump&quot;</span>
-        <span class="k">if</span> <span class="n">dump_file</span><span class="o">.</span><span class="n">exists</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">read_dump</span><span class="p">(</span><span class="n">dump_file</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;Warning: unable to read the LAMMPS dumpfile&quot;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The was a problem reading the LAMMPS dumpfile: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;Warning: there is no &#39;dump&#39; file from LAMMPS&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
@@ -1264,6 +1198,35 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
             <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;stdout.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;2&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;stderr.txt&quot;</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">()</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">to_smiles</span><span class="p">(</span>
+                        <span class="n">canonical</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">hydrogens</span><span class="o">=</span><span class="kc">True</span>
+                    <span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">isomeric_smiles</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">formula</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">configuration</span><span class="o">.</span><span class="n">charge</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">configuration</span><span class="o">.</span><span class="n">spin_multiplicity</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+
+            <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time_ns</span><span class="p">()</span>
+
             <span class="n">result</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
                 <span class="n">cmd</span><span class="o">=</span><span class="n">cmd</span><span class="p">,</span>
                 <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
@@ -1274,6 +1237,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">ce</span><span class="o">=</span><span class="n">ce</span><span class="p">,</span>
             <span class="p">)</span>
+
+            <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time_ns</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1.0e9</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">13</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">12</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">ce</span><span class="p">[</span><span class="s2">&quot;NTASKS&quot;</span><span class="p">])</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timing_path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+                        <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+                        <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="k">pass</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;There was an error running LAMMPS&quot;</span><span class="p">)</span>
@@ -1336,17 +1310,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="n">postscript</span> <span class="o">=</span> <span class="n">todo</span><span class="p">[</span><span class="s2">&quot;postscript&quot;</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">todo</span><span class="p">[</span><span class="s2">&quot;use python&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="s2">&quot;python script&quot;</span> <span class="ow">in</span> <span class="n">todo</span><span class="p">:</span>
                     <span class="n">python_script</span> <span class="o">=</span> <span class="n">todo</span><span class="p">[</span><span class="s2">&quot;python script&quot;</span><span class="p">]</span>
-
-        <span class="c1"># base = &quot;lammps_substep_%s_iter_%d&quot; % (&quot;_&quot;.join(node_ids), iteration)</span>
-        <span class="c1"># restart = base + &quot;.restart.*&quot;</span>
-
-        <span class="c1"># if read_restart:</span>
-        <span class="c1">#     new_input_data.insert(</span>
-        <span class="c1">#         0, &quot;read_restart          %s&quot; % (files[&quot;restart&quot;][&quot;filename&quot;])</span>
-        <span class="c1">#     )</span>
-
-        <span class="c1"># if write_restart:</span>
-        <span class="c1">#     new_input_data.append(f&quot;write_restart          {restart}&quot;)</span>
 
         <span class="k">if</span> <span class="n">postscript</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -1530,43 +1493,46 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <span class="c1"># nonbonds</span>
         <span class="k">if</span> <span class="s2">&quot;nonbond parameters&quot;</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">:</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;nonbond parameters&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_atom_types&quot;</span><span class="p">]:</span>
-                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;PairIJ Coeffs&quot;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Pair Coeffs&quot;</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-            <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="k">for</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;nonbond parameters&quot;</span><span class="p">]:</span>
-                <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
-                <span class="k">if</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;nonbond(9-6)&quot;</span><span class="p">:</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> # </span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                            <span class="n">i</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;eps&quot;</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;rmin&quot;</span><span class="p">],</span> <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># If using a hybrid/overlay form for e.g. Dreiding nonbonds, cannot use the</span>
+            <span class="c1"># section in the structure file because it must have N or N*(N+1) lines,</span>
+            <span class="c1"># which is not what we want</span>
+            <span class="n">forms</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;nonbond parameters&quot;</span><span class="p">]])</span>
+            <span class="n">use_hybrid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">forms</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">use_hybrid</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;nonbond parameters&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_atom_types&quot;</span><span class="p">]:</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;PairIJ Coeffs&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Pair Coeffs&quot;</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">for</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;nonbond parameters&quot;</span><span class="p">]:</span>
+                    <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
+                    <span class="k">if</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;nonbond(9-6)&quot;</span><span class="p">:</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;eps&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
                         <span class="p">)</span>
-                    <span class="p">)</span>
-                    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;nonbond(12-6)&quot;</span><span class="p">:</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> # </span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                            <span class="n">i</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;eps&quot;</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;sigma&quot;</span><span class="p">],</span> <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                        <span class="p">)</span>
-                    <span class="p">)</span>
-                    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;buckingham&quot;</span><span class="p">:</span>
-                    <span class="n">line</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;C&quot;</span><span class="p">]</span>
-                    <span class="p">)</span>
-                    <span class="n">line</span> <span class="o">+=</span> <span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="p">)</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>
                         <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-                        <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;nonbond(12-6)&quot;</span><span class="p">:</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;eps&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;buckingham&quot;</span><span class="p">:</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">j</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;rho&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt; &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                        <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>
+                            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+                            <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="c1"># bonds</span>
         <span class="k">if</span> <span class="s2">&quot;n_bonds&quot;</span> <span class="ow">in</span> <span class="n">eex</span> <span class="ow">and</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_bonds&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -1589,7 +1555,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
                 <span class="k">if</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;quadratic_bond&quot;</span><span class="p">:</span>
                     <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;harmonic&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                    <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;R0&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;R0&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;quartic_bond&quot;</span><span class="p">:</span>
                     <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
                     <span class="n">line</span> <span class="o">=</span> <span class="p">(</span>
@@ -1597,7 +1563,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K3&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K4&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="p">)</span>
                 <span class="n">line</span> <span class="o">+=</span> <span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="sa">f</span><span class="s2">&quot; --&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="sa">f</span><span class="s2">&quot; --&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
 
@@ -1606,7 +1572,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Angles&quot;</span><span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">counter</span><span class="p">,</span> <span class="n">tmp</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_angles&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;angles&quot;</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">counter</span><span class="p">,</span> <span class="n">tmp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;angles&quot;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
                 <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">tmp</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                     <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">counter</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
@@ -1635,6 +1601,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;Theta0&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
                         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K3&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K4&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;cosine&quot;</span><span class="p">:</span>
+                    <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;cosine&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;cosine/squared&quot;</span><span class="p">:</span>
+                    <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;cosine/squared&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;Theta0&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;simple_fourier_angle&quot;</span><span class="p">:</span>
                     <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;fourier/simple&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
                     <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> -1 </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;n&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -1808,6 +1780,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
                         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V3&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
                         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V4&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;torsion_charmm&quot;</span><span class="p">:</span>
+                    <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;charmm&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;n&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;Phi0&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
                     <span class="p">)</span>
                 <span class="n">line</span> <span class="o">+=</span> <span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
@@ -2077,9 +2058,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="c1"># Need forms to reorder impropers....</span>
             <span class="n">form</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;oop parameters&quot;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">)}</span>
 
-            <span class="k">for</span> <span class="n">counter</span><span class="p">,</span> <span class="n">tmp</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_oops&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;oops&quot;</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">counter</span><span class="p">,</span> <span class="n">tmp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;oops&quot;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
                 <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">tmp</span>
-                <span class="k">if</span> <span class="n">form</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;improper_opls&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">form</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;improper_opls&quot;</span><span class="p">,</span> <span class="s2">&quot;dreiding_out_of_plane&quot;</span><span class="p">):</span>
                     <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                         <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{:6d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                             <span class="n">counter</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span>
@@ -2112,6 +2093,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                             <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
                             <span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
                         <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;dreiding_out_of_plane&quot;</span><span class="p">:</span>
+                    <span class="c1"># divide by number of oops from atom (3 for all at the moment!)</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">])</span><span class="o">/</span><span class="mi">3</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;Psi0&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt; &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">-&quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="p">)</span>
                 <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;improper_opls&quot;</span><span class="p">:</span>
                     <span class="c1"># divide by two because OPLS uses V2/2 and CVS V.</span>
@@ -2766,10 +2755,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Reading dump file &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dumpfile</span><span class="p">))</span>
 
-        <span class="n">system_db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_system_db&quot;</span><span class="p">)</span>
-        <span class="n">configuration</span> <span class="o">=</span> <span class="n">system_db</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">configuration</span>
-        <span class="n">periodicity</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">()</span>
         <span class="n">n_atoms</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">n_atoms</span>
+
+        <span class="n">cell</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">xyz</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">vxyz</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="n">section</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="n">section_lines</span> <span class="o">=</span> <span class="p">[]</span>
@@ -2905,12 +2896,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
                     <span class="n">xyz</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">)])</span>
 
-        <span class="k">if</span> <span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">configuration</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">cell</span>
-        <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">fractionals</span><span class="o">=</span><span class="n">fractional</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">have_velocities</span><span class="p">:</span>
-            <span class="c1"># LAMMPS only has Cartesian velocities</span>
-            <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_velocities</span><span class="p">(</span><span class="n">vxyz</span><span class="p">,</span> <span class="n">fractionals</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">have_velocities</span><span class="p">:</span>
+            <span class="n">vxyz</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">cell</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">fractional</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">vxyz</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_add_lammps_citations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">cite</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>

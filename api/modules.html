@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lammps_step &#8212; SEAMM LAMMPS Plug-in 2025.2.7 documentation</title>
+    <title>lammps_step &#8212; SEAMM LAMMPS Plug-in 2025.3.16 documentation</title>
   
   
   
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=3c0199e2"></script>
+    <script src="../_static/documentation_options.js?v=c9e00587"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="API Documentation" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.2.7" />
+  <meta name="docsearch:version" content="2025.3.16" />
   </head>
   
   
@@ -617,12 +617,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </li>
 <li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.installer">lammps_step.installer module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.installer.Installer"><code class="docutils literal notranslate"><span class="pre">Installer</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.installer.Installer.check"><code class="docutils literal notranslate"><span class="pre">Installer.check()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.installer.Installer.exe_version"><code class="docutils literal notranslate"><span class="pre">Installer.exe_version()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.installer.Installer.install"><code class="docutils literal notranslate"><span class="pre">Installer.install()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.installer.Installer.show"><code class="docutils literal notranslate"><span class="pre">Installer.show()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.installer.Installer.uninstall"><code class="docutils literal notranslate"><span class="pre">Installer.uninstall()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.installer.Installer.update"><code class="docutils literal notranslate"><span class="pre">Installer.update()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -675,8 +670,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </li>
 <li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.minimization">lammps_step.minimization module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.minimization.Minimization"><code class="docutils literal notranslate"><span class="pre">Minimization</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.minimization.Minimization.analyze"><code class="docutils literal notranslate"><span class="pre">Minimization.analyze()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.minimization.Minimization.description_text"><code class="docutils literal notranslate"><span class="pre">Minimization.description_text()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.minimization.Minimization.get_input"><code class="docutils literal notranslate"><span class="pre">Minimization.get_input()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.minimization_parameters">lammps_step.minimization_parameters module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.minimization_parameters.MinimizationParameters"><code class="docutils literal notranslate"><span class="pre">MinimizationParameters</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.minimization_parameters.MinimizationParameters.parameters"><code class="docutils literal notranslate"><span class="pre">MinimizationParameters.parameters</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -721,6 +724,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </li>
 <li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.nve">lammps_step.nve module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.nve.NVE"><code class="docutils literal notranslate"><span class="pre">NVE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nve.NVE.analyze"><code class="docutils literal notranslate"><span class="pre">NVE.analyze()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nve.NVE.description_text"><code class="docutils literal notranslate"><span class="pre">NVE.description_text()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nve.NVE.get_input"><code class="docutils literal notranslate"><span class="pre">NVE.get_input()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.nve.NVE.timestep"><code class="docutils literal notranslate"><span class="pre">NVE.timestep()</span></code></a></li>
@@ -831,8 +835,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.tk_minimization">lammps_step.tk_minimization module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.tk_minimization.TkMinimization"><code class="docutils literal notranslate"><span class="pre">TkMinimization</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_minimization.TkMinimization.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkMinimization.create_dialog()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_minimization.TkMinimization.handle_dialog"><code class="docutils literal notranslate"><span class="pre">TkMinimization.handle_dialog()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_minimization.TkMinimization.reset_dialog"><code class="docutils literal notranslate"><span class="pre">TkMinimization.reset_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_minimization.TkMinimization.reset_optimization"><code class="docutils literal notranslate"><span class="pre">TkMinimization.reset_optimization()</span></code></a></li>
 </ul>
 </li>
 </ul>

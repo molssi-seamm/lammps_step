@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.npt &#8212; SEAMM LAMMPS Plug-in 2025.2.7 documentation</title>
+    <title>lammps_step.npt &#8212; SEAMM LAMMPS Plug-in 2025.3.16 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=3c0199e2"></script>
+    <script src="../../_static/documentation_options.js?v=c9e00587"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.2.7" />
+  <meta name="docsearch:version" content="2025.3.16" />
   </head>
   
   
@@ -648,7 +648,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">units_class</span><span class="p">):</span>
                 <span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;{:~P}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description_text</span><span class="p">(</span><span class="n">PP</span><span class="p">),</span> <span class="o">**</span><span class="n">PP</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description_text</span><span class="p">(</span><span class="n">PP</span><span class="p">),</span> <span class="o">**</span><span class="n">PP</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
 
         <span class="n">time</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
         <span class="n">nsteps</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">time</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">)</span>
@@ -668,11 +668,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">&quot;time temp press etotal ke pe ebond &quot;</span>
             <span class="s2">&quot;eangle edihed eimp evdwl etail ecoul elong&quot;</span>
         <span class="p">)</span>
+
         <span class="n">properties</span> <span class="o">=</span> <span class="p">(</span>
             <span class="s2">&quot;v_time v_temp v_press v_vol v_density v_cella v_cellb &quot;</span>
             <span class="s2">&quot;v_cellc v_etotal v_ke v_pe v_epair&quot;</span>
         <span class="p">)</span>
         <span class="n">title2</span> <span class="o">=</span> <span class="s2">&quot;tstep t T P V density a b c Etot Eke Epe Epair&quot;</span>
+        <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_forcefield&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ff</span><span class="o">.</span><span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;dreiding&quot;</span><span class="p">:</span>
+            <span class="n">thermo_properties</span> <span class="o">+=</span> <span class="s2">&quot; v_N_hbond v_E_hbond&quot;</span>
+            <span class="n">properties</span> <span class="o">+=</span> <span class="s2">&quot; v_N_hbond v_E_hbond&quot;</span>
+            <span class="n">title2</span> <span class="o">+=</span> <span class="s2">&quot; N_hbond E_hbond&quot;</span>
 
         <span class="c1"># and build the LAMMPS script</span>
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
@@ -853,7 +859,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">__</span><span class="p">(</span>
                     <span class="s2">&quot;The run will be </span><span class="si">{nsteps:n}</span><span class="s2"> steps of dynamics.&quot;</span><span class="p">,</span>
                     <span class="n">nsteps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span>
-                    <span class="n">indent</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                    <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -919,6 +925,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;run                 </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nsteps</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+npt.dump&quot;</span>
+        <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;write_dump         all custom  </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> id xu yu zu vx vy vz&quot;</span>
+                <span class="s2">&quot; modify flush yes sort id&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;write_dump         all custom  </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> id xsu ysu zsu vx vy vz&quot;</span>
+                <span class="s2">&quot; modify flush yes sort id&quot;</span>
+            <span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">fix</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nfixes</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>

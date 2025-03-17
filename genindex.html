@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; SEAMM LAMMPS Plug-in 2025.2.7 documentation</title>
+    <title>Index &#8212; SEAMM LAMMPS Plug-in 2025.3.16 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=3c0199e2"></script>
+    <script src="_static/documentation_options.js?v=c9e00587"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.2.7" />
+  <meta name="docsearch:version" content="2025.3.16" />
   </head>
   
   
@@ -478,6 +478,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <ul>
         <li><a href="api/lammps_step.html#lammps_step.lammps.LAMMPS.analyze">(lammps_step.lammps.LAMMPS method)</a>
 </li>
+        <li><a href="api/lammps_step.html#lammps_step.minimization.Minimization.analyze">(lammps_step.minimization.Minimization method)</a>
+</li>
+        <li><a href="api/lammps_step.html#lammps_step.nve.NVE.analyze">(lammps_step.nve.NVE method)</a>
+</li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -502,8 +506,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <li><a href="api/lammps_step.html#lammps_step.tk_heat_flux.TkHeatFlux.canvas">canvas (lammps_step.tk_heat_flux.TkHeatFlux attribute)</a>
 </li>
       <li><a href="api/lammps_step.html#lammps_step.lammps.LAMMPS.cell_to_box">cell_to_box() (lammps_step.lammps.LAMMPS static method)</a>
-</li>
-      <li><a href="api/lammps_step.html#lammps_step.installer.Installer.check">check() (lammps_step.installer.Installer method)</a>
 </li>
       <li><a href="api/lammps_step.html#lammps_step.tk_custom.TkCustom.create_dialog">create_dialog() (lammps_step.tk_custom.TkCustom method)</a>
 
@@ -732,8 +734,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <li><a href="api/lammps_step.html#lammps_step.tk_custom.TkCustom.handle_dialog">handle_dialog() (lammps_step.tk_custom.TkCustom method)</a>
 
       <ul>
-        <li><a href="api/lammps_step.html#lammps_step.tk_minimization.TkMinimization.handle_dialog">(lammps_step.tk_minimization.TkMinimization method)</a>
-</li>
         <li><a href="api/lammps_step.html#lammps_step.tk_npt.TkNPT.handle_dialog">(lammps_step.tk_npt.TkNPT method)</a>
 </li>
         <li><a href="api/lammps_step.html#lammps_step.tk_nve.TkNVE.handle_dialog">(lammps_step.tk_nve.TkNVE method)</a>
@@ -774,8 +774,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/lammps_step.html#lammps_step.initialization_step.InitializationStep">InitializationStep (class in lammps_step.initialization_step)</a>
-</li>
-      <li><a href="api/lammps_step.html#lammps_step.installer.Installer.install">install() (lammps_step.installer.Installer method)</a>
 </li>
       <li><a href="api/lammps_step.html#lammps_step.installer.Installer">Installer (class in lammps_step.installer)</a>
 </li>
@@ -930,6 +928,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
       <ul>
         <li><a href="api/lammps_step.html#module-lammps_step.minimization">module</a>
+</li>
+      </ul></li>
+      <li>
+    lammps_step.minimization_parameters
+
+      <ul>
+        <li><a href="api/lammps_step.html#module-lammps_step.minimization_parameters">module</a>
 </li>
       </ul></li>
       <li>
@@ -1111,6 +1116,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </li>
       <li><a href="api/lammps_step.html#lammps_step.minimization.Minimization">Minimization (class in lammps_step.minimization)</a>
 </li>
+      <li><a href="api/lammps_step.html#lammps_step.minimization_parameters.MinimizationParameters">MinimizationParameters (class in lammps_step.minimization_parameters)</a>
+</li>
       <li><a href="api/lammps_step.html#lammps_step.minimization_step.MinimizationStep">MinimizationStep (class in lammps_step.minimization_step)</a>
 </li>
       <li>
@@ -1154,6 +1161,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <li><a href="api/lammps_step.html#module-lammps_step.metadata">lammps_step.metadata</a>
 </li>
         <li><a href="api/lammps_step.html#module-lammps_step.minimization">lammps_step.minimization</a>
+</li>
+        <li><a href="api/lammps_step.html#module-lammps_step.minimization_parameters">lammps_step.minimization_parameters</a>
 </li>
         <li><a href="api/lammps_step.html#module-lammps_step.minimization_step">lammps_step.minimization_step</a>
 </li>
@@ -1287,6 +1296,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </li>
         <li><a href="api/lammps_step.html#lammps_step.initialization_parameters.InitializationParameters.parameters">(lammps_step.initialization_parameters.InitializationParameters attribute)</a>
 </li>
+        <li><a href="api/lammps_step.html#lammps_step.minimization_parameters.MinimizationParameters.parameters">(lammps_step.minimization_parameters.MinimizationParameters attribute)</a>
+</li>
         <li><a href="api/lammps_step.html#lammps_step.npt_parameters.NPT_Parameters.parameters">(lammps_step.npt_parameters.NPT_Parameters attribute)</a>
 </li>
         <li><a href="api/lammps_step.html#lammps_step.nve_parameters.NVE_Parameters.parameters">(lammps_step.nve_parameters.NVE_Parameters attribute)</a>
@@ -1324,6 +1335,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <li><a href="api/lammps_step.html#lammps_step.tk_velocities.TkVelocities.reset_dialog">(lammps_step.tk_velocities.TkVelocities method)</a>
 </li>
       </ul></li>
+      <li><a href="api/lammps_step.html#lammps_step.tk_minimization.TkMinimization.reset_optimization">reset_optimization() (lammps_step.tk_minimization.TkMinimization method)</a>
+</li>
       <li><a href="api/lammps_step.html#lammps_step.tk_npt.TkNPT.reset_pressure_frame">reset_pressure_frame() (lammps_step.tk_npt.TkNPT method)</a>
 </li>
       <li><a href="api/lammps_step.html#lammps_step.tk_npt.TkNPT.reset_stress_frame">reset_stress_frame() (lammps_step.tk_npt.TkNPT method)</a>
@@ -1371,8 +1384,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/lammps_step.html#lammps_step.lammps.LAMMPS.shake_fix">shake_fix() (lammps_step.lammps.LAMMPS method)</a>
-</li>
-      <li><a href="api/lammps_step.html#lammps_step.installer.Installer.show">show() (lammps_step.installer.Installer method)</a>
 </li>
       <li><a href="api/lammps_step.html#lammps_step.lammps.LAMMPS.structure_data">structure_data() (lammps_step.lammps.LAMMPS method)</a>
 </li>
@@ -1422,12 +1433,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/lammps_step.html#lammps_step.installer.Installer.uninstall">uninstall() (lammps_step.installer.Installer method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/lammps_step.html#lammps_step.installer.Installer.update">update() (lammps_step.installer.Installer method)</a>
-</li>
       <li><a href="api/lammps_step.html#lammps_step.tk_lammps.TkLAMMPS.update_flowchart">update_flowchart() (lammps_step.tk_lammps.TkLAMMPS method)</a>
 </li>
   </ul></td>

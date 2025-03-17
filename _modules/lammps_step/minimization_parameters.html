@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.custom_step &#8212; SEAMM LAMMPS Plug-in 2025.3.16 documentation</title>
+    <title>lammps_step.minimization_parameters &#8212; SEAMM LAMMPS Plug-in 2025.3.16 documentation</title>
   
   
   
@@ -54,7 +54,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lammps_step/custom_step';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lammps_step/minimization_parameters';</script>
 
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -451,7 +451,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lammps_step.custom_step</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lammps_step.minimization_parameters</span></li>
   </ul>
 </nav>
 </div>
@@ -468,53 +468,107 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for lammps_step.custom_step</h1><div class="highlight"><pre>
+  <h1>Source code for lammps_step.minimization_parameters</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
-<span class="sd">&quot;&quot;&quot;Main module.&quot;&quot;&quot;</span>
+<span class="sd">&quot;&quot;&quot;Control parameters for minimization&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">lammps_step</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.energy_parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnergyParameters</span>
 
 
-<div class="viewcode-block" id="CustomStep">
-<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.custom_step.CustomStep">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">CustomStep</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="n">my_description</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="p">(</span>
-            <span class="s2">&quot;A custom step for LAMMPS, where the user types in LAMMPS &quot;</span>
-            <span class="s2">&quot;commmands directly&quot;</span>
-        <span class="p">),</span>
-        <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;Customize&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Custom&quot;</span><span class="p">,</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="MinimizationParameters">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.minimization_parameters.MinimizationParameters">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MinimizationParameters</span><span class="p">(</span><span class="n">EnergyParameters</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The control parameters for minimization in LAMMPS&quot;&quot;&quot;</span>
+
+    <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;convergence&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;format_string&quot;</span><span class="p">:</span> <span class="s2">&quot;s&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;enumeration&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">&quot;crude&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;loose&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;tight&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;custom&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Convergence:&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;help_text&quot;</span><span class="p">:</span> <span class="s2">&quot;The convergence criterion for the minimization.&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;etol&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;default_units&quot;</span><span class="p">:</span> <span class="s2">&quot;kcal/mol&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;format_string&quot;</span><span class="p">:</span> <span class="s2">&quot;.2f&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Energy change:&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;help_text&quot;</span><span class="p">:</span> <span class="s2">&quot;Converged when the change in energy is less than this.&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;ftol&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;default_units&quot;</span><span class="p">:</span> <span class="s2">&quot;kcal/mol/Å&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;format_string&quot;</span><span class="p">:</span> <span class="s2">&quot;.2f&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Force convergence:&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;help_text&quot;</span><span class="p">:</span> <span class="s2">&quot;Converged when the norm of the forces is less than this.&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;nsteps&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;30*nAtoms&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;format_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Maximum steps:&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;help_text&quot;</span><span class="p">:</span> <span class="s2">&quot;The maximum number of steps.&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;nevaluations&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;3*nSteps&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;format_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Maximum evaluations:&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;help_text&quot;</span><span class="p">:</span> <span class="s2">&quot;The maximum number of energy evaluations.&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;minimizer&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;Conjugate Gradient&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;format_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;enumeration&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">&quot;Conjugate Gradient&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Steepest Descent&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Hessian-Free truncated Newton&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;QuickMin&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Fire&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Minimizer:&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;help_text&quot;</span><span class="p">:</span> <span class="s2">&quot;Which minimizer to use&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;timestep&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;10&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;default_units&quot;</span><span class="p">:</span> <span class="s2">&quot;fs&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;enumeration&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;normal&quot;</span><span class="p">,</span> <span class="s2">&quot;accurate but slow&quot;</span><span class="p">,</span> <span class="s2">&quot;coarse but fast&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;format_string&quot;</span><span class="p">:</span> <span class="s2">&quot;.1f&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Timestep:&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;help_text&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">&quot;The time step for the numerical integration in &quot;</span>
+                <span class="s2">&quot;the dynamics. About 10x that used in MD works well.&quot;</span>
+            <span class="p">),</span>
+        <span class="p">},</span>
     <span class="p">}</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flowchart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gui</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize this helper class, which is used by</span>
-<span class="sd">        the application via stevedore to get information about</span>
-<span class="sd">        and create node objects for the flowchart</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="p">{},</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the instance, by default from the default</span>
+<span class="sd">        parameters given in the class&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="CustomStep.description">
-<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.custom_step.CustomStep.description">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a description of what this extension does&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">CustomStep</span><span class="o">.</span><span class="n">my_description</span></div>
-
-
-<div class="viewcode-block" id="CustomStep.create_node">
-<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.custom_step.CustomStep.create_node">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">create_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flowchart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the new node object&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">Custom</span><span class="p">(</span><span class="n">flowchart</span><span class="o">=</span><span class="n">flowchart</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="CustomStep.create_tk_node">
-<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.custom_step.CustomStep.create_tk_node">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">create_tk_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canvas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the graphical Tk node object&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">TkCustom</span><span class="p">(</span><span class="n">canvas</span><span class="o">=</span><span class="n">canvas</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-</div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">defaults</span><span class="o">=</span><span class="p">{</span>
+                <span class="o">**</span><span class="n">MinimizationParameters</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">defaults</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 </pre></div>
 

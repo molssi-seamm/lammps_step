@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.heat_flux &#8212; SEAMM LAMMPS Plug-in 2025.2.7 documentation</title>
+    <title>lammps_step.heat_flux &#8212; SEAMM LAMMPS Plug-in 2025.3.16 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=3c0199e2"></script>
+    <script src="../../_static/documentation_options.js?v=c9e00587"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.2.7" />
+  <meta name="docsearch:version" content="2025.3.16" />
   </head>
   
   
@@ -737,6 +737,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">current_values_to_dict</span><span class="p">(</span>
             <span class="n">context</span><span class="o">=</span><span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">_data</span>
         <span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">()</span>
 
         <span class="n">time</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
         <span class="n">timestep</span><span class="p">,</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestep</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">])</span>
@@ -755,7 +756,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;{:~P}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="n">__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description_text</span><span class="p">(</span><span class="n">PP</span><span class="p">),</span> <span class="o">**</span><span class="n">PP</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+            <span class="n">__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description_text</span><span class="p">(</span><span class="n">PP</span><span class="p">),</span> <span class="o">**</span><span class="n">PP</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
         <span class="p">)</span>
 
         <span class="n">thermo_properties</span> <span class="o">=</span> <span class="p">(</span>
@@ -1026,10 +1027,24 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">fixes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;constraint&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
+        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+heat_flux.dump&quot;</span>
+        <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">dumpline</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;write_dump         all custom  </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> id xu yu zu vx vy vz&quot;</span>
+                <span class="s2">&quot; modify flush yes sort id&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dumpline</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;write_dump         all custom  </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> id xsu ysu zsu vx vy vz&quot;</span>
+                <span class="s2">&quot; modify flush yes sort id&quot;</span>
+            <span class="p">)</span>
+
         <span class="n">post_lines</span> <span class="o">=</span> <span class="p">[</span>
             <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
 
 <span class="s2">run                 </span><span class="si">{</span><span class="n">nsteps</span><span class="si">}</span>
+
+<span class="si">{</span><span class="n">dumpline</span><span class="si">}</span>
 
 <span class="s2"># Reset almost everything</span>
 <span class="s2">thermo              0</span>
