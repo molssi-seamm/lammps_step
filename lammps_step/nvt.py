@@ -180,6 +180,7 @@ class NVT(lammps_step.NVE):
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data
         )
+        _, configuration = self.get_system_configuration()
 
         # Fix variables with special cases
         timestep, P["timestep"] = self.timestep(P["timestep"])
@@ -195,7 +196,7 @@ class NVT(lammps_step.NVE):
                 PP[key] = "{:~P}".format(PP[key])
 
         self.description.append(
-            __(self.description_text(PP), **PP, indent=3 * " ").__str__()
+            __(self.description_text(PP), **PP, indent=4 * " ").__str__()
         )
 
         time = lammps_step.to_lammps_units(P["time"], quantity="time")
@@ -211,6 +212,11 @@ class NVT(lammps_step.NVE):
         )
         properties = "v_time v_temp v_press v_etotal v_ke v_pe v_epair"
         title2 = "tstep t T P Etot Eke Epe Epair"
+        ff = self.get_variable("_forcefield")
+        if ff.ff_form == "dreiding":
+            thermo_properties += " v_N_hbond v_E_hbond"
+            properties += " v_N_hbond v_E_hbond"
+            title2 += " N_hbond E_hbond"
 
         lines = []
         lines.append("")
@@ -425,6 +431,18 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
 
         lines.append("")
         lines.append("run                 {}".format(nsteps))
+        lines.append("")
+        filename = f"@{self._id[-1]}+nvt.dump"
+        if configuration.periodicity == 0:
+            lines.append(
+                f"write_dump         all custom  {filename} id xu yu zu vx vy vz"
+                " modify flush yes sort id"
+            )
+        else:
+            lines.append(
+                f"write_dump         all custom  {filename} id xsu ysu zsu vx vy vz"
+                " modify flush yes sort id"
+            )
         lines.append("")
 
         for i in range(1, ncomputes + 1):

@@ -43,6 +43,7 @@ from .energy_step import EnergyStep
 from .tk_energy import TkEnergy
 
 from .minimization import Minimization
+from .minimization_parameters import MinimizationParameters
 from .minimization_step import MinimizationStep
 from .tk_minimization import TkMinimization
 

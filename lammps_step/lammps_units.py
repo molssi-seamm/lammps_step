@@ -127,8 +127,8 @@ quantity_to_dimensionality = {
     ],
     "velocity": ["[length] / [time]"],
     "force": [
-        "[length] * [mass] / [substance] / [time] ** 2",
-        "[length] * [mass] / [time] ** 2",
+        "[mass] * [length] / [time] ** 2 / [substance]",
+        "[mass] * [length] / [time] ** 2",
     ],
     "torque": [
         "[length] ** 2 * [mass] / [substance] / [time] ** 2",
@@ -161,6 +161,8 @@ dimensionality_to_quantity = {
     "[length] / [time]": ["velocity"],
     "[length] * [mass] / [substance] / [time] ** 2": ["force"],
     "[length] * [mass] / [time] ** 2": ["force"],
+    "[mass] * [length] / [time] ** 2 / [substance]": ["force"],
+    "[mass] * [length] / [time] ** 2": ["force"],
     "[temperature]": ["temperature"],
     "[mass] / [length] / [time] ** 2": ["pressure"],
     "[mass] / [length] / [time]": ["dynamic viscosity"],

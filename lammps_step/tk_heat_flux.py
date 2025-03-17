@@ -163,6 +163,11 @@ class TkHeatFlux(lammps_step.TkNVE):
         # Align the labels
         sw.align_labels(widgets, sticky=tk.E)
 
+        # And how to handle the structure
+        if self.node.calculation == "Heat Flux":
+            self["structure"].grid(row=row, column=0)
+            row += 1
+
         # Setup the results if there are any
         have_results = (
             "results" in self.node.metadata and len(self.node.metadata["results"]) > 0

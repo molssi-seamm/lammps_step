@@ -259,6 +259,7 @@ class HeatFlux(NVE):
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data
         )
+        _, configuration = self.get_system_configuration()
 
         time = lammps_step.to_lammps_units(P["time"], quantity="time")
         timestep, P["timestep"] = self.timestep(P["timestep"])
@@ -277,7 +278,7 @@ class HeatFlux(NVE):
                 PP[key] = "{:~P}".format(PP[key])
 
         self.description.append(
-            __(self.description_text(PP), **PP, indent=3 * " ").__str__()
+            __(self.description_text(PP), **PP, indent=4 * " ").__str__()
         )
 
         thermo_properties = (
@@ -548,10 +549,24 @@ fix_modify          J_filter virial yes
             fixes.append("constraint")
         lines.append("")
 
+        filename = f"@{self._id[-1]}+heat_flux.dump"
+        if configuration.periodicity == 0:
+            dumpline = (
+                f"write_dump         all custom  {filename} id xu yu zu vx vy vz"
+                " modify flush yes sort id"
+            )
+        else:
+            dumpline = (
+                f"write_dump         all custom  {filename} id xsu ysu zsu vx vy vz"
+                " modify flush yes sort id"
+            )
+
         post_lines = [
             f"""
 
 run                 {nsteps}
+
+{dumpline}
 
 # Reset almost everything
 thermo              0

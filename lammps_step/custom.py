@@ -61,7 +61,7 @@ class Custom(seamm.Node):
         P = self.parameters.values_to_dict()
 
         self.description = []
-        self.description.append(__(self.description_text(P), **P, indent=3 * " "))
+        self.description.append(__(self.description_text(P), **P, indent=4 * " "))
 
         lines = []
 

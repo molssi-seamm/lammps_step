@@ -127,7 +127,14 @@ class TkNPT(lammps_step.TkNVT):
         self["pressure_frame"].grid(row=row, column=1, sticky=tk.N, padx=10, pady=10)
         self.reset_pressure_frame()
 
-        return 2
+        row += 1
+
+        # And how to handle the structure
+        if self.node.calculation == "npt":
+            self["structure"].grid(row=row, column=0, columnspan=2)
+            row += 1
+
+        return row
 
     def reset_pressure_frame(self, widget=None):
         """Layout the widgets for the pressure/stress control

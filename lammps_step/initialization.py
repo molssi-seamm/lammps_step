@@ -188,7 +188,12 @@ class Initialization(seamm.Node):
                 ff.assign_forcefield(configuration)
 
         # Get the energy expression.
-        style = "LAMMPS-class2" if "cff" in ffname else "LAMMPS"
+        style = (
+            "LAMMPS-class2"
+            if "cff" in ffname
+            else "LAMMPS-dreiding" if "dreiding" in ffname else "LAMMPS"
+        )
+
         eex = ff.energy_expression(configuration, style=style)
         logger.debug("energy expression:\n" + pprint.pformat(eex))
 
@@ -239,14 +244,23 @@ class Initialization(seamm.Node):
             a, b, c, alpha, beta, gamma = configuration.cell.parameters
             if alpha != 90 or beta != 90 or gamma != 90:
                 lines.append("box                 tilt large")
-        lines.append("#    define the style of forcefield")
+        lines.append(f"#    define the style of forcefield {ffname}")
         lines.append("")
 
-        terms = ff.ff["terms"]
+        terms = eex["terms"]
 
         logging.debug("LAMMPS initialization, terms = \n" + pprint.pformat(terms))
 
-        # control of nonbonds
+        # Control of nonbonds
+
+        # If using e.g. hybrid/overlay then must use explicit coeff lines here
+        nonbond_forms = set([v[0] for v in eex["nonbond parameters"]])
+        use_hybrid = len(nonbond_forms) > 1
+        if use_hybrid and "hbond/dreiding/lj" in nonbond_forms:
+            hybrid = "pair_style          hybrid/overlay hbond/dreiding/lj 2 6 6.5 90 "
+        else:
+            hybrid = "pair_style          "
+
         nonbond_term = None
         if "pair" in terms:
             if len(terms["pair"]) != 1:
@@ -321,9 +335,7 @@ class Initialization(seamm.Node):
                             "using the PPPM method with "
                             "an accuracy of {kspace_accuracy}."
                         )
-                lines.append(
-                    "pair_style          {} {}".format(pair_style, P["cutoff"])
-                )
+                lines.append(f"{hybrid}          {pair_style} {P['cutoff']}")
                 if mixing is None:
                     lines.append(
                         f"pair_modify         tail {tail_correction} shift {shift}"
@@ -391,9 +403,7 @@ class Initialization(seamm.Node):
                         " The van der Waals terms will be shifted "
                         "to zero energy at the cutoff distance."
                     )
-                lines.append(
-                    "pair_style          {} {}".format(pair_style, P["cutoff"])
-                )
+                lines.append(f"{hybrid} {pair_style} {P['cutoff']}")
                 if mixing is None:
                     lines.append(f"pair_modify         shift {shift}")
                 else:
@@ -411,9 +421,7 @@ class Initialization(seamm.Node):
                     kspace_style = lammps_step.kspace_methods[
                         P["kspace_method"]
                     ].format(**P)
-                lines.append(
-                    "pair_style          {} {}".format(pair_style, P["cutoff"])
-                )
+                lines.append(f"{hybrid} {pair_style} {P['cutoff']}")
                 if mixing is None:
                     lines.append(
                         f"pair_modify         tail {tail_correction} shift {shift}"
@@ -429,9 +437,7 @@ class Initialization(seamm.Node):
                     pair_style = pair_style_base
                 else:
                     pair_style = pair_style_base + "/coul/cut"
-                lines.append(
-                    "pair_style          {} {}".format(pair_style, P["cutoff"])
-                )
+                lines.append(f"{hybrid} {pair_style} {P['cutoff']}")
                 if mixing is None:
                     lines.append(f"pair_modify         shift {shift}")
                 else:
@@ -495,6 +501,16 @@ class Initialization(seamm.Node):
         if "opls" in ffname:
             lines.append("special_bonds       lj/coul 0.0 0.0 0.5")
             lines.append("")
+        elif "dreiding" in ffname:
+            lines.append("special_bonds       dreiding")
+            lines.append("")
+        elif "cff" in ffname:
+            lines.append("special_bonds       lj/coul 0.0 0.0 1.0")
+            lines.append("")
+        else:
+            raise RuntimeError(
+                f"Special bonds not implemented for this force field: {ffname}"
+            )
 
         if extras is not None and "read_data" in extras and extras["read_data"] is True:
             lines.append("read_data           structure.dat")
@@ -502,9 +518,50 @@ class Initialization(seamm.Node):
         if kspace_style != "":
             lines.append("kspace_style        " + kspace_style)
 
+        # For hybrid nonbonds we need the explicit coeffs lines
+        if use_hybrid:
+            lines.append("")
+            lines.append("#    nonbond parameters")
+            for parameters in eex["nonbond parameters"]:
+                form, values, types, parameters_type, real_types = parameters
+                i, j = types
+                if form == "nonbond(9-6)":
+                    lines.append(
+                        f"pair_coeff    {i:6d} {j:6d} {pair_style} {values['eps']} "
+                        f"{values['rmin']} # {types[0]} --> {real_types[0]}"
+                    )
+                elif form == "nonbond(12-6)":
+                    lines.append(
+                        f"pair_coeff    {i:6d} {j:6d} {pair_style} {values['eps']} "
+                        f"{values['sigma']} # {types[0]} --> {real_types[0]}"
+                    )
+                elif form == "buckingham":
+                    lines.append(
+                        f"pair_coeff    {j:6d} {i:6d} {pair_style} {values['A']} "
+                        f"{values['rho']} {values['C']} # {types[1]}-{types[0]} --> "
+                        f"{real_types[1]}_{real_types[0]}"
+                    )
+                elif form == "hbond/dreiding/lj":
+                    lines.append(
+                        f"pair_coeff    {j:6d} {i:6d} {form} {values['h_index']} "
+                        f"{values['donor flag']} {values['eps']} {values['sigma']} "
+                        f"{values['exponent']} "
+                    )
+            lines.append("")
+
         # Set up standard variables
         for variable in thermo_variables:
             lines.append("variable            {var} equal {var}".format(var=variable))
+
+        # Special Dreiding hydrogen bond information
+        if use_hybrid and "hbond/dreiding/lj" in nonbond_forms:
+            lines.append("")
+            lines.append("compute             hb all pair hbond/dreiding/lj")
+            lines.append("variable            N_hbond equal c_hb[1] #number hbonds")
+            lines.append("variable            E_hbond equal c_hb[2] #hbond energy")
+        else:
+            lines.append("variable            N_hbond equal c_hb[1] #number hbonds")
+            lines.append("variable            E_hbond equal c_hb[2] #hbond energy")
 
         return (lines, eex)
 

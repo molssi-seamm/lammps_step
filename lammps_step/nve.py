@@ -3,6 +3,8 @@
 """NVE (microcanonical) dynamics in LAMMPS"""
 
 import json
+from pathlib import Path
+import traceback
 
 import lammps_step
 import logging
@@ -41,6 +43,62 @@ class NVE(lammps_step.Energy):
         self._metadata = lammps_step.metadata
         self.parameters = lammps_step.NVE_Parameters()
 
+    def analyze(self, data={}, properties=None, table=None, output=""):
+        """Analyze the results of the simulation.
+
+        Parameters
+        ----------
+        """
+        super().analyze(data=data, properties=properties, table=table, output=output)
+
+        P = self.parameters.current_values_to_dict(
+            context=seamm.flowchart_variables._data
+        )
+
+        # Get the initial structure
+        _, initial_configuration = self.get_system_configuration()
+
+        # Handle the new structure as needed
+        system, configuration = self.get_system_configuration(P)
+
+        # Read the dump file and get the structure
+        dump_file = Path(self.directory) / f"{self.calculation}.dump"
+        if dump_file.exists:
+            try:
+                xyz, fractional, cell, vxyz = self.parent.read_dump(dump_file)
+            except Exception as e:
+                xyz = None
+                cell = None
+                vxyz = None
+                printer.normal("Warning: unable to read the LAMMPS dumpfile")
+                logger.warning(f"The was a problem reading the LAMMPS dumpfile: {e}")
+                logger.warning(traceback.format_exc())
+        else:
+            printer.normal("Warning: there is no 'dump' file from LAMMPS")
+            xyz = None
+            cell = None
+            vxyz = None
+
+        if configuration is not None:
+            if cell is not None:
+                configuration.cell.parameters = cell
+            if xyz is not None:
+                configuration.atoms.set_coordinates(xyz, fractionals=fractional)
+            if vxyz is not None:
+                # LAMMPS only has Cartesian velocities
+                configuration.atoms.set_velocities(vxyz, fractionals=False)
+
+            # And the name of the configuration.
+            text = seamm.standard_parameters.set_names(
+                system,
+                configuration,
+                P,
+                _first=True,
+                model=self.parent.model,
+            )
+            printer.normal(__(text, **data, indent=self.indent + 4 * " "))
+            printer.normal("")
+
     def description_text(self, P=None):
         """Return a short description of this step.
 
@@ -75,11 +133,12 @@ class NVE(lammps_step.Energy):
             ffname = ff.current_forcefield
 
         self.description = []
-        self.description.append(__(self.header, indent=3 * " "))
+        self.description.append(__(self.header, indent=4 * " "))
 
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data
         )
+        _, configuration = self.get_system_configuration()
 
         timestep, P["timestep"] = self.timestep(P["timestep"])
 
@@ -106,6 +165,10 @@ class NVE(lammps_step.Energy):
         )
         properties = "v_time v_temp v_press v_etotal v_ke v_pe v_emol v_epair"
         title2 = "tstep t T P Etot Eke Epe Emol Epair"
+        if ff.ff_form == "dreiding":
+            thermo_properties += " v_N_hbond v_E_hbond"
+            properties += " v_N_hbond v_E_hbond"
+            title2 += " N_hbond E_hbond"
 
         lines = []
         nfixes = 0
@@ -246,6 +309,18 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
 
         lines.append("")
         lines.append("run                 {}".format(nsteps))
+        lines.append("")
+        filename = f"@{self._id[-1]}+nve.dump"
+        if configuration.periodicity == 0:
+            lines.append(
+                f"write_dump         all custom  {filename} id xu yu zu vx vy vz"
+                " modify flush yes sort id"
+            )
+        else:
+            lines.append(
+                f"write_dump         all custom  {filename} id xsu ysu zsu vx vy vz"
+                " modify flush yes sort id"
+            )
         lines.append("")
 
         for i in range(1, ncomputes + 1):

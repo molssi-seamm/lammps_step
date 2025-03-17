@@ -110,7 +110,7 @@ class Velocities(seamm.Node):
             if isinstance(PP[key], units_class):
                 PP[key] = "{:~P}".format(PP[key])
 
-        self.description = [str(__(self.description_text(PP), **PP, indent=3 * " "))]
+        self.description = [str(__(self.description_text(PP), **PP, indent=4 * " "))]
 
         # Get the input lines
         lines = []
