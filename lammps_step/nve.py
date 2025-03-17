@@ -165,7 +165,7 @@ class NVE(lammps_step.Energy):
         )
         properties = "v_time v_temp v_press v_etotal v_ke v_pe v_emol v_epair"
         title2 = "tstep t T P Etot Eke Epe Emol Epair"
-        if ff.ff_form == "dreiding":
+        if self.parent.have_dreiding_hbonds:
             thermo_properties += " v_N_hbond v_E_hbond"
             properties += " v_N_hbond v_E_hbond"
             title2 += " N_hbond E_hbond"

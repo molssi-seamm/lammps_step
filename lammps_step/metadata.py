@@ -9,9 +9,10 @@ metadata = {}
 
 metadata["results"] = {
     "energy": {
-        "calculation": ["energy"],
+        "calculation": ["energy", "minimization"],
         "description": "The total energy",
         "dimensionality": "scalar",
+        "property": "total energy#LAMMPS#{model}",
         "type": "float",
         "units": "kcal/mol",
     },
@@ -488,17 +489,24 @@ metadata["results"] = {
     },
     # Timings
     "t_lammps_wall": {
-        "calculation": [
-            "energy",
-            "minimization",
-            "nve",
-            "nvt",
-            "npt",
-        ],
         "description": "The wall clock time for LAMMPS",
         "dimensionality": "scalar",
         "type": "float",
         "units": "s",
+        "format": ".1f",
+    },
+    "SEAMM elapsed time": {
+        "description": "total elapsed time for LAMMPS",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "s",
+        "format": ".1f",
+    },
+    "SEAMM np": {
+        "description": "number of processors for LAMMPS",
+        "dimensionality": "scalar",
+        "type": "integer",
+        "format": "d",
     },
     "t_nve": {
         "calculation": ["nve"],
@@ -583,19 +591,6 @@ metadata["results"] = {
         "dimensionality": "scalar",
         "type": "integer",
         "units": "s",
-    },
-    "SEAMM elapsed time": {
-        "description": "total elapsed time for LAMMPS",
-        "dimensionality": "scalar",
-        "type": "float",
-        "units": "s",
-        "format": ".1f",
-    },
-    "SEAMM np": {
-        "description": "number of processors for LAMMPS",
-        "dimensionality": "scalar",
-        "type": "integer",
-        "format": "d",
     },
     "minimizer": {
         "calculation": ["minimization"],

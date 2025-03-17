@@ -193,8 +193,7 @@ class NPT(lammps_step.NVT):
             "v_cellc v_etotal v_ke v_pe v_epair"
         )
         title2 = "tstep t T P V density a b c Etot Eke Epe Epair"
-        ff = self.get_variable("_forcefield")
-        if ff.ff_form == "dreiding":
+        if self.parent.have_dreiding_hbonds:
             thermo_properties += " v_N_hbond v_E_hbond"
             properties += " v_N_hbond v_E_hbond"
             title2 += " N_hbond E_hbond"

@@ -182,6 +182,7 @@ class LAMMPS(seamm.Node):
         self._initialization_node = None
         self._trajectory = []
         self._data = {}
+        self._have_dreiding_hbonds = False
 
         self._results = {}  # Sotrage for computational and timing results
 
@@ -239,6 +240,15 @@ class LAMMPS(seamm.Node):
     def git_revision(self):
         """The git version of this module."""
         return lammps_step.__git_revision__
+
+    @property
+    def have_dreiding_hbonds(self):
+        """Whether the system has Dreiding hydrogen bonds."""
+        return self._have_dreiding_hbonds
+
+    @have_dreiding_hbonds.setter
+    def have_dreiding_hbonds(self, value):
+        self._have_dreiding_hbonds = value
 
     @property
     def results(self):
