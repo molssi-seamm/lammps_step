@@ -344,8 +344,7 @@ class Minimization(lammps_step.Energy):
             "fmax fnorm press etotal ke pe ebond eangle edihed eimp evdwl etail ecoul "
             "elong"
         )
-        ff = self.get_variable("_forcefield")
-        if ff.ff_form == "dreiding":
+        if self.parent.have_dreiding_hbonds:
             thermo_properties += " v_N_hbond v_E_hbond"
 
         lines.append("")

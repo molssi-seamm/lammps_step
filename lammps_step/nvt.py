@@ -212,8 +212,7 @@ class NVT(lammps_step.NVE):
         )
         properties = "v_time v_temp v_press v_etotal v_ke v_pe v_epair"
         title2 = "tstep t T P Etot Eke Epe Epair"
-        ff = self.get_variable("_forcefield")
-        if ff.ff_form == "dreiding":
+        if self.parent.have_dreiding_hbonds:
             thermo_properties += " v_N_hbond v_E_hbond"
             properties += " v_N_hbond v_E_hbond"
             title2 += " N_hbond E_hbond"

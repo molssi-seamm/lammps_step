@@ -554,14 +554,14 @@ class Initialization(seamm.Node):
             lines.append("variable            {var} equal {var}".format(var=variable))
 
         # Special Dreiding hydrogen bond information
-        if use_hybrid and "hbond/dreiding/lj" in nonbond_forms:
+        if "hbond/dreiding/lj" in nonbond_forms:
+            self.parent.have_dreiding_hbonds = True
             lines.append("")
             lines.append("compute             hb all pair hbond/dreiding/lj")
             lines.append("variable            N_hbond equal c_hb[1] #number hbonds")
             lines.append("variable            E_hbond equal c_hb[2] #hbond energy")
         else:
-            lines.append("variable            N_hbond equal c_hb[1] #number hbonds")
-            lines.append("variable            E_hbond equal c_hb[2] #hbond energy")
+            self.parent.have_dreiding_hbonds = False
 
         return (lines, eex)
 

@@ -1,6 +1,10 @@
 =======
 History
 =======
+2025.3.17.1 -- Bugfix: Incorrect handling of Dreiding hydrogen bonds
+   * Fixed an issue with the Dreiding forcefield where having no hydrogen bonds in the
+     system caused a crash.
+
 2025.3.17 -- Bugfix: LAMMPS installer did not have correct conda environment
 
 2025.3.16 -- Added Dreiding forcefield and support for structure handling
