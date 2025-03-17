@@ -62,6 +62,7 @@ class Installer(seamm_installer.InstallerBase):
 
         logger.debug("Initializing the LAMMPS installer object.")
 
+        self.environment = "seamm-lammps"
         self.section = "lammps-step"
         self.executables = ["lmp"]
         self.resource_path = Path(pkg_resources.resource_filename(__name__, "data/"))

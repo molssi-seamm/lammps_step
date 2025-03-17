@@ -1,6 +1,8 @@
 =======
 History
 =======
+2025.3.17 -- Bugfix: LAMMPS installer did not have correct conda environment
+
 2025.3.16 -- Added Dreiding forcefield and support for structure handling
    * Added support for the Dreiding forcefield.
    * Added standard support for structure handling
