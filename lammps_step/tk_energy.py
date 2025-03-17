@@ -3,8 +3,11 @@
 """The graphical part of a LAMMPS Energy step"""
 
 import logging
-import seamm
+import tkinter as tk
 import tkinter.ttk as ttk
+
+import seamm
+import seamm_widgets as sw
 
 logger = logging.getLogger(__name__)
 
@@ -42,13 +45,6 @@ class TkEnergy(seamm.TkNode):
             my_logger=my_logger,
         )
 
-        # Get the property metadata
-        for item, data in self.node.metadata["results"].items():
-            if "," in item:
-                continue
-            if self.node._calculation in data["calculation"]:
-                self.property_metadata[item] = data
-
     def right_click(self, event):
         """Probably need to add our dialog..."""
 
@@ -59,15 +55,24 @@ class TkEnergy(seamm.TkNode):
 
     def create_dialog(self, title="Edit LAMMPS Energy Step"):
         """Create the dialog!"""
-
         frame = super().create_dialog(title=title)
 
-        self["message"] = ttk.Label(
-            self["frame"],
-            text="The LAMMPS energy step has no parameters\n"
-            "All relevant parameters are set in the initialization step.",
+        P = self.node.parameters
+
+        # Create the structure-handling widgets
+        sframe = self["structure"] = ttk.LabelFrame(
+            self["frame"], text="Configuration Handling", labelanchor=tk.N
         )
-        self["message"].grid()
+        row = 0
+        widgets = []
+        for key in ("structure handling", "system name", "configuration name"):
+            self[key] = P[key].widget(sframe)
+            self[key].grid(row=row, column=0, sticky=tk.EW)
+            widgets.append(self[key])
+            row += 1
+        sw.align_labels(widgets, sticky=tk.E)
+
+        sframe.grid(row=0, column=0, sticky=tk.N)
 
         self.setup_results()
 

@@ -167,7 +167,7 @@ class NPT(lammps_step.NVT):
             if isinstance(PP[key], units_class):
                 PP[key] = "{:~P}".format(PP[key])
 
-        self.description.append(__(self.description_text(PP), **PP, indent=3 * " "))
+        self.description.append(__(self.description_text(PP), **PP, indent=4 * " "))
 
         time = lammps_step.to_lammps_units(P["time"], quantity="time")
         nsteps = round(time / timestep)
@@ -187,11 +187,17 @@ class NPT(lammps_step.NVT):
             "time temp press etotal ke pe ebond "
             "eangle edihed eimp evdwl etail ecoul elong"
         )
+
         properties = (
             "v_time v_temp v_press v_vol v_density v_cella v_cellb "
             "v_cellc v_etotal v_ke v_pe v_epair"
         )
         title2 = "tstep t T P V density a b c Etot Eke Epe Epair"
+        ff = self.get_variable("_forcefield")
+        if ff.ff_form == "dreiding":
+            thermo_properties += " v_N_hbond v_E_hbond"
+            properties += " v_N_hbond v_E_hbond"
+            title2 += " N_hbond E_hbond"
 
         # and build the LAMMPS script
         lines = []
@@ -372,7 +378,7 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
                 __(
                     "The run will be {nsteps:n} steps of dynamics.",
                     nsteps=nsteps,
-                    indent=3 * " ",
+                    indent=4 * " ",
                 )
             )
         else:
@@ -438,6 +444,18 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
 
         lines.append("")
         lines.append("run                 {}".format(nsteps))
+        lines.append("")
+        filename = f"@{self._id[-1]}+npt.dump"
+        if configuration.periodicity == 0:
+            lines.append(
+                f"write_dump         all custom  {filename} id xu yu zu vx vy vz"
+                " modify flush yes sort id"
+            )
+        else:
+            lines.append(
+                f"write_dump         all custom  {filename} id xsu ysu zsu vx vy vz"
+                " modify flush yes sort id"
+            )
         lines.append("")
 
         for fix in range(1, nfixes + 1):

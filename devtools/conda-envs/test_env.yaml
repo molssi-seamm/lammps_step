@@ -11,6 +11,7 @@ dependencies:
 
   # SEAMM
   - kim-query
+  - py-cpuinfo
   - rdkit
   - seamm
   - seamm-ff-util

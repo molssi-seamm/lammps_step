@@ -2,6 +2,7 @@ molsystem
 numpy
 pandas
 Pmw
+py-cpuinfo
 scipy
 pymbar>=4.0
 seamm

@@ -5,6 +5,8 @@
 import configparser
 from contextlib import contextmanager
 import copy
+import csv
+from datetime import datetime, timezone
 import importlib
 import json
 import logging
@@ -13,17 +15,19 @@ from pathlib import Path
 import os
 import os.path
 import pkg_resources
+import platform
 import pprint
 import shutil
 import string
 import sys
+import time
 import traceback
 import warnings
 
 import bibtexparser
+from cpuinfo import get_cpu_info
 import numpy as np
 import pandas
-from scipy import stats
 import statsmodels.tsa.stattools as stattools
 
 import lammps_step
@@ -33,7 +37,7 @@ import seamm_exec
 from seamm_ff_util import tabulate_angle
 import seamm_util
 import seamm_util.printing as printing
-from seamm_util import CompactJSONEncoder, Configuration
+from seamm_util import CompactJSONEncoder, Configuration, units_class
 from seamm_util.printing import FormattedText as __
 
 # from pymbar import timeseries
@@ -90,6 +94,8 @@ bond_style = {
 angle_style = {
     "quadratic_angle": "harmonic",
     "quartic_angle": "class2",
+    "cosine": "cosine",
+    "cosine/squared": "cosine/squared",
     "simple_fourier_angle": "fourier/simple",
     "tabulated_angle": "table",
 }
@@ -98,11 +104,13 @@ dihedral_style = {
     "torsion_1": "harmonic",
     "torsion_3": "class2",
     "torsion_opls": "opls",
+    "torsion_charmm": "charmm",
 }
 
 improper_style = {
     "wilson_out_of_plane": "class2",
     "improper_opls": "cvff",
+    "dreiding_out_of_plane": "umbrella",
 }
 
 
@@ -129,6 +137,8 @@ class LAMMPS(seamm.Node):
         "Kappa_z": "W/K/m",
         "Kappa": "W/K/m",
         "u": "kcal/mol",
+        "N_hbond": "",
+        "E_hbond": "kcal/mol",
     }
     display_title = {
         "T": "Temperature",
@@ -152,6 +162,8 @@ class LAMMPS(seamm.Node):
         "Kappa_z": "thermal conductivity in z",
         "Kappa": "thermal conductivity",
         "u": "atom PE",
+        "N_hbond": "Number of H-bonds",
+        "E_hbond": "Energy of H-bonds",
     }
 
     def __init__(
@@ -176,6 +188,47 @@ class LAMMPS(seamm.Node):
         super().__init__(
             flowchart=flowchart, title="LAMMPS", extension=extension, logger=logger
         )
+
+        # Set up the timing information
+        self._timing_data = []
+        self._timing_path = Path("~/.seamm.d/timing/lammps.csv").expanduser()
+        self._timing_header = [
+            "node",  # 0
+            "cpu",  # 1
+            "cpu_version",  # 2
+            "cpu_count",  # 3
+            "cpu_speed",  # 4
+            "date",  # 5
+            "H_SMILES",  # 6
+            "ISOMERIC_SMILES",  # 7
+            "formula",  # 8
+            "net_charge",  # 9
+            "spin_multiplicity",  # 10
+            "keywords",  # 11
+            "nproc",  # 12
+            "time",  # 13
+        ]
+        try:
+            self._timing_path.parent.mkdir(parents=True, exist_ok=True)
+
+            self._timing_data = 14 * [""]
+            self._timing_data[0] = platform.node()
+            tmp = get_cpu_info()
+            if "arch" in tmp:
+                self._timing_data[1] = tmp["arch"]
+            if "cpuinfo_version_string" in tmp:
+                self._timing_data[2] = tmp["cpuinfo_version_string"]
+            if "count" in tmp:
+                self._timing_data[3] = str(tmp["count"])
+            if "hz_advertized_friendly" in tmp:
+                self._timing_data[4] = tmp["hz_advertized_friendly"]
+
+            if not self._timing_path.exists():
+                with self._timing_path.open("w", newline="") as fd:
+                    writer = csv.writer(fd)
+                    writer.writerow(self._timing_header)
+        except Exception:
+            self._timing_data = None
 
     @property
     def version(self):
@@ -351,7 +404,7 @@ class LAMMPS(seamm.Node):
 
         while node is not None:
             try:
-                text += __(node.description_text(), indent=3 * " ").__str__()
+                text += __(node.description_text(), indent=4 * " ").__str__()
             except Exception as e:
                 print(
                     "Error describing LAMMPS flowchart: {} in {}".format(
@@ -431,7 +484,27 @@ class LAMMPS(seamm.Node):
 
         files = {}
 
+        control = []
+        ff = self.get_variable("_forcefield")
+        if ff == "OpenKIM":
+            potential = self.get_variable("_OpenKIM_Potential")
+            control.append(["forcefield", "OpenKIM " + potential])
+        else:
+            control.append(["forcefield", ff.current_forcefield])
         while node is not None:
+            P = node.parameters.current_values_to_dict(
+                context=seamm.flowchart_variables._data
+            )
+
+            # For the timing data, get the parameters used
+            tmp = [node.title]
+            for key, value in P.items():
+                if isinstance(value, units_class):
+                    tmp.append((key, f"{value:~P}"))
+                else:
+                    tmp.append((key, value))
+            control.append(tmp)
+
             if isinstance(node, lammps_step.Initialization):
                 initialization_header, eex = self._get_node_input(
                     node=node, extras={"read_data": True}
@@ -459,168 +532,29 @@ class LAMMPS(seamm.Node):
                 files["input.dat"] = copy.deepcopy(initialization_header)
 
                 # Find the bond & angle types as needed for shake/rattle
-                P = node.parameters.current_values_to_dict(
-                    context=seamm.flowchart_variables._data
-                )
-
                 shake = self.shake_fix(P, eex)
                 if shake != "":
                     extras["shake"] = shake
             else:
-                P = node.parameters.current_values_to_dict(
-                    context=seamm.flowchart_variables._data
-                )
-
-                if "run_control" not in P or "Until" not in P["run_control"]:
-                    history_nodes.append(node)
-                else:
-                    if len(history_nodes) > 0:  # if imcccc
-                        files = self._prepare_input(
-                            files,
-                            nodes=history_nodes,
-                            read_restart=False,
-                            write_restart=True,
-                            extras=extras,
-                        )
-                        files = self._execute_single_sim(files, np=np)
-                        self.analyze(nodes=history_nodes)
-                        self._trajectory = []
-                    iteration = 0
-
-                    extras["nsteps"] = 666
-
-                    while True:
-                        extras["nsteps"] = round(1.5 * extras["nsteps"])
-                        control_properties = {}
-                        for prp in P["control_properties"]:
-                            k = prp[0]
-                            control_properties[k] = {
-                                "accuracy": float(prp[1][0].strip("%")),
-                                "units": prp[1][1],
-                                "enough_accuracy": False,
-                            }
-
-                        P = node.parameters.current_values_to_dict(
-                            context=seamm.flowchart_variables._data
-                        )
-
-                        files = self._prepare_input(
-                            files,
-                            nodes=node,
-                            iteration=iteration,
-                            read_restart=True,
-                            write_restart=True,
-                            extras=extras,
-                        )
-
-                        files = self._execute_single_sim(files, np=np)
-
-                        # Analyze the results
-                        analysis = self.analyze(nodes=node)
-                        node_id = node._id[1]
-                        for prp, v in analysis[node_id].items():
-                            if v["short_production"] is False:
-                                if v["few_neff"] is False:
-                                    accuracy = control_properties[prp]["accuracy"] / 100
-                                    dof = v["n_sample"]
-                                    mean = v["mean"]
-                                    ci = stats.t.interval(0.95, dof - 1, loc=0, scale=1)
-                                    interval = (ci[1] - ci[0]) * v["sem"]
-                                    if abs(interval / mean) < accuracy:
-                                        control_properties[prp][
-                                            "enough_accuracy"
-                                        ] = True
-                        enough_acc = [
-                            v["enough_accuracy"]
-                            for prp, v in control_properties.items()
-                        ]
-                        if all(enough_acc) is True:
-                            history_nodes = []
-
-                            initialization_header, eex = self._get_node_input(
-                                node=self._initialization_node,
-                                extras={"read_data": False},
-                            )
-                            files["input.dat"] = copy.deepcopy(initialization_header)
-                            files["input.dat"].append(
-                                "read_restart       %s"
-                                % (os.path.join(files["restart"]["filename"]))
-                            )
-                            self._trajectory = []
-                            break
-
-                        iteration = iteration + 1
-
+                history_nodes.append(node)
             node = node.next()
 
-        if len(history_nodes) == 0:
-            node_initialization = self.subflowchart.get_node("1").next()
+        files = self._prepare_input(
+            files,
+            nodes=history_nodes,
+            read_restart=False,
+            write_restart=True,
+            extras=extras,
+        )
 
-            if node_initialization is None:
-                raise TypeError(
-                    "The initial node in a LAMMPS workflow should be an ",
-                    "initialization node",
-                )
+        self._timing_data[11] = json.dumps(control)
+        control = []
 
-            if isinstance(node_initialization, lammps_step.Initialization) is False:
-                raise TypeError(
-                    "The initial node in a LAMMPS workflow should be an ",
-                    "initialization node",
-                )
+        files = self._execute_single_sim(files, np=np)
 
-            # base = "lammps_substep_%s_iter_%d" % (node_initialization._id[1], 0)
-            base = "lammps"
+        self.analyze(nodes=history_nodes)
 
-            restart = base + ".restart.*"
-            dump = base + ".dump"
-            new_input_data = []
-            new_input_data.append("run          0")
-            new_input_data.append(f"write_restart      {restart}")
-
-            if configuration.periodicity == 0:
-                new_input_data.append(
-                    f"write_dump         all custom  {dump} id xu yu zu vx vy vz"
-                    " modify flush yes sort id"
-                )
-            else:
-                new_input_data.append(
-                    f"write_dump         all custom  {dump} id xsu ysu zsu vx vy vz"
-                    " modify flush yes sort id"
-                )
-            new_input_data.append("")
-            new_input_data.append("info               computes fixes dumps log out")
-
-            files["input.dat"] += "\n".join(new_input_data)
-
-            self.logger.debug("input.dat:\n" + files["input"]["data"])
-
-            files = self._execute_single_sim(files, np=np)
-
-        if len(history_nodes) > 0:
-            files = self._prepare_input(
-                files,
-                nodes=history_nodes,
-                read_restart=False,
-                write_restart=True,
-                extras=extras,
-            )
-
-            files = self._execute_single_sim(files, np=np)
-
-            self.analyze(nodes=history_nodes)
-
-            self._trajectory = []
-
-        dump_file = Path(self.directory) / "final.dump"
-        if dump_file.exists:
-            try:
-                self.read_dump(dump_file)
-            except Exception as e:
-                printer.normal("Warning: unable to read the LAMMPS dumpfile")
-                logger.warning(f"The was a problem reading the LAMMPS dumpfile: {e}")
-                logger.warning(traceback.format_exc())
-        else:
-            printer.normal("Warning: there is no 'dump' file from LAMMPS")
+        self._trajectory = []
 
         printer.normal("")
 
@@ -770,6 +704,35 @@ class LAMMPS(seamm.Node):
             printer.important("")
 
             cmd.extend([">", "stdout.txt", "2>", "stderr.txt"])
+
+            if self._timing_data is not None:
+                _, configuration = self.get_system_configuration()
+                try:
+                    self._timing_data[6] = configuration.to_smiles(
+                        canonical=True, hydrogens=True
+                    )
+                except Exception:
+                    self._timing_data[6] = ""
+                try:
+                    self._timing_data[7] = configuration.isomeric_smiles
+                except Exception:
+                    self._timing_data[7] = ""
+                try:
+                    self._timing_data[8] = configuration.formula[0]
+                except Exception:
+                    self._timing_data[7] = ""
+                try:
+                    self._timing_data[9] = str(configuration.charge)
+                except Exception:
+                    self._timing_data[9] = ""
+                try:
+                    self._timing_data[10] = str(configuration.spin_multiplicity)
+                except Exception:
+                    self._timing_data[10] = ""
+                self._timing_data[5] = datetime.now(timezone.utc).isoformat()
+
+            t0 = time.time_ns()
+
             result = executor.run(
                 cmd=cmd,
                 config=config,
@@ -780,6 +743,17 @@ class LAMMPS(seamm.Node):
                 shell=True,
                 ce=ce,
             )
+
+            t = (time.time_ns() - t0) / 1.0e9
+            if self._timing_data is not None:
+                self._timing_data[13] = f"{t:.3f}"
+                self._timing_data[12] = str(ce["NTASKS"])
+                try:
+                    with self._timing_path.open("a", newline="") as fd:
+                        writer = csv.writer(fd)
+                        writer.writerow(self._timing_data)
+                except Exception:
+                    pass
 
             if not result:
                 self.logger.error("There was an error running LAMMPS")
@@ -842,17 +816,6 @@ class LAMMPS(seamm.Node):
                     postscript = todo["postscript"]
                 if todo["use python"] and "python script" in todo:
                     python_script = todo["python script"]
-
-        # base = "lammps_substep_%s_iter_%d" % ("_".join(node_ids), iteration)
-        # restart = base + ".restart.*"
-
-        # if read_restart:
-        #     new_input_data.insert(
-        #         0, "read_restart          %s" % (files["restart"]["filename"])
-        #     )
-
-        # if write_restart:
-        #     new_input_data.append(f"write_restart          {restart}")
 
         if postscript is None:
             if configuration.periodicity == 0:
@@ -1034,43 +997,46 @@ class LAMMPS(seamm.Node):
 
         # nonbonds
         if "nonbond parameters" in eex:
-            lines.append("")
-            if len(eex["nonbond parameters"]) > eex["n_atom_types"]:
-                lines.append("PairIJ Coeffs")
-            else:
-                lines.append("Pair Coeffs")
-            lines.append("")
-            i = 1
-            j = 1
-            for parameters in eex["nonbond parameters"]:
-                form, values, types, parameters_type, real_types = parameters
-                if form == "nonbond(9-6)":
-                    lines.append(
-                        "{:6d} {} {} # {} --> {}".format(
-                            i, values["eps"], values["rmin"], types[0], real_types[0]
+            # If using a hybrid/overlay form for e.g. Dreiding nonbonds, cannot use the
+            # section in the structure file because it must have N or N*(N+1) lines,
+            # which is not what we want
+            forms = set([v[0] for v in eex["nonbond parameters"]])
+            use_hybrid = len(forms) > 1
+
+            if not use_hybrid:
+                lines.append("")
+                if len(eex["nonbond parameters"]) > eex["n_atom_types"]:
+                    lines.append("PairIJ Coeffs")
+                else:
+                    lines.append("Pair Coeffs")
+                lines.append("")
+                i = 1
+                j = 1
+                for parameters in eex["nonbond parameters"]:
+                    form, values, types, parameters_type, real_types = parameters
+                    if form == "nonbond(9-6)":
+                        lines.append(
+                            f"{i:6d} {values['eps']} {values['rmin']} "
+                            f"# {types[0]} --> {real_types[0]}"
                         )
-                    )
-                    i += 1
-                elif form == "nonbond(12-6)":
-                    lines.append(
-                        "{:6d} {} {} # {} --> {}".format(
-                            i, values["eps"], values["sigma"], types[0], real_types[0]
-                        )
-                    )
-                    i += 1
-                elif form == "buckingham":
-                    line = "{:6d} {} {} {} {}".format(
-                        j, i, values["A"], values["rho"], values["C"]
-                    )
-                    line += (
-                        f" # {types[1]}-{types[0]} --> {real_types[1]}_{real_types[0]}"
-                    )
-                    lines.append(line)
-                    if j == i:
                         i += 1
-                        j = 1
-                    else:
-                        j += 1
+                    elif form == "nonbond(12-6)":
+                        lines.append(
+                            f"{i:6d} {values['eps']} {values['sigma']} "
+                            f"# {types[0]} --> {real_types[0]}"
+                        )
+                        i += 1
+                    elif form == "buckingham":
+                        lines.append(
+                            f"{j:6d} {i} {values['A']} {values['rho']} {values['C']}"
+                            f" # {types[1]}-{types[0]} --> "
+                            f"{real_types[1]}_{real_types[0]}"
+                        )
+                        if j == i:
+                            i += 1
+                            j = 1
+                        else:
+                            j += 1
         # bonds
         if "n_bonds" in eex and eex["n_bonds"] > 0:
             lines.append("")
@@ -1093,7 +1059,7 @@ class LAMMPS(seamm.Node):
                 form, values, types, parameters_type, real_types = parameters
                 if form == "quadratic_bond":
                     function = "harmonic" if use_hybrid else ""
-                    line = f"{counter:6d} {function} " f"{values['K2']} {values['R0']}"
+                    line = f"{counter:6d} {function} {values['K2']} {values['R0']}"
                 elif form == "quartic_bond":
                     function = "class2" if use_hybrid else ""
                     line = (
@@ -1101,7 +1067,7 @@ class LAMMPS(seamm.Node):
                         f"{values['K2']} {values['K3']} {values['K4']}"
                     )
                 line += (
-                    f" # {types[0]}-{types[1]}" f" --> {real_types[0]}_{real_types[1]}"
+                    f" # {types[0]}-{types[1]}" f" --> {real_types[0]}-{real_types[1]}"
                 )
                 lines.append(line)
 
@@ -1110,7 +1076,7 @@ class LAMMPS(seamm.Node):
             lines.append("")
             lines.append("Angles")
             lines.append("")
-            for counter, tmp in zip(range(1, eex["n_angles"] + 1), eex["angles"]):
+            for counter, tmp in enumerate(eex["angles"], start=1):
                 i, j, k, index = tmp
                 lines.append(
                     "{:6d} {:6d} {:6d} {:6d} {:6d}".format(counter, index, i, j, k)
@@ -1139,6 +1105,12 @@ class LAMMPS(seamm.Node):
                         f"{counter:6d} {function} {values['Theta0']} "
                         f"{values['K2']} {values['K3']} {values['K4']}"
                     )
+                elif form == "cosine":
+                    function = "cosine" if use_hybrid else ""
+                    line = f"{counter:6d} {function} {values['K2']}"
+                elif form == "cosine/squared":
+                    function = "cosine/squared" if use_hybrid else ""
+                    line = f"{counter:6d} {function} {values['K2']} {values['Theta0']}"
                 elif form == "simple_fourier_angle":
                     function = "fourier/simple" if use_hybrid else ""
                     line = f"{counter:6d} {function} {values['K']} -1 {values['n']}"
@@ -1312,6 +1284,15 @@ class LAMMPS(seamm.Node):
                         f"{values['V2']} "
                         f"{values['V3']} "
                         f"{values['V4']} "
+                    )
+                elif form == "torsion_charmm":
+                    function = "charmm" if use_hybrid else ""
+                    line = (
+                        f"{counter:6d} {function} "
+                        f"{values['K']} "
+                        f"{values['n']} "
+                        f"{values['Phi0']} "
+                        f"{values['weight']} "
                     )
                 line += (
                     f" # {types[0]}-{types[1]}-{types[2]}-{types[3]} "
@@ -1581,9 +1562,9 @@ class LAMMPS(seamm.Node):
             # Need forms to reorder impropers....
             form = {i: f[0] for i, f in enumerate(eex["oop parameters"], start=1)}
 
-            for counter, tmp in zip(range(1, eex["n_oops"] + 1), eex["oops"]):
+            for counter, tmp in enumerate(eex["oops"], start=1):
                 i, j, k, l, index = tmp
-                if form[index] == "improper_opls":
+                if form[index] in ("improper_opls", "dreiding_out_of_plane"):
                     lines.append(
                         "{:6d} {:6d} {:6d} {:6d} {:6d} {:6d}".format(
                             counter, index, j, i, k, l
@@ -1616,6 +1597,14 @@ class LAMMPS(seamm.Node):
                             real_types[2],
                             real_types[3],
                         )
+                    )
+                elif form == "dreiding_out_of_plane":
+                    # divide by number of oops from atom (3 for all at the moment!)
+                    lines.append(
+                        f"{counter:6d} {float(values['K2'])/3:.4f} {values['Psi0']} "
+                        f"# {types[1]}-{types[0]}-{types[2]}-{types[3]} --> "
+                        f"{real_types[1]}-{real_types[0]}-{real_types[2]}-"
+                        f"{real_types[3]}"
                     )
                 elif form == "improper_opls":
                     # divide by two because OPLS uses V2/2 and CVS V.
@@ -2258,10 +2247,12 @@ class LAMMPS(seamm.Node):
         """
         self.logger.debug("Reading dump file '{}'".format(dumpfile))
 
-        system_db = self.get_variable("_system_db")
-        configuration = system_db.system.configuration
-        periodicity = configuration.periodicity
+        _, configuration = self.get_system_configuration()
         n_atoms = configuration.n_atoms
+
+        cell = None
+        xyz = None
+        vxyz = None
 
         section = ""
         section_lines = []
@@ -2397,12 +2388,13 @@ class LAMMPS(seamm.Node):
                     x, y, z = tmp.split()[1:4]
                     xyz.append([float(x), float(y), float(z)])
 
-        if periodicity == 3:
-            configuration.cell.parameters = cell
-        configuration.atoms.set_coordinates(xyz, fractionals=fractional)
-        if have_velocities:
-            # LAMMPS only has Cartesian velocities
-            configuration.atoms.set_velocities(vxyz, fractionals=False)
+        if not have_velocities:
+            vxyz = None
+
+        if configuration.periodicity == 0:
+            cell = None
+
+        return xyz, fractional, cell, vxyz
 
     def _add_lammps_citations(self, text, cite=None):
         """Add the two main citations for LAMMPS, getting the version from stdout

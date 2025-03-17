@@ -106,6 +106,11 @@ class TkNVT(lammps_step.TkNVE):
         row += 1
         self.reset_temperature_frame()
 
+        # And how to handle the structure
+        if self.node.calculation == "nvt":
+            self["structure"].grid(row=row, column=0)
+            row += 1
+
         return row
 
     def reset_temperature_frame(self, widget=None):

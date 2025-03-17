@@ -131,13 +131,18 @@ class TkNVE(lammps_step.TkEnergy):
         for slave in frame.grid_slaves():
             slave.grid_forget()
 
-        # Put in our control frame
         row = 0
+        # Put in our control frame
         self["control_frame"].grid(row=row, column=0)
         row += 1
 
         # and the widgets in it
         self.reset_control_frame()
+
+        # And how to handle the structure
+        if self.node.calculation == "nve":
+            self["structure"].grid(row=row, column=0)
+            row += 1
 
         return row
 

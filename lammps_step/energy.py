@@ -68,9 +68,6 @@ class Energy(seamm.Node):
     def description_text(self, P=None):
         """Create the text description of what this step will do."""
 
-        # if not P:
-        #     P = self.parameters.values_to_dict()
-
         text = "Single-point energy calculation."
 
         return self.header + "\n" + __(text, indent=4 * " ").__str__()
@@ -87,7 +84,7 @@ class Energy(seamm.Node):
                 PP[key] = "{:~P}".format(PP[key])
 
         self.description = []
-        self.description.append(__(self.description_text(PP), **PP, indent=3 * " "))
+        self.description.append(__(self.description_text(PP), **PP, indent=4 * " "))
 
         lines = []
 

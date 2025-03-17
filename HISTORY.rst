@@ -1,6 +1,12 @@
 =======
 History
 =======
+2025.3.16 -- Added Dreiding forcefield and support for structure handling
+   * Added support for the Dreiding forcefield.
+   * Added standard support for structure handling
+   * Added the RMSD between initial and final structues in minimization, and
+     expanded the possible minimizers and results from minimization.
+     
 2025.2.7 -- Installation issue
    * Encountered problems with the OpenMPI version of LAMMPS and with the installation
      of OpenKIM, so fixed the CONDA environment file to correct.
