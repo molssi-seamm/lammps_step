@@ -46,3 +46,12 @@ class EnergyParameters(seamm.Parameters):
             },
             data=data,
         )
+
+        # Do any local editing of defaults
+        tmp = self["system name"]
+        tmp._data["enumeration"] = ["simulated with {model}", *tmp.enumeration[1:]]
+        tmp.default = "keep current name"
+
+        tmp = self["configuration name"]
+        tmp._data["enumeration"] = ["simulated with {model}", *tmp.enumeration]
+        tmp.default = "simulated with {model}"

@@ -18,6 +18,16 @@ kspace_methods = {
     "MSM method for few charged atoms": "msm/cg {kspace_accuracy} {smallq}",
 }
 
+charge_methods = {
+    "default for forcefield": "default",
+    "no charges": "none",
+    "charge equilibration (QEq), older reaxff implementation": "qeq/reaxff",
+    "charge equilibration (QEq) with point charges": "qeq/point",
+    "charge equilibration (QEq) with shielded charges": "qeq/shielded",
+    "charge equilibration with atom-condensed Kohn–Sham DFT (ACKS2)": "acks2/reaxff",
+    "charge transfer with polarization current equilibration (QTPIE)": "qtpie/reaxff",
+}
+
 
 class InitializationParameters(seamm.Parameters):
     """The control parameters for the initialization in LAMMPS"""
@@ -60,7 +70,36 @@ class InitializationParameters(seamm.Parameters):
             "format_string": ".1e",
             "description": "K-space negligable charge:",
             "help_text": (
-                "The cutoff for the charge on an atom to " "be considered not zero."
+                "The cutoff for the charge on an atom to be considered not zero."
+            ),
+        },
+        "atomic charges": {
+            "default": "default for forcefield",
+            "kind": "enumeration",
+            "default_units": "",
+            "enumeration": tuple(charge_methods.keys()),
+            "format_string": "",
+            "description": "Atomic charge handling:",
+            "help_text": "The method for handling atomic charges.",
+        },
+        "qeq convergence": {
+            "default": 1.0e-06,
+            "kind": "float",
+            "default_units": "",
+            "enumeration": tuple(),
+            "format_string": ".2e",
+            "description": "QEq convergence:",
+            "help_text": "The covergence goal for the charge equilibration.",
+        },
+        "qeq iterations": {
+            "default": 100,
+            "kind": "integer",
+            "default_units": "",
+            "enumeration": tuple(),
+            "format_string": "d",
+            "description": "QEq iterations:",
+            "help_text": (
+                "The maximun number of iterations for the charge equilibration."
             ),
         },
         "charged_atom_fraction_cutoff": {

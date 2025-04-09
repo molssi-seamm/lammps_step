@@ -39,7 +39,6 @@ class NVE(lammps_step.Energy):
         self.logger.debug("NVE.init() creating NVE_Parameters object")
 
         self._calculation = "nve"
-        self._model = None
         self._metadata = lammps_step.metadata
         self.parameters = lammps_step.NVE_Parameters()
 
@@ -59,7 +58,7 @@ class NVE(lammps_step.Energy):
         _, initial_configuration = self.get_system_configuration()
 
         # Handle the new structure as needed
-        system, configuration = self.get_system_configuration(P)
+        system, configuration = self.get_system_configuration(P, model=self.model)
 
         # Read the dump file and get the structure
         dump_file = Path(self.directory) / f"{self.calculation}.dump"
@@ -94,7 +93,7 @@ class NVE(lammps_step.Energy):
                 configuration,
                 P,
                 _first=True,
-                model=self.parent.model,
+                model=self.model,
             )
             printer.normal(__(text, **data, indent=self.indent + 4 * " "))
             printer.normal("")
@@ -114,11 +113,15 @@ class NVE(lammps_step.Energy):
         if not P:
             P = self.parameters.values_to_dict()
 
-        text = (
-            "{time} of microcanonical (NVE) dynamics using a "
-            "timestep of {timestep}. The trajectory will be "
-            "sampled every {sampling}."
-        )
+        model = self.model
+
+        text = "{time} of microcanonical (NVE) dynamics using a "
+        text += "timestep of {timestep}"
+        if model is None:
+            text += "."
+        else:
+            text += f" using the {model} forcefield. "
+        text += "The trajectory will be sampled every {sampling}."
 
         return self.header + "\n" + __(text, **P, indent=4 * " ").__str__()
 
@@ -127,10 +130,6 @@ class NVE(lammps_step.Energy):
 
         # See what type of forcefield we have and handle it
         ff = self.get_variable("_forcefield")
-        if ff == "OpenKIM":
-            ffname = ""
-        else:
-            ffname = ff.current_forcefield
 
         self.description = []
         self.description.append(__(self.header, indent=4 * " "))
@@ -194,7 +193,7 @@ class NVE(lammps_step.Energy):
                     Q_("kcal/Å^2/fs/mol") / Q_("kcal/mol") * Q_("kcal/mol").to("kJ")
                 )
             factor = factor.m_as("W/m^2")
-            if "cff" in ffname or not P["use centroid stress"]:
+            if ff.ff_form == "class2" or not P["use centroid stress"]:
                 # Centroid/stress/atom does not handle class2 ff ... cross-terms?
                 lines.append(
                     f"""
@@ -330,7 +329,7 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
         for i in range(1, nfixes + 1):
             lines.append(f"unfix               {i}")
         if P["heat flux"] != "never":
-            if "cff" not in ffname and P["use centroid stress"]:
+            if ff.ff_form != "class2" and P["use centroid stress"]:
                 lines.append("uncompute           flux_b")
                 lines.append("uncompute           S_b")
             lines.append("uncompute           flux_p")
@@ -369,13 +368,18 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
         masses = self.parent._data["masses"]
         min_mass = min(masses)
 
-        # These are based on masses as a proxy for vibrational frequencies
-        if min_mass < 10:
-            factor = 1
-        elif min_mass < 50:
-            factor = 2
+        ff = self.get_variable("_forcefield")
+        if ff.ff_form == "reaxff":
+            # ReaxFF needs a smaller timestep for the QEq part
+            factor = 0.5
         else:
-            factor = 4
+            # These are based on masses as a proxy for vibrational frequencies
+            if min_mass < 10:
+                factor = 1
+            elif min_mass < 50:
+                factor = 2
+            else:
+                factor = 4
 
         if value == "normal":
             timestep = 1.0 * factor

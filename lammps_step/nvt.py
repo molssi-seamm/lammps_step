@@ -70,7 +70,6 @@ class NVT(lammps_step.NVE):
         self.logger.debug("NVT.init() creating NVT_Parameters object")
 
         self._calculation = "nvt"
-        self._model = None
         self._metadata = lammps_step.metadata
         self.parameters = lammps_step.NVT_Parameters()
 
@@ -91,6 +90,8 @@ class NVT(lammps_step.NVE):
         if not P:
             P = self.parameters.values_to_dict()
 
+        model = self.model
+
         # What will we do?
 
         if P["T0"] == P["T1"]:
@@ -100,8 +101,13 @@ class NVT(lammps_step.NVE):
                 "{time} of canonical (NVT) dynamics starting "
                 " at {T0}, going to {T1}, "
             )
+        text += "using a timestep of {timestep} "
+        if model is None:
+            text += ". The temperature will be controlled "
+        else:
+            text += f"using the {model} forcefield. The temperature will be controlled "
         if P["thermostat"] == "Nose-Hoover":
-            text += "using a Nose-Hoover thermostat."
+            text += "using  a Nose-Hoover thermostat."
             if P["Tchain"] != "3":
                 if P["Tloop"] != "1":
                     text += (

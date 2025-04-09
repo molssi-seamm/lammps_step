@@ -1,6 +1,14 @@
 =======
 History
 =======
+2025.4.9 -- Adding support for ReaxFF forcefields.
+   * Added support for ReaxFF forcefields.
+   * Added control for how charges are handled, and options for the various charge
+     equilibration methods in LAMMPS.
+   * For ReaxFF, include the approximate enthalpy of formation, if available, and added
+     it as a property.
+   * Improved output for most substeps and included the forcefield used in the output.
+     
 2025.3.17.1 -- Bugfix: Incorrect handling of Dreiding hydrogen bonds
    * Fixed an issue with the Dreiding forcefield where having no hydrogen bonds in the
      system caused a crash.

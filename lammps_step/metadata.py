@@ -23,6 +23,20 @@ metadata["results"] = {
         "type": "float",
         "units": "kcal/mol/Å",
     },
+    "model": {
+        "description": "The model used",
+        "dimensionality": "scalar",
+        "type": "string",
+    },
+    "DfH0_reax": {
+        "calculation": ["energy", "minimization"],
+        "description": "the Reax appriximation to the enthalpy of formation",
+        "dimensionality": "scalar",
+        "property": "DfH0_reax#LAMMPS#{model}",
+        "type": "float",
+        "units": "kcal/mol",
+        "format": ".2f",
+    },
     "T": {
         "calculation": [
             "nve",

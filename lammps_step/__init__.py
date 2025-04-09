@@ -33,7 +33,7 @@ from .tk_custom import TkCustom
 
 from .initialization import Initialization
 from .initialization_parameters import InitializationParameters
-from .initialization_parameters import kspace_methods
+from .initialization_parameters import kspace_methods, charge_methods
 from .initialization_step import InitializationStep
 from .tk_initialization import TkInitialization
 

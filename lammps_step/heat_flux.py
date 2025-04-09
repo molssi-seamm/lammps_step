@@ -200,7 +200,6 @@ class HeatFlux(NVE):
         )
 
         self._calculation = "Heat Flux"
-        self._model = None
         self._metadata = lammps_step.metadata
         self.parameters = lammps_step.HeatFluxParameters()
 
