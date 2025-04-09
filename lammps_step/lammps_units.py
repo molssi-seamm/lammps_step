@@ -186,7 +186,6 @@ def set_lammps_unit_system(value):
 
 def get_lammps_unit_system():
     """Get the default unit system for LAMMPS."""
-    global lammps_unit_system
     return lammps_unit_system
 
 
