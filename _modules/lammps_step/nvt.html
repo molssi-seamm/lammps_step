@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nvt &#8212; SEAMM LAMMPS Plug-in 2025.3.17.1 documentation</title>
+    <title>lammps_step.nvt &#8212; SEAMM LAMMPS Plug-in 2025.4.9 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=549fd481"></script>
+    <script src="../../_static/documentation_options.js?v=8fed05ae"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.3.17.1" />
+  <meta name="docsearch:version" content="2025.4.9" />
   </head>
   
   
@@ -543,7 +543,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;NVT.init() creating NVT_Parameters object&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_calculation</span> <span class="o">=</span> <span class="s2">&quot;nvt&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">metadata</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">NVT_Parameters</span><span class="p">()</span>
 
@@ -566,6 +565,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">if</span> <span class="ow">not</span> <span class="n">P</span><span class="p">:</span>
             <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values_to_dict</span><span class="p">()</span>
 
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+
         <span class="c1"># What will we do?</span>
 
         <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;T0&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;T1&quot;</span><span class="p">]:</span>
@@ -575,8 +576,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="s2">&quot;</span><span class="si">{time}</span><span class="s2"> of canonical (NVT) dynamics starting &quot;</span>
                 <span class="s2">&quot; at </span><span class="si">{T0}</span><span class="s2">, going to </span><span class="si">{T1}</span><span class="s2">, &quot;</span>
             <span class="p">)</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;using a timestep of </span><span class="si">{timestep}</span><span class="s2"> &quot;</span>
+        <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;. The temperature will be controlled &quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;using the </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2"> forcefield. The temperature will be controlled &quot;</span>
         <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Nose-Hoover&quot;</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;using a Nose-Hoover thermostat.&quot;</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;using  a Nose-Hoover thermostat.&quot;</span>
             <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Tchain&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;3&quot;</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Tloop&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;1&quot;</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>

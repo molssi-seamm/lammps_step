@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.initialization_parameters &#8212; SEAMM LAMMPS Plug-in 2025.3.17.1 documentation</title>
+    <title>lammps_step.initialization_parameters &#8212; SEAMM LAMMPS Plug-in 2025.4.9 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=549fd481"></script>
+    <script src="../../_static/documentation_options.js?v=8fed05ae"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.3.17.1" />
+  <meta name="docsearch:version" content="2025.4.9" />
   </head>
   
   
@@ -489,6 +489,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="s2">&quot;MSM method for few charged atoms&quot;</span><span class="p">:</span> <span class="s2">&quot;msm/cg </span><span class="si">{kspace_accuracy}</span><span class="s2"> </span><span class="si">{smallq}</span><span class="s2">&quot;</span><span class="p">,</span>
 <span class="p">}</span>
 
+<span class="n">charge_methods</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;default for forcefield&quot;</span><span class="p">:</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;no charges&quot;</span><span class="p">:</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;charge equilibration (QEq), older reaxff implementation&quot;</span><span class="p">:</span> <span class="s2">&quot;qeq/reaxff&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;charge equilibration (QEq) with point charges&quot;</span><span class="p">:</span> <span class="s2">&quot;qeq/point&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;charge equilibration (QEq) with shielded charges&quot;</span><span class="p">:</span> <span class="s2">&quot;qeq/shielded&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;charge equilibration with atom-condensed Kohn–Sham DFT (ACKS2)&quot;</span><span class="p">:</span> <span class="s2">&quot;acks2/reaxff&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;charge transfer with polarization current equilibration (QTPIE)&quot;</span><span class="p">:</span> <span class="s2">&quot;qtpie/reaxff&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
 
 <div class="viewcode-block" id="InitializationParameters">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.initialization_parameters.InitializationParameters">[docs]</a>
@@ -533,7 +543,36 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">&quot;format_string&quot;</span><span class="p">:</span> <span class="s2">&quot;.1e&quot;</span><span class="p">,</span>
             <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;K-space negligable charge:&quot;</span><span class="p">,</span>
             <span class="s2">&quot;help_text&quot;</span><span class="p">:</span> <span class="p">(</span>
-                <span class="s2">&quot;The cutoff for the charge on an atom to &quot;</span> <span class="s2">&quot;be considered not zero.&quot;</span>
+                <span class="s2">&quot;The cutoff for the charge on an atom to be considered not zero.&quot;</span>
+            <span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;atomic charges&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;default for forcefield&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;enumeration&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;default_units&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;enumeration&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">charge_methods</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+            <span class="s2">&quot;format_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Atomic charge handling:&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;help_text&quot;</span><span class="p">:</span> <span class="s2">&quot;The method for handling atomic charges.&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;qeq convergence&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="mf">1.0e-06</span><span class="p">,</span>
+            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;default_units&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;enumeration&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(),</span>
+            <span class="s2">&quot;format_string&quot;</span><span class="p">:</span> <span class="s2">&quot;.2e&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;QEq convergence:&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;help_text&quot;</span><span class="p">:</span> <span class="s2">&quot;The covergence goal for the charge equilibration.&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;qeq iterations&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;default_units&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;enumeration&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(),</span>
+            <span class="s2">&quot;format_string&quot;</span><span class="p">:</span> <span class="s2">&quot;d&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;QEq iterations:&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;help_text&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">&quot;The maximun number of iterations for the charge equilibration.&quot;</span>
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">&quot;charged_atom_fraction_cutoff&quot;</span><span class="p">:</span> <span class="p">{</span>

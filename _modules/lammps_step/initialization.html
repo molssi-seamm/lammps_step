@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.initialization &#8212; SEAMM LAMMPS Plug-in 2025.3.17.1 documentation</title>
+    <title>lammps_step.initialization &#8212; SEAMM LAMMPS Plug-in 2025.4.9 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=549fd481"></script>
+    <script src="../../_static/documentation_options.js?v=8fed05ae"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.3.17.1" />
+  <meta name="docsearch:version" content="2025.4.9" />
   </head>
   
   
@@ -473,13 +473,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <span class="sd">&quot;&quot;&quot;A single-point initialization in LAMMPS&quot;&quot;&quot;</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">lammps_step</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pprint</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">lammps_step</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seamm</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seamm_util</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seamm_util.printing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">printing</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util.printing</span><span class="w"> </span><span class="kn">import</span> <span class="n">FormattedText</span> <span class="k">as</span> <span class="n">__</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pprint</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;lammps&quot;</span><span class="p">)</span>
 <span class="n">job</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">()</span>
@@ -649,27 +650,33 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="c1"># See what type of forcefield we have and handle it</span>
         <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_forcefield&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;OpenKIM&quot;</span><span class="p">:</span>
-            <span class="n">lammps_step</span><span class="o">.</span><span class="n">set_lammps_unit_system</span><span class="p">(</span><span class="s2">&quot;metal&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">OpenKIM_input</span><span class="p">()</span>
+
+        <span class="n">ff_form</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">ff_form</span>
 
         <span class="c1"># Valence forcefield...</span>
         <span class="n">ffname</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">current_forcefield</span>
         <span class="n">n_atoms</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">n_atoms</span>
 
-        <span class="c1"># And atom-type if necessary</span>
-        <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;atom_types_</span><span class="si">{</span><span class="n">ffname</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Atom typing&quot;</span><span class="p">)</span>
-            <span class="n">ff</span><span class="o">.</span><span class="n">assign_forcefield</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">typ</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">typ</span> <span class="ow">in</span> <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">key</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">ff_form</span> <span class="o">!=</span> <span class="s2">&quot;reaxff&quot;</span><span class="p">:</span>
+            <span class="c1"># And atom-type if necessary</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;atom_types_</span><span class="si">{</span><span class="n">ffname</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Atom typing&quot;</span><span class="p">)</span>
                 <span class="n">ff</span><span class="o">.</span><span class="n">assign_forcefield</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">typ</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">typ</span> <span class="ow">in</span> <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">key</span><span class="p">]):</span>
+                    <span class="n">ff</span><span class="o">.</span><span class="n">assign_forcefield</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
 
         <span class="c1"># Get the energy expression.</span>
         <span class="n">style</span> <span class="o">=</span> <span class="p">(</span>
             <span class="s2">&quot;LAMMPS-class2&quot;</span>
-            <span class="k">if</span> <span class="s2">&quot;cff&quot;</span> <span class="ow">in</span> <span class="n">ffname</span>
-            <span class="k">else</span> <span class="s2">&quot;LAMMPS-dreiding&quot;</span> <span class="k">if</span> <span class="s2">&quot;dreiding&quot;</span> <span class="ow">in</span> <span class="n">ffname</span> <span class="k">else</span> <span class="s2">&quot;LAMMPS&quot;</span>
+            <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;class2&quot;</span>
+            <span class="k">else</span> <span class="p">(</span>
+                <span class="s2">&quot;LAMMPS-dreiding&quot;</span>
+                <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;dreiding&quot;</span>
+                <span class="k">else</span> <span class="s2">&quot;LAMMMPS-reaxff&quot;</span> <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;reaxff&quot;</span> <span class="k">else</span> <span class="s2">&quot;LAMMPS&quot;</span>
+            <span class="p">)</span>
         <span class="p">)</span>
 
         <span class="n">eex</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">energy_expression</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">)</span>
@@ -712,8 +719,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="s2">&quot; or 3-D periodicity at the moment!&quot;</span>
             <span class="p">)</span>
 
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;atom_style          full&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;reaxff&quot;</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;atom_style          full&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;atom_style          full&quot;</span><span class="p">)</span>
+
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;newton              on&quot;</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">n_atoms</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
             <span class="c1"># LAMMPS has problems with bins for small systems</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;neighbor            2.0 nsq&quot;</span><span class="p">)</span>
@@ -731,199 +743,204 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <span class="c1"># Control of nonbonds</span>
 
-        <span class="c1"># If using e.g. hybrid/overlay then must use explicit coeff lines here</span>
-        <span class="n">nonbond_forms</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;nonbond parameters&quot;</span><span class="p">]])</span>
-        <span class="n">use_hybrid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nonbond_forms</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">use_hybrid</span> <span class="ow">and</span> <span class="s2">&quot;hbond/dreiding/lj&quot;</span> <span class="ow">in</span> <span class="n">nonbond_forms</span><span class="p">:</span>
-            <span class="n">hybrid</span> <span class="o">=</span> <span class="s2">&quot;pair_style          hybrid/overlay hbond/dreiding/lj 2 6 6.5 90 &quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">hybrid</span> <span class="o">=</span> <span class="s2">&quot;pair_style          &quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;nonbond parameters&quot;</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">:</span>
+            <span class="c1"># If using e.g. hybrid/overlay then must use explicit coeff lines here</span>
+            <span class="n">nonbond_forms</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;nonbond parameters&quot;</span><span class="p">]])</span>
+            <span class="n">use_hybrid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nonbond_forms</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">use_hybrid</span> <span class="ow">and</span> <span class="s2">&quot;hbond/dreiding/lj&quot;</span> <span class="ow">in</span> <span class="n">nonbond_forms</span><span class="p">:</span>
+                <span class="n">hybrid</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;pair_style          hybrid/overlay hbond/dreiding/lj 2 6 6.5 90 &quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">hybrid</span> <span class="o">=</span> <span class="s2">&quot;pair_style          &quot;</span>
 
-        <span class="n">nonbond_term</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="s2">&quot;pair&quot;</span> <span class="ow">in</span> <span class="n">terms</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">terms</span><span class="p">[</span><span class="s2">&quot;pair&quot;</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Cannot handle multiple nonbond terms yet!&quot;</span><span class="p">)</span>
-            <span class="n">nonbond_term</span> <span class="o">=</span> <span class="n">terms</span><span class="p">[</span><span class="s2">&quot;pair&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">nonbond_term</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="s2">&quot;pair&quot;</span> <span class="ow">in</span> <span class="n">terms</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">terms</span><span class="p">[</span><span class="s2">&quot;pair&quot;</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Cannot handle multiple nonbond terms yet!&quot;</span><span class="p">)</span>
+                <span class="n">nonbond_term</span> <span class="o">=</span> <span class="n">terms</span><span class="p">[</span><span class="s2">&quot;pair&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="n">nonbond_term</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">terms</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Cannot find nonbond term in forcefield!&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">nonbond_term</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">terms</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Cannot find nonbond term in forcefield!&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">nonbond_term</span> <span class="o">==</span> <span class="s2">&quot;nonbond(9-6)&quot;</span><span class="p">:</span>
-            <span class="n">pair_style_base</span> <span class="o">=</span> <span class="s2">&quot;lj/class2&quot;</span>
-            <span class="n">mixing</span> <span class="o">=</span> <span class="s2">&quot;sixthpower&quot;</span>
-        <span class="k">elif</span> <span class="n">nonbond_term</span> <span class="o">==</span> <span class="s2">&quot;nonbond(12-6)&quot;</span><span class="p">:</span>
-            <span class="n">pair_style_base</span> <span class="o">=</span> <span class="s2">&quot;lj/cut&quot;</span>
-            <span class="c1"># What type of mixing rule?</span>
-            <span class="n">modifiers</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">ff</span><span class="p">[</span><span class="s2">&quot;modifiers&quot;</span><span class="p">][</span><span class="s2">&quot;nonbond(12-6)&quot;</span><span class="p">]</span>
-            <span class="n">mixing</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-            <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">modifiers</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">modifiers</span><span class="p">[</span><span class="n">section</span><span class="p">]:</span>
-                    <span class="k">if</span> <span class="s2">&quot;combination&quot;</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">mixing</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                            <span class="n">mixing</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
-                        <span class="k">if</span> <span class="n">mixing</span> <span class="o">!=</span> <span class="n">item</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]:</span>
-                            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                                <span class="s2">&quot;Conflicting combination rules in &quot;</span>
-                                <span class="s2">&quot;nonbond(12-6) section &#39;&quot;</span> <span class="o">+</span> <span class="n">section</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span>
+            <span class="k">if</span> <span class="n">nonbond_term</span> <span class="o">==</span> <span class="s2">&quot;nonbond(9-6)&quot;</span><span class="p">:</span>
+                <span class="n">pair_style_base</span> <span class="o">=</span> <span class="s2">&quot;lj/class2&quot;</span>
+                <span class="n">mixing</span> <span class="o">=</span> <span class="s2">&quot;sixthpower&quot;</span>
+            <span class="k">elif</span> <span class="n">nonbond_term</span> <span class="o">==</span> <span class="s2">&quot;nonbond(12-6)&quot;</span><span class="p">:</span>
+                <span class="n">pair_style_base</span> <span class="o">=</span> <span class="s2">&quot;lj/cut&quot;</span>
+                <span class="c1"># What type of mixing rule?</span>
+                <span class="n">modifiers</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">ff</span><span class="p">[</span><span class="s2">&quot;modifiers&quot;</span><span class="p">][</span><span class="s2">&quot;nonbond(12-6)&quot;</span><span class="p">]</span>
+                <span class="n">mixing</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">modifiers</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">modifiers</span><span class="p">[</span><span class="n">section</span><span class="p">]:</span>
+                        <span class="k">if</span> <span class="s2">&quot;combination&quot;</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">mixing</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                                <span class="n">mixing</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+                            <span class="k">if</span> <span class="n">mixing</span> <span class="o">!=</span> <span class="n">item</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]:</span>
+                                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                                    <span class="s2">&quot;Conflicting combination rules in &quot;</span>
+                                    <span class="s2">&quot;nonbond(12-6) section &#39;&quot;</span> <span class="o">+</span> <span class="n">section</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span>
+                                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">mixing</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="n">mixing</span> <span class="o">=</span> <span class="s2">&quot;geometric&quot;</span>
+            <span class="k">elif</span> <span class="n">nonbond_term</span> <span class="o">==</span> <span class="s2">&quot;buckingham&quot;</span><span class="p">:</span>
+                <span class="n">pair_style_base</span> <span class="o">=</span> <span class="s2">&quot;buck&quot;</span>
+                <span class="n">mixing</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="s2">&quot;Can&#39;t handle nonbond term </span><span class="si">{}</span><span class="s2"> yet!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nonbond_term</span><span class="p">)</span>
+                <span class="p">)</span>
+
+            <span class="n">shift</span> <span class="o">=</span> <span class="s2">&quot;yes&quot;</span> <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;shift_nonbond&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;no&quot;</span>
+            <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;kspace_method&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;automatic&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">n_charged_atoms</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span>
+                        <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="s2">&quot; The nonbonded interactions will be evaluated using &quot;</span>
+                            <span class="s2">&quot;a cutoff of </span><span class="si">{cutoff}</span><span class="s2"> Å. Since there are no charges &quot;</span>
+                            <span class="s2">&quot;on the atoms, no long-range coulomb method will be &quot;</span>
+                            <span class="s2">&quot;used.&quot;</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="s2">&quot; The nonbonded interactions will be evaluated using &quot;</span>
+                            <span class="s2">&quot;a cutoff of </span><span class="si">{cutoff}</span><span class="s2"> Å, with the long-range terms &quot;</span>
+                        <span class="p">)</span>
+                        <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span> <span class="o">+</span> <span class="s2">&quot;/coul/long&quot;</span>
+                        <span class="k">if</span> <span class="n">n_atoms</span> <span class="o">&lt;</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;ewald_atom_cutoff&quot;</span><span class="p">]:</span>
+                            <span class="n">kspace_style</span> <span class="o">=</span> <span class="s2">&quot;ewald </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;kspace_accuracy&quot;</span><span class="p">])</span>
+                            <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
+                                <span class="s2">&quot;using the Ewald summation method with &quot;</span>
+                                <span class="s2">&quot;an accuracy of </span><span class="si">{kspace_accuracy}</span><span class="s2">.&quot;</span>
                             <span class="p">)</span>
-            <span class="k">if</span> <span class="n">mixing</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                <span class="n">mixing</span> <span class="o">=</span> <span class="s2">&quot;geometric&quot;</span>
-        <span class="k">elif</span> <span class="n">nonbond_term</span> <span class="o">==</span> <span class="s2">&quot;buckingham&quot;</span><span class="p">:</span>
-            <span class="n">pair_style_base</span> <span class="o">=</span> <span class="s2">&quot;buck&quot;</span>
-            <span class="n">mixing</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Can&#39;t handle nonbond term </span><span class="si">{}</span><span class="s2"> yet!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nonbond_term</span><span class="p">))</span>
-
-        <span class="n">shift</span> <span class="o">=</span> <span class="s2">&quot;yes&quot;</span> <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;shift_nonbond&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;no&quot;</span>
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;kspace_method&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;automatic&quot;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">n_charged_atoms</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span>
-                    <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
-                        <span class="s2">&quot; The nonbonded interactions will be evaluated using &quot;</span>
-                        <span class="s2">&quot;a cutoff of </span><span class="si">{cutoff}</span><span class="s2"> Å. Since there are no charges &quot;</span>
-                        <span class="s2">&quot;on the atoms, no long-range coulomb method will be &quot;</span>
-                        <span class="s2">&quot;used.&quot;</span>
-                    <span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
-                        <span class="s2">&quot; The nonbonded interactions will be evaluated using &quot;</span>
-                        <span class="s2">&quot;a cutoff of </span><span class="si">{cutoff}</span><span class="s2"> Å, with the long-range terms &quot;</span>
-                    <span class="p">)</span>
-                    <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span> <span class="o">+</span> <span class="s2">&quot;/coul/long&quot;</span>
-                    <span class="k">if</span> <span class="n">n_atoms</span> <span class="o">&lt;</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;ewald_atom_cutoff&quot;</span><span class="p">]:</span>
-                        <span class="n">kspace_style</span> <span class="o">=</span> <span class="s2">&quot;ewald </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;kspace_accuracy&quot;</span><span class="p">])</span>
-                        <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
-                            <span class="s2">&quot;using the Ewald summation method with &quot;</span>
-                            <span class="s2">&quot;an accuracy of </span><span class="si">{kspace_accuracy}</span><span class="s2">.&quot;</span>
+                        <span class="k">elif</span> <span class="n">fraction_charged_atoms</span> <span class="o">&lt;</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;charged_atom_fraction_cutoff&quot;</span><span class="p">]:</span>
+                            <span class="n">kspace_style</span> <span class="o">=</span> <span class="s2">&quot;pppm/cg </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                <span class="n">P</span><span class="p">[</span><span class="s2">&quot;kspace_accuracy&quot;</span><span class="p">],</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;charged_atom_fraction_cutoff&quot;</span><span class="p">]</span>
+                            <span class="p">)</span>
+                            <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
+                                <span class="s2">&quot;using the PPPM method optimized for few &quot;</span>
+                                <span class="s2">&quot;atoms with charges, with &quot;</span>
+                                <span class="s2">&quot;an accuracy of </span><span class="si">{kspace_accuracy}</span><span class="s2">.&quot;</span>
+                            <span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">kspace_style</span> <span class="o">=</span> <span class="s2">&quot;pppm </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;kspace_accuracy&quot;</span><span class="p">])</span>
+                            <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
+                                <span class="s2">&quot;using the PPPM method with &quot;</span>
+                                <span class="s2">&quot;an accuracy of </span><span class="si">{kspace_accuracy}</span><span class="s2">.&quot;</span>
+                            <span class="p">)</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hybrid</span><span class="si">}</span><span class="s2">          </span><span class="si">{</span><span class="n">pair_style</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">P</span><span class="p">[</span><span class="s1">&#39;cutoff&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">mixing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;pair_modify         tail </span><span class="si">{</span><span class="n">tail_correction</span><span class="si">}</span><span class="s2"> shift </span><span class="si">{</span><span class="n">shift</span><span class="si">}</span><span class="s2">&quot;</span>
                         <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="s2">&quot;pair_modify         mix &quot;</span>
+                            <span class="o">+</span> <span class="n">mixing</span>
+                            <span class="o">+</span> <span class="s2">&quot; tail </span><span class="si">{}</span><span class="s2"> shift </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tail_correction</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">shift</span><span class="p">:</span>
+                        <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="s2">&quot; The van der Waals terms will be shifted &quot;</span>
+                            <span class="s2">&quot;to zero energy at the cutoff distance.&quot;</span>
+                        <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">tail_correction</span><span class="p">:</span>
+                        <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="s2">&quot; A long-range correction for the &quot;</span>
+                            <span class="s2">&quot;van der Waals terms will be added.&quot;</span>
+                        <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">kspace_style</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kspace_style        &quot;</span> <span class="o">+</span> <span class="n">kspace_style</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">kspace_style</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="k">if</span> <span class="n">n_charged_atoms</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span>
+                        <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="s2">&quot; The nonbonded interactions will be evaluated using &quot;</span>
+                            <span class="s2">&quot;a simple cutoff of </span><span class="si">{cutoff}</span><span class="s2"> Å. Since there are no &quot;</span>
+                            <span class="s2">&quot;charges on the atoms, no long-range coulomb method &quot;</span>
+                            <span class="s2">&quot;will be used.&quot;</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="p">(</span>
+                        <span class="n">n_atoms</span> <span class="o">&gt;</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;msm_atom_cutoff&quot;</span><span class="p">]</span>
+                        <span class="ow">and</span> <span class="n">pair_style_base</span> <span class="ow">in</span> <span class="n">msm_pair_styles</span>
+                    <span class="p">):</span>
+                        <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span> <span class="o">+</span> <span class="s2">&quot;/coul/msm&quot;</span>
+                        <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="s2">&quot;The nonbonded interactions will be handled with &quot;</span>
+                            <span class="s2">&quot; a cutoff of </span><span class="si">{cutoff}</span><span class="s2"> Å.&quot;</span>
+                        <span class="p">)</span>
+                        <span class="k">if</span> <span class="n">fraction_charged_atoms</span> <span class="o">&lt;</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;charged_atom_fraction_cutoff&quot;</span><span class="p">]:</span>
+                            <span class="n">kspace_style</span> <span class="o">=</span> <span class="s2">&quot;msm/cg </span><span class="si">{kspace_accuracy}</span><span class="s2"> </span><span class="si">{kspace_smallq}</span><span class="s2">&quot;</span>
+                            <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
+                                <span class="s2">&quot; The MSM method will be used to handle &quot;</span>
+                                <span class="s2">&quot;the longer range coulombic interactions, using &quot;</span>
+                                <span class="s2">&quot;the approach tuned for systems with few charges.&quot;</span>
+                                <span class="s2">&quot;The accuracy goal is </span><span class="si">{kspace_accuracy}</span><span class="s2">.&quot;</span>
+                            <span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">kspace_style</span> <span class="o">=</span> <span class="s2">&quot;msm </span><span class="si">{kspace_accuracy}</span><span class="s2">&quot;</span>
+                            <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
+                                <span class="s2">&quot; The MSM method will be used to handle &quot;</span>
+                                <span class="s2">&quot;the longer range coulombic interactions.&quot;</span>
+                                <span class="s2">&quot;The accuracy goal is </span><span class="si">{kspace_accuracy}</span><span class="s2">.&quot;</span>
+                            <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span> <span class="o">+</span> <span class="s2">&quot;/coul/cut&quot;</span>
+                        <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="s2">&quot;The nonbonded interactions will be handled with &quot;</span>
+                            <span class="s2">&quot; a simple cutoff of </span><span class="si">{cutoff}</span><span class="s2"> Å.&quot;</span>
+                        <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">shift</span><span class="p">:</span>
+                        <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="s2">&quot; The van der Waals terms will be shifted &quot;</span>
+                            <span class="s2">&quot;to zero energy at the cutoff distance.&quot;</span>
+                        <span class="p">)</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hybrid</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pair_style</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">P</span><span class="p">[</span><span class="s1">&#39;cutoff&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">mixing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pair_modify         shift </span><span class="si">{</span><span class="n">shift</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pair_modify         mix </span><span class="si">{</span><span class="n">mixing</span><span class="si">}</span><span class="s2"> shift </span><span class="si">{</span><span class="n">shift</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">kspace_style</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kspace_style        &quot;</span> <span class="o">+</span> <span class="n">kspace_style</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">P</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">P</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                    <span class="n">kspace_style</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="k">if</span> <span class="n">n_charged_atoms</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;kspace_style&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+                        <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span>
                     <span class="k">elif</span> <span class="n">fraction_charged_atoms</span> <span class="o">&lt;</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;charged_atom_fraction_cutoff&quot;</span><span class="p">]:</span>
-                        <span class="n">kspace_style</span> <span class="o">=</span> <span class="s2">&quot;pppm/cg </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                            <span class="n">P</span><span class="p">[</span><span class="s2">&quot;kspace_accuracy&quot;</span><span class="p">],</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;charged_atom_fraction_cutoff&quot;</span><span class="p">]</span>
-                        <span class="p">)</span>
-                        <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
-                            <span class="s2">&quot;using the PPPM method optimized for few &quot;</span>
-                            <span class="s2">&quot;atoms with charges, with &quot;</span>
-                            <span class="s2">&quot;an accuracy of </span><span class="si">{kspace_accuracy}</span><span class="s2">.&quot;</span>
-                        <span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">kspace_style</span> <span class="o">=</span> <span class="s2">&quot;pppm </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;kspace_accuracy&quot;</span><span class="p">])</span>
-                        <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
-                            <span class="s2">&quot;using the PPPM method with &quot;</span>
-                            <span class="s2">&quot;an accuracy of </span><span class="si">{kspace_accuracy}</span><span class="s2">.&quot;</span>
-                        <span class="p">)</span>
-                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hybrid</span><span class="si">}</span><span class="s2">          </span><span class="si">{</span><span class="n">pair_style</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">P</span><span class="p">[</span><span class="s1">&#39;cutoff&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">mixing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;pair_modify         tail </span><span class="si">{</span><span class="n">tail_correction</span><span class="si">}</span><span class="s2"> shift </span><span class="si">{</span><span class="n">shift</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="s2">&quot;pair_modify         mix &quot;</span>
-                        <span class="o">+</span> <span class="n">mixing</span>
-                        <span class="o">+</span> <span class="s2">&quot; tail </span><span class="si">{}</span><span class="s2"> shift </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tail_correction</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
-                    <span class="p">)</span>
-                <span class="k">if</span> <span class="n">shift</span><span class="p">:</span>
-                    <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
-                        <span class="s2">&quot; The van der Waals terms will be shifted &quot;</span>
-                        <span class="s2">&quot;to zero energy at the cutoff distance.&quot;</span>
-                    <span class="p">)</span>
-                <span class="k">if</span> <span class="n">tail_correction</span><span class="p">:</span>
-                    <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
-                        <span class="s2">&quot; A long-range correction for the &quot;</span>
-                        <span class="s2">&quot;van der Waals terms will be added.&quot;</span>
-                    <span class="p">)</span>
-                <span class="k">if</span> <span class="n">kspace_style</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kspace_style        &quot;</span> <span class="o">+</span> <span class="n">kspace_style</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">kspace_style</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-                <span class="k">if</span> <span class="n">n_charged_atoms</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span>
-                    <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
-                        <span class="s2">&quot; The nonbonded interactions will be evaluated using &quot;</span>
-                        <span class="s2">&quot;a simple cutoff of </span><span class="si">{cutoff}</span><span class="s2"> Å. Since there are no &quot;</span>
-                        <span class="s2">&quot;charges on the atoms, no long-range coulomb method &quot;</span>
-                        <span class="s2">&quot;will be used.&quot;</span>
-                    <span class="p">)</span>
-                <span class="k">elif</span> <span class="p">(</span>
-                    <span class="n">n_atoms</span> <span class="o">&gt;</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;msm_atom_cutoff&quot;</span><span class="p">]</span>
-                    <span class="ow">and</span> <span class="n">pair_style_base</span> <span class="ow">in</span> <span class="n">msm_pair_styles</span>
-                <span class="p">):</span>
-                    <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span> <span class="o">+</span> <span class="s2">&quot;/coul/msm&quot;</span>
-                    <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
-                        <span class="s2">&quot;The nonbonded interactions will be handled with &quot;</span>
-                        <span class="s2">&quot; a cutoff of </span><span class="si">{cutoff}</span><span class="s2"> Å.&quot;</span>
-                    <span class="p">)</span>
-                    <span class="k">if</span> <span class="n">fraction_charged_atoms</span> <span class="o">&lt;</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;charged_atom_fraction_cutoff&quot;</span><span class="p">]:</span>
-                        <span class="n">kspace_style</span> <span class="o">=</span> <span class="s2">&quot;msm/cg </span><span class="si">{kspace_accuracy}</span><span class="s2"> </span><span class="si">{kspace_smallq}</span><span class="s2">&quot;</span>
-                        <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
-                            <span class="s2">&quot; The MSM method will be used to handle &quot;</span>
-                            <span class="s2">&quot;the longer range coulombic interactions, using &quot;</span>
-                            <span class="s2">&quot;the approach tuned for systems with few charges.&quot;</span>
-                            <span class="s2">&quot;The accuracy goal is </span><span class="si">{kspace_accuracy}</span><span class="s2">.&quot;</span>
+                        <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span> <span class="o">+</span> <span class="s2">&quot;/coul/long&quot;</span>
+                        <span class="n">kspace_style</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">kspace_methods</span><span class="p">[</span>
+                            <span class="n">P</span><span class="p">[</span><span class="s2">&quot;kspace_method&quot;</span><span class="p">]</span>
+                        <span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">P</span><span class="p">)</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hybrid</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pair_style</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">P</span><span class="p">[</span><span class="s1">&#39;cutoff&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">mixing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;pair_modify         tail </span><span class="si">{</span><span class="n">tail_correction</span><span class="si">}</span><span class="s2"> shift </span><span class="si">{</span><span class="n">shift</span><span class="si">}</span><span class="s2">&quot;</span>
                         <span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">kspace_style</span> <span class="o">=</span> <span class="s2">&quot;msm </span><span class="si">{kspace_accuracy}</span><span class="s2">&quot;</span>
-                        <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
-                            <span class="s2">&quot; The MSM method will be used to handle &quot;</span>
-                            <span class="s2">&quot;the longer range coulombic interactions.&quot;</span>
-                            <span class="s2">&quot;The accuracy goal is </span><span class="si">{kspace_accuracy}</span><span class="s2">.&quot;</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="s2">&quot;pair_modify         mix &quot;</span>
+                            <span class="o">+</span> <span class="n">mixing</span>
+                            <span class="o">+</span> <span class="s2">&quot; tail </span><span class="si">{}</span><span class="s2"> shift </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tail_correction</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
                         <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span> <span class="o">+</span> <span class="s2">&quot;/coul/cut&quot;</span>
-                    <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
-                        <span class="s2">&quot;The nonbonded interactions will be handled with &quot;</span>
-                        <span class="s2">&quot; a simple cutoff of </span><span class="si">{cutoff}</span><span class="s2"> Å.&quot;</span>
-                    <span class="p">)</span>
-                <span class="k">if</span> <span class="n">shift</span><span class="p">:</span>
-                    <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
-                        <span class="s2">&quot; The van der Waals terms will be shifted &quot;</span>
-                        <span class="s2">&quot;to zero energy at the cutoff distance.&quot;</span>
-                    <span class="p">)</span>
-                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hybrid</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pair_style</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">P</span><span class="p">[</span><span class="s1">&#39;cutoff&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">mixing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pair_modify         shift </span><span class="si">{</span><span class="n">shift</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pair_modify         mix </span><span class="si">{</span><span class="n">mixing</span><span class="si">}</span><span class="s2"> shift </span><span class="si">{</span><span class="n">shift</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">kspace_style</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kspace_style        &quot;</span> <span class="o">+</span> <span class="n">kspace_style</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">P</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">P</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-                <span class="n">kspace_style</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-                <span class="k">if</span> <span class="n">n_charged_atoms</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;kspace_style&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
-                    <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span>
-                <span class="k">elif</span> <span class="n">fraction_charged_atoms</span> <span class="o">&lt;</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;charged_atom_fraction_cutoff&quot;</span><span class="p">]:</span>
-                    <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span> <span class="o">+</span> <span class="s2">&quot;/coul/long&quot;</span>
-                    <span class="n">kspace_style</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">kspace_methods</span><span class="p">[</span>
-                        <span class="n">P</span><span class="p">[</span><span class="s2">&quot;kspace_method&quot;</span><span class="p">]</span>
-                    <span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">P</span><span class="p">)</span>
-                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hybrid</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pair_style</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">P</span><span class="p">[</span><span class="s1">&#39;cutoff&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">mixing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;pair_modify         tail </span><span class="si">{</span><span class="n">tail_correction</span><span class="si">}</span><span class="s2"> shift </span><span class="si">{</span><span class="n">shift</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="s2">&quot;pair_modify         mix &quot;</span>
-                        <span class="o">+</span> <span class="n">mixing</span>
-                        <span class="o">+</span> <span class="s2">&quot; tail </span><span class="si">{}</span><span class="s2"> shift </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tail_correction</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
-                    <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">n_charged_atoms</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span> <span class="o">+</span> <span class="s2">&quot;/coul/cut&quot;</span>
-                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hybrid</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pair_style</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">P</span><span class="p">[</span><span class="s1">&#39;cutoff&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">mixing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pair_modify         shift </span><span class="si">{</span><span class="n">shift</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pair_modify         mix </span><span class="si">{</span><span class="n">mixing</span><span class="si">}</span><span class="s2"> shift </span><span class="si">{</span><span class="n">shift</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="s2">&quot;msm&quot;</span> <span class="ow">in</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">kspace_methods</span><span class="p">[</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;kspace_method&quot;</span><span class="p">]]:</span>
-                    <span class="n">kspace_style</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">kspace_methods</span><span class="p">[</span>
-                        <span class="n">P</span><span class="p">[</span><span class="s2">&quot;kspace_method&quot;</span><span class="p">]</span>
-                    <span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">P</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">n_charged_atoms</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span> <span class="o">+</span> <span class="s2">&quot;/coul/cut&quot;</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hybrid</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pair_style</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">P</span><span class="p">[</span><span class="s1">&#39;cutoff&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">mixing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pair_modify         shift </span><span class="si">{</span><span class="n">shift</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pair_modify         mix </span><span class="si">{</span><span class="n">mixing</span><span class="si">}</span><span class="s2"> shift </span><span class="si">{</span><span class="n">shift</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="s2">&quot;msm&quot;</span> <span class="ow">in</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">kspace_methods</span><span class="p">[</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;kspace_method&quot;</span><span class="p">]]:</span>
+                        <span class="n">kspace_style</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">kspace_methods</span><span class="p">[</span>
+                            <span class="n">P</span><span class="p">[</span><span class="s2">&quot;kspace_method&quot;</span><span class="p">]</span>
+                        <span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">P</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;n_bonds&quot;</span> <span class="ow">in</span> <span class="n">eex</span> <span class="ow">and</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_bonds&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">forms</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;bond parameters&quot;</span><span class="p">]])</span>
@@ -975,71 +992,125 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
-        <span class="c1"># Handle 1-4s in nonbonds</span>
-        <span class="k">if</span> <span class="s2">&quot;opls&quot;</span> <span class="ow">in</span> <span class="n">ffname</span><span class="p">:</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;special_bonds       lj/coul 0.0 0.0 0.5&quot;</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="s2">&quot;dreiding&quot;</span> <span class="ow">in</span> <span class="n">ffname</span><span class="p">:</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;special_bonds       dreiding&quot;</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="s2">&quot;cff&quot;</span> <span class="ow">in</span> <span class="n">ffname</span><span class="p">:</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;special_bonds       lj/coul 0.0 0.0 1.0&quot;</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Special bonds not implemented for this force field: </span><span class="si">{</span><span class="n">ffname</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;nonbond parameters&quot;</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">:</span>
+            <span class="c1"># Handle 1-4s in nonbonds</span>
+            <span class="k">if</span> <span class="s2">&quot;opls&quot;</span> <span class="ow">in</span> <span class="n">ffname</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;special_bonds       lj/coul 0.0 0.0 0.5&quot;</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">&quot;dreiding&quot;</span> <span class="ow">in</span> <span class="n">ffname</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;special_bonds       dreiding&quot;</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">&quot;cff&quot;</span> <span class="ow">in</span> <span class="n">ffname</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;special_bonds       lj/coul 0.0 0.0 1.0&quot;</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Special bonds not implemented for this force field: </span><span class="si">{</span><span class="n">ffname</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">extras</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;read_data&quot;</span> <span class="ow">in</span> <span class="n">extras</span> <span class="ow">and</span> <span class="n">extras</span><span class="p">[</span><span class="s2">&quot;read_data&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;read_data           structure.dat&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">kspace_style</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kspace_style        &quot;</span> <span class="o">+</span> <span class="n">kspace_style</span><span class="p">)</span>
-
-        <span class="c1"># For hybrid nonbonds we need the explicit coeffs lines</span>
-        <span class="k">if</span> <span class="n">use_hybrid</span><span class="p">:</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;#    nonbond parameters&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;nonbond parameters&quot;</span><span class="p">]:</span>
-                <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
-                <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="n">types</span>
-                <span class="k">if</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;nonbond(9-6)&quot;</span><span class="p">:</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;pair_coeff    </span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">j</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pair_style</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;eps&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="p">)</span>
-                <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;nonbond(12-6)&quot;</span><span class="p">:</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;pair_coeff    </span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">j</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pair_style</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;eps&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="p">)</span>
-                <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;buckingham&quot;</span><span class="p">:</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;pair_coeff    </span><span class="si">{</span><span class="n">j</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pair_style</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;rho&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt; &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="p">)</span>
-                <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;hbond/dreiding/lj&quot;</span><span class="p">:</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;pair_coeff    </span><span class="si">{</span><span class="n">j</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">form</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;h_index&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;donor flag&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;eps&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;exponent&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                    <span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;nonbond parameters&quot;</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">kspace_style</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kspace_style        &quot;</span> <span class="o">+</span> <span class="n">kspace_style</span><span class="p">)</span>
+
+            <span class="c1"># For hybrid nonbonds we need the explicit coeffs lines</span>
+            <span class="k">if</span> <span class="n">use_hybrid</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;#    nonbond parameters&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;nonbond parameters&quot;</span><span class="p">]:</span>
+                    <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
+                    <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="n">types</span>
+                    <span class="k">if</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;nonbond(9-6)&quot;</span><span class="p">:</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;pair_coeff    </span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">j</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pair_style</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;eps&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;nonbond(12-6)&quot;</span><span class="p">:</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;pair_coeff    </span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">j</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pair_style</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;eps&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;buckingham&quot;</span><span class="p">:</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;pair_coeff    </span><span class="si">{</span><span class="n">j</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pair_style</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;rho&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt;&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;hbond/dreiding/lj&quot;</span><span class="p">:</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;pair_coeff    </span><span class="si">{</span><span class="n">j</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">form</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;h_index&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;donor flag&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;eps&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;exponent&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;reaxff&quot;</span><span class="p">:</span>
+            <span class="c1"># Save the sum of the atomic energy terms for later</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">_atomic_energy_sum</span> <span class="o">=</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;Sum of atomic energies&quot;</span><span class="p">]</span>
+
+            <span class="c1"># Setup the Reax FF calculation</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# Setting up ReaxFF&quot;</span><span class="p">)</span>
+
+            <span class="c1"># How to handle charges...</span>
+            <span class="n">charge_method</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;atomic charges&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">charge_method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">charge_methods</span><span class="p">:</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lammps_step</span><span class="o">.</span><span class="n">charge_methods</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Do not recognize charge method &#39;</span><span class="si">{</span><span class="n">charge_method</span><span class="si">}</span><span class="s2">&#39;. Should be &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;one of</span><span class="se">\n\t</span><span class="si">{</span><span class="n">tmp</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="n">charge_method</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">charge_methods</span><span class="p">[</span><span class="n">charge_method</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">charge_method</span> <span class="o">==</span> <span class="s2">&quot;default&quot;</span><span class="p">:</span>
+                <span class="n">charge_method</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">charge_method</span>
+
+            <span class="k">if</span> <span class="n">charge_method</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;pair_style          reaxff NULL checkqeq no enobonds yes&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;pair_style          reaxff NULL enobonds yes&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;pair_coeff          * * forcefield.dat </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s1">&#39;atom types&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+            <span class="n">cutoff</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;cutoff&quot;</span><span class="p">]</span>
+            <span class="n">convergence</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;qeq convergence&quot;</span><span class="p">]</span>
+            <span class="n">niter</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;qeq iterations&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">charge_method</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="s2">&quot;qeq/reaxff&quot;</span><span class="p">):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;fix                 charges all qeq/reaxff 1 0.0 </span><span class="si">{</span><span class="n">cutoff</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">convergence</span><span class="si">}</span><span class="s2"> reaxff maxiter </span><span class="si">{</span><span class="n">niter</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">charge_method</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;qeq/point&quot;</span><span class="p">,</span> <span class="s2">&quot;qeq/shielded&quot;</span><span class="p">):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;fix                 charges all </span><span class="si">{</span><span class="n">charge_method</span><span class="si">}</span><span class="s2"> 1 </span><span class="si">{</span><span class="n">cutoff</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">convergence</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">niter</span><span class="si">}</span><span class="s2"> reaxff&quot;</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">charge_method</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;qtpie/reaxff&quot;</span><span class="p">):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;fix                 charges all </span><span class="si">{</span><span class="n">charge_method</span><span class="si">}</span><span class="s2"> 1 0.0 </span><span class="si">{</span><span class="n">cutoff</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">convergence</span><span class="si">}</span><span class="s2"> reaxff Gaussians.dat maxiter </span><span class="si">{</span><span class="n">niter</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">charge_method</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;acks2/reaxff&quot;</span><span class="p">):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;fix                 charges all </span><span class="si">{</span><span class="n">charge_method</span><span class="si">}</span><span class="s2"> 1 0.0 </span><span class="si">{</span><span class="n">cutoff</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;</span><span class="si">{convergence}</span><span class="s2"> reaxff maxiter </span><span class="si">{niter}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
 
         <span class="c1"># Set up standard variables</span>
         <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">thermo_variables</span><span class="p">:</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;variable            </span><span class="si">{var}</span><span class="s2"> equal </span><span class="si">{var}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="o">=</span><span class="n">variable</span><span class="p">))</span>
 
         <span class="c1"># Special Dreiding hydrogen bond information</span>
-        <span class="k">if</span> <span class="s2">&quot;hbond/dreiding/lj&quot;</span> <span class="ow">in</span> <span class="n">nonbond_forms</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">have_dreiding_hbonds</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;dreiding&quot;</span> <span class="ow">and</span> <span class="s2">&quot;hbond/dreiding/lj&quot;</span> <span class="ow">in</span> <span class="n">nonbond_forms</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">have_dreiding_hbonds</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;compute             hb all pair hbond/dreiding/lj&quot;</span><span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;variable            N_hbond equal c_hb[1] #number hbonds&quot;</span><span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;variable            E_hbond equal c_hb[2] #hbond energy&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">have_dreiding_hbonds</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="k">return</span> <span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">eex</span><span class="p">)</span></div>
 
@@ -1063,11 +1134,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_OpenKIM_Potential&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="s2">&quot;reax&quot;</span> <span class="ow">in</span> <span class="n">potential</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="n">lammps_step</span><span class="o">.</span><span class="n">set_lammps_unit_system</span><span class="p">(</span><span class="s2">&quot;real&quot;</span><span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;atom_style          charge&quot;</span><span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;kim                 init </span><span class="si">{</span><span class="n">potential</span><span class="si">}</span><span class="s2"> real unit_conversion_mode&quot;</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="n">lammps_step</span><span class="o">.</span><span class="n">set_lammps_unit_system</span><span class="p">(</span><span class="s2">&quot;metal&quot;</span><span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;kim                 init </span><span class="si">{</span><span class="n">potential</span><span class="si">}</span><span class="s2"> metal unit_conversion_mode&quot;</span>
             <span class="p">)</span>
