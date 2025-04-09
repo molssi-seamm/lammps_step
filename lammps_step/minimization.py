@@ -41,7 +41,6 @@ class Minimization(lammps_step.Energy):
         self.description = "Minimization step in LAMMPS"
 
         self._calculation = "minimization"
-        self._model = None
         self._metadata = lammps_step.metadata
         self.parameters = lammps_step.MinimizationParameters()
         self._save = {}
@@ -52,6 +51,8 @@ class Minimization(lammps_step.Energy):
         Parameters
         ----------
         """
+        ff = self.get_variable("_forcefield")
+
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data
         )
@@ -60,7 +61,7 @@ class Minimization(lammps_step.Energy):
         _, initial_configuration = self.get_system_configuration()
 
         # Handle the new structure as needed
-        system, configuration = self.get_system_configuration(P)
+        system, configuration = self.get_system_configuration(P, model=self.model)
 
         # Read the dump file and get the structure
         dump_file = Path(self.directory) / "minimization.dump"
@@ -95,7 +96,7 @@ class Minimization(lammps_step.Energy):
                 configuration,
                 P,
                 _first=True,
-                model=self.parent.model,
+                model=self.model,
             )
             printer.normal(__(text, **data, indent=self.indent + 4 * " "))
             printer.normal("")
@@ -163,6 +164,15 @@ class Minimization(lammps_step.Energy):
                 E = lammps_step.from_lammps_units(Es[0], "kcal/mol")
                 table["Value"].append(f"{E.magnitude:.2f}")
                 table["Units"].append("kcal/mol")
+
+                if ff.ff_form == "reaxff":
+                    Eat = self.parent._atomic_energy_sum
+                    if Eat != 0.0:
+                        dHf = data["energy"] + Eat
+                        data["DfH0_reax"] = dHf
+                        table["Property"].append("DfH0_reax")
+                        table["Value"].append(f"{dHf:.2f}")
+                        table["Units"].append("kcal/mol")
 
                 table["Property"].append("Last Energy Change")
                 E = lammps_step.from_lammps_units(Es[2] - Es[1], "kcal/mol")
@@ -272,12 +282,16 @@ class Minimization(lammps_step.Energy):
         if P is None:
             P = self.parameters.values_to_dict()
 
-        text = (
-            "The structure will be minimized using the {minimizer} approach "
-            "to a '{convergence}' convergence. The number of steps will be limited "
-            "to {nsteps} steps and no more than {nevaluations} energy and force "
-            "evaluations."
-        )
+        model = self.model
+
+        text = "The structure will be minimized using the {minimizer} approach "
+        text += "to a '{convergence}' convergence"
+        if model is None:
+            text += "."
+        else:
+            text += f" using the {model} forcefield. "
+        text += "The number of steps will be limited to {nsteps} steps and no more "
+        text += "than {nevaluations} energy and force evaluations."
 
         return self.header + "\n" + __(text, **P, indent=4 * " ").__str__()
 
@@ -351,7 +365,8 @@ class Minimization(lammps_step.Energy):
         lines.append(f"# {self.header}")
         lines.append("")
         lines.append(f"thermo_style        custom {thermo_properties}")
-        lines.append("thermo              100")
+        # lines.append("thermo              100")
+        lines.append("thermo              1")
         lines.append(f"min_style           {min_style}")
         if min_style in ("quickmin", "fire"):
             lines.append(f"timestep            {timestep}")

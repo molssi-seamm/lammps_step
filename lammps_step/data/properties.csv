@@ -15,6 +15,7 @@ Property,Type,Units,Description,URL
 "density, stderr#LAMMPS#{model}",float,g/mL,"The standard error of the density.",https://en.wikipedia.org/wiki/Standard_error
 "density, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the density.",https://en.wikipedia.org/wiki/Autocorrelation
 "density, inefficiency#LAMMPS#{model}",float,,"The statistical inefficiency of the density sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+"DfH0_reax#LAMMPS#{model}",float,kcal/mol,"The Reax approximation to enthalpy of formation",https://en.wikipedia.org/wiki/Standard_enthalpy_of_formation
 "volume#LAMMPS#{model}",float,g/mL,"The volume.",https://en.wikipedia.org/wiki/volume
 "volume, stderr#LAMMPS#{model}",float,g/mL,"The standard error of the volume.",https://en.wikipedia.org/wiki/Standard_error
 "volume, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the volume.",https://en.wikipedia.org/wiki/Autocorrelation

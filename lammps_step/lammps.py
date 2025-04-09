@@ -125,6 +125,7 @@ class LAMMPS(seamm.Node):
         "b": "Å",
         "c": "Å",
         "Etot": "kcal/mol",
+        "DfH0_reax": "kcal/mol",
         "Eke": "kcal/mol",
         "Epe": "kcal/mol",
         "Emol": "kcal/mol",
@@ -150,6 +151,7 @@ class LAMMPS(seamm.Node):
         "b": "b lattice parameter",
         "c": "c lattice parameter",
         "Etot": "Total Energy",
+        "DfH0_reax": "Reax \N{GREEK CAPITAL LETTER DELTA}fH\N{SUPERSCRIPT ZERO}",
         "Eke": "Kinetic Energy",
         "Epe": "Potential Energy",
         "Emol": "Molecular Energy, Valence Terms",
@@ -183,6 +185,7 @@ class LAMMPS(seamm.Node):
         self._trajectory = []
         self._data = {}
         self._have_dreiding_hbonds = False
+        self._atomic_energy_sum = 0.0
 
         self._results = {}  # Sotrage for computational and timing results
 
@@ -446,6 +449,15 @@ class LAMMPS(seamm.Node):
 
     def run(self):
         """Run a LAMMPS simulation"""
+        # Set the model
+        try:
+            ff = self.get_variable("_forcefield")
+            if ff == "OpenKIM":
+                self.model = "OpenKIM/" + self.get_variable("_OpenKIM_Potential")
+            else:
+                self.model = ff.current_forcefield
+        except Exception:
+            self.model = None
 
         system_db = self.get_variable("_system_db")
         configuration = system_db.system.configuration
@@ -527,6 +539,8 @@ class LAMMPS(seamm.Node):
                     dihedral_table,
                 ) = self.structure_data(eex)
                 files["structure.dat"] = structure_data
+                if "forcefield" in eex:
+                    files["forcefield.dat"] = eex["forcefield"]
 
                 if bond_table != "":
                     files["tabulated_bonds.dat"] = bond_table
@@ -1746,6 +1760,7 @@ class LAMMPS(seamm.Node):
                 values = {}
                 table = None
 
+            values["model"] = self.model
             node.analyze(
                 data=values,
                 properties=node_data,
@@ -1765,6 +1780,7 @@ class LAMMPS(seamm.Node):
         node=None,
     ):
         """Read a trajectory file and do the statistical analysis"""
+        ff = self.get_variable("_forcefield")
 
         write_html = "html" in self.options and self.options["html"]
 
@@ -1985,6 +2001,32 @@ class LAMMPS(seamm.Node):
                 table["convergence"].append(f"{t_conv:.2f} {conv_units}")
                 table["tau"].append(f"{t_tau:.1f} {tau_units}{acf_warning}")
                 table["inefficiency"].append(f"{inefficiency:.1f}")
+
+                if column == "Etot" and ff.ff_form == "reaxff":
+                    Eat = self._atomic_energy_sum
+                    if Eat != 0.0:
+                        results["DfH0_reax"] = {}
+                        results["DfH0_reax"]["mean"] = mean + Eat
+                        results["DfH0_reax"]["stderr"] = sem
+                        results["DfH0_reax"]["n_sample"] = n_samples
+                        results["DfH0_reax"]["short_production"] = have_acf_warning
+                        results["DfH0_reax"]["tau"] = float(tau)
+                        results["DfH0_reax"]["inefficiency"] = float(inefficiency)
+                        results["DfH0_reax"]["timestep"] = float(dt_fs)
+                        results["DfH0_reax"]["rootname"] = path.stem
+                        if have_acf:
+                            results["DfH0_reax"]["acf"] = acf.tolist()
+                            results["DfH0_reax"]["acf_confidence"] = confidence.tolist()
+                        results["DfH0_reax"]["few_neff"] = have_warning
+
+                        table["Property"].append(f"DfH0_reax{warn}")
+                        table["Value"].append(f"{mean + Eat:.3f}")
+                        table[" "].append("±")
+                        table["StdErr"].append(f"{sem:.3f}")
+                        table["Units"].append(meta_units)
+                        table["convergence"].append(f"{t_conv:.2f} {conv_units}")
+                        table["tau"].append(f"{t_tau:.1f} {tau_units}{acf_warning}")
+                        table["inefficiency"].append(f"{inefficiency:.1f}")
 
             # Create graphs of the property
             figure = self.create_figure(

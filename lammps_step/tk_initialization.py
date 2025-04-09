@@ -3,9 +3,11 @@
 """The graphical part of a LAMMPS Initialization step"""
 
 import logging
-import seamm
 import tkinter as tk
 import tkinter.ttk as ttk
+
+import seamm
+import seamm_widgets as sw
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +73,13 @@ class TkInitialization(seamm.TkNode):
             labelanchor=tk.N,
         )
 
-        for key in ("cutoff", "shift_nonbond"):
+        for key in (
+            "cutoff",
+            "shift_nonbond",
+            "atomic charges",
+            "qeq convergence",
+            "qeq iterations",
+        ):
             self[key] = P[key].widget(general)
 
         # Frame for the periodic system options, i.e. kspace, etc.
@@ -91,16 +99,46 @@ class TkInitialization(seamm.TkNode):
         ):
             self[key] = P[key].widget(periodic)
 
+        self["atomic charges"].bind("<<ComboboxSelected>>", self.general_cb)
         self["kspace_method"].bind("<<ComboboxSelected>>", self.kspace_method_cb)
 
         # Grid in the static part of the dialog
 
         self["general"].grid(row=0, column=0, sticky=tk.EW, pady=10)
-        self["cutoff"].grid(row=0, column=0, sticky=tk.W)
-        self["shift_nonbond"].grid(row=1, column=0, sticky=tk.W)
 
         self["periodic"].grid(row=1, column=0, sticky=tk.EW, pady=10)
+        self.general_cb()
         self.kspace_method_cb()
+
+    def general_cb(self, event=None):
+        """Grid the widgets into the dialog, depending on the current values
+        of key variables. This provides a dyamic presentation to the user.
+        """
+        frame = self["general"]
+        charge_method = self["atomic charges"].get()
+
+        # Remove any widgets previously packed
+        for slave in frame.grid_slaves():
+            slave.grid_forget()
+
+        row = 0
+        widgets = []
+        widgets2 = []
+        for key in ("cutoff", "shift_nonbond", "atomic charges"):
+            self[key].grid(row=row, column=0, columnspan=2, sticky=tk.EW)
+            widgets.append(self[key])
+            row += 1
+
+        if charge_method.startswith("charge "):
+            for key in ("qeq convergence", "qeq iterations"):
+                self[key].grid(row=row, column=1, sticky=tk.EW)
+                widgets2.append(self[key])
+                row += 1
+
+        w1 = sw.align_labels(widgets, sticky=tk.E)
+        if len(widgets2) > 0:
+            w2 = sw.align_labels(widgets2, sticky=tk.E)
+            frame.columnconfigure(0, minsize=w1 - w2 + 30)
 
     def kspace_method_cb(self, event=None):
         """Grid the widgets into the dialog, depending on the current values

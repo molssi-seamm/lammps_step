@@ -46,6 +46,15 @@ class Energy(seamm.Node):
         self.description = "A single point energy calculation"
 
     @property
+    def model(self):
+        """The name of the forcefield."""
+        return self.parent.model
+
+    @model.setter
+    def model(self, value):
+        self.parent.model = value
+
+    @property
     def header(self):
         """A printable header for this section of output"""
         return "Step {}: {}".format(".".join(str(e) for e in self._id), self.title)
@@ -106,6 +115,8 @@ class Energy(seamm.Node):
         """Parse the output and generating the text output and store the
         data in variables for other stages to access
         """
+        ff = self.get_variable("_forcefield")
+
         if table is not None:
             text = ""
             tmp = tabulate(
@@ -182,6 +193,14 @@ class Energy(seamm.Node):
                     energy = float(tmp[i])
                     data["energy"] = energy
                     data["energy,units"] = "kcal/mol"
+
+                # Check for reaxff enthalpy offset
+                if ff.ff_form == "reaxff":
+                    Eat = self.parent._atomic_energy_sum
+                    if Eat != 0.0:
+                        dHf = data["energy"] + Eat
+                        data["DfH0_reax"] = dHf
+                    data["energy,units"] = "kcal/mol"
             if line.startswith("Loop time of"):
                 try:
                     tmp = line.split()
@@ -229,15 +248,6 @@ class Energy(seamm.Node):
             data["c"] = configuration.cell.c
         if "volume" not in data and configuration.periodicity == 3:
             data["volume"] = configuration.cell.volume
-
-        # Need to set the model for properties.
-        # See what type of forcefield we have and handle it
-        ff = self.get_variable("_forcefield")
-        if ff == "OpenKIM":
-            self._model = "OpenKIM/" + self.get_variable("_OpenKIM_Potential")
-        else:
-            # Valence forcefield...
-            self._model = ff.current_forcefield
 
         # Put any requested results into variables or tables
         self.store_results(

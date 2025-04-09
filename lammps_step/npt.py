@@ -43,7 +43,6 @@ class NPT(lammps_step.NVT):
         logger.debug("NPT.init() creating NPT_Parameters object")
 
         self._calculation = "npt"
-        self._model = None
         self._metadata = lammps_step.metadata
         self.parameters = lammps_step.NPT_Parameters()
 
@@ -58,6 +57,8 @@ class NPT(lammps_step.NVT):
         if not P:
             P = self.parameters.values_to_dict()
 
+        model = self.model
+
         # What will we do?
 
         if P["T0"] == P["T1"]:
@@ -67,6 +68,11 @@ class NPT(lammps_step.NVT):
                 "{time} of canonical (NPT) dynamics starting "
                 " at {T0}, going to {T1}, "
             )
+        text += "using a timestep of {timestep} "
+        if model is None:
+            text += ". The temperature will be controlled "
+        else:
+            text += f"using the {model} forcefield. The temperature will be controlled "
         if P["thermostat"] == "Nose-Hoover":
             text += "using a Nose-Hoover thermostat."
             if P["Tchain"] != "3":
@@ -113,10 +119,12 @@ class NPT(lammps_step.NVT):
         elif P["thermostat"] == "Langevin":
             text += (
                 "using a Langevin thermostat with a damping time "
-                "of {Tdamp} and a {random_seed}"
+                "of {Tdamp} and a {random_seed}."
             )
         else:
-            text += "using the thermostat given by {thermostat}"
+            text += "using the thermostat given by {thermostat}."
+
+        text += " The pressure will be controlled using a {barostat} barostat."
 
         return self.header + "\n" + __(text, **P, indent=4 * " ").__str__()
 
