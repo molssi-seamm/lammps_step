@@ -1,6 +1,9 @@
 =======
 History
 =======
+2025.5.7 -- Bugfix: error if not saving configuration in minimization
+   * The code crashed in the minimization step if the structure was discarded.
+     
 2025.4.9 -- Adding support for ReaxFF forcefields.
    * Added support for ReaxFF forcefields.
    * Added control for how charges are handled, and options for the various charge

@@ -102,7 +102,7 @@ class Minimization(lammps_step.Energy):
             printer.normal("")
 
         # Get the RMSD of the initial and final structures
-        if configuration.periodicity == 0:
+        if initial_configuration.periodicity == 0 and xyz is not None:
             initial = initial_configuration.to_RDKMol()
             final = initial_configuration.to_RDKMol()
             final.GetConformer(0).SetPositions(np.array(xyz))
