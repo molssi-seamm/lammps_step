@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2025.5.7 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2025.5.26 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=b25a682c"></script>
+    <script src="../../_static/documentation_options.js?v=0a24fd17"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.5.7" />
+  <meta name="docsearch:version" content="2025.5.26" />
   </head>
   
   
@@ -586,6 +586,79 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="s2">&quot;improper_opls&quot;</span><span class="p">:</span> <span class="s2">&quot;cvff&quot;</span><span class="p">,</span>
     <span class="s2">&quot;dreiding_out_of_plane&quot;</span><span class="p">:</span> <span class="s2">&quot;umbrella&quot;</span><span class="p">,</span>
 <span class="p">}</span>
+
+
+<div class="viewcode-block" id="pvalue">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.pvalue">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pvalue</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;9.4f&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;n/a&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the formatted value and original value of a parameter.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    values : [str: str]</span>
+<span class="sd">        The dictionary of parameter values.</span>
+
+<span class="sd">    key : str</span>
+<span class="sd">        The parameter name</span>
+
+<span class="sd">    fmt : str = &quot;9.4f&quot;</span>
+<span class="sd">        The format for the parameter</span>
+
+<span class="sd">    default : str = &quot;n/a&quot;</span>
+<span class="sd">        The default value for the original parameter, if not find.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    (str, str)</span>
+<span class="sd">        The formatted parameter value and the original form it came from.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+    <span class="n">original</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;original &quot;</span> <span class="o">+</span> <span class="n">key</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;original &quot;</span> <span class="o">+</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">else</span> <span class="n">default</span>
+
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">val</span><span class="si">:{</span><span class="n">fmt</span><span class="si">}}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">original</span></div>
+
+
+
+<div class="viewcode-block" id="pline">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.pline">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pline</span><span class="p">(</span>
+    <span class="n">i</span><span class="p">,</span>
+    <span class="n">function</span><span class="p">,</span>
+    <span class="n">values</span><span class="p">,</span>
+    <span class="n">keys</span><span class="p">,</span>
+    <span class="n">types</span><span class="p">,</span>
+    <span class="n">rtypes</span><span class="p">,</span>
+    <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;10.4f&quot;</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="s2">&quot;n/a&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a line for the parameters in structure.dat&quot;&quot;&quot;</span>
+    <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+            <span class="n">fmt2</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;d&quot;</span>
+            <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">value</span><span class="si">:{</span><span class="n">fmt2</span><span class="si">}}</span><span class="s2">&quot;</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">key</span><span class="p">])</span><span class="si">:{</span><span class="n">fmt</span><span class="si">}}</span><span class="s2">&quot;</span>
+
+    <span class="n">line</span> <span class="o">+=</span> <span class="s2">&quot; #&quot;</span>
+
+    <span class="k">for</span> <span class="n">typ</span> <span class="ow">in</span> <span class="n">types</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">typ</span><span class="si">:</span><span class="s2">6s</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">line</span> <span class="o">+=</span> <span class="s2">&quot; --&gt;&quot;</span>
+    <span class="k">for</span> <span class="n">typ</span> <span class="ow">in</span> <span class="n">rtypes</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">typ</span><span class="si">:</span><span class="s2">6s</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">if</span> <span class="s2">&quot;version&quot;</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; v</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+        <span class="n">oval</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;original &quot;</span> <span class="o">+</span> <span class="n">key</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;original &quot;</span> <span class="o">+</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">else</span> <span class="n">default</span>
+        <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">oval</span><span class="si">:</span><span class="s2">7s</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">return</span> <span class="n">line</span></div>
+
 
 
 <div class="viewcode-block" id="LAMMPS">
@@ -1460,9 +1533,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">zlo</span> <span class="o">-=</span> <span class="mf">10.0</span>
             <span class="n">zhi</span> <span class="o">+=</span> <span class="mf">10.0</span>
 
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> xlo xhi&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xlo</span><span class="p">,</span> <span class="n">xhi</span><span class="p">))</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> ylo yhi&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ylo</span><span class="p">,</span> <span class="n">yhi</span><span class="p">))</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> zlo zhi&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">zlo</span><span class="p">,</span> <span class="n">zhi</span><span class="p">))</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">xlo</span><span class="si">:</span><span class="s2">12.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">xhi</span><span class="si">:</span><span class="s2">12.6f</span><span class="si">}</span><span class="s2"> xlo xhi&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ylo</span><span class="si">:</span><span class="s2">12.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">yhi</span><span class="si">:</span><span class="s2">12.6f</span><span class="si">}</span><span class="s2"> ylo yhi&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">zlo</span><span class="si">:</span><span class="s2">12.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">zhi</span><span class="si">:</span><span class="s2">12.6f</span><span class="si">}</span><span class="s2"> zlo zhi&quot;</span><span class="p">)</span>
 
         <span class="c1"># the atoms and their masses, etc.</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -1536,21 +1609,24 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
                     <span class="k">if</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;nonbond(9-6)&quot;</span><span class="p">:</span>
                         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;eps&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;rmin&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                            <span class="n">pline</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;eps&quot;</span><span class="p">,</span> <span class="s2">&quot;rmin&quot;</span><span class="p">],</span> <span class="n">types</span><span class="p">,</span> <span class="n">real_types</span><span class="p">)</span>
                         <span class="p">)</span>
                         <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
                     <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;nonbond(12-6)&quot;</span><span class="p">:</span>
                         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;eps&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                            <span class="n">pline</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;eps&quot;</span><span class="p">,</span> <span class="s2">&quot;sigma&quot;</span><span class="p">],</span> <span class="n">types</span><span class="p">,</span> <span class="n">real_types</span><span class="p">)</span>
                         <span class="p">)</span>
                         <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
                     <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;buckingham&quot;</span><span class="p">:</span>
                         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">j</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;rho&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt; &quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                            <span class="n">pline</span><span class="p">(</span>
+                                <span class="n">j</span><span class="p">,</span>
+                                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                                <span class="n">values</span><span class="p">,</span>
+                                <span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;rho&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">],</span>
+                                <span class="n">types</span><span class="p">,</span>
+                                <span class="n">real_types</span><span class="p">,</span>
+                            <span class="p">)</span>
                         <span class="p">)</span>
                         <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>
                             <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -1579,16 +1655,24 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
                 <span class="k">if</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;quadratic_bond&quot;</span><span class="p">:</span>
                     <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;harmonic&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                    <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;R0&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                        <span class="n">counter</span><span class="p">,</span>
+                        <span class="n">function</span><span class="p">,</span>
+                        <span class="n">values</span><span class="p">,</span>
+                        <span class="p">[</span><span class="s2">&quot;K2&quot;</span><span class="p">,</span> <span class="s2">&quot;R0&quot;</span><span class="p">],</span>
+                        <span class="n">types</span><span class="p">,</span>
+                        <span class="n">real_types</span><span class="p">,</span>
+                    <span class="p">)</span>
                 <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;quartic_bond&quot;</span><span class="p">:</span>
                     <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                    <span class="n">line</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;R0&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K3&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K4&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                        <span class="n">counter</span><span class="p">,</span>
+                        <span class="n">function</span><span class="p">,</span>
+                        <span class="n">values</span><span class="p">,</span>
+                        <span class="p">[</span><span class="s2">&quot;R0&quot;</span><span class="p">,</span> <span class="s2">&quot;K2&quot;</span><span class="p">,</span> <span class="s2">&quot;K3&quot;</span><span class="p">,</span> <span class="s2">&quot;K4&quot;</span><span class="p">],</span>
+                        <span class="n">types</span><span class="p">,</span>
+                        <span class="n">real_types</span><span class="p">,</span>
                     <span class="p">)</span>
-                <span class="n">line</span> <span class="o">+=</span> <span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="sa">f</span><span class="s2">&quot; --&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
 
         <span class="c1"># angles</span>
@@ -1610,39 +1694,69 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">forms</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;angle parameters&quot;</span><span class="p">]])</span>
             <span class="n">use_hybrid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">forms</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
 
-            <span class="k">for</span> <span class="n">counter</span><span class="p">,</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
-                <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_angle_types&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;angle parameters&quot;</span><span class="p">]</span>
-            <span class="p">):</span>
+            <span class="k">for</span> <span class="n">counter</span><span class="p">,</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;angle parameters&quot;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
                 <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
                 <span class="k">if</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;quadratic_angle&quot;</span><span class="p">:</span>
                     <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;harmonic&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                    <span class="n">line</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;Theta0&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                        <span class="n">counter</span><span class="p">,</span>
+                        <span class="n">function</span><span class="p">,</span>
+                        <span class="n">values</span><span class="p">,</span>
+                        <span class="p">[</span><span class="s2">&quot;K2&quot;</span><span class="p">,</span> <span class="s2">&quot;Theta0&quot;</span><span class="p">],</span>
+                        <span class="n">types</span><span class="p">,</span>
+                        <span class="n">real_types</span><span class="p">,</span>
                     <span class="p">)</span>
                 <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;quartic_angle&quot;</span><span class="p">:</span>
                     <span class="n">function</span> <span class="o">=</span> <span class="n">quartic_function</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                    <span class="n">line</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;Theta0&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K3&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K4&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                        <span class="n">counter</span><span class="p">,</span>
+                        <span class="n">function</span><span class="p">,</span>
+                        <span class="n">values</span><span class="p">,</span>
+                        <span class="p">[</span><span class="s2">&quot;Theta0&quot;</span><span class="p">,</span> <span class="s2">&quot;K2&quot;</span><span class="p">,</span> <span class="s2">&quot;K3&quot;</span><span class="p">,</span> <span class="s2">&quot;K4&quot;</span><span class="p">],</span>
+                        <span class="n">types</span><span class="p">,</span>
+                        <span class="n">real_types</span><span class="p">,</span>
                     <span class="p">)</span>
                 <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;cosine&quot;</span><span class="p">:</span>
                     <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;cosine&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                    <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                        <span class="n">counter</span><span class="p">,</span>
+                        <span class="n">function</span><span class="p">,</span>
+                        <span class="n">values</span><span class="p">,</span>
+                        <span class="p">[</span><span class="s2">&quot;K2&quot;</span><span class="p">],</span>
+                        <span class="n">types</span><span class="p">,</span>
+                        <span class="n">real_types</span><span class="p">,</span>
+                    <span class="p">)</span>
                 <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;cosine/squared&quot;</span><span class="p">:</span>
                     <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;cosine/squared&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                    <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;Theta0&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                        <span class="n">counter</span><span class="p">,</span>
+                        <span class="n">function</span><span class="p">,</span>
+                        <span class="n">values</span><span class="p">,</span>
+                        <span class="p">[</span><span class="s2">&quot;K2&quot;</span><span class="p">,</span> <span class="s2">&quot;Theta0&quot;</span><span class="p">],</span>
+                        <span class="n">types</span><span class="p">,</span>
+                        <span class="n">real_types</span><span class="p">,</span>
+                    <span class="p">)</span>
                 <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;simple_fourier_angle&quot;</span><span class="p">:</span>
                     <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;fourier/simple&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                    <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> -1 </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;n&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">values</span><span class="p">[</span><span class="s2">&quot;phase&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;-1&quot;</span>
+                    <span class="n">values</span><span class="p">[</span><span class="s2">&quot;original phase&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;-1&quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                        <span class="n">counter</span><span class="p">,</span>
+                        <span class="n">function</span><span class="p">,</span>
+                        <span class="n">values</span><span class="p">,</span>
+                        <span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">,</span> <span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="s2">&quot;n&quot;</span><span class="p">],</span>
+                        <span class="n">types</span><span class="p">,</span>
+                        <span class="n">real_types</span><span class="p">,</span>
+                    <span class="p">)</span>
                 <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;tabulated_angle&quot;</span><span class="p">:</span>
                     <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;table&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                    <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> tabulated_angles.dat </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="n">angle_table</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angle_table</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
-                <span class="n">line</span> <span class="o">+=</span> <span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot; --&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
+                    <span class="n">line</span> <span class="o">+=</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">6</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">6</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">:</span><span class="s2">6</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot; --&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">6</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">6</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">:</span><span class="s2">6</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="p">)</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
 
             <span class="c1"># bond-bond coefficients, which must match angles in order &amp; number</span>
@@ -1650,7 +1764,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;BondBond Coeffs&quot;</span><span class="p">)</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">counter</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">angles</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">angles</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
                     <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_bond-bond_types&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
                     <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;bond-bond parameters&quot;</span><span class="p">],</span>
                     <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;angle parameters&quot;</span><span class="p">],</span>
@@ -1658,43 +1772,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
                     <span class="n">angle_form</span> <span class="o">=</span> <span class="n">angles</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">angle_form</span> <span class="o">==</span> <span class="s2">&quot;quartic_angle&quot;</span><span class="p">:</span>
-                        <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                        <span class="n">fn</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
                         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">counter</span><span class="p">,</span>
-                                <span class="n">function</span><span class="p">,</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R10&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R20&quot;</span><span class="p">],</span>
-                            <span class="p">)</span>
-                            <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                            <span class="p">)</span>
+                            <span class="n">pline</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">,</span> <span class="s2">&quot;R10&quot;</span><span class="p">,</span> <span class="s2">&quot;R20&quot;</span><span class="p">],</span> <span class="n">types</span><span class="p">,</span> <span class="n">real_types</span><span class="p">)</span>
                         <span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> skip&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">counter</span><span class="p">)</span>
-                            <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                            <span class="p">)</span>
-                        <span class="p">)</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pline</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;skip&quot;</span><span class="p">,</span> <span class="p">[],</span> <span class="n">types</span><span class="p">,</span> <span class="n">real_types</span><span class="p">))</span>
 
                 <span class="c1"># bond-angles coefficients, which must match angles in order &amp;</span>
                 <span class="c1"># number</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;BondAngle Coeffs&quot;</span><span class="p">)</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">counter</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">angles</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">angles</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
                     <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_bond-angle_types&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
                     <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;bond-angle parameters&quot;</span><span class="p">],</span>
                     <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;angle parameters&quot;</span><span class="p">],</span>
@@ -1702,37 +1792,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
                     <span class="n">angle_form</span> <span class="o">=</span> <span class="n">angles</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">angle_form</span> <span class="o">==</span> <span class="s2">&quot;quartic_angle&quot;</span><span class="p">:</span>
-                        <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                        <span class="n">fn</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
                         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">counter</span><span class="p">,</span>
-                                <span class="n">function</span><span class="p">,</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K12&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K23&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R10&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R20&quot;</span><span class="p">],</span>
-                            <span class="p">)</span>
-                            <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                            <span class="n">pline</span><span class="p">(</span>
+                                <span class="n">i</span><span class="p">,</span>
+                                <span class="n">fn</span><span class="p">,</span>
+                                <span class="n">values</span><span class="p">,</span>
+                                <span class="p">[</span><span class="s2">&quot;K12&quot;</span><span class="p">,</span> <span class="s2">&quot;K23&quot;</span><span class="p">,</span> <span class="s2">&quot;R10&quot;</span><span class="p">,</span> <span class="s2">&quot;R20&quot;</span><span class="p">],</span>
+                                <span class="n">types</span><span class="p">,</span>
+                                <span class="n">real_types</span><span class="p">,</span>
                             <span class="p">)</span>
                         <span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> skip&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">counter</span><span class="p">)</span>
-                            <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                            <span class="p">)</span>
-                        <span class="p">)</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pline</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;skip&quot;</span><span class="p">,</span> <span class="p">[],</span> <span class="n">types</span><span class="p">,</span> <span class="n">real_types</span><span class="p">))</span>
 
         <span class="c1"># torsions</span>
         <span class="k">if</span> <span class="s2">&quot;n_torsions&quot;</span> <span class="ow">in</span> <span class="n">eex</span> <span class="ow">and</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_torsions&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -1759,8 +1831,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">):</span>
                 <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
                 <span class="k">if</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;torsion_1&quot;</span><span class="p">:</span>
-                    <span class="n">KPhi</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;KPhi&quot;</span><span class="p">]</span>
-                    <span class="n">n</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;n&quot;</span><span class="p">]</span>
                     <span class="n">Phi0</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;Phi0&quot;</span><span class="p">]</span>
 
                     <span class="c1"># Discover form is</span>
@@ -1786,39 +1856,48 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                             <span class="s2">&quot;LAMMPS cannot handle Phi0 = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Phi0</span><span class="p">)</span>
                         <span class="p">)</span>
+                    <span class="n">values</span><span class="p">[</span><span class="s2">&quot;d&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span>
+                    <span class="n">values</span><span class="p">[</span><span class="s2">&quot;d&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;original Phi0&quot;</span><span class="p">]</span>
+
                     <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;harmonic&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                    <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">KPhi</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                        <span class="n">counter</span><span class="p">,</span>
+                        <span class="n">function</span><span class="p">,</span>
+                        <span class="n">values</span><span class="p">,</span>
+                        <span class="p">[</span><span class="s2">&quot;Kphi&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="s2">&quot;n&quot;</span><span class="p">],</span>
+                        <span class="n">types</span><span class="p">,</span>
+                        <span class="n">real_types</span><span class="p">,</span>
+                    <span class="p">)</span>
                 <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;torsion_3&quot;</span><span class="p">:</span>
                     <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                    <span class="n">line</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V1&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;Phi0_1&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;Phi0_2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V3&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;Phi0_3&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                        <span class="n">counter</span><span class="p">,</span>
+                        <span class="n">function</span><span class="p">,</span>
+                        <span class="n">values</span><span class="p">,</span>
+                        <span class="p">[</span><span class="s2">&quot;V1&quot;</span><span class="p">,</span> <span class="s2">&quot;Phi0_1&quot;</span><span class="p">,</span> <span class="s2">&quot;V2&quot;</span><span class="p">,</span> <span class="s2">&quot;Phi0_2&quot;</span><span class="p">,</span> <span class="s2">&quot;V3&quot;</span><span class="p">,</span> <span class="s2">&quot;Phi0_3&quot;</span><span class="p">],</span>
+                        <span class="n">types</span><span class="p">,</span>
+                        <span class="n">real_types</span><span class="p">,</span>
                     <span class="p">)</span>
                 <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;torsion_opls&quot;</span><span class="p">:</span>
                     <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;opls&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                    <span class="n">line</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V1&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V3&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V4&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                        <span class="n">counter</span><span class="p">,</span>
+                        <span class="n">function</span><span class="p">,</span>
+                        <span class="n">values</span><span class="p">,</span>
+                        <span class="p">[</span><span class="s2">&quot;V1&quot;</span><span class="p">,</span> <span class="s2">&quot;V2&quot;</span><span class="p">,</span> <span class="s2">&quot;V3&quot;</span><span class="p">,</span> <span class="s2">&quot;V4&quot;</span><span class="p">],</span>
+                        <span class="n">types</span><span class="p">,</span>
+                        <span class="n">real_types</span><span class="p">,</span>
                     <span class="p">)</span>
                 <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;torsion_charmm&quot;</span><span class="p">:</span>
                     <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;charmm&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                    <span class="n">line</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;n&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;Phi0&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                        <span class="n">counter</span><span class="p">,</span>
+                        <span class="n">function</span><span class="p">,</span>
+                        <span class="n">values</span><span class="p">,</span>
+                        <span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">,</span> <span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="s2">&quot;Phi0&quot;</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">],</span>
+                        <span class="n">types</span><span class="p">,</span>
+                        <span class="n">real_types</span><span class="p">,</span>
                     <span class="p">)</span>
-                <span class="n">line</span> <span class="o">+=</span> <span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot; # </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;--&gt; </span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-&quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
 
             <span class="c1"># middle bond-torsion_3 coefficients, which must match torsions</span>
@@ -1836,40 +1915,24 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="n">torsion_form</span> <span class="o">=</span> <span class="n">torsions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">torsion_form</span> <span class="o">==</span> <span class="s2">&quot;torsion_3&quot;</span><span class="p">:</span>
                         <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">counter</span><span class="p">,</span>
-                                <span class="n">function</span><span class="p">,</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V1&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V2&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V3&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R0&quot;</span><span class="p">],</span>
-                            <span class="p">)</span>
-                            <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                            <span class="p">)</span>
+                        <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                            <span class="n">counter</span><span class="p">,</span>
+                            <span class="n">function</span><span class="p">,</span>
+                            <span class="n">values</span><span class="p">,</span>
+                            <span class="p">[</span><span class="s2">&quot;V1&quot;</span><span class="p">,</span> <span class="s2">&quot;V2&quot;</span><span class="p">,</span> <span class="s2">&quot;V3&quot;</span><span class="p">,</span> <span class="s2">&quot;R0&quot;</span><span class="p">],</span>
+                            <span class="n">types</span><span class="p">,</span>
+                            <span class="n">real_types</span><span class="p">,</span>
                         <span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> skip&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">counter</span><span class="p">)</span>
-                            <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                            <span class="p">)</span>
+                        <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                            <span class="n">counter</span><span class="p">,</span>
+                            <span class="s2">&quot;skip&quot;</span><span class="p">,</span>
+                            <span class="n">values</span><span class="p">,</span>
+                            <span class="p">[],</span>
+                            <span class="n">types</span><span class="p">,</span>
+                            <span class="n">real_types</span><span class="p">,</span>
                         <span class="p">)</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
 
                 <span class="c1"># end bond-torsion_3 coefficients, which must match torsions</span>
                 <span class="c1"># in order &amp; number</span>
@@ -1885,44 +1948,26 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="n">torsion_form</span> <span class="o">=</span> <span class="n">torsions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">torsion_form</span> <span class="o">==</span> <span class="s2">&quot;torsion_3&quot;</span><span class="p">:</span>
                         <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">counter</span><span class="p">,</span>
-                                <span class="n">function</span><span class="p">,</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V1_L&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V2_L&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V3_L&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V1_R&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V2_R&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V3_R&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R0_L&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R0_R&quot;</span><span class="p">],</span>
-                            <span class="p">)</span>
-                            <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                            <span class="p">)</span>
+                        <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                            <span class="n">counter</span><span class="p">,</span>
+                            <span class="n">function</span><span class="p">,</span>
+                            <span class="n">values</span><span class="p">,</span>
+                            <span class="p">[</span>
+                                <span class="s2">&quot;V1_L&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;V2_L&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;V3_L&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;V1_R&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;V2_R&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;V3_R&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;R0_L&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;R0_R&quot;</span><span class="p">,</span>
+                            <span class="p">],</span>
+                            <span class="n">types</span><span class="p">,</span>
+                            <span class="n">real_types</span><span class="p">,</span>
                         <span class="p">)</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> skip&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">counter</span><span class="p">)</span>
-                            <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                            <span class="p">)</span>
-                        <span class="p">)</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pline</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;skip&quot;</span><span class="p">,</span> <span class="p">[],</span> <span class="n">types</span><span class="p">,</span> <span class="n">real_types</span><span class="p">))</span>
 
                 <span class="c1"># angle-torsion_3 coefficients, which must match torsions</span>
                 <span class="c1"># in order &amp; number</span>
@@ -1938,44 +1983,26 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="n">torsion_form</span> <span class="o">=</span> <span class="n">torsions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">torsion_form</span> <span class="o">==</span> <span class="s2">&quot;torsion_3&quot;</span><span class="p">:</span>
                         <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">counter</span><span class="p">,</span>
-                                <span class="n">function</span><span class="p">,</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V1_L&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V2_L&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V3_L&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V1_R&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V2_R&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V3_R&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;Theta0_L&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;Theta0_R&quot;</span><span class="p">],</span>
-                            <span class="p">)</span>
-                            <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                            <span class="p">)</span>
+                        <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                            <span class="n">counter</span><span class="p">,</span>
+                            <span class="n">function</span><span class="p">,</span>
+                            <span class="n">values</span><span class="p">,</span>
+                            <span class="p">[</span>
+                                <span class="s2">&quot;V1_L&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;V2_L&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;V3_L&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;V1_R&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;V2_R&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;V3_R&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;Theta0_L&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;Theta0_R&quot;</span><span class="p">,</span>
+                            <span class="p">],</span>
+                            <span class="n">types</span><span class="p">,</span>
+                            <span class="n">real_types</span><span class="p">,</span>
                         <span class="p">)</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> skip&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">counter</span><span class="p">)</span>
-                            <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                            <span class="p">)</span>
-                        <span class="p">)</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pline</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;skip&quot;</span><span class="p">,</span> <span class="p">[],</span> <span class="n">types</span><span class="p">,</span> <span class="n">real_types</span><span class="p">))</span>
 
                 <span class="c1"># angle-angle-torsion_1 coefficients, which must match torsions</span>
                 <span class="c1"># in order &amp; number</span>
@@ -1991,39 +2018,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="n">torsion_form</span> <span class="o">=</span> <span class="n">torsions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">torsion_form</span> <span class="o">==</span> <span class="s2">&quot;torsion_3&quot;</span><span class="p">:</span>
                         <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">counter</span><span class="p">,</span>
-                                <span class="n">function</span><span class="p">,</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;Theta0_L&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;Theta0_R&quot;</span><span class="p">],</span>
-                            <span class="p">)</span>
-                            <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                            <span class="p">)</span>
+                        <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                            <span class="n">counter</span><span class="p">,</span>
+                            <span class="n">function</span><span class="p">,</span>
+                            <span class="n">values</span><span class="p">,</span>
+                            <span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">,</span> <span class="s2">&quot;Theta0_L&quot;</span><span class="p">,</span> <span class="s2">&quot;Theta0_R&quot;</span><span class="p">],</span>
+                            <span class="n">types</span><span class="p">,</span>
+                            <span class="n">real_types</span><span class="p">,</span>
                         <span class="p">)</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> skip&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">counter</span><span class="p">)</span>
-                            <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                            <span class="p">)</span>
-                        <span class="p">)</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pline</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;skip&quot;</span><span class="p">,</span> <span class="p">[],</span> <span class="n">types</span><span class="p">,</span> <span class="n">real_types</span><span class="p">))</span>
 
                 <span class="c1"># bond-bond_1_3 coefficients, which must match torsions</span>
                 <span class="c1"># in order &amp; number</span>
@@ -2039,39 +2044,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="n">torsion_form</span> <span class="o">=</span> <span class="n">torsions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">torsion_form</span> <span class="o">==</span> <span class="s2">&quot;torsion_3&quot;</span><span class="p">:</span>
                         <span class="n">function</span> <span class="o">=</span> <span class="s2">&quot;class2&quot;</span> <span class="k">if</span> <span class="n">use_hybrid</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">counter</span><span class="p">,</span>
-                                <span class="n">function</span><span class="p">,</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R10&quot;</span><span class="p">],</span>
-                                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;R30&quot;</span><span class="p">],</span>
-                            <span class="p">)</span>
-                            <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                            <span class="p">)</span>
+                        <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                            <span class="n">counter</span><span class="p">,</span>
+                            <span class="n">function</span><span class="p">,</span>
+                            <span class="n">values</span><span class="p">,</span>
+                            <span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">,</span> <span class="s2">&quot;R10&quot;</span><span class="p">,</span> <span class="s2">&quot;R30&quot;</span><span class="p">],</span>
+                            <span class="n">types</span><span class="p">,</span>
+                            <span class="n">real_types</span><span class="p">,</span>
                         <span class="p">)</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> skip&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">counter</span><span class="p">)</span>
-                            <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                <span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                            <span class="p">)</span>
-                        <span class="p">)</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pline</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;skip&quot;</span><span class="p">,</span> <span class="p">[],</span> <span class="n">types</span><span class="p">,</span> <span class="n">real_types</span><span class="p">))</span>
 
         <span class="c1"># out-of-planes</span>
         <span class="k">if</span> <span class="s2">&quot;n_oops&quot;</span> <span class="ow">in</span> <span class="n">eex</span> <span class="ow">and</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_oops&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -2106,33 +2089,43 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
                 <span class="k">if</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;wilson_out_of_plane&quot;</span><span class="p">:</span>
                     <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">counter</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;Chi0&quot;</span><span class="p">])</span>
-                        <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                            <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                            <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                            <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                            <span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                            <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                            <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                            <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                            <span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                        <span class="n">pline</span><span class="p">(</span>
+                            <span class="n">counter</span><span class="p">,</span>
+                            <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                            <span class="n">values</span><span class="p">,</span>
+                            <span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">,</span> <span class="s2">&quot;Chi0&quot;</span><span class="p">],</span>
+                            <span class="n">types</span><span class="p">,</span>
+                            <span class="n">real_types</span><span class="p">,</span>
                         <span class="p">)</span>
                     <span class="p">)</span>
                 <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;dreiding_out_of_plane&quot;</span><span class="p">:</span>
                     <span class="c1"># divide by number of oops from atom (3 for all at the moment!)</span>
                     <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">])</span><span class="o">/</span><span class="mi">3</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;Psi0&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt; &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">-&quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="n">pline</span><span class="p">(</span>
+                            <span class="n">counter</span><span class="p">,</span>
+                            <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                            <span class="n">values</span><span class="p">,</span>
+                            <span class="p">[</span><span class="s2">&quot;K2&quot;</span><span class="p">,</span> <span class="s2">&quot;Psi0&quot;</span><span class="p">],</span>
+                            <span class="n">types</span><span class="p">,</span>
+                            <span class="n">real_types</span><span class="p">,</span>
+                        <span class="p">)</span>
                     <span class="p">)</span>
                 <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;improper_opls&quot;</span><span class="p">:</span>
                     <span class="c1"># divide by two because OPLS uses V2/2 and CVS V.</span>
+                    <span class="n">values</span><span class="p">[</span><span class="s2">&quot;V2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V2&#39;</span><span class="p">])</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="si">:</span><span class="s2">9.4f</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">values</span><span class="p">[</span><span class="s2">&quot;sign&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;-1&quot;</span>
+                    <span class="n">values</span><span class="p">[</span><span class="s2">&quot;original sign&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;-1&quot;</span>
+                    <span class="n">values</span><span class="p">[</span><span class="s2">&quot;n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;2&quot;</span>
+                    <span class="n">values</span><span class="p">[</span><span class="s2">&quot;original n&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;2&quot;</span>
                     <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;V2&#39;</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> -1 2 &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2"> --&gt; &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">-&quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="n">pline</span><span class="p">(</span>
+                            <span class="n">counter</span><span class="p">,</span>
+                            <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                            <span class="n">values</span><span class="p">,</span>
+                            <span class="p">[</span><span class="s2">&quot;V2&quot;</span><span class="p">,</span> <span class="s2">&quot;sign&quot;</span><span class="p">,</span> <span class="s2">&quot;n&quot;</span><span class="p">],</span>
+                            <span class="n">types</span><span class="p">,</span>
+                            <span class="n">real_types</span><span class="p">,</span>
+                        <span class="p">)</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Can&#39;t handle oop form &#39;</span><span class="si">{</span><span class="n">form</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
@@ -2147,28 +2140,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;angle-angle parameters&quot;</span><span class="p">],</span>
                 <span class="p">):</span>
                     <span class="n">form</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">parameters_type</span><span class="p">,</span> <span class="n">real_types</span> <span class="o">=</span> <span class="n">parameters</span>
-                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                            <span class="n">counter</span><span class="p">,</span>
-                            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K1&quot;</span><span class="p">],</span>
-                            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K2&quot;</span><span class="p">],</span>
-                            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;K3&quot;</span><span class="p">],</span>
-                            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;Theta10&quot;</span><span class="p">],</span>
-                            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;Theta20&quot;</span><span class="p">],</span>
-                            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;Theta30&quot;</span><span class="p">],</span>
-                        <span class="p">)</span>
-                        <span class="o">+</span> <span class="s2">&quot; # </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> --&gt; </span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                            <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                            <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                            <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                            <span class="n">types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                            <span class="n">real_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                            <span class="n">real_types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                            <span class="n">real_types</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                            <span class="n">real_types</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                        <span class="p">)</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">pline</span><span class="p">(</span>
+                        <span class="n">counter</span><span class="p">,</span>
+                        <span class="n">function</span><span class="p">,</span>
+                        <span class="n">values</span><span class="p">,</span>
+                        <span class="p">[</span>
+                            <span class="s2">&quot;K1&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;K2&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;K3&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;Theta10&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;Theta20&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;Theta30&quot;</span><span class="p">,</span>
+                        <span class="p">],</span>
+                        <span class="n">types</span><span class="p">,</span>
+                        <span class="n">real_types</span><span class="p">,</span>
                     <span class="p">)</span>
-
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span>

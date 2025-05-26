@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2025.5.7 documentation</title>
+    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2025.5.26 documentation</title>
   
   
   
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=b25a682c"></script>
+    <script src="../_static/documentation_options.js?v=0a24fd17"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="lammps_step" href="modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.5.7" />
+  <meta name="docsearch:version" content="2025.5.26" />
   </head>
   
   
@@ -1332,6 +1332,34 @@ is defined.</p>
 </dd>
 </dl>
 <p>From Simon Weber <a class="reference external" href="https://gist.github.com/simon-weber/7853144">https://gist.github.com/simon-weber/7853144</a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lammps_step.lammps.pline">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.lammps.</span></span><span class="sig-name descname"><span class="pre">pline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rtypes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'10.4f'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'n/a'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#pline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.lammps.pline" title="Link to this definition">#</a></dt>
+<dd><p>Create a line for the parameters in structure.dat</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lammps_step.lammps.pvalue">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.lammps.</span></span><span class="sig-name descname"><span class="pre">pvalue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'9.4f'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'n/a'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#pvalue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.lammps.pvalue" title="Link to this definition">#</a></dt>
+<dd><p>Return the formatted value and original value of a parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>values</strong> (<em>[</em><em>str: str</em><em>]</em>) – The dictionary of parameter values.</p></li>
+<li><p><strong>key</strong> (<em>str</em>) – The parameter name</p></li>
+<li><p><strong>fmt</strong> (<em>str = &quot;9.4f&quot;</em>) – The format for the parameter</p></li>
+<li><p><strong>default</strong> (<em>str = &quot;n/a&quot;</em>) – The default value for the original parameter, if not find.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The formatted parameter value and the original form it came from.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(str, str)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -2643,6 +2671,8 @@ A step for running molecular dynamics using LAMMPS.</p>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.logging_disabled"><code class="docutils literal notranslate"><span class="pre">logging_disabled()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.pline"><code class="docutils literal notranslate"><span class="pre">pline()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.pvalue"><code class="docutils literal notranslate"><span class="pre">pvalue()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.lammps_step">lammps_step.lammps_step module</a><ul class="visible nav section-nav flex-column">
