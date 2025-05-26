@@ -1,6 +1,12 @@
 =======
 History
 =======
+2025.5.26 -- Added more metadata to the structure.dat file.
+   * Added the original parameters, when available, plus the version of each parameter
+     to the 'structure.dat' file input to LAMMPS to aid in understanding which
+     forcefield parameters were used and where they came from.
+   * Cleaned up the format of the 'structure.dat' file to make it more readable.
+
 2025.5.7 -- Bugfix: error if not saving configuration in minimization
    * The code crashed in the minimization step if the structure was discarded.
      

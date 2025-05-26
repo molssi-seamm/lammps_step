@@ -114,6 +114,73 @@ improper_style = {
 }
 
 
+def pvalue(values, key, fmt="9.4f", default="n/a"):
+    """Return the formatted value and original value of a parameter.
+
+    Parameters
+    ----------
+    values : [str: str]
+        The dictionary of parameter values.
+
+    key : str
+        The parameter name
+
+    fmt : str = "9.4f"
+        The format for the parameter
+
+    default : str = "n/a"
+        The default value for the original parameter, if not find.
+
+    Returns
+    -------
+    (str, str)
+        The formatted parameter value and the original form it came from.
+    """
+    val = float(values[key])
+    original = values["original " + key] if "original " + key in values else default
+
+    return f"{val:{fmt}}", original
+
+
+def pline(
+    i,
+    function,
+    values,
+    keys,
+    types,
+    rtypes,
+    fmt="10.4f",
+    default="n/a",
+):
+    """Create a line for the parameters in structure.dat"""
+    line = f"{i:6d} {function}"
+    for key in keys:
+        value = values[key]
+        try:
+            value = int(values[key])
+            fmt2 = fmt.split(".")[0] + "d"
+            line += f" {value:{fmt2}}"
+        except ValueError:
+            line += f" {float(values[key]):{fmt}}"
+
+    line += " #"
+
+    for typ in types:
+        line += f" {typ:6s}"
+    line += " -->"
+    for typ in rtypes:
+        line += f" {typ:6s}"
+
+    if "version" in values:
+        line += f" v{values['version']}"
+
+    for key in keys:
+        oval = values["original " + key] if "original " + key in values else default
+        line += f" {oval:7s}"
+
+    return line
+
+
 class LAMMPS(seamm.Node):
     display_units = {
         "T": "K",
@@ -964,9 +1031,9 @@ class LAMMPS(seamm.Node):
             zlo -= 10.0
             zhi += 10.0
 
-            lines.append("{} {} xlo xhi".format(xlo, xhi))
-            lines.append("{} {} ylo yhi".format(ylo, yhi))
-            lines.append("{} {} zlo zhi".format(zlo, zhi))
+            lines.append(f"{xlo:12.6f} {xhi:12.6f} xlo xhi")
+            lines.append(f"{ylo:12.6f} {yhi:12.6f} ylo yhi")
+            lines.append(f"{zlo:12.6f} {zhi:12.6f} zlo zhi")
 
         # the atoms and their masses, etc.
         lines.append("")
@@ -1040,21 +1107,24 @@ class LAMMPS(seamm.Node):
                     form, values, types, parameters_type, real_types = parameters
                     if form == "nonbond(9-6)":
                         lines.append(
-                            f"{i:6d} {values['eps']} {values['rmin']} "
-                            f"# {types[0]} --> {real_types[0]}"
+                            pline(i, "", values, ["eps", "rmin"], types, real_types)
                         )
                         i += 1
                     elif form == "nonbond(12-6)":
                         lines.append(
-                            f"{i:6d} {values['eps']} {values['sigma']} "
-                            f"# {types[0]} --> {real_types[0]}"
+                            pline(i, "", values, ["eps", "sigma"], types, real_types)
                         )
                         i += 1
                     elif form == "buckingham":
                         lines.append(
-                            f"{j:6d} {i} {values['A']} {values['rho']} {values['C']}"
-                            f" # {types[1]}-{types[0]} --> "
-                            f"{real_types[1]}_{real_types[0]}"
+                            pline(
+                                j,
+                                f"{i:6d}",
+                                values,
+                                ["A", "rho", "C"],
+                                types,
+                                real_types,
+                            )
                         )
                         if j == i:
                             i += 1
@@ -1083,16 +1153,24 @@ class LAMMPS(seamm.Node):
                 form, values, types, parameters_type, real_types = parameters
                 if form == "quadratic_bond":
                     function = "harmonic" if use_hybrid else ""
-                    line = f"{counter:6d} {function} {values['K2']} {values['R0']}"
+                    line = pline(
+                        counter,
+                        function,
+                        values,
+                        ["K2", "R0"],
+                        types,
+                        real_types,
+                    )
                 elif form == "quartic_bond":
                     function = "class2" if use_hybrid else ""
-                    line = (
-                        f"{counter:6d} {function} {values['R0']} "
-                        f"{values['K2']} {values['K3']} {values['K4']}"
+                    line = pline(
+                        counter,
+                        function,
+                        values,
+                        ["R0", "K2", "K3", "K4"],
+                        types,
+                        real_types,
                     )
-                line += (
-                    f" # {types[0]}-{types[1]}" f" --> {real_types[0]}-{real_types[1]}"
-                )
                 lines.append(line)
 
         # angles
@@ -1114,39 +1192,69 @@ class LAMMPS(seamm.Node):
             forms = set([v[0] for v in eex["angle parameters"]])
             use_hybrid = len(forms) > 1
 
-            for counter, parameters in zip(
-                range(1, eex["n_angle_types"] + 1), eex["angle parameters"]
-            ):
+            for counter, parameters in enumerate(eex["angle parameters"], start=1):
                 form, values, types, parameters_type, real_types = parameters
                 if form == "quadratic_angle":
                     function = "harmonic" if use_hybrid else ""
-                    line = (
-                        f"{counter:6d} {function} " f"{values['K2']} {values['Theta0']}"
+                    line = pline(
+                        counter,
+                        function,
+                        values,
+                        ["K2", "Theta0"],
+                        types,
+                        real_types,
                     )
                 elif form == "quartic_angle":
                     function = quartic_function if use_hybrid else ""
-                    line = (
-                        f"{counter:6d} {function} {values['Theta0']} "
-                        f"{values['K2']} {values['K3']} {values['K4']}"
+                    line = pline(
+                        counter,
+                        function,
+                        values,
+                        ["Theta0", "K2", "K3", "K4"],
+                        types,
+                        real_types,
                     )
                 elif form == "cosine":
                     function = "cosine" if use_hybrid else ""
-                    line = f"{counter:6d} {function} {values['K2']}"
+                    line = pline(
+                        counter,
+                        function,
+                        values,
+                        ["K2"],
+                        types,
+                        real_types,
+                    )
                 elif form == "cosine/squared":
                     function = "cosine/squared" if use_hybrid else ""
-                    line = f"{counter:6d} {function} {values['K2']} {values['Theta0']}"
+                    line = pline(
+                        counter,
+                        function,
+                        values,
+                        ["K2", "Theta0"],
+                        types,
+                        real_types,
+                    )
                 elif form == "simple_fourier_angle":
                     function = "fourier/simple" if use_hybrid else ""
-                    line = f"{counter:6d} {function} {values['K']} -1 {values['n']}"
+                    values["phase"] = "-1"
+                    values["original phase"] = "-1"
+                    line = pline(
+                        counter,
+                        function,
+                        values,
+                        ["K", "phase", "n"],
+                        types,
+                        real_types,
+                    )
                 elif form == "tabulated_angle":
                     function = "table" if use_hybrid else ""
-                    key = f"{types[0]}-{types[1]}-{types[2]}"
+                    key = f"{types[0]} {types[1]} {types[2]}"
                     line = f"{counter:6d} {function} tabulated_angles.dat {key}"
                     angle_table.extend(self.angle_table(key, values))
-                line += (
-                    f" # {types[0]} {types[1]} {types[2]}"
-                    f" --> {real_types[0]} {real_types[1]} {real_types[2]}"
-                )
+                    line += (
+                        f" # {types[0]:6} {types[1]:6} {types[2]:6}"
+                        f" --> {real_types[0]:6} {real_types[1]:6} {real_types[2]:6} "
+                    )
                 lines.append(line)
 
             # bond-bond coefficients, which must match angles in order & number
@@ -1154,7 +1262,7 @@ class LAMMPS(seamm.Node):
                 lines.append("")
                 lines.append("BondBond Coeffs")
                 lines.append("")
-                for counter, parameters, angles in zip(
+                for i, parameters, angles in zip(
                     range(1, eex["n_bond-bond_types"] + 1),
                     eex["bond-bond parameters"],
                     eex["angle parameters"],
@@ -1162,43 +1270,19 @@ class LAMMPS(seamm.Node):
                     form, values, types, parameters_type, real_types = parameters
                     angle_form = angles[0]
                     if angle_form == "quartic_angle":
-                        function = "class2" if use_hybrid else ""
+                        fn = "class2" if use_hybrid else ""
                         lines.append(
-                            "{:6d} {} {} {} {}".format(
-                                counter,
-                                function,
-                                values["K"],
-                                values["R10"],
-                                values["R20"],
-                            )
-                            + " # {}-{}-{} --> {}-{}-{}".format(
-                                types[0],
-                                types[1],
-                                types[2],
-                                real_types[0],
-                                real_types[1],
-                                real_types[2],
-                            )
+                            pline(i, fn, values, ["K", "R10", "R20"], types, real_types)
                         )
                     else:
-                        lines.append(
-                            "{:6d} skip".format(counter)
-                            + " # {}-{}-{} --> {}-{}-{}".format(
-                                types[0],
-                                types[1],
-                                types[2],
-                                real_types[0],
-                                real_types[1],
-                                real_types[2],
-                            )
-                        )
+                        lines.append(pline(i, "skip", [], types, real_types))
 
                 # bond-angles coefficients, which must match angles in order &
                 # number
                 lines.append("")
                 lines.append("BondAngle Coeffs")
                 lines.append("")
-                for counter, parameters, angles in zip(
+                for i, parameters, angles in zip(
                     range(1, eex["n_bond-angle_types"] + 1),
                     eex["bond-angle parameters"],
                     eex["angle parameters"],
@@ -1206,37 +1290,19 @@ class LAMMPS(seamm.Node):
                     form, values, types, parameters_type, real_types = parameters
                     angle_form = angles[0]
                     if angle_form == "quartic_angle":
-                        function = "class2" if use_hybrid else ""
+                        fn = "class2" if use_hybrid else ""
                         lines.append(
-                            "{:6d} {} {} {} {} {}".format(
-                                counter,
-                                function,
-                                values["K12"],
-                                values["K23"],
-                                values["R10"],
-                                values["R20"],
-                            )
-                            + " # {}-{}-{} --> {}-{}-{}".format(
-                                types[0],
-                                types[1],
-                                types[2],
-                                real_types[0],
-                                real_types[1],
-                                real_types[2],
+                            pline(
+                                i,
+                                fn,
+                                values,
+                                ["K12", "K23", "R10", "R20"],
+                                types,
+                                real_types,
                             )
                         )
                     else:
-                        lines.append(
-                            "{:6d} skip".format(counter)
-                            + " # {}-{}-{} --> {}-{}-{}".format(
-                                types[0],
-                                types[1],
-                                types[2],
-                                real_types[0],
-                                real_types[1],
-                                real_types[2],
-                            )
-                        )
+                        lines.append(pline(i, "skip", [], types, real_types))
 
         # torsions
         if "n_torsions" in eex and eex["n_torsions"] > 0:
@@ -1263,8 +1329,6 @@ class LAMMPS(seamm.Node):
             ):
                 form, values, types, parameters_type, real_types = parameters
                 if form == "torsion_1":
-                    KPhi = values["KPhi"]
-                    n = values["n"]
                     Phi0 = values["Phi0"]
 
                     # Discover form is
@@ -1290,39 +1354,48 @@ class LAMMPS(seamm.Node):
                         raise RuntimeError(
                             "LAMMPS cannot handle Phi0 = {}".format(Phi0)
                         )
+                    values["d"] = d
+                    values["d"] = values["original Phi0"]
+
                     function = "harmonic" if use_hybrid else ""
-                    line = f"{counter:6d} {function} {KPhi} {d} {n}"
+                    line = pline(
+                        counter,
+                        function,
+                        values,
+                        ["Kphi", "d", "n"],
+                        types,
+                        real_types,
+                    )
                 elif form == "torsion_3":
                     function = "class2" if use_hybrid else ""
-                    line = (
-                        f"{counter:6d} {function} "
-                        f"{values['V1']} {values['Phi0_1']} "
-                        f"{values['V2']} {values['Phi0_2']} "
-                        f"{values['V3']} {values['Phi0_3']} "
+                    line = pline(
+                        counter,
+                        function,
+                        values,
+                        ["V1", "Phi0_1", "V2", "Phi0_2", "V3", "Phi0_3"],
+                        types,
+                        real_types,
                     )
                 elif form == "torsion_opls":
                     function = "opls" if use_hybrid else ""
-                    line = (
-                        f"{counter:6d} {function} "
-                        f"{values['V1']} "
-                        f"{values['V2']} "
-                        f"{values['V3']} "
-                        f"{values['V4']} "
+                    line = pline(
+                        counter,
+                        function,
+                        values,
+                        ["V1", "V2", "V3", "V4"],
+                        types,
+                        real_types,
                     )
                 elif form == "torsion_charmm":
                     function = "charmm" if use_hybrid else ""
-                    line = (
-                        f"{counter:6d} {function} "
-                        f"{values['K']} "
-                        f"{values['n']} "
-                        f"{values['Phi0']} "
-                        f"{values['weight']} "
+                    line = pline(
+                        counter,
+                        function,
+                        values,
+                        ["K", "n", "Phi0", "weight"],
+                        types,
+                        real_types,
                     )
-                line += (
-                    f" # {types[0]}-{types[1]}-{types[2]}-{types[3]} "
-                    f"--> {real_types[0]}-{real_types[1]}-"
-                    f"{real_types[2]}-{real_types[3]}"
-                )
                 lines.append(line)
 
             # middle bond-torsion_3 coefficients, which must match torsions
@@ -1340,40 +1413,24 @@ class LAMMPS(seamm.Node):
                     torsion_form = torsions[0]
                     if torsion_form == "torsion_3":
                         function = "class2" if use_hybrid else ""
-                        lines.append(
-                            "{:6d} {} {} {} {} {}".format(
-                                counter,
-                                function,
-                                values["V1"],
-                                values["V2"],
-                                values["V3"],
-                                values["R0"],
-                            )
-                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
-                                types[0],
-                                types[1],
-                                types[2],
-                                types[3],
-                                real_types[0],
-                                real_types[1],
-                                real_types[2],
-                                real_types[3],
-                            )
+                        line = pline(
+                            counter,
+                            function,
+                            values,
+                            ["V1", "V2", "V3", "R0"],
+                            types,
+                            real_types,
                         )
                     else:
-                        lines.append(
-                            "{:6d} skip".format(counter)
-                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
-                                types[0],
-                                types[1],
-                                types[2],
-                                types[3],
-                                real_types[0],
-                                real_types[1],
-                                real_types[2],
-                                real_types[3],
-                            )
+                        line = pline(
+                            counter,
+                            "skip",
+                            values,
+                            [],
+                            types,
+                            real_types,
                         )
+                    lines.append(line)
 
                 # end bond-torsion_3 coefficients, which must match torsions
                 # in order & number
@@ -1389,44 +1446,26 @@ class LAMMPS(seamm.Node):
                     torsion_form = torsions[0]
                     if torsion_form == "torsion_3":
                         function = "class2" if use_hybrid else ""
-                        lines.append(
-                            "{:6d} {} {} {} {} {} {} {} {} {}".format(
-                                counter,
-                                function,
-                                values["V1_L"],
-                                values["V2_L"],
-                                values["V3_L"],
-                                values["V1_R"],
-                                values["V2_R"],
-                                values["V3_R"],
-                                values["R0_L"],
-                                values["R0_R"],
-                            )
-                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
-                                types[0],
-                                types[1],
-                                types[2],
-                                types[3],
-                                real_types[0],
-                                real_types[1],
-                                real_types[2],
-                                real_types[3],
-                            )
+                        line = pline(
+                            counter,
+                            function,
+                            values,
+                            [
+                                "V1_L",
+                                "V2_L",
+                                "V3_L",
+                                "V1_R",
+                                "V2_R",
+                                "V3_R",
+                                "R0_L",
+                                "R0_R",
+                            ],
+                            types,
+                            real_types,
                         )
+                        lines.append(line)
                     else:
-                        lines.append(
-                            "{:6d} skip".format(counter)
-                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
-                                types[0],
-                                types[1],
-                                types[2],
-                                types[3],
-                                real_types[0],
-                                real_types[1],
-                                real_types[2],
-                                real_types[3],
-                            )
-                        )
+                        lines.append(pline(i, "skip", [], types, real_types))
 
                 # angle-torsion_3 coefficients, which must match torsions
                 # in order & number
@@ -1442,44 +1481,26 @@ class LAMMPS(seamm.Node):
                     torsion_form = torsions[0]
                     if torsion_form == "torsion_3":
                         function = "class2" if use_hybrid else ""
-                        lines.append(
-                            "{:6d} {} {} {} {} {} {} {} {} {}".format(
-                                counter,
-                                function,
-                                values["V1_L"],
-                                values["V2_L"],
-                                values["V3_L"],
-                                values["V1_R"],
-                                values["V2_R"],
-                                values["V3_R"],
-                                values["Theta0_L"],
-                                values["Theta0_R"],
-                            )
-                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
-                                types[0],
-                                types[1],
-                                types[2],
-                                types[3],
-                                real_types[0],
-                                real_types[1],
-                                real_types[2],
-                                real_types[3],
-                            )
+                        line = pline(
+                            counter,
+                            function,
+                            values,
+                            [
+                                "V1_L",
+                                "V2_L",
+                                "V3_L",
+                                "V1_R",
+                                "V2_R",
+                                "V3_R",
+                                "Theta0_L",
+                                "Theta0_R",
+                            ],
+                            types,
+                            real_types,
                         )
+                        lines.append(line)
                     else:
-                        lines.append(
-                            "{:6d} skip".format(counter)
-                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
-                                types[0],
-                                types[1],
-                                types[2],
-                                types[3],
-                                real_types[0],
-                                real_types[1],
-                                real_types[2],
-                                real_types[3],
-                            )
-                        )
+                        lines.append(pline(i, "skip", [], types, real_types))
 
                 # angle-angle-torsion_1 coefficients, which must match torsions
                 # in order & number
@@ -1495,39 +1516,17 @@ class LAMMPS(seamm.Node):
                     torsion_form = torsions[0]
                     if torsion_form == "torsion_3":
                         function = "class2" if use_hybrid else ""
-                        lines.append(
-                            "{:6d} {} {} {} {}".format(
-                                counter,
-                                function,
-                                values["K"],
-                                values["Theta0_L"],
-                                values["Theta0_R"],
-                            )
-                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
-                                types[0],
-                                types[1],
-                                types[2],
-                                types[3],
-                                real_types[0],
-                                real_types[1],
-                                real_types[2],
-                                real_types[3],
-                            )
+                        line = pline(
+                            counter,
+                            function,
+                            values,
+                            ["K", "Theta0_L", "Theta0_R"],
+                            types,
+                            real_types,
                         )
+                        lines.append(line)
                     else:
-                        lines.append(
-                            "{:6d} skip".format(counter)
-                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
-                                types[0],
-                                types[1],
-                                types[2],
-                                types[3],
-                                real_types[0],
-                                real_types[1],
-                                real_types[2],
-                                real_types[3],
-                            )
-                        )
+                        lines.append(pline(i, "skip", [], types, real_types))
 
                 # bond-bond_1_3 coefficients, which must match torsions
                 # in order & number
@@ -1543,39 +1542,17 @@ class LAMMPS(seamm.Node):
                     torsion_form = torsions[0]
                     if torsion_form == "torsion_3":
                         function = "class2" if use_hybrid else ""
-                        lines.append(
-                            "{:6d} {} {} {} {}".format(
-                                counter,
-                                function,
-                                values["K"],
-                                values["R10"],
-                                values["R30"],
-                            )
-                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
-                                types[0],
-                                types[1],
-                                types[2],
-                                types[3],
-                                real_types[0],
-                                real_types[1],
-                                real_types[2],
-                                real_types[3],
-                            )
+                        line = pline(
+                            counter,
+                            function,
+                            values,
+                            ["K", "R10", "R30"],
+                            types,
+                            real_types,
                         )
+                        lines.append(line)
                     else:
-                        lines.append(
-                            "{:6d} skip".format(counter)
-                            + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
-                                types[0],
-                                types[1],
-                                types[2],
-                                types[3],
-                                real_types[0],
-                                real_types[1],
-                                real_types[2],
-                                real_types[3],
-                            )
-                        )
+                        lines.append(pline(i, "skip", [], types, real_types))
 
         # out-of-planes
         if "n_oops" in eex and eex["n_oops"] > 0:
@@ -1610,33 +1587,43 @@ class LAMMPS(seamm.Node):
                 form, values, types, parameters_type, real_types = parameters
                 if form == "wilson_out_of_plane":
                     lines.append(
-                        "{:6d} {} {}".format(counter, values["K"], values["Chi0"])
-                        + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
-                            types[0],
-                            types[1],
-                            types[2],
-                            types[3],
-                            real_types[0],
-                            real_types[1],
-                            real_types[2],
-                            real_types[3],
+                        pline(
+                            counter,
+                            "",
+                            values,
+                            ["K", "Chi0"],
+                            types,
+                            real_types,
                         )
                     )
                 elif form == "dreiding_out_of_plane":
                     # divide by number of oops from atom (3 for all at the moment!)
                     lines.append(
-                        f"{counter:6d} {float(values['K2'])/3:.4f} {values['Psi0']} "
-                        f"# {types[1]}-{types[0]}-{types[2]}-{types[3]} --> "
-                        f"{real_types[1]}-{real_types[0]}-{real_types[2]}-"
-                        f"{real_types[3]}"
+                        pline(
+                            counter,
+                            "",
+                            values,
+                            ["K2", "Psi0"],
+                            types,
+                            real_types,
+                        )
                     )
                 elif form == "improper_opls":
                     # divide by two because OPLS uses V2/2 and CVS V.
+                    values["V2"] = f"{float(values['V2']) / 2:9.4f}"
+                    values["sign"] = "-1"
+                    values["original sign"] = "-1"
+                    values["n"] = "2"
+                    values["original n"] = "2"
                     lines.append(
-                        f"{counter:6d} {float(values['V2'])/2:.4f} -1 2 "
-                        f"# {types[0]}-{types[1]}-{types[2]}-{types[3]} --> "
-                        f"{real_types[0]}-{real_types[1]}-{real_types[2]}-"
-                        f"{real_types[3]}"
+                        pline(
+                            counter,
+                            "",
+                            values,
+                            ["V2", "sign", "n"],
+                            types,
+                            real_types,
+                        )
                     )
                 else:
                     raise RuntimeError(f"Can't handle oop form '{form}'")
@@ -1651,28 +1638,22 @@ class LAMMPS(seamm.Node):
                     eex["angle-angle parameters"],
                 ):
                     form, values, types, parameters_type, real_types = parameters
-                    lines.append(
-                        "{:6d} {} {} {} {} {} {}".format(
-                            counter,
-                            values["K1"],
-                            values["K2"],
-                            values["K3"],
-                            values["Theta10"],
-                            values["Theta20"],
-                            values["Theta30"],
-                        )
-                        + " # {}-{}-{}-{} --> {}-{}-{}-{}".format(
-                            types[0],
-                            types[1],
-                            types[2],
-                            types[3],
-                            real_types[0],
-                            real_types[1],
-                            real_types[2],
-                            real_types[3],
-                        )
+                    line = pline(
+                        counter,
+                        function,
+                        values,
+                        [
+                            "K1",
+                            "K2",
+                            "K3",
+                            "Theta10",
+                            "Theta20",
+                            "Theta30",
+                        ],
+                        types,
+                        real_types,
                     )
-
+                    lines.append(line)
         lines.append("")
         lines.append("")
         return (
