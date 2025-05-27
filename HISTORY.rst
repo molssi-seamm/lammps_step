@@ -1,6 +1,10 @@
 =======
 History
 =======
+2025.5.27 -- Bugfix: error in formatting forcefield parameters
+   * The cleanup of the format of 'structure.dat' accidentally converted some floating
+     point numbers into integers, with loss of precision. This is now fixed.
+
 2025.5.26 -- Added more metadata to the structure.dat file.
    * Added the original parameters, when available, plus the version of each parameter
      to the 'structure.dat' file input to LAMMPS to aid in understanding which

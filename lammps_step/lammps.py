@@ -156,12 +156,22 @@ def pline(
     line = f"{i:6d} {function}"
     for key in keys:
         value = values[key]
-        try:
-            value = int(values[key])
+        if isinstance(value, float):
+            line += f" {value:{fmt}}"
+        elif isinstance(value, int):
             fmt2 = fmt.split(".")[0] + "d"
             line += f" {value:{fmt2}}"
-        except ValueError:
-            line += f" {float(values[key]):{fmt}}"
+        elif isinstance(value, str):
+            if "." in value:
+                line += f" {float(value):{fmt}}"
+            else:
+                fmt2 = fmt.split(".")[0] + "s"
+                line += f" {value:{fmt2}}"
+        else:
+            raise ValueError(
+                f"Cannot handle forcefield parameter of type {type(value).__name__}:"
+                f" {value}"
+            )
 
     line += " #"
 
