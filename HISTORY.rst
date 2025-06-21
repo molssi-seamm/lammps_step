@@ -1,6 +1,8 @@
 =======
 History
 =======
+2025.6.21 -- Added support for MACE PyTorch potentials.
+
 2025.5.27 -- Bugfix: error in formatting forcefield parameters
    * The cleanup of the format of 'structure.dat' accidentally converted some floating
      point numbers into integers, with loss of precision. This is now fixed.

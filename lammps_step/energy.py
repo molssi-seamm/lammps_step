@@ -115,8 +115,6 @@ class Energy(seamm.Node):
         """Parse the output and generating the text output and store the
         data in variables for other stages to access
         """
-        ff = self.get_variable("_forcefield")
-
         if table is not None:
             text = ""
             tmp = tabulate(
@@ -195,7 +193,7 @@ class Energy(seamm.Node):
                     data["energy,units"] = "kcal/mol"
 
                 # Check for reaxff enthalpy offset
-                if ff.ff_form == "reaxff":
+                if self.parent.ff_form() == "reaxff":
                     Eat = self.parent._atomic_energy_sum
                     if Eat != 0.0:
                         dHf = data["energy"] + Eat

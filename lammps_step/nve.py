@@ -129,7 +129,7 @@ class NVE(lammps_step.Energy):
         """Get the input for an NVE dynamics run in LAMMPS"""
 
         # See what type of forcefield we have and handle it
-        ff = self.get_variable("_forcefield")
+        ff_form = self.parent.ff_form()
 
         self.description = []
         self.description.append(__(self.header, indent=4 * " "))
@@ -193,7 +193,7 @@ class NVE(lammps_step.Energy):
                     Q_("kcal/Å^2/fs/mol") / Q_("kcal/mol") * Q_("kcal/mol").to("kJ")
                 )
             factor = factor.m_as("W/m^2")
-            if ff.ff_form == "class2" or not P["use centroid stress"]:
+            if ff_form == "class2" or not P["use centroid stress"]:
                 # Centroid/stress/atom does not handle class2 ff ... cross-terms?
                 lines.append(
                     f"""
@@ -329,7 +329,7 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
         for i in range(1, nfixes + 1):
             lines.append(f"unfix               {i}")
         if P["heat flux"] != "never":
-            if ff.ff_form != "class2" and P["use centroid stress"]:
+            if ff_form != "class2" and P["use centroid stress"]:
                 lines.append("uncompute           flux_b")
                 lines.append("uncompute           S_b")
             lines.append("uncompute           flux_p")
@@ -368,8 +368,7 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
         masses = self.parent._data["masses"]
         min_mass = min(masses)
 
-        ff = self.get_variable("_forcefield")
-        if ff.ff_form == "reaxff":
+        if self.parent.ff_form() == "reaxff":
             # ReaxFF needs a smaller timestep for the QEq part
             factor = 0.5
         else:
