@@ -524,6 +524,20 @@ class LAMMPS(seamm.Node):
 
         return text
 
+    def ff_form(self):
+        """Return the form of the forcefield."""
+        ff = self.get_variable("_forcefield")
+        if ff == "OpenKIM":
+            ff_form = "OpenKIM"
+        elif ff == "PyTorch":
+            ff_form = "PyTorch"
+        else:
+            try:
+                ff_form = ff.ff_form
+            except Exception:
+                ff_form = "unknown"
+        return ff_form
+
     def run(self):
         """Run a LAMMPS simulation"""
         # Set the model
@@ -531,6 +545,8 @@ class LAMMPS(seamm.Node):
             ff = self.get_variable("_forcefield")
             if ff == "OpenKIM":
                 self.model = "OpenKIM/" + self.get_variable("_OpenKIM_Potential")
+            elif ff == "PyTorch":
+                self.model = "PyTorch/" + self.get_variable("_pytorch_model")
             else:
                 self.model = ff.current_forcefield
         except Exception:
@@ -588,6 +604,9 @@ class LAMMPS(seamm.Node):
         if ff == "OpenKIM":
             potential = self.get_variable("_OpenKIM_Potential")
             control.append(["forcefield", "OpenKIM " + potential])
+        elif ff == "PyTorch":
+            model = self.get_variable("_pytorch_model")
+            control.append(["forcefield", "OpenKIM " + model])
         else:
             control.append(["forcefield", ff.current_forcefield])
         while node is not None:
@@ -1771,8 +1790,6 @@ class LAMMPS(seamm.Node):
         node=None,
     ):
         """Read a trajectory file and do the statistical analysis"""
-        ff = self.get_variable("_forcefield")
-
         write_html = "html" in self.options and self.options["html"]
 
         results = {}
@@ -1993,7 +2010,7 @@ class LAMMPS(seamm.Node):
                 table["tau"].append(f"{t_tau:.1f} {tau_units}{acf_warning}")
                 table["inefficiency"].append(f"{inefficiency:.1f}")
 
-                if column == "Etot" and ff.ff_form == "reaxff":
+                if column == "Etot" and self.ff_form() == "reaxff":
                     Eat = self._atomic_energy_sum
                     if Eat != 0.0:
                         results["DfH0_reax"] = {}

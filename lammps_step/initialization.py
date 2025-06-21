@@ -170,13 +170,14 @@ class Initialization(seamm.Node):
         configuration = system_db.system.configuration
 
         # See what type of forcefield we have and handle it
-        ff = self.get_variable("_forcefield")
-        if ff == "OpenKIM":
+        ff_form = self.parent.ff_form()
+        if ff_form == "OpenKIM":
             return self.OpenKIM_input()
-
-        ff_form = ff.ff_form
+        if ff_form == "PyTorch":
+            return self.PyTorch_input()
 
         # Valence forcefield...
+        ff = self.get_variable("_forcefield")
         ffname = ff.current_forcefield
         n_atoms = configuration.n_atoms
 
@@ -736,5 +737,97 @@ class Initialization(seamm.Node):
                 eex["charges"] = atoms.get_column_data["charges"]
             else:
                 eex["charges"] = [0.0] * n_atoms
+
+        return eex
+
+    def PyTorch_input(self):
+        """Create the initialization input for a calculation using MACE/PyTorch."""
+        # Get the configuration
+        system_db = self.get_variable("_system_db")
+        configuration = system_db.system.configuration
+
+        # Get the (simple) energy expression for these systems
+        eex = self.PyTorch_energy_expression()
+
+        model = self.get_variable("_pytorch_model")
+        lammps_step.set_lammps_unit_system("metal")
+
+        lines = []
+        lines.append("")
+        lines.append(f"# {self.header}")
+        lines.append("")
+        lines.append("units               metal")
+        lines.append("atom_style          atomic")
+        lines.append("atom_modify         map yes")
+        lines.append("newton              on")
+        lines.append("")
+
+        periodicity = configuration.periodicity
+        if periodicity == 0:
+            lines.append("boundary            s s s")
+            string = "Setup for a molecular (non-periodic) system."
+        elif periodicity == 3:
+            lines.append("boundary            p p p")
+            string = "Setup for a periodic (crystalline or fluid) system."
+        else:
+            raise RuntimeError(
+                "The LAMMPS step can only handle 0-"
+                " or 3-D periodicity at the moment!"
+            )
+        lines.append("")
+        lines.append("read_data           structure.dat")
+        lines.append("")
+        lines.append("#    define the style for MACE")
+
+        lines.append("pair_style          mace no_domain_decomposition")
+        lines.append(f"pair_coeff          * * {model} {' '.join(eex['atom types'])}")
+
+        # Set up standard variables
+        for variable in thermo_variables:
+            lines.append("variable            {var} equal {var}".format(var=variable))
+
+        self.description.append(__(string, indent=self.indent + 4 * " "))
+
+        return (lines, eex)
+
+    def PyTorch_energy_expression(self):
+        """Create the (simple) energy expression for PyTorch models."""
+        eex = {}
+        eex["terms"] = {"PyTorch": []}
+
+        # Get the configuration
+        system_db = self.get_variable("_system_db")
+        configuration = system_db.system.configuration
+        atoms = configuration.atoms
+
+        # The elements (1-based!) Probably not used...
+        elements = atoms.symbols
+        eex["elements"] = [""]
+        eex["elements"].extend(elements)
+
+        # The periodicity & cell parameters
+        periodicity = eex["periodicity"] = configuration.periodicity
+        if periodicity == 3:
+            eex["cell"] = configuration.cell.parameters
+
+        result = eex["atoms"] = []
+        atom_types = eex["atom types"] = []
+        masses = eex["masses"] = []
+
+        coordinates = atoms.get_coordinates(fractionals=False)
+        for element, xyz in zip(elements, coordinates):
+            if element in atom_types:
+                index = atom_types.index(element) + 1
+            else:
+                atom_types.append(element)
+                index = len(atom_types)
+                masses.append(
+                    (seamm_util.element_data[element]["atomic weight"], element)
+                )
+            x, y, z = xyz
+            result.append((x, y, z, index))
+
+        eex["n_atoms"] = len(result)
+        eex["n_atom_types"] = len(atom_types)
 
         return eex

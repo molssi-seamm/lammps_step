@@ -51,8 +51,6 @@ class Minimization(lammps_step.Energy):
         Parameters
         ----------
         """
-        ff = self.get_variable("_forcefield")
-
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data
         )
@@ -165,7 +163,7 @@ class Minimization(lammps_step.Energy):
                 table["Value"].append(f"{E.magnitude:.2f}")
                 table["Units"].append("kcal/mol")
 
-                if ff.ff_form == "reaxff":
+                if self.parent.ff_form() == "reaxff":
                     Eat = self.parent._atomic_energy_sum
                     if Eat != 0.0:
                         dHf = data["energy"] + Eat
