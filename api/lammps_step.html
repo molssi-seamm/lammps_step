@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2025.5.27 documentation</title>
+    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2025.6.21 documentation</title>
   
   
   
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=ae5c790e"></script>
+    <script src="../_static/documentation_options.js?v=f6e729f4"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="lammps_step" href="modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.5.27" />
+  <meta name="docsearch:version" content="2025.6.21" />
   </head>
   
   
@@ -972,6 +972,18 @@ a step, and dimensions of the graphical node.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.initialization.Initialization.PyTorch_energy_expression">
+<span class="sig-name descname"><span class="pre">PyTorch_energy_expression</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/initialization.html#Initialization.PyTorch_energy_expression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.initialization.Initialization.PyTorch_energy_expression" title="Link to this definition">#</a></dt>
+<dd><p>Create the (simple) energy expression for PyTorch models.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.initialization.Initialization.PyTorch_input">
+<span class="sig-name descname"><span class="pre">PyTorch_input</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/initialization.html#Initialization.PyTorch_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.initialization.Initialization.PyTorch_input" title="Link to this definition">#</a></dt>
+<dd><p>Create the initialization input for a calculation using MACE/PyTorch.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="lammps_step.initialization.Initialization.description_text">
 <span class="sig-name descname"><span class="pre">description_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">P</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/initialization.html#Initialization.description_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.initialization.Initialization.description_text" title="Link to this definition">#</a></dt>
 <dd><p>Return a short description of this step.</p>
@@ -1232,6 +1244,12 @@ be used as is.</p>
 <dt class="sig sig-object py" id="lammps_step.lammps.LAMMPS.display_units">
 <span class="sig-name descname"><span class="pre">display_units</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'DfH0_reax':</span> <span class="pre">'kcal/mol',</span> <span class="pre">'E_hbond':</span> <span class="pre">'kcal/mol',</span> <span class="pre">'Eke':</span> <span class="pre">'kcal/mol',</span> <span class="pre">'Emol':</span> <span class="pre">'kcal/mol',</span> <span class="pre">'Epair':</span> <span class="pre">'kcal/mol',</span> <span class="pre">'Epe':</span> <span class="pre">'kcal/mol',</span> <span class="pre">'Etot':</span> <span class="pre">'kcal/mol',</span> <span class="pre">'Jx':</span> <span class="pre">'W/m^2',</span> <span class="pre">'Jy':</span> <span class="pre">'W/m^2',</span> <span class="pre">'Jz':</span> <span class="pre">'W/m^2',</span> <span class="pre">'Kappa':</span> <span class="pre">'W/K/m',</span> <span class="pre">'Kappa_x':</span> <span class="pre">'W/K/m',</span> <span class="pre">'Kappa_y':</span> <span class="pre">'W/K/m',</span> <span class="pre">'Kappa_z':</span> <span class="pre">'W/K/m',</span> <span class="pre">'N_hbond':</span> <span class="pre">'',</span> <span class="pre">'P':</span> <span class="pre">'atm',</span> <span class="pre">'T':</span> <span class="pre">'K',</span> <span class="pre">'V':</span> <span class="pre">'Å^3',</span> <span class="pre">'a':</span> <span class="pre">'Å',</span> <span class="pre">'b':</span> <span class="pre">'Å',</span> <span class="pre">'c':</span> <span class="pre">'Å',</span> <span class="pre">'density':</span> <span class="pre">'g/mL',</span> <span class="pre">'t':</span> <span class="pre">'fs',</span> <span class="pre">'u':</span> <span class="pre">'kcal/mol'}</span></em><a class="headerlink" href="#lammps_step.lammps.LAMMPS.display_units" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.lammps.LAMMPS.ff_form">
+<span class="sig-name descname"><span class="pre">ff_form</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.ff_form"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.ff_form" title="Link to this definition">#</a></dt>
+<dd><p>Return the form of the forcefield.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lammps_step.lammps.LAMMPS.get_dump">
@@ -2613,6 +2631,8 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization.Initialization"><code class="docutils literal notranslate"><span class="pre">Initialization</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization.Initialization.OpenKIM_energy_expression"><code class="docutils literal notranslate"><span class="pre">Initialization.OpenKIM_energy_expression()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization.Initialization.OpenKIM_input"><code class="docutils literal notranslate"><span class="pre">Initialization.OpenKIM_input()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization.Initialization.PyTorch_energy_expression"><code class="docutils literal notranslate"><span class="pre">Initialization.PyTorch_energy_expression()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization.Initialization.PyTorch_input"><code class="docutils literal notranslate"><span class="pre">Initialization.PyTorch_input()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization.Initialization.description_text"><code class="docutils literal notranslate"><span class="pre">Initialization.description_text()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization.Initialization.get_input"><code class="docutils literal notranslate"><span class="pre">Initialization.get_input()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization.Initialization.git_revision"><code class="docutils literal notranslate"><span class="pre">Initialization.git_revision</span></code></a></li>
@@ -2658,6 +2678,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.description_text"><code class="docutils literal notranslate"><span class="pre">LAMMPS.description_text()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.display_title"><code class="docutils literal notranslate"><span class="pre">LAMMPS.display_title</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.display_units"><code class="docutils literal notranslate"><span class="pre">LAMMPS.display_units</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.ff_form"><code class="docutils literal notranslate"><span class="pre">LAMMPS.ff_form()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.get_dump"><code class="docutils literal notranslate"><span class="pre">LAMMPS.get_dump()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.git_revision"><code class="docutils literal notranslate"><span class="pre">LAMMPS.git_revision</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.have_dreiding_hbonds"><code class="docutils literal notranslate"><span class="pre">LAMMPS.have_dreiding_hbonds</span></code></a></li>

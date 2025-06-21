@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2025.5.27 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2025.6.21 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=ae5c790e"></script>
+    <script src="../../_static/documentation_options.js?v=f6e729f4"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.5.27" />
+  <meta name="docsearch:version" content="2025.6.21" />
   </head>
   
   
@@ -1021,6 +1021,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">return</span> <span class="n">text</span></div>
 
 
+<div class="viewcode-block" id="LAMMPS.ff_form">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.ff_form">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ff_form</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the form of the forcefield.&quot;&quot;&quot;</span>
+        <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_forcefield&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;OpenKIM&quot;</span><span class="p">:</span>
+            <span class="n">ff_form</span> <span class="o">=</span> <span class="s2">&quot;OpenKIM&quot;</span>
+        <span class="k">elif</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span><span class="p">:</span>
+            <span class="n">ff_form</span> <span class="o">=</span> <span class="s2">&quot;PyTorch&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">ff_form</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">ff_form</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">ff_form</span> <span class="o">=</span> <span class="s2">&quot;unknown&quot;</span>
+        <span class="k">return</span> <span class="n">ff_form</span></div>
+
+
 <div class="viewcode-block" id="LAMMPS.run">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1030,6 +1047,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_forcefield&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;OpenKIM&quot;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;OpenKIM/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_OpenKIM_Potential&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;PyTorch/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_pytorch_model&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">current_forcefield</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
@@ -1087,6 +1106,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">if</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;OpenKIM&quot;</span><span class="p">:</span>
             <span class="n">potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_OpenKIM_Potential&quot;</span><span class="p">)</span>
             <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s2">&quot;forcefield&quot;</span><span class="p">,</span> <span class="s2">&quot;OpenKIM &quot;</span> <span class="o">+</span> <span class="n">potential</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_pytorch_model&quot;</span><span class="p">)</span>
+            <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s2">&quot;forcefield&quot;</span><span class="p">,</span> <span class="s2">&quot;OpenKIM &quot;</span> <span class="o">+</span> <span class="n">model</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s2">&quot;forcefield&quot;</span><span class="p">,</span> <span class="n">ff</span><span class="o">.</span><span class="n">current_forcefield</span><span class="p">])</span>
         <span class="k">while</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -2279,8 +2301,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">node</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a trajectory file and do the statistical analysis&quot;&quot;&quot;</span>
-        <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_forcefield&quot;</span><span class="p">)</span>
-
         <span class="n">write_html</span> <span class="o">=</span> <span class="s2">&quot;html&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;html&quot;</span><span class="p">]</span>
 
         <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
@@ -2501,7 +2521,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">table</span><span class="p">[</span><span class="s2">&quot;tau&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t_tau</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">tau_units</span><span class="si">}{</span><span class="n">acf_warning</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="n">table</span><span class="p">[</span><span class="s2">&quot;inefficiency&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">inefficiency</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-                <span class="k">if</span> <span class="n">column</span> <span class="o">==</span> <span class="s2">&quot;Etot&quot;</span> <span class="ow">and</span> <span class="n">ff</span><span class="o">.</span><span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;reaxff&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">column</span> <span class="o">==</span> <span class="s2">&quot;Etot&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_form</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;reaxff&quot;</span><span class="p">:</span>
                     <span class="n">Eat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_energy_sum</span>
                     <span class="k">if</span> <span class="n">Eat</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>
                         <span class="n">results</span><span class="p">[</span><span class="s2">&quot;DfH0_reax&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
