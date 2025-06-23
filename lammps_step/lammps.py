@@ -788,31 +788,31 @@ class LAMMPS(seamm.Node):
             if "run_lammps" in files:
                 cmd = ["{python}", "run_lammps"]
                 if (
-                    "GPUS" not in ce
-                    and "cmd_args" in config
-                    and config["cmd_args"] != ""
+                    "NGPUS" not in ce
+                    and "cmd-args" in config
+                    and config["cmd-args"] != ""
                 ):
-                    cmd.extend(["--cmd-args", config["cmd_args"]])
+                    cmd.extend(["--cmd-args", config["cmd-args"]])
                 if (
-                    "GPUS" in ce
-                    and "gpu_cmd_args" in config
-                    and config["gpu_cmd_args"] != ""
+                    "NGPUS" in ce
+                    and "gpu-cmd-args" in config
+                    and config["gpu-cmd-args"] != ""
                 ):
-                    cmd.extend(["--cmd-args", config["gpu_cmd_args"]])
+                    cmd.extend(["--cmd-args", config["gpu-cmd-args"]])
             else:
                 cmd = ["{code}"]
                 if (
-                    "GPUS" not in ce
-                    and "cmd_args" in config
-                    and config["cmd_args"] != ""
+                    "NGPUS" not in ce
+                    and "cmd-args" in config
+                    and config["cmd-args"] != ""
                 ):
-                    cmd.extend(config["cmd_args"].split())
+                    cmd.extend(config["cmd-args"].split())
                 if (
-                    "GPUS" in ce
-                    and "gpu_cmd_args" in config
-                    and config["gpu_cmd_args"] != ""
+                    "NGPUS" in ce
+                    and "gpu-cmd-args" in config
+                    and config["gpu-cmd-args"] != ""
                 ):
-                    cmd.extend(config["gpu_cmd_args"].split())
+                    cmd.extend(config["gpu-cmd-args"].split())
                 cmd.extend(["-in", "input.dat"])
 
             if "NGPUS" in ce:

@@ -1,6 +1,11 @@
 =======
 History
 =======
+2025.6.23 -- Bugfix: handling of GPUs and KOKKOS arguments
+   * Fixed issue detecting GPUs caused by differences in SLURM enviroment variables
+   * Fixed inconsistencies of dash vs underscore in configuration arguments cmd-args and
+     gpu-cmd-args, which are used for e.g. Kokkos.
+
 2025.6.21 -- Added support for MACE PyTorch potentials.
 
 2025.5.27 -- Bugfix: error in formatting forcefield parameters
