@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.initialization &#8212; SEAMM LAMMPS Plug-in 2025.6.23 documentation</title>
+    <title>lammps_step.initialization &#8212; SEAMM LAMMPS Plug-in 2025.6.25 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=65672787"></script>
+    <script src="../../_static/documentation_options.js?v=0a963353"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.6.23" />
+  <meta name="docsearch:version" content="2025.6.25" />
   </head>
   
   
@@ -1068,9 +1068,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">charge_method</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">charge_method</span>
 
             <span class="k">if</span> <span class="n">charge_method</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
-                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;pair_style          reaxff NULL checkqeq no enobonds yes&quot;</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;pair_style          reaxff NULL checkqeq no enobonds yes &quot;</span>
+                    <span class="s2">&quot;safezone 1.6&quot;</span>
+                <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;pair_style          reaxff NULL enobonds yes&quot;</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;pair_style          reaxff NULL enobonds yes safezone 1.6&quot;</span>
+                <span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;pair_coeff          * * forcefield.dat </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s1">&#39;atom types&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
