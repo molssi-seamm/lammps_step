@@ -1,6 +1,11 @@
 =======
 History
 =======
+2025.6.25 -- Bugfix: ReaxFF memory allocation
+   * Apparently the memory handling for reafxx in LAMMPS is kludgy, and there is an
+     empirical fudge-factor that helps solve errors with e.g. numbers of bonds. This
+     version increases the factor to 1.6 until we get more experience.
+
 2025.6.23 -- Bugfix: handling of GPUs and KOKKOS arguments
    * Fixed issue detecting GPUs caused by differences in SLURM enviroment variables
    * Fixed inconsistencies of dash vs underscore in configuration arguments cmd-args and

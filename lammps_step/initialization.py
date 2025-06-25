@@ -590,9 +590,14 @@ class Initialization(seamm.Node):
                 charge_method = ff.charge_method
 
             if charge_method == "none":
-                lines.append("pair_style          reaxff NULL checkqeq no enobonds yes")
+                lines.append(
+                    "pair_style          reaxff NULL checkqeq no enobonds yes "
+                    "safezone 1.6"
+                )
             else:
-                lines.append("pair_style          reaxff NULL enobonds yes")
+                lines.append(
+                    "pair_style          reaxff NULL enobonds yes safezone 1.6"
+                )
             lines.append(
                 f"pair_coeff          * * forcefield.dat {' '.join(eex['atom types'])}"
             )
