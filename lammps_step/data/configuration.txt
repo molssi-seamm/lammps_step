@@ -13,9 +13,12 @@
 
 # The optimal number of atoms per core. You may wish to change this if
 # you consistently use expensive potentials, or have e.g. GPUs. The
-# default is 1000.
+# default is 100.
 
-# lammps-atoms-per-core = 1000
+# atoms-per-core = 100
+
+# The actual number of cores is determing by the two parameters above, but is
+# further limited by the global limit 'ncores' in the [SEAMM] section.
 
 # Whether to write local HTML files for the graphs, etc. generated so
 # they can be viewed without the SEAMM Dashboard.

@@ -402,7 +402,7 @@ class LAMMPS(seamm.Node):
             parser_name,
             "--atoms-per-core",
             type=int,
-            default="1000",
+            default="100",
             help="the optimal number of atoms per core for LAMMPS",
         )
         parser.add_argument(
@@ -572,11 +572,26 @@ class LAMMPS(seamm.Node):
         # Whether to run parallel and if so, how many mpi processes
         if global_options["parallelism"] in ("any", "mpi"):
             np = n_atoms // o["atoms_per_core"] + 1
+            np_text = (
+                f"The calculation can use {np} cores given {n_atoms} atoms and "
+                f"the requested {o['atoms_per_core']} atoms per core."
+            )
             if o["ncores"] != "available":
+                if np > int(o["ncores"]):
+                    np_text += (
+                        " The maximum number of cores for LAMMPS limits the "
+                        f"number of cores used to  {o['ncores']}."
+                    )
                 np = min(np, int(o["ncores"]))
             if global_options["ncores"] != "available":
+                if np > int(global_options["ncores"]):
+                    np_text += (
+                        " The actual number of cores is limited by the global "
+                        f"limit of {int(global_options['ncores'])} cores."
+                    )
                 np = min(np, int(global_options["ncores"]))
         else:
+            np_text = "No parallelism requested: {global_options['parallelism']}"
             np = 1
 
         # Print headers and get to work
@@ -670,7 +685,7 @@ class LAMMPS(seamm.Node):
         self._timing_data[11] = json.dumps(control)
         control = []
 
-        files = self._execute_single_sim(files, np=np)
+        files = self._execute_single_sim(files, np=np, np_text=np_text)
 
         self.analyze(nodes=history_nodes)
 
@@ -680,7 +695,7 @@ class LAMMPS(seamm.Node):
 
         return next_node
 
-    def _execute_single_sim(self, files, np=1, return_files=None):
+    def _execute_single_sim(self, files, np=1, np_text="", return_files=None):
         """
         Step #1: Execute input file
         """
@@ -821,6 +836,9 @@ class LAMMPS(seamm.Node):
                 )
             else:
                 printer.important(f"   LAMMPS using MPI with {np} processes.")
+                if np_text != "":
+                    printer.important("")
+                    printer.important(__(np_text, indent=4 * " "))
             printer.important("")
 
             cmd.extend([">", "stdout.txt", "2>", "stderr.txt"])
