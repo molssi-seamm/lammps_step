@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2025.6.25 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2025.7.23 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=0a963353"></script>
+    <script src="../../_static/documentation_options.js?v=77a11b9d"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.6.25" />
+  <meta name="docsearch:version" content="2025.7.23" />
   </head>
   
   
@@ -892,7 +892,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">parser_name</span><span class="p">,</span>
             <span class="s2">&quot;--atoms-per-core&quot;</span><span class="p">,</span>
             <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
-            <span class="n">default</span><span class="o">=</span><span class="s2">&quot;1000&quot;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="s2">&quot;100&quot;</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;the optimal number of atoms per core for LAMMPS&quot;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
@@ -1074,11 +1074,26 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="c1"># Whether to run parallel and if so, how many mpi processes</span>
         <span class="k">if</span> <span class="n">global_options</span><span class="p">[</span><span class="s2">&quot;parallelism&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;any&quot;</span><span class="p">,</span> <span class="s2">&quot;mpi&quot;</span><span class="p">):</span>
             <span class="n">np</span> <span class="o">=</span> <span class="n">n_atoms</span> <span class="o">//</span> <span class="n">o</span><span class="p">[</span><span class="s2">&quot;atoms_per_core&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">np_text</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The calculation can use </span><span class="si">{</span><span class="n">np</span><span class="si">}</span><span class="s2"> cores given </span><span class="si">{</span><span class="n">n_atoms</span><span class="si">}</span><span class="s2"> atoms and &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;the requested </span><span class="si">{</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;atoms_per_core&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> atoms per core.&quot;</span>
+            <span class="p">)</span>
             <span class="k">if</span> <span class="n">o</span><span class="p">[</span><span class="s2">&quot;ncores&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;available&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">np</span> <span class="o">&gt;</span> <span class="nb">int</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;ncores&quot;</span><span class="p">]):</span>
+                    <span class="n">np_text</span> <span class="o">+=</span> <span class="p">(</span>
+                        <span class="s2">&quot; The maximum number of cores for LAMMPS limits the &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;number of cores used to  </span><span class="si">{</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;ncores&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="p">)</span>
                 <span class="n">np</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;ncores&quot;</span><span class="p">]))</span>
             <span class="k">if</span> <span class="n">global_options</span><span class="p">[</span><span class="s2">&quot;ncores&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;available&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">np</span> <span class="o">&gt;</span> <span class="nb">int</span><span class="p">(</span><span class="n">global_options</span><span class="p">[</span><span class="s2">&quot;ncores&quot;</span><span class="p">]):</span>
+                    <span class="n">np_text</span> <span class="o">+=</span> <span class="p">(</span>
+                        <span class="s2">&quot; The actual number of cores is limited by the global &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;limit of </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">global_options</span><span class="p">[</span><span class="s1">&#39;ncores&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> cores.&quot;</span>
+                    <span class="p">)</span>
                 <span class="n">np</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">global_options</span><span class="p">[</span><span class="s2">&quot;ncores&quot;</span><span class="p">]))</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="n">np_text</span> <span class="o">=</span> <span class="s2">&quot;No parallelism requested: </span><span class="si">{global_options[&#39;parallelism&#39;]}</span><span class="s2">&quot;</span>
             <span class="n">np</span> <span class="o">=</span> <span class="mi">1</span>
 
         <span class="c1"># Print headers and get to work</span>
@@ -1172,7 +1187,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">control</span><span class="p">)</span>
         <span class="n">control</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_single_sim</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="n">np</span><span class="p">)</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_single_sim</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="n">np</span><span class="p">,</span> <span class="n">np_text</span><span class="o">=</span><span class="n">np_text</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">nodes</span><span class="o">=</span><span class="n">history_nodes</span><span class="p">)</span>
 
@@ -1183,7 +1198,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">return</span> <span class="n">next_node</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_execute_single_sim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">files</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">return_files</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_execute_single_sim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">files</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">np_text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">return_files</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Step #1: Execute input file</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1324,6 +1339,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   LAMMPS using MPI with </span><span class="si">{</span><span class="n">np</span><span class="si">}</span><span class="s2"> processes.&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">np_text</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">np_text</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
             <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
             <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;stdout.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;2&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;stderr.txt&quot;</span><span class="p">])</span>
