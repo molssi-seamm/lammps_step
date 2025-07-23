@@ -1,6 +1,12 @@
 =======
 History
 =======
+2025.7.23 -- Added complete description of number of cores used.
+   * Added a detailed description of how the codes decided on the number of cores to
+     use, so that users can understand and change the limits in seamm.ini to their
+     desired values.
+   * Changed the defualt number of atoms per core (natoms-per-core) to 100.
+
 2025.6.25 -- Bugfix: ReaxFF memory allocation
    * Apparently the memory handling for reafxx in LAMMPS is kludgy, and there is an
      empirical fudge-factor that helps solve errors with e.g. numbers of bonds. This
