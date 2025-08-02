@@ -263,6 +263,7 @@ class LAMMPS(seamm.Node):
         self._data = {}
         self._have_dreiding_hbonds = False
         self._atomic_energy_sum = 0.0
+        self._eex = None
 
         self._results = {}  # Sotrage for computational and timing results
 
@@ -320,6 +321,15 @@ class LAMMPS(seamm.Node):
     def git_revision(self):
         """The git version of this module."""
         return lammps_step.__git_revision__
+
+    @property
+    def eex(self):
+        """The energy expression."""
+        return self._eex
+
+    @eex.setter
+    def eex(self, value):
+        self._eex = value
 
     @property
     def have_dreiding_hbonds(self):
@@ -642,6 +652,7 @@ class LAMMPS(seamm.Node):
                 initialization_header, eex = self._get_node_input(
                     node=node, extras={"read_data": True}
                 )
+                self.eex = eex
                 (
                     structure_data,
                     pair_table,
@@ -704,6 +715,8 @@ class LAMMPS(seamm.Node):
             "summary_*.txt",
             "trajectory_*.seamm_trj",
             "*.trj",
+            "*.dump_trj",
+            "*.dump_trj.gz",
             "*.restart.*",
             "*.dump",
             "*.dump.*",
@@ -914,6 +927,7 @@ class LAMMPS(seamm.Node):
         initialization_header, eex = self._get_node_input(
             node=self._initialization_node, extras={"read_data": False}
         )
+        self.eex = eex
         files["input.dat"] = copy.deepcopy(initialization_header)
 
         # Write a small file to say that LAMMPS ran successfully, so cancel
@@ -1295,7 +1309,7 @@ class LAMMPS(seamm.Node):
                     )
                 elif form == "tabulated_angle":
                     function = "table" if use_hybrid else ""
-                    key = f"{types[0]} {types[1]} {types[2]}"
+                    key = f"{types[0]}-{types[1]}-{types[2]}"
                     line = f"{counter:6d} {function} tabulated_angles.dat {key}"
                     angle_table.extend(self.angle_table(key, values))
                     line += (
@@ -2292,13 +2306,13 @@ class LAMMPS(seamm.Node):
             elements = eex["elements"]
             if fix_bonds == "CH":
                 for i, j, index in eex["bonds"]:
-                    if (elements[i] == "C" and elements[j] == "H") or (
-                        elements[i] == "H" and elements[j] == "C"
+                    if (elements[i - 1] == "C" and elements[j - 1] == "H") or (
+                        elements[i - 1] == "H" and elements[j - 1] == "C"
                     ):
                         bond_types[index] = 1
             elif fix_bonds == "all":
                 for i, j, index in eex["bonds"]:
-                    if elements[i] == "H" or elements[j] == "H":
+                    if elements[i - 1] == "H" or elements[j - 1] == "H":
                         bond_types[index] = 1
 
         # And the result is ....

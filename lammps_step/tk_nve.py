@@ -58,8 +58,9 @@ class TkNVE(lammps_step.TkEnergy):
         notebook.insert(
             self["results frame"], tframe, text="Trajectories", sticky=tk.NSEW
         )
-
         for key in (
+            "trajectory",
+            "trajectory export",
             "atomic positions",
             "com positions",
             "atomic velocities",
@@ -70,11 +71,19 @@ class TkNVE(lammps_step.TkEnergy):
             if title == "Heat Flux" and (key == "heat flux" or "centroid" in key):
                 continue
             self[key] = P[key].widget(tframe)
-            self[key].combobox.bind("<<ComboboxSelected>>", self.reset_trajectory_frame)
-            self[key].combobox.bind("<Return>", self.reset_trajectory_frame)
-            self[key].combobox.bind("<FocusOut>", self.reset_trajectory_frame)
+            self[key].bind("<<ComboboxSelected>>", self.reset_trajectory_frame)
+            self[key].bind("<Return>", self.reset_trajectory_frame)
+            self[key].bind("<FocusOut>", self.reset_trajectory_frame)
 
         for key in (
+            "trajectory rate",
+            "trajectory number of samples",
+            "trajectory forces",
+            "trajectory velocities",
+            "trajectory extxyz",
+            "trajectory extxyz skip frames",
+            "trajectory extxyz filename",
+            "trajectory extxyz append",
             "atomic positions rate",
             "atomic positions number of samples",
             "com positions rate",
@@ -185,6 +194,8 @@ class TkNVE(lammps_step.TkEnergy):
 
     def reset_trajectory_frame(self, widget=None):
         """Layout the trajectory frame according to its contents."""
+        trajectory = self["trajectory"].get()
+        export = self["trajectory export"].get()
         atomic_positions = self["atomic positions"].get()
         com_positions = self["com positions"].get()
         atomic_velocities = self["atomic velocities"].get()
@@ -199,104 +210,172 @@ class TkNVE(lammps_step.TkEnergy):
 
         row = 0
         widgets = []
+        widgets1 = []
         widgets2 = []
+        widgets3 = []
+        widgets4 = []
 
-        self["atomic positions"].grid(row=row, column=0, columnspan=2, sticky=tk.EW)
+        self["trajectory"].grid(row=row, column=0, columnspan=5, sticky=tk.EW)
+        widgets.append(self["trajectory"])
+        row += 1
+        if trajectory != "never":
+            if self.is_expr(trajectory) or "number" in trajectory:
+                self["trajectory number of samples"].grid(
+                    row=row, column=1, columnspan=4, sticky=tk.EW
+                )
+                widgets1.append(self["trajectory number of samples"])
+                row += 1
+            if self.is_expr(trajectory) or "interval" in trajectory:
+                self["trajectory rate"].grid(
+                    row=row, column=1, columnspan=4, sticky=tk.EW
+                )
+                widgets1.append(self["trajectory rate"])
+                row += 1
+            for key in (
+                "trajectory forces",
+                "trajectory velocities",
+                "trajectory export",
+            ):
+                self[key].grid(row=row, column=1, columnspan=4, sticky=tk.EW)
+                widgets1.append(self[key])
+                row += 1
+            if export != "no":
+                for key in ("trajectory extxyz",):
+                    self[key].grid(row=row, column=2, columnspan=3, sticky=tk.EW)
+                    widgets2.append(self[key])
+                    row += 1
+                for key in (
+                    "trajectory extxyz skip frames",
+                    "trajectory extxyz filename",
+                    "trajectory extxyz append",
+                ):
+                    self[key].grid(row=row, column=3, columnspan=2, sticky=tk.EW)
+                    widgets3.append(self[key])
+                    row += 1
+
+        self["atomic positions"].grid(row=row, column=0, columnspan=5, sticky=tk.EW)
         widgets.append(self["atomic positions"])
         row += 1
         if atomic_positions != "never":
             if self.is_expr(atomic_positions) or "number" in atomic_positions:
                 self["atomic positions number of samples"].grid(
-                    row=row, column=1, sticky=tk.EW
+                    row=row, column=1, columnspan=4, sticky=tk.EW
                 )
-                widgets2.append(self["atomic positions number of samples"])
+                widgets1.append(self["atomic positions number of samples"])
                 row += 1
             if self.is_expr(atomic_positions) or "interval" in atomic_positions:
-                self["atomic positions rate"].grid(row=row, column=1, sticky=tk.EW)
-                widgets2.append(self["atomic positions rate"])
+                self["atomic positions rate"].grid(
+                    row=row, column=1, columnspan=4, sticky=tk.EW
+                )
+                widgets1.append(self["atomic positions rate"])
                 row += 1
 
-        self["com positions"].grid(row=row, column=0, columnspan=2, sticky=tk.EW)
+        self["com positions"].grid(row=row, column=0, columnspan=5, sticky=tk.EW)
         widgets.append(self["com positions"])
         row += 1
         if com_positions != "never":
             if self.is_expr(com_positions) or "number" in com_positions:
                 self["com positions number of samples"].grid(
-                    row=row, column=1, sticky=tk.EW
+                    row=row, column=1, columnspan=4, sticky=tk.EW
                 )
-                widgets2.append(self["com positions number of samples"])
+                widgets1.append(self["com positions number of samples"])
                 row += 1
             if self.is_expr(com_positions) or "interval" in com_positions:
-                self["com positions rate"].grid(row=row, column=1, sticky=tk.EW)
-                widgets2.append(self["com positions rate"])
+                self["com positions rate"].grid(
+                    row=row, column=1, columnspan=4, sticky=tk.EW
+                )
+                widgets1.append(self["com positions rate"])
                 row += 1
 
-        self["atomic velocities"].grid(row=row, column=0, columnspan=2, sticky=tk.EW)
+        self["atomic velocities"].grid(row=row, column=0, columnspan=5, sticky=tk.EW)
         widgets.append(self["atomic velocities"])
         row += 1
         if atomic_velocities != "never":
             if self.is_expr(atomic_velocities) or "number" in atomic_velocities:
                 self["atomic velocities number of samples"].grid(
-                    row=row, column=1, sticky=tk.EW
+                    row=row, column=1, columnspan=4, sticky=tk.EW
                 )
-                widgets2.append(self["atomic velocities number of samples"])
+                widgets1.append(self["atomic velocities number of samples"])
                 row += 1
             if self.is_expr(atomic_velocities) or "interval" in atomic_velocities:
-                self["atomic velocities rate"].grid(row=row, column=1, sticky=tk.EW)
-                widgets2.append(self["atomic velocities rate"])
+                self["atomic velocities rate"].grid(
+                    row=row, column=1, columnspan=4, sticky=tk.EW
+                )
+                widgets1.append(self["atomic velocities rate"])
                 row += 1
 
-        self["com velocities"].grid(row=row, column=0, columnspan=2, sticky=tk.EW)
+        self["com velocities"].grid(row=row, column=0, columnspan=5, sticky=tk.EW)
         widgets.append(self["com velocities"])
         row += 1
         if com_velocities != "never":
             if self.is_expr(com_velocities) or "number" in com_velocities:
                 self["com velocities number of samples"].grid(
-                    row=row, column=1, sticky=tk.EW
+                    row=row, column=1, columnspan=4, sticky=tk.EW
                 )
-                widgets2.append(self["com velocities number of samples"])
+                widgets1.append(self["com velocities number of samples"])
                 row += 1
             if self.is_expr(com_velocities) or "interval" in com_velocities:
-                self["com velocities rate"].grid(row=row, column=1, sticky=tk.EW)
-                widgets2.append(self["com velocities rate"])
+                self["com velocities rate"].grid(
+                    row=row, column=1, columnspan=4, sticky=tk.EW
+                )
+                widgets1.append(self["com velocities rate"])
                 row += 1
 
         if self.__class__.__name__ == "TkHeatFlux":
             pass
         else:
-            self["heat flux"].grid(row=row, column=0, columnspan=2, sticky=tk.EW)
+            self["heat flux"].grid(row=row, column=0, columnspan=5, sticky=tk.EW)
             widgets.append(self["heat flux"])
             row += 1
             if heat_flux != "never":
                 if self.is_expr(heat_flux) or "number" in heat_flux:
                     self["heat flux number of samples"].grid(
-                        row=row, column=1, sticky=tk.EW
+                        row=row, column=1, columnspan=4, sticky=tk.EW
                     )
-                    widgets2.append(self["heat flux number of samples"])
+                    widgets1.append(self["heat flux number of samples"])
                     row += 1
                 if self.is_expr(heat_flux) or "interval" in heat_flux:
-                    self["heat flux rate"].grid(row=row, column=1, sticky=tk.EW)
-                    widgets2.append(self["heat flux rate"])
+                    self["heat flux rate"].grid(
+                        row=row, column=1, columnspan=4, sticky=tk.EW
+                    )
+                    widgets1.append(self["heat flux rate"])
                     row += 1
 
-        self["shear stress"].grid(row=row, column=0, columnspan=2, sticky=tk.EW)
+        self["shear stress"].grid(row=row, column=0, columnspan=5, sticky=tk.EW)
         widgets.append(self["shear stress"])
         row += 1
         if shear_stress != "never":
             if self.is_expr(shear_stress) or "number" in shear_stress:
                 self["shear stress number of samples"].grid(
-                    row=row, column=1, sticky=tk.EW
+                    row=row, column=1, columnspan=4, sticky=tk.EW
                 )
-                widgets2.append(self["shear stress number of samples"])
+                widgets1.append(self["shear stress number of samples"])
                 row += 1
             if self.is_expr(shear_stress) or "interval" in shear_stress:
-                self["shear stress rate"].grid(row=row, column=1, sticky=tk.EW)
-                widgets2.append(self["shear stress rate"])
+                self["shear stress rate"].grid(
+                    row=row, column=1, columnspan=4, sticky=tk.EW
+                )
+                widgets1.append(self["shear stress rate"])
                 row += 1
 
-        width1 = sw.align_labels(widgets, sticky=tk.E)
-        width2 = sw.align_labels(widgets2, sticky=tk.E)
-        frame.columnconfigure(0, minsize=width1 - width2 + 30)
+        width = sw.align_labels(widgets, sticky=tk.E)
+        width1 = sw.align_labels(widgets1, sticky=tk.E)
+        indent = 75
+        size = max(width - width1 + indent, 0)
+        frame.columnconfigure(0, minsize=size)
+        if len(widgets2) > 0:
+            width2 = sw.align_labels(widgets2, sticky=tk.E)
+            size = max(width1 - width2 + indent, 0)
+            frame.columnconfigure(1, minsize=size)
+            if len(widgets3) > 0:
+                width3 = sw.align_labels(widgets3, sticky=tk.E)
+                size = max(width2 - width3 + indent, 0)
+                frame.columnconfigure(2, minsize=size)
+                if len(widgets4) > 0:
+                    width4 = sw.align_labels(widgets4, sticky=tk.E)
+                    size = max(width3 - width4 + indent, 0)
+                    frame.columnconfigure(2, minsize=size)
+        frame.columnconfigure(4, weight=1)
 
     def handle_dialog(self, result):
         if result == "OK":

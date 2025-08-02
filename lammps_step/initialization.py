@@ -705,9 +705,9 @@ class Initialization(seamm.Node):
         configuration = system_db.system.configuration
         atoms = configuration.atoms
 
-        # The elements (1-based!) Probably not used...
+        # The elements used for e.g. dump statements
         elements = atoms.symbols
-        eex["elements"] = [""]
+        eex["elements"] = []
         eex["elements"].extend(elements)
 
         # The periodicity & cell parameters
@@ -805,9 +805,9 @@ class Initialization(seamm.Node):
         configuration = system_db.system.configuration
         atoms = configuration.atoms
 
-        # The elements (1-based!) Probably not used...
+        # The elements, used for e.g. dump statements
         elements = atoms.symbols
-        eex["elements"] = [""]
+        eex["elements"] = []
         eex["elements"].extend(elements)
 
         # The periodicity & cell parameters

@@ -1,11 +1,17 @@
 =======
 History
 =======
-2025.7.23 -- Added complete description of number of cores used.
+2025.8.2 -- Initial pass at trajectories.
+   * Added option to save the geometry & energies for a trajectory, and converting to
+     the extended xy format that e.g. ASE uses, and the MACE ML code uses as input.
+   * Bugfix: an error slipped into the tabulated angle term used for PF6- when
+     formatting the forcefield parameters and tracking the provenance. This is fixed.
+     
+2025.7.23 -- Added a complete description of number of cores used.
    * Added a detailed description of how the codes decided on the number of cores to
      use, so that users can understand and change the limits in seamm.ini to their
      desired values.
-   * Changed the defualt number of atoms per core (natoms-per-core) to 100.
+   * Changed the default number of atoms per core (natoms-per-core) to 100.
 
 2025.6.25 -- Bugfix: ReaxFF memory allocation
    * Apparently the memory handling for reafxx in LAMMPS is kludgy, and there is an
