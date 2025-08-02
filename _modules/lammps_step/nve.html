@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2025.7.23 documentation</title>
+    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2025.8.2 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=77a11b9d"></script>
+    <script src="../../_static/documentation_options.js?v=bfeacda4"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.7.23" />
+  <meta name="docsearch:version" content="2025.8.2" />
   </head>
   
   
@@ -473,12 +473,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <span class="sd">&quot;&quot;&quot;NVE (microcanonical) dynamics in LAMMPS&quot;&quot;&quot;</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">gzip</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">lammps_step</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lammps_step</span><span class="w"> </span><span class="kn">import</span> <span class="n">LAMMPS</span><span class="p">,</span> <span class="n">from_lammps_units</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">molsystem</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cell</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seamm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util</span><span class="w"> </span><span class="kn">import</span> <span class="n">ureg</span><span class="p">,</span> <span class="n">Q_</span><span class="p">,</span> <span class="n">units_class</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seamm_util.printing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">printing</span>
@@ -571,6 +574,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Import or convert the trajectory.</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;trajectory export&quot;</span><span class="p">]:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_export_trajectory</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
             <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
 
@@ -603,6 +612,327 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">P</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_export_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Export the trajectory in requested formats.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        P : dict(str, value)</span>
+<span class="sd">            The control parameters for this step</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            A text string for printing, containing warnings, etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">dump</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;trajectory.dump_trj.gz&quot;</span>
+        <span class="n">trj</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;trajectory.trj&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dump</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">trj</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="s2">&quot;Neither the coordinate or energy part of the trajectory exists, so &quot;</span>
+                <span class="s2">&quot;cannot export it.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;trajectory extxyz&quot;</span><span class="p">]:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_trajectory_to_extxyz</span><span class="p">(</span><span class="n">dump</span><span class="p">,</span> <span class="n">trj</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">text</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_convert_trajectory_to_extxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dump</span><span class="p">,</span> <span class="n">trj</span><span class="p">,</span> <span class="n">P</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the trajectory to the ASE extended XYZ format.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dump : Path</span>
+<span class="sd">            The path to the dump part of the trajectory.</span>
+<span class="sd">        trj : Path</span>
+<span class="sd">            The path to the state (energy, pressure) part of the trajectory</span>
+<span class="sd">        P : dict(str, value)</span>
+<span class="sd">            The control parameters for this step</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Text for printing explaining the process</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dump</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="s2">&quot;The coordinate dump of the trajectory does not exist, so cannot &quot;</span>
+                <span class="s2">&quot;create the extxyz file.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">trj</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">trj_data</span> <span class="o">=</span> <span class="n">trj</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="n">trj_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">header</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;!MolSSI trajectory&quot;</span><span class="p">):</span>
+                <span class="n">trj_data</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;The file for the energies etc. for the trajectory exists &quot;</span>
+                    <span class="s2">&quot;but is not the right type of file, so the energies, etc. &quot;</span>
+                    <span class="s2">&quot;will not be in the extxyz file&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">state_variables</span> <span class="o">=</span> <span class="n">trj_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="n">trj_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">trj_data</span><span class="p">[</span><span class="mi">2</span><span class="p">:]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">trj_data</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;The energies etc. for the trajectory are missing so they will &quot;</span>
+                <span class="s2">&quot;not be in the extxyz file&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Do it!</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">()</span>
+        <span class="n">symbols</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">symbols</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;trajectory extxyz filename&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span><span class="p">)</span> <span class="o">/</span> <span class="n">filename</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+        <span class="n">nskip</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;trajectory extxyz skip frames&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;trajectory extxyz append&quot;</span><span class="p">]:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;at&quot;</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;Appended&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;wt&quot;</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;Wrote&quot;</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">start_line</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">dump</span><span class="p">,</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fdin</span><span class="p">,</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> <span class="k">as</span> <span class="n">fdout</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fdin</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;ITEM: TIMESTEP&quot;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">frame</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="k">if</span> <span class="n">frame</span> <span class="o">&gt;</span> <span class="n">nskip</span><span class="p">:</span>
+                            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_dump_frame</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">start_line</span><span class="p">)</span>
+                            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;symbols&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">symbols</span>
+                            <span class="n">results</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                                <span class="p">{</span>
+                                    <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+                                    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                                        <span class="n">state_variables</span><span class="p">,</span> <span class="n">trj_data</span><span class="p">[</span><span class="n">frame</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                                    <span class="p">)</span>
+                                <span class="p">}</span>
+                            <span class="p">)</span>
+                            <span class="n">extxyz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_extxyz</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+                            <span class="n">fdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">extxyz</span><span class="p">)</span>
+                        <span class="n">start_line</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+                        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="c1"># Process last frame</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">frame</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">frame</span> <span class="o">&gt;</span> <span class="n">nskip</span><span class="p">:</span>
+                    <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_dump_frame</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">start_line</span><span class="p">)</span>
+                    <span class="n">results</span><span class="p">[</span><span class="s2">&quot;symbols&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">symbols</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                        <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">state_variables</span><span class="p">,</span> <span class="n">trj_data</span><span class="p">[</span><span class="n">frame</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])}</span>
+                    <span class="p">)</span>
+                    <span class="n">extxyz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_extxyz</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+                    <span class="n">fdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">extxyz</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">nskip</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">frame</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">nskip</span><span class="si">}</span><span class="s2"> frames to the trajectory in .extxyz format, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;skipping the first </span><span class="si">{</span><span class="n">nskip</span><span class="si">}</span><span class="s2"> frames.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">frame</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">nskip</span><span class="si">}</span><span class="s2"> frames to the trajectory in .extxyz format.&quot;</span>
+        <span class="k">return</span> <span class="n">text</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_dump_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">,</span> <span class="n">line_no</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process a single frame of a LAMMPS dump file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        lines : [str]</span>
+<span class="sd">            The lines of the section.</span>
+
+<span class="sd">        lineno : int</span>
+<span class="sd">            The count of lines before this frame, used for error messages</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict(str, any)</span>
+<span class="sd">            The results keyed by the item name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">it</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">it</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">line_no</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;ITEM:&quot;</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Error reading dump file: line </span><span class="si">{</span><span class="n">line_no</span><span class="si">}</span><span class="s2"> should be &#39;ITEM: ...&#39;&quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">&#39;</span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">section</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">6</span><span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;   section = &quot;</span> <span class="o">+</span> <span class="n">section</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">section</span> <span class="o">==</span> <span class="s2">&quot;TIMESTEP&quot;</span><span class="p">:</span>
+                    <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                    <span class="n">results</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">elif</span> <span class="n">section</span> <span class="o">==</span> <span class="s2">&quot;NUMBER OF ATOMS&quot;</span><span class="p">:</span>
+                    <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                    <span class="n">results</span><span class="p">[</span><span class="s2">&quot;n_atoms&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_atoms</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">elif</span> <span class="s2">&quot;BOX BOUNDS&quot;</span> <span class="ow">in</span> <span class="n">section</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">section</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
+                        <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                        <span class="n">xlo_bound</span><span class="p">,</span> <span class="n">xhi_bound</span><span class="p">,</span> <span class="n">xy</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                        <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                        <span class="n">ylo_bound</span><span class="p">,</span> <span class="n">yhi_bound</span><span class="p">,</span> <span class="n">xz</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                        <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                        <span class="n">zlo</span><span class="p">,</span> <span class="n">zhi</span><span class="p">,</span> <span class="n">yz</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+                        <span class="n">xlo_bound</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">xlo_bound</span><span class="p">)</span>
+                        <span class="n">xhi_bound</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">xhi_bound</span><span class="p">)</span>
+                        <span class="n">ylo_bound</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">ylo_bound</span><span class="p">)</span>
+                        <span class="n">yhi_bound</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">yhi_bound</span><span class="p">)</span>
+                        <span class="n">zlo</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zlo</span><span class="p">)</span>
+                        <span class="n">zhi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zhi</span><span class="p">)</span>
+                        <span class="n">xy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span>
+                        <span class="n">xz</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">xz</span><span class="p">)</span>
+                        <span class="n">yz</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">yz</span><span class="p">)</span>
+
+                        <span class="n">xlo</span> <span class="o">=</span> <span class="n">xlo_bound</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">xy</span><span class="p">,</span> <span class="n">xz</span><span class="p">,</span> <span class="n">xy</span> <span class="o">+</span> <span class="n">xz</span><span class="p">)</span>
+                        <span class="n">xhi</span> <span class="o">=</span> <span class="n">xhi_bound</span> <span class="o">-</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">xy</span><span class="p">,</span> <span class="n">xz</span><span class="p">,</span> <span class="n">xy</span> <span class="o">+</span> <span class="n">xz</span><span class="p">)</span>
+                        <span class="n">ylo</span> <span class="o">=</span> <span class="n">ylo_bound</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">yz</span><span class="p">)</span>
+                        <span class="n">yhi</span> <span class="o">=</span> <span class="n">yhi_bound</span> <span class="o">-</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">yz</span><span class="p">)</span>
+                        <span class="n">cell</span> <span class="o">=</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">box_to_cell</span><span class="p">(</span>
+                            <span class="n">xhi</span> <span class="o">-</span> <span class="n">xlo</span><span class="p">,</span> <span class="n">yhi</span> <span class="o">-</span> <span class="n">ylo</span><span class="p">,</span> <span class="n">zhi</span> <span class="o">-</span> <span class="n">zlo</span><span class="p">,</span> <span class="n">xy</span><span class="p">,</span> <span class="n">xz</span><span class="p">,</span> <span class="n">yz</span>
+                        <span class="p">)</span>
+                        <span class="n">tmp</span> <span class="o">=</span> <span class="n">Cell</span><span class="p">(</span><span class="o">*</span><span class="n">cell</span><span class="p">)</span>
+                        <span class="n">lattice</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">tmp</span><span class="o">.</span><span class="n">vectors</span><span class="p">():</span>
+                            <span class="n">lattice</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                        <span class="n">xlo</span><span class="p">,</span> <span class="n">xhi</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                        <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                        <span class="n">ylo</span><span class="p">,</span> <span class="n">yhi</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                        <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                        <span class="n">zlo</span><span class="p">,</span> <span class="n">zhi</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+                        <span class="n">xlo</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">xlo</span><span class="p">)</span>
+                        <span class="n">xhi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">xhi</span><span class="p">)</span>
+                        <span class="n">ylo</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">ylo</span><span class="p">)</span>
+                        <span class="n">yhi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">yhi</span><span class="p">)</span>
+                        <span class="n">zlo</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zlo</span><span class="p">)</span>
+                        <span class="n">zhi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zhi</span><span class="p">)</span>
+
+                        <span class="n">lattice</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">xhi</span> <span class="o">-</span> <span class="n">xlo</span><span class="p">,</span>
+                            <span class="mf">0.0</span><span class="p">,</span>
+                            <span class="mf">0.0</span><span class="p">,</span>
+                            <span class="mf">0.0</span><span class="p">,</span>
+                            <span class="n">yhi</span> <span class="o">-</span> <span class="n">ylo</span><span class="p">,</span>
+                            <span class="mf">0.0</span><span class="p">,</span>
+                            <span class="mf">0.0</span><span class="p">,</span>
+                            <span class="mf">0.0</span><span class="p">,</span>
+                            <span class="n">zhi</span> <span class="o">-</span> <span class="n">zlo</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="n">cell</span> <span class="o">=</span> <span class="p">(</span><span class="n">xhi</span> <span class="o">-</span> <span class="n">xlo</span><span class="p">,</span> <span class="n">yhi</span> <span class="o">-</span> <span class="n">ylo</span><span class="p">,</span> <span class="n">zhi</span> <span class="o">-</span> <span class="n">zlo</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span>
+                    <span class="n">results</span><span class="p">[</span><span class="s2">&quot;cell&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cell</span>
+                    <span class="n">results</span><span class="p">[</span><span class="s2">&quot;lattice&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lattice</span>
+                    <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="s2">&quot;ATOMS&quot;</span> <span class="ow">in</span> <span class="n">section</span><span class="p">:</span>
+                    <span class="n">xyz</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">f</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">v</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">keys</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]</span>
+
+                    <span class="c1"># Coordinates</span>
+                    <span class="n">ixyz</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">if</span> <span class="s2">&quot;x&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;y&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;z&quot;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                        <span class="n">ixyz</span> <span class="o">=</span> <span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">))</span>
+                        <span class="n">xyz_type</span> <span class="o">=</span> <span class="s2">&quot;cartesian&quot;</span>
+                        <span class="n">fxyz</span> <span class="o">=</span> <span class="n">from_lammps_units</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Å&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+                    <span class="k">elif</span> <span class="s2">&quot;xu&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;yu&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;zu&quot;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                        <span class="n">ixyz</span> <span class="o">=</span> <span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;xu&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;yu&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;zu&quot;</span><span class="p">))</span>
+                        <span class="n">xyz_type</span> <span class="o">=</span> <span class="s2">&quot;cartesian&quot;</span>
+                        <span class="n">fxyz</span> <span class="o">=</span> <span class="n">from_lammps_units</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Å&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+                    <span class="k">elif</span> <span class="s2">&quot;xs&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;ys&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;zs&quot;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                        <span class="n">ixyz</span> <span class="o">=</span> <span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;xs&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;ys&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;zs&quot;</span><span class="p">))</span>
+                        <span class="n">xyz_type</span> <span class="o">=</span> <span class="s2">&quot;fractional&quot;</span>
+                        <span class="n">fxyz</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">elif</span> <span class="s2">&quot;xsu&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;ysu&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;zsu&quot;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                        <span class="n">ixyz</span> <span class="o">=</span> <span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;xsu&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;ysu&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;zsu&quot;</span><span class="p">))</span>
+                        <span class="n">xyz_type</span> <span class="o">=</span> <span class="s2">&quot;fractional&quot;</span>
+                        <span class="n">fxyz</span> <span class="o">=</span> <span class="mi">1</span>
+
+                    <span class="c1"># Forces</span>
+                    <span class="n">fi</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">if</span> <span class="s2">&quot;fx&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;fy&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;fz&quot;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                        <span class="n">fi</span> <span class="o">=</span> <span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;fx&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;fy&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;fz&quot;</span><span class="p">))</span>
+                        <span class="n">ff</span> <span class="o">=</span> <span class="n">from_lammps_units</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;kcal/mol/Å&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+
+                    <span class="c1"># Velocities</span>
+                    <span class="n">vi</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">if</span> <span class="s2">&quot;vx&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;vy&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;vz&quot;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                        <span class="n">vi</span> <span class="o">=</span> <span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;vx&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;vy&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;vz&quot;</span><span class="p">))</span>
+                        <span class="n">fv</span> <span class="o">=</span> <span class="n">from_lammps_units</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;m/s&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_atoms</span><span class="p">):</span>
+                        <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                        <span class="n">values</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="n">ixyz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">xyz</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                <span class="p">[</span>
+                                    <span class="n">fxyz</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">ixyz</span><span class="p">[</span><span class="mi">0</span><span class="p">]]),</span>
+                                    <span class="n">fxyz</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">ixyz</span><span class="p">[</span><span class="mi">1</span><span class="p">]]),</span>
+                                    <span class="n">fxyz</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">ixyz</span><span class="p">[</span><span class="mi">2</span><span class="p">]]),</span>
+                                <span class="p">]</span>
+                            <span class="p">)</span>
+                        <span class="k">if</span> <span class="n">fi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">f</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                <span class="p">[</span>
+                                    <span class="n">ff</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">fi</span><span class="p">[</span><span class="mi">0</span><span class="p">]]),</span>
+                                    <span class="n">ff</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">fi</span><span class="p">[</span><span class="mi">1</span><span class="p">]]),</span>
+                                    <span class="n">ff</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">fi</span><span class="p">[</span><span class="mi">2</span><span class="p">]]),</span>
+                                <span class="p">]</span>
+                            <span class="p">)</span>
+                        <span class="k">if</span> <span class="n">vi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">v</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                <span class="p">[</span>
+                                    <span class="n">fv</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">vi</span><span class="p">[</span><span class="mi">0</span><span class="p">]]),</span>
+                                    <span class="n">fv</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">vi</span><span class="p">[</span><span class="mi">1</span><span class="p">]]),</span>
+                                    <span class="n">fv</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">vi</span><span class="p">[</span><span class="mi">2</span><span class="p">]]),</span>
+                                <span class="p">]</span>
+                            <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">ixyz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">xyz_type</span> <span class="o">==</span> <span class="s2">&quot;cartesian&quot;</span><span class="p">:</span>
+                            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;xyz&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xyz</span>
+                        <span class="k">elif</span> <span class="n">xyz_type</span> <span class="o">==</span> <span class="s2">&quot;fractional&quot;</span><span class="p">:</span>
+                            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;abc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xyz</span>
+                    <span class="k">if</span> <span class="n">fi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span>
+                    <span class="k">if</span> <span class="n">vi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;velocities&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+                    <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Don&#39;t recognize section </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2"> in the dump file&quot;</span>
+                    <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="k">return</span> <span class="n">results</span>
 
 <div class="viewcode-block" id="NVE.get_input">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nve.NVE.get_input">[docs]</a>
@@ -911,6 +1241,70 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">            The counter for the fixes</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sampling</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;trajectory&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">sampling</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;interval&quot;</span> <span class="ow">in</span> <span class="n">sampling</span><span class="p">:</span>
+                <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;trajectory rate&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;trajectory number of samples&quot;</span><span class="p">])</span>
+            <span class="n">ndumps</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+trajectory.dump_trj.gz&quot;</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;dump                </span><span class="si">{</span><span class="n">ndumps</span><span class="si">}</span><span class="s2"> all custom </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> id element &quot;</span>
+                <span class="s2">&quot;q xu yu zu&quot;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;trajectory forces&quot;</span><span class="p">]:</span>
+                <span class="n">line</span> <span class="o">+=</span> <span class="s2">&quot; fx fy fz&quot;</span>
+            <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;trajectory velocities&quot;</span><span class="p">]:</span>
+                <span class="n">line</span> <span class="o">+=</span> <span class="s2">&quot; vx vy vz&quot;</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;elements&quot;</span><span class="p">])</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;dump_modify         </span><span class="si">{</span><span class="n">ndumps</span><span class="si">}</span><span class="s2"> sort id format float %.5f element </span><span class="si">{</span><span class="n">tmp</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="c1"># Temporarily put in dump to extxyz</span>
+                <span class="n">ndumps</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+trajectory.extxyz.gz&quot;</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;dump                </span><span class="si">{</span><span class="n">ndumps</span><span class="si">}</span><span class="s2"> all extxyz </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="n">element_string</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;elements&quot;</span><span class="p">])</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dump_modify         </span><span class="si">{</span><span class="n">ndumps</span><span class="si">}</span><span class="s2"> element </span><span class="si">{</span><span class="n">element_string</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># The energies, stress, etc</span>
+            <span class="n">properties</span> <span class="o">=</span> <span class="s2">&quot;v_time v_temp v_press v_etotal v_ke v_pe v_emol v_epair&quot;</span>
+            <span class="n">title2</span> <span class="o">=</span> <span class="s2">&quot;tstep t T P Etot Eke Epe Emol Epair&quot;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">have_dreiding_hbonds</span><span class="p">:</span>
+                <span class="n">properties</span> <span class="o">+=</span> <span class="s2">&quot; v_N_hbond v_E_hbond&quot;</span>
+                <span class="n">title2</span> <span class="o">+=</span> <span class="s2">&quot; N_hbond E_hbond&quot;</span>
+
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+trajectory.trj&quot;</span>
+            <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">to_compact</span><span class="p">()</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;LAMMPS&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;state for trajectory&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span>
+                    <span class="s2">&quot;tunits&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">u</span><span class="p">),</span>
+                    <span class="s2">&quot;nsteps&quot;</span><span class="p">:</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">n</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">title1</span> <span class="o">=</span> <span class="s2">&quot;!MolSSI trajectory 2.0 &quot;</span> <span class="o">+</span> <span class="n">text</span>
+            <span class="n">title2</span> <span class="o">+=</span> <span class="s2">&quot; Pxx Pyy Pzz Pxy Pxz Pyz&quot;</span>
+            <span class="n">properties</span> <span class="o">+=</span> <span class="s2">&quot; v_pxx v_pyy v_pzz v_pxy v_pxz v_pyz&quot;</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;fix                 </span><span class="si">{</span><span class="n">nfixes</span><span class="si">}</span><span class="s2"> all ave/time </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> 1 </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        </span><span class="si">{</span><span class="n">properties</span><span class="si">}</span><span class="s2">    &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        title1 &#39;</span><span class="si">{</span><span class="n">title1</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        title2 &#39;</span><span class="si">{</span><span class="n">title2</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;                        file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
         <span class="n">sampling</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;atomic positions&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">sampling</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;interval&quot;</span> <span class="ow">in</span> <span class="n">sampling</span><span class="p">:</span>
@@ -1086,7 +1480,82 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">lines</span><span class="p">,</span> <span class="n">ncomputes</span><span class="p">,</span> <span class="n">ndumps</span><span class="p">,</span> <span class="n">nfixes</span></div>
-</div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_to_extxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the text of ASE extxyz format for a structure</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : dict(str, any)</span>
+<span class="sd">            Dictionary containing symbols, coordinates, and other atom properties</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        Example:</span>
+
+<span class="sd">        8</span>
+<span class="sd">        Properties=species:S:1:pos:R:3:REF_forces:R:3 REF_energy=-9289.028102188924 pbc=&quot;F F F&quot;</span>
+<span class="sd">        C       -0.97142774       0.56951904       1.10325229       2.77158783      -3.19505603       0.10221193</span>
+<span class="sd">        O       -0.27179274       1.07438707      -0.03295067      -1.40444169       0.58287428       2.02393798</span>
+<span class="sd">        C        0.44642827       0.04566107      -0.56782067      -2.59873178       1.73475706       0.42253222</span>
+<span class="sd">        O        0.22332226      -1.04711390       0.04433633      -1.29638003      -2.74941166       4.75917280</span>
+<span class="sd">        C       -0.54656476      -0.74672896       1.23491836      -0.44334119       2.10839425      -2.18446253</span>
+<span class="sd">        O        0.98560923       0.09795906      -1.57642770       3.16925789       1.02455543      -4.39760192</span>
+<span class="sd">        H       -0.66579676      -1.59970891       1.88536036      -0.27973052       0.31498569       0.12677338</span>
+<span class="sd">        H       -1.44834375       1.17851210       1.87373829       0.08523677       0.17712004      -0.85144738</span>
+<span class="sd">        &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;n_atoms&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># The lattice/properties line</span>
+        <span class="k">if</span> <span class="s2">&quot;lattice&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="s1">&#39;Lattice=&quot;&#39;</span>
+            <span class="n">line</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">v</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;lattice&quot;</span><span class="p">]])</span>
+            <span class="n">line</span> <span class="o">+=</span> <span class="s1">&#39;&quot;&#39;</span>
+        <span class="n">line</span> <span class="o">+=</span> <span class="s2">&quot; Properties=species:S:1:pos:R:3&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;forces&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">+=</span> <span class="s2">&quot;:REF_forces:R:3&quot;</span>
+            <span class="n">ffact</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;kcal/mol/Å&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;eV/Å&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;velocities&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">+=</span> <span class="s2">&quot;:vel:R:3&quot;</span>
+
+        <span class="c1"># Add in other properties, like the energy ... currently just energy and stress</span>
+        <span class="k">if</span> <span class="s2">&quot;Epe&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="c1"># The energy is the potential, not total energy which includes kinetic</span>
+            <span class="n">efact</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;eV&quot;</span><span class="p">)</span>
+            <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; REF_energy=</span><span class="si">{</span><span class="n">efact</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Epe&#39;</span><span class="p">])</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;Pxx&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">sfact</span> <span class="o">=</span> <span class="o">-</span><span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;atm&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;eV/Å^3&quot;</span><span class="p">)</span>
+            <span class="n">Sxx</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sfact</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Pxx&#39;</span><span class="p">])</span><span class="si">:</span><span class="s2">.7f</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">Syy</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sfact</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Pyy&#39;</span><span class="p">])</span><span class="si">:</span><span class="s2">.7f</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">Szz</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sfact</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Pzz&#39;</span><span class="p">])</span><span class="si">:</span><span class="s2">.7f</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">Syz</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sfact</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Pyz&#39;</span><span class="p">])</span><span class="si">:</span><span class="s2">.7f</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">Sxz</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sfact</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Pxz&#39;</span><span class="p">])</span><span class="si">:</span><span class="s2">.7f</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">Sxy</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sfact</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Pxy&#39;</span><span class="p">])</span><span class="si">:</span><span class="s2">.7f</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39; REF_stress=&quot;</span><span class="si">{</span><span class="n">Sxx</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">Syy</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">Szz</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">Syz</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">Sxz</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">Sxy</span><span class="si">}</span><span class="s1">&quot; pbc=&quot;T T T&quot;&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">+=</span> <span class="s1">&#39; pbc=&quot;F F F&quot;&#39;</span>
+
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="c1"># And the coordinate lines</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;symbols&quot;</span><span class="p">]):</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">symbol</span><span class="si">:</span><span class="s2">&lt;2</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;xyz&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">val</span><span class="si">:</span><span class="s2">14.8f</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="s2">&quot;forces&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]:</span>
+                    <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">ffact</span><span class="o">*</span><span class="n">val</span><span class="si">:</span><span class="s2">14.8f</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="s2">&quot;velocities&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;velocities&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]:</span>
+                    <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">val</span><span class="si">:</span><span class="s2">14.8f</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="c1"># Add empty line so text ends with newline</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div>
 
 </pre></div>
 

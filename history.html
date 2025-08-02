@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2025.7.23 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2025.8.2 documentation</title>
   
   
   
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=77a11b9d"></script>
+    <script src="_static/documentation_options.js?v=bfeacda4"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.7.23" />
+  <meta name="docsearch:version" content="2025.8.2" />
   </head>
   
   
@@ -481,11 +481,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
-<dt>2025.7.23 – Added complete description of number of cores used.</dt><dd><ul class="simple">
+<dt>2025.8.2 – Initial pass at trajectories.</dt><dd><ul class="simple">
+<li><p>Added option to save the geometry &amp; energies for a trajectory, and converting to
+the extended xy format that e.g. ASE uses, and the MACE ML code uses as input.</p></li>
+<li><p>Bugfix: an error slipped into the tabulated angle term used for PF6- when
+formatting the forcefield parameters and tracking the provenance. This is fixed.</p></li>
+</ul>
+</dd>
+<dt>2025.7.23 – Added a complete description of number of cores used.</dt><dd><ul class="simple">
 <li><p>Added a detailed description of how the codes decided on the number of cores to
 use, so that users can understand and change the limits in seamm.ini to their
 desired values.</p></li>
-<li><p>Changed the defualt number of atoms per core (natoms-per-core) to 100.</p></li>
+<li><p>Changed the default number of atoms per core (natoms-per-core) to 100.</p></li>
 </ul>
 </dd>
 <dt>2025.6.25 – Bugfix: ReaxFF memory allocation</dt><dd><ul class="simple">
