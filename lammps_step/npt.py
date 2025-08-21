@@ -201,6 +201,9 @@ class NPT(lammps_step.NVT):
             "v_cellc v_etotal v_ke v_pe v_epair"
         )
         title2 = "tstep t T P V density a b c Etot Eke Epe Epair"
+        if configuration.periodicity == 3:
+            properties += " v_sxx v_syy v_szz v_sxy v_sxz v_syz"
+            title2 += " Sxx Syy Szz Sxy Sxz Syz"
         if self.parent.have_dreiding_hbonds:
             thermo_properties += " v_N_hbond v_E_hbond"
             properties += " v_N_hbond v_E_hbond"

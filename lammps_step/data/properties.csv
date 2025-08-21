@@ -24,6 +24,30 @@ Property,Type,Units,Description,URL
 "pressure, stderr#LAMMPS#{model}",float,atm,"The standard error of the pressure.",https://en.wikipedia.org/wiki/Standard_error
 "pressure, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the pressure.",https://en.wikipedia.org/wiki/Autocorrelation
 "pressure, inefficiency#LAMMPS#{model}",float,,"The statistical inefficiency of the pressure sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+"Sxx#LAMMPS#{model}",float,atm,"The stress.",https://en.wikipedia.org/wiki/Stress_(mechanics)
+"Sxx, stderr#LAMMPS#{model}",float,atm,"The standard error of the stress.",https://en.wikipedia.org/wiki/Standard_error
+"Sxx, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the stress.",https://en.wikipedia.org/wiki/Autocorrelation
+"Sxx, inefficiency#LAMMPS#{model}",float,,"The statistical inefficiency of the stress sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+"Syy#LAMMPS#{model}",float,atm,"The stress.",https://en.wikipedia.org/wiki/Stress_(mechanics)
+"Syy, stderr#LAMMPS#{model}",float,atm,"The standard error of the stress.",https://en.wikipedia.org/wiki/Standard_error
+"Syy, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the stress.",https://en.wikipedia.org/wiki/Autocorrelation
+"Syy, inefficiency#LAMMPS#{model}",float,,"The statistical inefficiency of the stress sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+"Szz#LAMMPS#{model}",float,atm,"The stress.",https://en.wikipedia.org/wiki/Stress_(mechanics)
+"Szz, stderr#LAMMPS#{model}",float,atm,"The standard error of the stress.",https://en.wikipedia.org/wiki/Standard_error
+"Szz, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the stress.",https://en.wikipedia.org/wiki/Autocorrelation
+"Szz, inefficiency#LAMMPS#{model}",float,,"The statistical inefficiency of the stress sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+"Sxy#LAMMPS#{model}",float,atm,"The stress.",https://en.wikipedia.org/wiki/Stress_(mechanics)
+"Sxy, stderr#LAMMPS#{model}",float,atm,"The standard error of the stress.",https://en.wikipedia.org/wiki/Standard_error
+"Sxy, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the stress.",https://en.wikipedia.org/wiki/Autocorrelation
+"Sxy, inefficiency#LAMMPS#{model}",float,,"The statistical inefficiency of the stress sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+"Sxz#LAMMPS#{model}",float,atm,"The stress.",https://en.wikipedia.org/wiki/Stress_(mechanics)
+"Sxz, stderr#LAMMPS#{model}",float,atm,"The standard error of the stress.",https://en.wikipedia.org/wiki/Standard_error
+"Sxz, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the stress.",https://en.wikipedia.org/wiki/Autocorrelation
+"Sxz, inefficiency#LAMMPS#{model}",float,,"The statistical inefficiency of the stress sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+"Syz#LAMMPS#{model}",float,atm,"The stress.",https://en.wikipedia.org/wiki/Stress_(mechanics)
+"Syz, stderr#LAMMPS#{model}",float,atm,"The standard error of the stress.",https://en.wikipedia.org/wiki/Standard_error
+"Syz, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the stress.",https://en.wikipedia.org/wiki/Autocorrelation
+"Syz, inefficiency#LAMMPS#{model}",float,,"The statistical inefficiency of the stress sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
 "temperature#LAMMPS#{model}",float,K,"The temperature.",https://en.wikipedia.org/wiki/Temperature
 "temperature, stderr#LAMMPS#{model}",float,K,"The standard error of the temperature.",https://en.wikipedia.org/wiki/Standard_error
 "temperature, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the temperature.",https://en.wikipedia.org/wiki/Autocorrelation

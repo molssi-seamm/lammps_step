@@ -631,6 +631,11 @@ class Initialization(seamm.Node):
         for variable in thermo_variables:
             lines.append("variable            {var} equal {var}".format(var=variable))
 
+        if periodicity == 3:
+            # For convenience, stress
+            for d in ("xx", "yy", "zz", "xy", "xz", "yz"):
+                lines.append(f"variable            s{d} equal -p{d}")
+
         # Special Dreiding hydrogen bond information
         self.parent.have_dreiding_hbonds = False
         if ff_form == "dreiding" and "hbond/dreiding/lj" in nonbond_forms:
@@ -690,6 +695,11 @@ class Initialization(seamm.Node):
         # Set up standard variables
         for variable in thermo_variables:
             lines.append("variable            {var} equal {var}".format(var=variable))
+
+        if periodicity == 3:
+            # For convenience, stress
+            for d in ("xx", "yy", "zz", "xy", "xz", "yz"):
+                lines.append(f"variable            s{d} equal -p{d}")
 
         self.description.append(__(string, indent=self.indent + 4 * " "))
 
@@ -790,6 +800,11 @@ class Initialization(seamm.Node):
         # Set up standard variables
         for variable in thermo_variables:
             lines.append("variable            {var} equal {var}".format(var=variable))
+
+        if periodicity == 3:
+            # For convenience, stress
+            for d in ("xx", "yy", "zz", "xy", "xz", "yz"):
+                lines.append(f"variable            s{d} equal -p{d}")
 
         self.description.append(__(string, indent=self.indent + 4 * " "))
 
