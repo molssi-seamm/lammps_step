@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2025.8.2 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2025.8.21 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=bfeacda4"></script>
+    <script src="../../_static/documentation_options.js?v=0e424178"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.8.2" />
+  <meta name="docsearch:version" content="2025.8.21" />
   </head>
   
   
@@ -488,6 +488,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="kn">import</span><span class="w"> </span><span class="nn">pkg_resources</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">platform</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pprint</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
@@ -699,6 +700,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="s2">&quot;kcal/mol&quot;</span><span class="p">,</span>
         <span class="s2">&quot;N_hbond&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;E_hbond&quot;</span><span class="p">:</span> <span class="s2">&quot;kcal/mol&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Sxx&quot;</span><span class="p">:</span> <span class="s2">&quot;atm&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Syy&quot;</span><span class="p">:</span> <span class="s2">&quot;atm&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Szz&quot;</span><span class="p">:</span> <span class="s2">&quot;atm&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Sxy&quot;</span><span class="p">:</span> <span class="s2">&quot;atm&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Sxz&quot;</span><span class="p">:</span> <span class="s2">&quot;atm&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Syz&quot;</span><span class="p">:</span> <span class="s2">&quot;atm&quot;</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="n">display_title</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;T&quot;</span><span class="p">:</span> <span class="s2">&quot;Temperature&quot;</span><span class="p">,</span>
@@ -725,6 +732,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="s2">&quot;atom PE&quot;</span><span class="p">,</span>
         <span class="s2">&quot;N_hbond&quot;</span><span class="p">:</span> <span class="s2">&quot;Number of H-bonds&quot;</span><span class="p">,</span>
         <span class="s2">&quot;E_hbond&quot;</span><span class="p">:</span> <span class="s2">&quot;Energy of H-bonds&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Sxx&quot;</span><span class="p">:</span> <span class="s2">&quot;Sxx&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Syy&quot;</span><span class="p">:</span> <span class="s2">&quot;Syy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Szz&quot;</span><span class="p">:</span> <span class="s2">&quot;Szz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Sxy&quot;</span><span class="p">:</span> <span class="s2">&quot;Sxy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Sxz&quot;</span><span class="p">:</span> <span class="s2">&quot;Sxz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Syz&quot;</span><span class="p">:</span> <span class="s2">&quot;Syz&quot;</span><span class="p">,</span>
     <span class="p">}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -907,9 +920,29 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
             <span class="n">parser_name</span><span class="p">,</span>
-            <span class="s2">&quot;--html&quot;</span><span class="p">,</span>
-            <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
-            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;whether to write out html files for graphs, etc.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--graph-formats&quot;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(),</span>
+            <span class="n">choices</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;html&quot;</span><span class="p">,</span> <span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;webp&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">,</span> <span class="s2">&quot;pdf&quot;</span><span class="p">),</span>
+            <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;extra formats to write for graphs&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="n">parser_name</span><span class="p">,</span>
+            <span class="s2">&quot;--graph-fontsize&quot;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Font size in graphs, defaults to 15 pixels&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="n">parser_name</span><span class="p">,</span>
+            <span class="s2">&quot;--graph-width&quot;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Width of graphs in formats that support it, defaults to 1024&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="n">parser_name</span><span class="p">,</span>
+            <span class="s2">&quot;--graph-height&quot;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Height of graphs in formats that support it, defaults to 1024&quot;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="kc">False</span><span class="p">:</span>
             <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
@@ -1571,8 +1604,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> zlo zhi&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">lz</span><span class="p">))</span>
 
             <span class="n">xy</span> <span class="o">=</span> <span class="n">xy</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.0e-06</span> <span class="k">else</span> <span class="mf">0.0</span>
-            <span class="n">xz</span> <span class="o">=</span> <span class="n">xz</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.0e-06</span> <span class="k">else</span> <span class="mf">0.0</span>
-            <span class="n">yz</span> <span class="o">=</span> <span class="n">yz</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.0e-06</span> <span class="k">else</span> <span class="mf">0.0</span>
+            <span class="n">xz</span> <span class="o">=</span> <span class="n">xz</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xz</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.0e-06</span> <span class="k">else</span> <span class="mf">0.0</span>
+            <span class="n">yz</span> <span class="o">=</span> <span class="n">yz</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">yz</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.0e-06</span> <span class="k">else</span> <span class="mf">0.0</span>
 
             <span class="k">if</span> <span class="n">triclinic</span> <span class="ow">or</span> <span class="n">xy</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">xz</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">yz</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> xy xz yz&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="n">xz</span><span class="p">,</span> <span class="n">yz</span><span class="p">))</span>
@@ -2333,8 +2366,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">node</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a trajectory file and do the statistical analysis&quot;&quot;&quot;</span>
-        <span class="n">write_html</span> <span class="o">=</span> <span class="s2">&quot;html&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;html&quot;</span><span class="p">]</span>
-
         <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="n">table</span> <span class="o">=</span> <span class="p">{</span>
@@ -2583,6 +2614,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">figure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_figure</span><span class="p">(</span>
                 <span class="n">module_path</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__module__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;seamm&quot;</span><span class="p">),</span>
                 <span class="n">template</span><span class="o">=</span><span class="s2">&quot;line.graph_template&quot;</span><span class="p">,</span>
+                <span class="n">fontsize</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;graph_fontsize&quot;</span><span class="p">],</span>
                 <span class="n">title</span><span class="o">=</span><span class="n">meta_title</span><span class="p">,</span>
             <span class="p">)</span>
 
@@ -2740,11 +2772,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">node_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="n">path</span> <span class="o">=</span> <span class="n">node_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">.graph&quot;</span>
 
-            <span class="n">figure</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="n">figure</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">write_html</span><span class="p">:</span>
-                <span class="n">figure</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="s2">&quot;line.html_template&quot;</span>
-                <span class="n">figure</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.html&quot;</span><span class="p">))</span>
+            <span class="c1"># Other requested formats</span>
+            <span class="k">if</span> <span class="s2">&quot;graph_formats&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">:</span>
+                <span class="n">formats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;graph_formats&quot;</span><span class="p">]</span>
+                <span class="c1"># If from seamm.ini, is a single string so parse.</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">formats</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">formats</span> <span class="o">=</span> <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">formats</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">_format</span> <span class="ow">in</span> <span class="n">formats</span><span class="p">:</span>
+                    <span class="n">figure</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span>
+                        <span class="n">path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">_format</span><span class="p">),</span>
+                        <span class="n">width</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;graph_width&quot;</span><span class="p">]),</span>
+                        <span class="n">height</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;graph_height&quot;</span><span class="p">]),</span>
+                    <span class="p">)</span>
 
         <span class="c1"># Add citations for pymbar</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">references</span><span class="o">.</span><span class="n">cite</span><span class="p">(</span>

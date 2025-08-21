@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.initialization &#8212; SEAMM LAMMPS Plug-in 2025.8.2 documentation</title>
+    <title>lammps_step.initialization &#8212; SEAMM LAMMPS Plug-in 2025.8.21 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=bfeacda4"></script>
+    <script src="../../_static/documentation_options.js?v=0e424178"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.8.2" />
+  <meta name="docsearch:version" content="2025.8.21" />
   </head>
   
   
@@ -1109,6 +1109,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">thermo_variables</span><span class="p">:</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;variable            </span><span class="si">{var}</span><span class="s2"> equal </span><span class="si">{var}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="o">=</span><span class="n">variable</span><span class="p">))</span>
 
+        <span class="k">if</span> <span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="c1"># For convenience, stress</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;xx&quot;</span><span class="p">,</span> <span class="s2">&quot;yy&quot;</span><span class="p">,</span> <span class="s2">&quot;zz&quot;</span><span class="p">,</span> <span class="s2">&quot;xy&quot;</span><span class="p">,</span> <span class="s2">&quot;xz&quot;</span><span class="p">,</span> <span class="s2">&quot;yz&quot;</span><span class="p">):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;variable            s</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2"> equal -p</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
         <span class="c1"># Special Dreiding hydrogen bond information</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">have_dreiding_hbonds</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;dreiding&quot;</span> <span class="ow">and</span> <span class="s2">&quot;hbond/dreiding/lj&quot;</span> <span class="ow">in</span> <span class="n">nonbond_forms</span><span class="p">:</span>
@@ -1171,6 +1176,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="c1"># Set up standard variables</span>
         <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">thermo_variables</span><span class="p">:</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;variable            </span><span class="si">{var}</span><span class="s2"> equal </span><span class="si">{var}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="o">=</span><span class="n">variable</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="c1"># For convenience, stress</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;xx&quot;</span><span class="p">,</span> <span class="s2">&quot;yy&quot;</span><span class="p">,</span> <span class="s2">&quot;zz&quot;</span><span class="p">,</span> <span class="s2">&quot;xy&quot;</span><span class="p">,</span> <span class="s2">&quot;xz&quot;</span><span class="p">,</span> <span class="s2">&quot;yz&quot;</span><span class="p">):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;variable            s</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2"> equal -p</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
 
@@ -1277,6 +1287,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="c1"># Set up standard variables</span>
         <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">thermo_variables</span><span class="p">:</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;variable            </span><span class="si">{var}</span><span class="s2"> equal </span><span class="si">{var}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="o">=</span><span class="n">variable</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="c1"># For convenience, stress</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;xx&quot;</span><span class="p">,</span> <span class="s2">&quot;yy&quot;</span><span class="p">,</span> <span class="s2">&quot;zz&quot;</span><span class="p">,</span> <span class="s2">&quot;xy&quot;</span><span class="p">,</span> <span class="s2">&quot;xz&quot;</span><span class="p">,</span> <span class="s2">&quot;yz&quot;</span><span class="p">):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;variable            s</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2"> equal -p</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
 
