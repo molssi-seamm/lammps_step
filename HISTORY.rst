@@ -1,6 +1,12 @@
 =======
 History
 =======
+2025.8.21 -- Added stress and improved graph handling
+   * Added stress for periodic systems to the state trajectory, and added to the
+     properties and results so that it can be saved and used elsewhere.
+   * Improved the formatting of graphs and added options for writing the graphs to a
+     variety of formats such as HTML, PDF, and JPG.
+
 2025.8.2 -- Initial pass at trajectories.
    * Added option to save the geometry & energies for a trajectory, and converting to
      the extended xy format that e.g. ASE uses, and the MACE ML code uses as input.

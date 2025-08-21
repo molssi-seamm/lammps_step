@@ -17,6 +17,7 @@ import os.path
 import pkg_resources
 import platform
 import pprint
+import shlex
 import shutil
 import string
 import sys
@@ -217,6 +218,12 @@ class LAMMPS(seamm.Node):
         "u": "kcal/mol",
         "N_hbond": "",
         "E_hbond": "kcal/mol",
+        "Sxx": "atm",
+        "Syy": "atm",
+        "Szz": "atm",
+        "Sxy": "atm",
+        "Sxz": "atm",
+        "Syz": "atm",
     }
     display_title = {
         "T": "Temperature",
@@ -243,6 +250,12 @@ class LAMMPS(seamm.Node):
         "u": "atom PE",
         "N_hbond": "Number of H-bonds",
         "E_hbond": "Energy of H-bonds",
+        "Sxx": "Sxx",
+        "Syy": "Syy",
+        "Szz": "Szz",
+        "Sxy": "Sxy",
+        "Sxz": "Sxz",
+        "Syz": "Syz",
     }
 
     def __init__(
@@ -417,9 +430,29 @@ class LAMMPS(seamm.Node):
         )
         parser.add_argument(
             parser_name,
-            "--html",
-            action="store_true",
-            help="whether to write out html files for graphs, etc.",
+            "--graph-formats",
+            default=tuple(),
+            choices=("html", "png", "jpeg", "webp", "svg", "pdf"),
+            nargs="+",
+            help="extra formats to write for graphs",
+        )
+        parser.add_argument(
+            parser_name,
+            "--graph-fontsize",
+            default=15,
+            help="Font size in graphs, defaults to 15 pixels",
+        )
+        parser.add_argument(
+            parser_name,
+            "--graph-width",
+            default=1024,
+            help="Width of graphs in formats that support it, defaults to 1024",
+        )
+        parser.add_argument(
+            parser_name,
+            "--graph-height",
+            default=1024,
+            help="Height of graphs in formats that support it, defaults to 1024",
         )
         if False:
             parser.add_argument(
@@ -1066,8 +1099,8 @@ class LAMMPS(seamm.Node):
             lines.append("{} {} zlo zhi".format(0.0, lz))
 
             xy = xy if abs(xy) > 1.0e-06 else 0.0
-            xz = xz if abs(xy) > 1.0e-06 else 0.0
-            yz = yz if abs(xy) > 1.0e-06 else 0.0
+            xz = xz if abs(xz) > 1.0e-06 else 0.0
+            yz = yz if abs(yz) > 1.0e-06 else 0.0
 
             if triclinic or xy > 0.0 or xz > 0.0 or yz > 0.0:
                 lines.append("{} {} {} xy xz yz".format(xy, xz, yz))
@@ -1822,8 +1855,6 @@ class LAMMPS(seamm.Node):
         node=None,
     ):
         """Read a trajectory file and do the statistical analysis"""
-        write_html = "html" in self.options and self.options["html"]
-
         results = {}
 
         table = {
@@ -2072,6 +2103,7 @@ class LAMMPS(seamm.Node):
             figure = self.create_figure(
                 module_path=(self.__module__.split(".")[0], "seamm"),
                 template="line.graph_template",
+                fontsize=self.options["graph_fontsize"],
                 title=meta_title,
             )
 
@@ -2229,11 +2261,20 @@ class LAMMPS(seamm.Node):
                 node_path.mkdir(parents=True, exist_ok=True)
                 path = node_path / f"{column}.graph"
 
-            figure.dump(path)
+            figure.write_file(path)
 
-            if write_html:
-                figure.template = "line.html_template"
-                figure.dump(path.with_suffix(".html"))
+            # Other requested formats
+            if "graph_formats" in self.options:
+                formats = self.options["graph_formats"]
+                # If from seamm.ini, is a single string so parse.
+                if isinstance(formats, str):
+                    formats = shlex.split(formats)
+                for _format in formats:
+                    figure.write_file(
+                        path.with_suffix("." + _format),
+                        width=int(self.options["graph_width"]),
+                        height=int(self.options["graph_height"]),
+                    )
 
         # Add citations for pymbar
         self.references.cite(

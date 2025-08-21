@@ -494,6 +494,9 @@ class NVE(lammps_step.Energy):
         )
         properties = "v_time v_temp v_press v_etotal v_ke v_pe v_emol v_epair"
         title2 = "tstep t T P Etot Eke Epe Emol Epair"
+        if configuration.periodicity == 3:
+            properties += " v_sxx v_syy v_szz v_sxy v_sxz v_syz"
+            title2 += " Sxx Syy Szz Sxy Sxz Syz"
         if self.parent.have_dreiding_hbonds:
             thermo_properties += " v_N_hbond v_E_hbond"
             properties += " v_N_hbond v_E_hbond"
@@ -809,7 +812,7 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
             )
             title1 = "!MolSSI trajectory 2.0 " + text
             title2 += " Pxx Pyy Pzz Pxy Pxz Pyz"
-            properties += " v_pxx v_pyy v_pzz v_pxy v_pxz v_pyz"
+            properties += " v_sxx v_syy v_szz v_sxy v_sxz v_syz"
             lines.append(
                 "\n"
                 f"fix                 {nfixes} all ave/time {n} 1 {n} "
@@ -1038,13 +1041,13 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
             efact = Q_("kcal/mol").m_as("eV")
             line += f" REF_energy={efact*float(data['Epe']):.4f}"
         if "Pxx" in data:
-            sfact = -Q_("atm").m_as("eV/Å^3")
-            Sxx = f"{sfact*float(data['Pxx']):.7f}"
-            Syy = f"{sfact*float(data['Pyy']):.7f}"
-            Szz = f"{sfact*float(data['Pzz']):.7f}"
-            Syz = f"{sfact*float(data['Pyz']):.7f}"
-            Sxz = f"{sfact*float(data['Pxz']):.7f}"
-            Sxy = f"{sfact*float(data['Pxy']):.7f}"
+            sfact = Q_("atm").m_as("eV/Å^3")
+            Sxx = f"{sfact*float(data['Sxx']):.7f}"
+            Syy = f"{sfact*float(data['Syy']):.7f}"
+            Szz = f"{sfact*float(data['Szz']):.7f}"
+            Syz = f"{sfact*float(data['Syz']):.7f}"
+            Sxz = f"{sfact*float(data['Sxz']):.7f}"
+            Sxy = f"{sfact*float(data['sxy']):.7f}"
             line += f' REF_stress="{Sxx} {Syy} {Szz} {Syz} {Sxz} {Sxy}" pbc="T T T"'
         else:
             line += ' pbc="F F F"'
