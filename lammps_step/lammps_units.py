@@ -226,6 +226,16 @@ def from_lammps_units(value, units, quantity=None, unit_system=None):
     return converted
 
 
+def lammps_units(quantity, unit_system=None):
+    """Return the current LAMMPS units for the given quantity."""
+    if unit_system is None:
+        unit_system = lammps_unit_system
+
+    unit_expr = unit_systems[unit_system][quantity]
+
+    return unit_expr
+
+
 if __name__ == "__main__":  # pragma: no cover
     import pint
     import json

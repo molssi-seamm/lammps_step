@@ -136,7 +136,7 @@ class Initialization(seamm.Node):
         if P["shift_nonbond"]:
             text += ", shifting the nonbond energies to 0 at the cutoff"
         text += ". If the system is periodic"
-        if P["kspace_method"][0] == "$":
+        if self.is_expr(P["kspace_method"]):
             text += " use the variable '{method}' to determine whether "
             text += "and how to accelerate the k-space summations."
         elif P["kspace_method"] == "none":

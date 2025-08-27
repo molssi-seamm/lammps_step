@@ -158,10 +158,10 @@ class TkInitialization(seamm.TkNode):
             self["kspace_accuracy"].grid(row=row, column=0, sticky=tk.W)
             row += 1
 
-            if "few charged" in method or method[0] == "$":
+            if "few charged" in method or self.is_expr(method[0]):
                 self["kspace_smallq"].grid(row=row, column=0, sticky=tk.W)
                 row += 1
 
-        if method[0] == "$" or "dispersion" not in method:
+        if self.is_expr(method) or "dispersion" not in method:
             self["tail_correction"].grid(row=row, column=0, sticky=tk.W)
             row += 1

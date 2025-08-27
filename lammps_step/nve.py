@@ -811,7 +811,7 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
                 separators=(",", ":"),
             )
             title1 = "!MolSSI trajectory 2.0 " + text
-            title2 += " Pxx Pyy Pzz Pxy Pxz Pyz"
+            title2 += " Sxx Syy Szz Sxy Sxz Syz"
             properties += " v_sxx v_syy v_szz v_sxy v_sxz v_syz"
             lines.append(
                 "\n"

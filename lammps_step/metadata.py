@@ -134,11 +134,6 @@ metadata["results"] = {
         "units": "",
     },
     "Sxx": {
-        "calculation": [
-            "nve",
-            "nvt",
-            "npt",
-        ],
         "description": "Sxx",
         "dimensionality": "scalar",
         "property": "Sxx#LAMMPS#{model}",
@@ -182,11 +177,6 @@ metadata["results"] = {
         "units": "",
     },
     "Syy": {
-        "calculation": [
-            "nve",
-            "nvt",
-            "npt",
-        ],
         "description": "Syy",
         "dimensionality": "scalar",
         "property": "Syy#LAMMPS#{model}",
@@ -230,11 +220,6 @@ metadata["results"] = {
         "units": "",
     },
     "Szz": {
-        "calculation": [
-            "nve",
-            "nvt",
-            "npt",
-        ],
         "description": "Szz",
         "dimensionality": "scalar",
         "property": "Szz#LAMMPS#{model}",
@@ -278,11 +263,6 @@ metadata["results"] = {
         "units": "",
     },
     "Sxy": {
-        "calculation": [
-            "nve",
-            "nvt",
-            "npt",
-        ],
         "description": "Sxy",
         "dimensionality": "scalar",
         "property": "Sxy#LAMMPS#{model}",
@@ -326,11 +306,6 @@ metadata["results"] = {
         "units": "",
     },
     "Sxz": {
-        "calculation": [
-            "nve",
-            "nvt",
-            "npt",
-        ],
         "description": "Sxz",
         "dimensionality": "scalar",
         "property": "Sxz#LAMMPS#{model}",
@@ -374,11 +349,6 @@ metadata["results"] = {
         "units": "",
     },
     "Syz": {
-        "calculation": [
-            "nve",
-            "nvt",
-            "npt",
-        ],
         "description": "Syz",
         "dimensionality": "scalar",
         "property": "Syz#LAMMPS#{model}",
