@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lammps_step &#8212; SEAMM LAMMPS Plug-in 2025.8.21 documentation</title>
+    <title>lammps_step &#8212; SEAMM LAMMPS Plug-in 2025.8.27 documentation</title>
   
   
   
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=0e424178"></script>
+    <script src="../_static/documentation_options.js?v=61b355ac"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="API Documentation" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.8.21" />
+  <meta name="docsearch:version" content="2025.8.27" />
   </head>
   
   
@@ -638,6 +638,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.display_units"><code class="docutils literal notranslate"><span class="pre">LAMMPS.display_units</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.eex"><code class="docutils literal notranslate"><span class="pre">LAMMPS.eex</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.ff_form"><code class="docutils literal notranslate"><span class="pre">LAMMPS.ff_form()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.force_triclinic"><code class="docutils literal notranslate"><span class="pre">LAMMPS.force_triclinic</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.get_dump"><code class="docutils literal notranslate"><span class="pre">LAMMPS.get_dump()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.git_revision"><code class="docutils literal notranslate"><span class="pre">LAMMPS.git_revision</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.lammps.LAMMPS.have_dreiding_hbonds"><code class="docutils literal notranslate"><span class="pre">LAMMPS.have_dreiding_hbonds</span></code></a></li>
@@ -668,6 +669,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <li class="toctree-l2"><a class="reference internal" href="lammps_step.html#module-lammps_step.lammps_units">lammps_step.lammps_units module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.lammps_units.from_lammps_units"><code class="docutils literal notranslate"><span class="pre">from_lammps_units()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.lammps_units.get_lammps_unit_system"><code class="docutils literal notranslate"><span class="pre">get_lammps_unit_system()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.lammps_units.lammps_units"><code class="docutils literal notranslate"><span class="pre">lammps_units()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.lammps_units.set_lammps_unit_system"><code class="docutils literal notranslate"><span class="pre">set_lammps_unit_system()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="lammps_step.html#lammps_step.lammps_units.to_lammps_units"><code class="docutils literal notranslate"><span class="pre">to_lammps_units()</span></code></a></li>
 </ul>
@@ -681,6 +683,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.minimization.Minimization.analyze"><code class="docutils literal notranslate"><span class="pre">Minimization.analyze()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.minimization.Minimization.description_text"><code class="docutils literal notranslate"><span class="pre">Minimization.description_text()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.minimization.Minimization.get_input"><code class="docutils literal notranslate"><span class="pre">Minimization.get_input()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.minimization.Minimization.get_pressure_text"><code class="docutils literal notranslate"><span class="pre">Minimization.get_pressure_text()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -846,6 +849,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_minimization.TkMinimization.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkMinimization.create_dialog()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_minimization.TkMinimization.reset_dialog"><code class="docutils literal notranslate"><span class="pre">TkMinimization.reset_dialog()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_minimization.TkMinimization.reset_optimization"><code class="docutils literal notranslate"><span class="pre">TkMinimization.reset_optimization()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_minimization.TkMinimization.reset_pressure_frame"><code class="docutils literal notranslate"><span class="pre">TkMinimization.reset_pressure_frame()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lammps_step.html#lammps_step.tk_minimization.TkMinimization.reset_stress_frame"><code class="docutils literal notranslate"><span class="pre">TkMinimization.reset_stress_frame()</span></code></a></li>
 </ul>
 </li>
 </ul>

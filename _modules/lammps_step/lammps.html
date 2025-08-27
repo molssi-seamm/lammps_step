@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2025.8.21 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2025.8.27 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=0e424178"></script>
+    <script src="../../_static/documentation_options.js?v=61b355ac"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.8.21" />
+  <meta name="docsearch:version" content="2025.8.27" />
   </head>
   
   
@@ -759,8 +759,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="bp">self</span><span class="o">.</span><span class="n">_have_dreiding_hbonds</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_energy_sum</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_eex</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_force_triclinic</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Whether to insist on a triclinic cell</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_results</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Sotrage for computational and timing results</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_results</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Storage for computational and timing results</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">flowchart</span><span class="o">=</span><span class="n">flowchart</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;LAMMPS&quot;</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
@@ -839,6 +840,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="k">def</span><span class="w"> </span><span class="nf">results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The storage for results.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">force_triclinic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Whether to force a triclinic cell.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_force_triclinic</span>
+
+    <span class="nd">@force_triclinic</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">force_triclinic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_force_triclinic</span> <span class="o">=</span> <span class="n">value</span>
 
 <div class="viewcode-block" id="LAMMPS.box_to_cell">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.box_to_cell">[docs]</a>
@@ -1184,29 +1194,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">Initialization</span><span class="p">):</span>
+                <span class="c1"># Reset whether the cell needs to be triclinic</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">force_triclinic</span> <span class="o">=</span> <span class="kc">False</span>
+
                 <span class="n">initialization_header</span><span class="p">,</span> <span class="n">eex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_node_input</span><span class="p">(</span>
                     <span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;read_data&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
                 <span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">eex</span> <span class="o">=</span> <span class="n">eex</span>
-                <span class="p">(</span>
-                    <span class="n">structure_data</span><span class="p">,</span>
-                    <span class="n">pair_table</span><span class="p">,</span>
-                    <span class="n">bond_table</span><span class="p">,</span>
-                    <span class="n">angle_table</span><span class="p">,</span>
-                    <span class="n">dihedral_table</span><span class="p">,</span>
-                <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">structure_data</span><span class="p">(</span><span class="n">eex</span><span class="p">)</span>
-                <span class="n">files</span><span class="p">[</span><span class="s2">&quot;structure.dat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">structure_data</span>
-                <span class="k">if</span> <span class="s2">&quot;forcefield&quot;</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">:</span>
-                    <span class="n">files</span><span class="p">[</span><span class="s2">&quot;forcefield.dat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;forcefield&quot;</span><span class="p">]</span>
 
-                <span class="k">if</span> <span class="n">bond_table</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                    <span class="n">files</span><span class="p">[</span><span class="s2">&quot;tabulated_bonds.dat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bond_table</span>
-                <span class="k">if</span> <span class="n">angle_table</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                    <span class="n">files</span><span class="p">[</span><span class="s2">&quot;tabulated_angles.dat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">angle_table</span>
-                <span class="k">if</span> <span class="n">dihedral_table</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                    <span class="n">files</span><span class="p">[</span><span class="s2">&quot;tabulated_dihedrals.dat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dihedral_table</span>
-
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;structure.dat:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">files</span><span class="p">[</span><span class="s2">&quot;structure.dat&quot;</span><span class="p">])</span>
+                <span class="c1"># Need the masses for e.g. timestep</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s2">&quot;masses&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;masses&quot;</span><span class="p">]]</span>
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_initialization_node</span> <span class="o">=</span> <span class="n">node</span>
 
@@ -1228,6 +1225,31 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">,</span>
         <span class="p">)</span>
 
+        <span class="c1"># Procrastinate making the strucuture file as long as possible,</span>
+        <span class="c1"># because it may need to be forced to be triclinic by substeps</span>
+
+        <span class="p">(</span>
+            <span class="n">structure_data</span><span class="p">,</span>
+            <span class="n">pair_table</span><span class="p">,</span>
+            <span class="n">bond_table</span><span class="p">,</span>
+            <span class="n">angle_table</span><span class="p">,</span>
+            <span class="n">dihedral_table</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">structure_data</span><span class="p">()</span>
+
+        <span class="n">files</span><span class="p">[</span><span class="s2">&quot;structure.dat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">structure_data</span>
+        <span class="k">if</span> <span class="s2">&quot;forcefield&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">eex</span><span class="p">:</span>
+            <span class="n">files</span><span class="p">[</span><span class="s2">&quot;forcefield.dat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;forcefield&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">bond_table</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">files</span><span class="p">[</span><span class="s2">&quot;tabulated_bonds.dat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bond_table</span>
+        <span class="k">if</span> <span class="n">angle_table</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">files</span><span class="p">[</span><span class="s2">&quot;tabulated_angles.dat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">angle_table</span>
+        <span class="k">if</span> <span class="n">dihedral_table</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">files</span><span class="p">[</span><span class="s2">&quot;tabulated_dihedrals.dat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dihedral_table</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;structure.dat:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">files</span><span class="p">[</span><span class="s2">&quot;structure.dat&quot;</span><span class="p">])</span>
+
+        <span class="c1"># And run</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">control</span><span class="p">)</span>
         <span class="n">control</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -1250,6 +1272,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">return_files</span> <span class="o">=</span> <span class="p">[</span>
             <span class="s2">&quot;summary_*.txt&quot;</span><span class="p">,</span>
             <span class="s2">&quot;trajectory_*.seamm_trj&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;*.json&quot;</span><span class="p">,</span>
             <span class="s2">&quot;*.trj&quot;</span><span class="p">,</span>
             <span class="s2">&quot;*.dump_trj&quot;</span><span class="p">,</span>
             <span class="s2">&quot;*.dump_trj.gz&quot;</span><span class="p">,</span>
@@ -1381,10 +1404,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
             <span class="k">if</span> <span class="s2">&quot;NGPUS&quot;</span> <span class="ow">in</span> <span class="n">ce</span><span class="p">:</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;   LAMMPS running with </span><span class="si">{</span><span class="n">np</span><span class="si">}</span><span class="s2"> processes and </span><span class="si">{</span><span class="n">ce</span><span class="p">[</span><span class="s1">&#39;NGPUS&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> gpus.&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;    LAMMPS running with </span><span class="si">{</span><span class="n">np</span><span class="si">}</span><span class="s2"> processes and </span><span class="si">{</span><span class="n">ce</span><span class="p">[</span><span class="s1">&#39;NGPUS&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> gpus.&quot;</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   LAMMPS using MPI with </span><span class="si">{</span><span class="n">np</span><span class="si">}</span><span class="s2"> processes.&quot;</span><span class="p">)</span>
+                <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    LAMMPS using MPI with </span><span class="si">{</span><span class="n">np</span><span class="si">}</span><span class="s2"> processes.&quot;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">np_text</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
                     <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
                     <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">np_text</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
@@ -1569,13 +1592,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="viewcode-block" id="LAMMPS.structure_data">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.structure_data">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">structure_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eex</span><span class="p">,</span> <span class="n">triclinic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">structure_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the LAMMPS structure file from the energy expression&quot;&quot;&quot;</span>
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">pair_table</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">bond_table</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">angle_table</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">dihedral_table</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">eex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eex</span>
 
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Structure file for LAMMPS generated by a MolSSI flowchart&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:10d}</span><span class="s2"> atoms&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_atoms&quot;</span><span class="p">]))</span>
@@ -1607,7 +1632,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">xz</span> <span class="o">=</span> <span class="n">xz</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xz</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.0e-06</span> <span class="k">else</span> <span class="mf">0.0</span>
             <span class="n">yz</span> <span class="o">=</span> <span class="n">yz</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">yz</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.0e-06</span> <span class="k">else</span> <span class="mf">0.0</span>
 
-            <span class="k">if</span> <span class="n">triclinic</span> <span class="ow">or</span> <span class="n">xy</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">xz</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">yz</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">force_triclinic</span> <span class="ow">or</span> <span class="n">xy</span> <span class="o">!=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">xz</span> <span class="o">!=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">yz</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> xy xz yz&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="n">xz</span><span class="p">,</span> <span class="n">yz</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;atoms&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
@@ -1680,7 +1705,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Masses&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s2">&quot;masses&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;n_atom_types&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">eex</span><span class="p">[</span><span class="s2">&quot;masses&quot;</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;masses&quot;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
             <span class="n">mass</span><span class="p">,</span> <span class="n">itype</span> <span class="o">=</span> <span class="n">parameters</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> # </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">mass</span><span class="p">,</span> <span class="n">itype</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s2">&quot;masses&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">mass</span><span class="p">))</span>
