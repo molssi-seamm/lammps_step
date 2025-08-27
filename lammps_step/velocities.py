@@ -64,7 +64,7 @@ class Velocities(seamm.Node):
 
         text = "Set the velocities to give a temperature {T} " "by {method}."
 
-        if P["remove_momentum"][0] == "$":
+        if self.is_expr(P["remove_momentum"]):
             text += (
                 " Whether to remove translational or rotational "
                 "momentum will be determined at runtime by "

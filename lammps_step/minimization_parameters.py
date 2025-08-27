@@ -83,6 +83,134 @@ class MinimizationParameters(EnergyParameters):
                 "the dynamics. About 10x that used in MD works well."
             ),
         },
+        "optimize cell": {
+            "default": "yes",
+            "kind": "boolean",
+            "format_string": "s",
+            "enumeration": ("no", "yes"),
+            "description": "Optimize cell",
+            "help_text": "Whether to optimize the unit cell.",
+        },
+        "system type": {
+            "default": "fluid",
+            "kind": "string",
+            "format_string": "s",
+            "enumeration": ("fluid", "solid"),
+            "description": "Type of system:",
+            "help_text": (
+                "Whether the system is a fluid, "
+                "which flows under shear stress, "
+                "or a solid, which can resist "
+                "small shear stresses."
+            ),
+        },
+        "allow shear": {
+            "default": "no",
+            "kind": "boolean",
+            "format_string": "s",
+            "enumeration": ("no", "yes"),
+            "description": "Allow the cell to shear",
+            "help_text": "Whether the cell angles can change.",
+        },
+        "use_stress": {
+            "default": "isotropic pressure",
+            "kind": "enumeration",
+            "enumeration": ("isotropic pressure", "general stress"),
+            "format_string": "s",
+            "description": "Apply",
+            "help_text": (
+                "Specify whether to apply (isotropic) "
+                "pressure to the system or explicit stresses "
+                "for each different direction."
+            ),
+        },
+        "couple": {
+            "default": "x, y and z",
+            "kind": "enumeration",
+            "enumeration": ("x, y and z", "x and y", "x and z", "y and z", "none"),
+            "format_string": "s",
+            "description": "Directions to couple:",
+            "help_text": (
+                "The stress in these directions will be "
+                "averaged and the cell dilated in fixed "
+                "proportions in these directions."
+            ),
+        },
+        "P": {
+            "default": 1.0,
+            "kind": "float",
+            "default_units": "atm",
+            "format_string": ".2f",
+            "enumeration": tuple(),
+            "description": "Pressure:",
+            "help_text": "The applied pressure.",
+        },
+        "Sxx": {
+            "default": -1.0,
+            "kind": "float",
+            "enumeration": ("fixed", "-1.0"),
+            "default_units": "atm",
+            "format_string": "s",
+            "description": "Sxx:",
+            "help_text": "The components of the stress tensor.",
+        },
+        "Syy": {
+            "default": -1.0,
+            "kind": "float",
+            "enumeration": ("fixed", "-1.0"),
+            "default_units": "atm",
+            "format_string": "s",
+            "description": "Syy:",
+            "help_text": "The components of the stress tensor.",
+        },
+        "Szz": {
+            "default": -1.0,
+            "kind": "float",
+            "enumeration": ("fixed", "-1.0"),
+            "default_units": "atm",
+            "format_string": "s",
+            "description": "Szz:",
+            "help_text": "The components of the stress tensor.",
+        },
+        "Syz": {
+            "default": "fixed",
+            "kind": "float",
+            "enumeration": ("fixed", "0.0"),
+            "default_units": "atm",
+            "format_string": "s",
+            "description": "Syz:",
+            "help_text": "The components of the stress tensor.",
+        },
+        "Sxz": {
+            "default": "fixed",
+            "kind": "float",
+            "enumeration": ("fixed", "0.0"),
+            "default_units": "atm",
+            "format_string": "s",
+            "description": "Sxz:",
+            "help_text": "The components of the stress tensor.",
+        },
+        "Sxy": {
+            "default": "fixed",
+            "kind": "float",
+            "enumeration": ("fixed", "0.0"),
+            "default_units": "atm",
+            "format_string": "s",
+            "description": "Sxy:",
+            "help_text": "The components of the stress tensor.",
+        },
+        "nreset": {
+            "default": "never",
+            "kind": "integer",
+            "default_units": None,
+            "format_string": "d",
+            "enumeration": ("never",),
+            "description": "Frequency to reset reference cell:",
+            "help_text": (
+                "How often, in number of steps, to reset "
+                "the reference cell for the strain energy."
+            ),
+        },
     }
 
     def __init__(self, defaults={}, data=None):

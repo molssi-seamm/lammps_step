@@ -16,6 +16,7 @@ from .lammps_units import set_lammps_unit_system
 from .lammps_units import get_lammps_unit_system
 from .lammps_units import to_lammps_units
 from .lammps_units import from_lammps_units
+from .lammps_units import lammps_units
 
 from .lammps import bond_style
 from .lammps import angle_style

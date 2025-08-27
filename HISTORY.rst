@@ -1,6 +1,12 @@
 =======
 History
 =======
+2025.8.27 -- Added cell optimization to minimization step
+   * Added the ability to optimize the cell during minimization, giving control over
+     applied pressure or stress as well as fixing lattice directions.
+   * Allowing "=" as the first character of a parameter to signal that it is a variable
+     or expression that needs to be evaluated before use.
+
 2025.8.21 -- Added stress and improved graph handling
    * Added stress for periodic systems to the state trajectory, and added to the
      properties and results so that it can be saved and used elsewhere.

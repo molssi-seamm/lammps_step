@@ -50,8 +50,8 @@ class HeatFluxParameters(NVE_Parameters):
         enumerated custom values meaningful to the user. For instance, if the parameter
         is a convergence criterion for an optimizer, custom values like "normal",
         "precise", etc, might be adequate. In addition, any parameter can be set to a
-        variable of expression, indicated by having "$" as the first character in the
-        field. For example, $OPTIMIZER_CONV.
+        variable of expression, indicated by having "$" or "=" as the first character
+         in the field. For example, $OPTIMIZER_CONV.
 
     parameters["default_units"] : str
         The default units, used for resetting the value.

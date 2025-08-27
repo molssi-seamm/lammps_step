@@ -2,8 +2,8 @@
 
 """Minimization step in LAMMPS"""
 
+import json
 import logging
-from pathlib import Path
 import textwrap
 import traceback
 
@@ -12,7 +12,7 @@ from tabulate import tabulate
 
 from molsystem import RMSD
 import seamm
-from seamm_util import units_class
+from seamm_util import Q_, units_class
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
 import lammps_step
@@ -58,11 +58,27 @@ class Minimization(lammps_step.Energy):
         # Get the initial structure
         _, initial_configuration = self.get_system_configuration()
 
+        # Save the initial cell parameter if periodic
+        if initial_configuration.periodicity != 0:
+            a0, b0, c0, alpha0, beta0, gamma0 = initial_configuration.cell.parameters
+
         # Handle the new structure as needed
         system, configuration = self.get_system_configuration(P, model=self.model)
 
+        # See if there are other results in json files
+        filename = self.wd / "minimization.json"
+        if filename.exists():
+            try:
+                with filename.open("r") as fd:
+                    tmp = json.load(fd)
+            except Exception as e:
+                print(f"Error with {filename}: {e}")
+                pass
+            else:
+                data.update(tmp)
+
         # Read the dump file and get the structure
-        dump_file = Path(self.directory) / "minimization.dump"
+        dump_file = self.wd / "minimization.dump"
         if dump_file.exists:
             try:
                 xyz, fractional, cell, vxyz = self.parent.read_dump(dump_file)
@@ -257,6 +273,15 @@ class Minimization(lammps_step.Energy):
         data["energy threshold"] = self._save["etol"]
         data["minimizer"] = self._save["minimizer"]
 
+        # For periodic systems, the stress
+        if initial_configuration.periodicity != 0:
+            for key in ("Sxx", "Syy", "Szz", "Syz", "Sxz", "Sxy"):
+                if key in data:
+                    table["Property"].append(key)
+                    value = Q_(data[key], data[key + ",units"]).m_as("GPa")
+                    table["Value"].append(f"{value:.3f}")
+                    table["Units"].append("GPa")
+
         tmp = tabulate(
             table,
             headers="keys",
@@ -270,6 +295,58 @@ class Minimization(lammps_step.Energy):
         text_lines.append(tmp)
         printer.normal(textwrap.indent("\n".join(text_lines), self.indent + 7 * " "))
         printer.normal("")
+
+        # For periodic systems, the change in cell
+        if (
+            cell is not None
+            and initial_configuration.periodicity != 0
+            and P["optimize cell"]
+        ):
+            a, b, c, alpha, beta, gamma = cell
+            ctable = {
+                "": ("𝗮", "𝗯", "𝗰", "𝞪", "𝞫", "𝞬"),
+                "Initial": (
+                    f"{a0:.3f}",
+                    f"{b0:.3f}",
+                    f"{c0:.3f}",
+                    f"{alpha0:.1f}",
+                    f"{beta0:.1f}",
+                    f"{gamma0:.1f}",
+                ),
+                "Final": (
+                    f"{a:.3f}",
+                    f"{b:.3f}",
+                    f"{c:.3f}",
+                    f"{alpha:.1f}",
+                    f"{beta:.1f}",
+                    f"{gamma:.1f}",
+                ),
+                "Change": (
+                    f"{a - a0:.3f}",
+                    f"{b - b0:.3f}",
+                    f"{c - c0:.3f}",
+                    f"{alpha - alpha0:.1f}",
+                    f"{beta - beta0:.1f}",
+                    f"{gamma - gamma0:.1f}",
+                ),
+                "Units": ("Å", "Å", "Å", "°", "°", "°"),
+            }
+
+            tmp = tabulate(
+                ctable,
+                headers="keys",
+                tablefmt="rounded_outline",
+                colalign=("center", "decimal", "decimal", "decimal", "center"),
+                disable_numparse=True,
+            )
+            length = len(tmp.splitlines()[0])
+            text_lines = []
+            text_lines.append("Cell Parameters".center(length))
+            text_lines.append(tmp)
+            printer.normal(
+                textwrap.indent("\n".join(text_lines), self.indent + 7 * " ")
+            )
+            printer.normal("")
 
         if configuration is not None:
             self.store_results(configuration=configuration, data=data)
@@ -310,7 +387,13 @@ class Minimization(lammps_step.Energy):
         self.description.append(__(self.description_text(PP), **PP, indent=4 * " "))
 
         _, configuration = self.get_system_configuration()
+
+        # Number of atoms may be used in the number of steps
         nAtoms = configuration.n_atoms  # noqa: F841
+
+        # May need to force a triclinic cell
+        if P["allow shear"]:
+            self.parent.force_triclinic = True
 
         lines = []
 
@@ -359,17 +442,58 @@ class Minimization(lammps_step.Energy):
         if self.parent.have_dreiding_hbonds:
             thermo_properties += " v_N_hbond v_E_hbond"
 
+        nfixes = 0
+
         lines.append("")
         lines.append(f"# {self.header}")
         lines.append("")
         lines.append(f"thermo_style        custom {thermo_properties}")
-        # lines.append("thermo              100")
-        lines.append("thermo              1")
+        lines.append("thermo              100")
+
+        if configuration.periodicity != 0:
+            # Attend to optimization of the cell
+            if P["optimize cell"]:
+                # Work out the pressure/stress part of the command
+                ptext = self.get_pressure_text(P)
+                if ptext != "":
+                    nfixes += 1
+                    lines.append(
+                        f"fix                 {nfixes} all box/relax {ptext}"
+                        " fixedpoint 0.0 0.0 0.0"
+                    )
+                    lines.append("")
+
         lines.append(f"min_style           {min_style}")
         if min_style in ("quickmin", "fire"):
             lines.append(f"timestep            {timestep}")
         lines.append(f"minimize            {etol} {ftol} {nSteps} {nEvals}")
         lines.append("")
+        if nfixes > 0:
+            for fix in range(1, nfixes + 1):
+                lines.append(f"unfix               {fix}")
+            lines.append("")
+
+        if configuration.periodicity != 0:
+            # Write out the stress after minimization
+            filename = f"@{self._id[-1]}+minimization.json"
+            units = lammps_step.lammps_units("pressure")
+            lines.append(
+                'print               """{\n'
+                '    "Sxx": $(v_sxx:%.3f),\n'
+                f'    "Sxx,units": "{units}",\n'
+                '    "Syy": $(v_syy:%.3f),\n'
+                f'    "Syy,units": "{units}",\n'
+                '    "Szz": $(v_szz:%.3f),\n'
+                f'    "Szz,units": "{units}",\n'
+                '    "Syz": $(v_syz:%.3f),\n'
+                f'    "Syz,units": "{units}",\n'
+                '    "Sxz": $(v_sxz:%.3f),\n'
+                f'    "Sxz,units": "{units}",\n'
+                '    "Sxy": $(v_sxy:%.3f),\n'
+                f'    "Sxy,units": "{units}"\n'
+                "}"
+                f'""" file {filename}'
+            )
         filename = f"@{self._id[-1]}+minimization.dump"
         lines.append(
             f"write_dump          all custom  {filename} id xu yu zu fx fy fz"
@@ -381,3 +505,95 @@ class Minimization(lammps_step.Energy):
             "postscript": None,
             "use python": False,
         }
+
+    def get_pressure_text(self, P):
+        """Work out and return the pressure/stress part of the
+        'fix npt' or 'fix berendsen' in LAMMPS
+        """
+        system_type = P["system type"]
+
+        if system_type == "fluid":
+            P = lammps_step.to_lammps_units(P["P"], quantity="pressure")
+            return f" iso {P}"
+
+        use_stress = "pressure" not in P["use_stress"]
+        couple = P["couple"]
+        allow_shear = P["allow shear"]
+
+        Sxx = P["Sxx"]
+        Syy = P["Syy"]
+        Szz = P["Szz"]
+        Syz = P["Syz"]
+        Sxz = P["Sxz"]
+        Sxy = P["Sxz"]
+
+        if use_stress:
+            if couple == "x, y and z":
+                ptext = "couple xyz x {Sxx} y {Sxx} z {Sxx}"
+            elif couple == "x and y":
+                if Sxx == "fixed":
+                    ptext = "couple xy z {Szz}"
+                elif Szz == "fixed":
+                    ptext = "couple xy x {Sxx} y {Sxx}"
+                else:
+                    ptext = "couple xy x {Sxx} y {Sxx} z {Szz}"
+            elif couple == "x and z":
+                if Sxx == "fixed":
+                    ptext = "couple xz y {Syy}"
+                elif Syy == "fixed":
+                    ptext = "couple xz x {Sxx} z {Sxx}"
+                else:
+                    ptext = "couple xz x {Sxx} y {Syy} z {Sxx}"
+            elif couple == "y and z":
+                if Sxx == "fixed":
+                    ptext = "couple yz y {Syy} z {Syy}"
+                elif Syy == "fixed":
+                    ptext = "couple yz x {Sxx}"
+                else:
+                    ptext = "couple yz x {Sxx} y {Syy} z {Syy}"
+            else:
+                ptext = "couple none"
+                if Sxx != "fixed":
+                    ptext += " x {Sxx}"
+                if Syy != "fixed":
+                    ptext += " y {Syy}"
+                if Szz != "fixed":
+                    ptext += " z {Szz}"
+
+            if allow_shear:
+                if Syz != "fixed":
+                    ptext += " yz {Syz}"
+                if Sxz != "fixed":
+                    ptext += " xz {Sxz}"
+                if Sxy != "fixed":
+                    ptext += " xy {Sxy}"
+
+            if ptext == "couple none":
+                ptext = ""
+
+            Tmp = {}
+            for key in ("Sxx", "Syy", "Szz", "Syz", "Sxz", "Sxy"):
+                if P[key] != "fixed":
+                    Tmp[key] = lammps_step.to_lammps_units(-P[key], quantity="pressure")
+
+            ptext = ptext.format(**Tmp)
+        else:
+            # hydrostatic pressure applied
+            if couple == "x, y and z":
+                ptext = "couple xyz x {P} y {P} z {P}"
+            elif couple == "x and y":
+                ptext = "couple xy x {P} y {P} z {P}"
+            elif couple == "x and z":
+                ptext = "couple xz x {P} y {P} z {P}"
+            elif couple == "y and z":
+                ptext = "couple yz x {P} y {P} z {P}"
+            else:
+                ptext = "couple none x {P} y {P} z {P}"
+
+            if allow_shear:
+                ptext += " xy 0.0 xz 0.0 yz 0.0"
+
+            P = lammps_step.to_lammps_units(P["P"], quantity="pressure")
+            ptext = ptext.format(P=P)
+
+        return ptext
