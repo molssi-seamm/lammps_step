@@ -148,7 +148,7 @@ class MinimizationParameters(EnergyParameters):
         "Sxx": {
             "default": -1.0,
             "kind": "float",
-            "enumeration": ("fixed", "-1.0"),
+            "enumeration": ("fixed",),
             "default_units": "atm",
             "format_string": "s",
             "description": "Sxx:",
@@ -157,7 +157,7 @@ class MinimizationParameters(EnergyParameters):
         "Syy": {
             "default": -1.0,
             "kind": "float",
-            "enumeration": ("fixed", "-1.0"),
+            "enumeration": ("fixed",),
             "default_units": "atm",
             "format_string": "s",
             "description": "Syy:",
@@ -166,7 +166,7 @@ class MinimizationParameters(EnergyParameters):
         "Szz": {
             "default": -1.0,
             "kind": "float",
-            "enumeration": ("fixed", "-1.0"),
+            "enumeration": ("fixed",),
             "default_units": "atm",
             "format_string": "s",
             "description": "Szz:",
@@ -175,7 +175,7 @@ class MinimizationParameters(EnergyParameters):
         "Syz": {
             "default": "fixed",
             "kind": "float",
-            "enumeration": ("fixed", "0.0"),
+            "enumeration": ("fixed",),
             "default_units": "atm",
             "format_string": "s",
             "description": "Syz:",
@@ -184,7 +184,7 @@ class MinimizationParameters(EnergyParameters):
         "Sxz": {
             "default": "fixed",
             "kind": "float",
-            "enumeration": ("fixed", "0.0"),
+            "enumeration": ("fixed",),
             "default_units": "atm",
             "format_string": "s",
             "description": "Sxz:",
@@ -193,7 +193,7 @@ class MinimizationParameters(EnergyParameters):
         "Sxy": {
             "default": "fixed",
             "kind": "float",
-            "enumeration": ("fixed", "0.0"),
+            "enumeration": ("fixed",),
             "default_units": "atm",
             "format_string": "s",
             "description": "Sxy:",
