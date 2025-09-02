@@ -1,6 +1,10 @@
 =======
 History
 =======
+2025.9.2 -- Bugfix: error in the stress parameters in the GUI
+   * There was an error in the setup of the stress parameters, which caused a
+     crash. This is now fixed.
+     
 2025.8.27 -- Added cell optimization to minimization step
    * Added the ability to optimize the cell during minimization, giving control over
      applied pressure or stress as well as fixing lattice directions.
