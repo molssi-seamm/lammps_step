@@ -72,7 +72,8 @@ class Minimization(lammps_step.Energy):
                 with filename.open("r") as fd:
                     tmp = json.load(fd)
             except Exception as e:
-                print(f"Error with {filename}: {e}")
+                printer.normal(f"Warning: error reading {filename}: {e}")
+                logger.warning(f"Error with {filename}: {e}")
                 pass
             else:
                 data.update(tmp)
@@ -506,26 +507,26 @@ class Minimization(lammps_step.Energy):
             "use python": False,
         }
 
-    def get_pressure_text(self, P):
+    def get_pressure_text(self, _P):
         """Work out and return the pressure/stress part of the
-        'fix npt' or 'fix berendsen' in LAMMPS
+        'fix npt' or 'fix berendsen' or minimization in LAMMPS
         """
-        system_type = P["system type"]
+        system_type = _P["system type"]
 
         if system_type == "fluid":
-            P = lammps_step.to_lammps_units(P["P"], quantity="pressure")
+            P = lammps_step.to_lammps_units(_P["P"], quantity="pressure")
             return f" iso {P}"
 
-        use_stress = "pressure" not in P["use_stress"]
-        couple = P["couple"]
-        allow_shear = P["allow shear"]
+        use_stress = "pressure" not in _P["use_stress"]
+        couple = _P["couple"]
+        allow_shear = _P["allow shear"]
 
-        Sxx = P["Sxx"]
-        Syy = P["Syy"]
-        Szz = P["Szz"]
-        Syz = P["Syz"]
-        Sxz = P["Sxz"]
-        Sxy = P["Sxz"]
+        Sxx = _P["Sxx"]
+        Syy = _P["Syy"]
+        Szz = _P["Szz"]
+        Syz = _P["Syz"]
+        Sxz = _P["Sxz"]
+        Sxy = _P["Sxz"]
 
         if use_stress:
             if couple == "x, y and z":
@@ -573,9 +574,10 @@ class Minimization(lammps_step.Energy):
 
             Tmp = {}
             for key in ("Sxx", "Syy", "Szz", "Syz", "Sxz", "Sxy"):
-                if P[key] != "fixed":
-                    Tmp[key] = lammps_step.to_lammps_units(-P[key], quantity="pressure")
-
+                if _P[key] != "fixed":
+                    Tmp[key] = lammps_step.to_lammps_units(
+                        -_P[key], quantity="pressure"
+                    )
             ptext = ptext.format(**Tmp)
         else:
             # hydrostatic pressure applied
@@ -593,7 +595,7 @@ class Minimization(lammps_step.Energy):
             if allow_shear:
                 ptext += " xy 0.0 xz 0.0 yz 0.0"
 
-            P = lammps_step.to_lammps_units(P["P"], quantity="pressure")
+            P = lammps_step.to_lammps_units(_P["P"], quantity="pressure")
             ptext = ptext.format(P=P)
 
         return ptext

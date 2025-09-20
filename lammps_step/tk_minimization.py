@@ -311,28 +311,23 @@ class TkMinimization(lammps_step.TkEnergy):
                 self["XZ"].grid(row=row, column=3)
                 self["XY"].grid(row=row, column=4)
             row += 1
-
             self["stress"].grid(row=row, column=0, sticky="e")
+            self["Sxx"].grid(row=row, column=1, sticky="ew")
             if not allow_shear:
-                self["Sxx"].grid(row=row, column=1, sticky="ew")
                 self["Sxx"].show("combobox", "units")
-                frame.columnconfigure(1, weight=1, minsize=50, uniform="b")
+                frame.columnconfigure(1, weight=1, uniform="b")
             else:
-                self["Sxx"].grid(row=row, column=1, sticky="ew")
                 self["Sxx"].show("combobox")
-
                 self["Syz"].grid(row=row, column=2, sticky="ew")
                 self["Sxz"].grid(row=row, column=3, sticky="ew")
                 self["Sxy"].grid(row=row, column=4, sticky="ew")
-
                 self["Syz"].show("combobox")
                 self["Sxz"].show("combobox")
                 self["Sxy"].show("combobox", "units")
-
-                frame.columnconfigure(1, weight=1, minsize=50, uniform="b")
-                frame.columnconfigure(2, weight=1, minsize=50, uniform="b")
-                frame.columnconfigure(3, weight=1, minsize=50, uniform="b")
-                frame.columnconfigure(4, weight=1, minsize=50, uniform="b")
+                frame.columnconfigure(1, weight=1)
+                frame.columnconfigure(2, weight=1)
+                frame.columnconfigure(3, weight=1)
+                frame.columnconfigure(4, weight=1)
             row += 1
         elif couple == "x and y":
             # couple xx and yy
@@ -342,35 +337,28 @@ class TkMinimization(lammps_step.TkEnergy):
                 self["YZ"].grid(row=row, column=3)
                 self["XZ"].grid(row=row, column=4)
                 self["XY"].grid(row=row, column=5)
-
             row += 1
-
             self["stress"].grid(row=row, column=0, sticky="e")
             self["Sxx"].grid(row=row, column=1, sticky="ew")
             self["Sxx"].show("combobox")
             self["Szz"].grid(row=row, column=2, sticky="ew")
             if not allow_shear:
                 self["Szz"].show("combobox", "units")
-                frame.columnconfigure(1, weight=1, minsize=50, uniform="c")
-                frame.columnconfigure(2, weight=1, minsize=50, uniform="c")
-                frame.columnconfigure(3, weight=1, minsize=50, uniform="c")
+                frame.columnconfigure(1, weight=1)
+                frame.columnconfigure(2, weight=1)
             else:
                 self["Szz"].show("combobox")
-
                 self["Syz"].grid(row=row, column=3, sticky="ew")
                 self["Sxz"].grid(row=row, column=4, sticky="ew")
                 self["Sxy"].grid(row=row, column=5, sticky="ew")
-
                 self["Syz"].show("combobox")
                 self["Sxz"].show("combobox")
                 self["Sxy"].show("combobox", "units")
-
-                frame.columnconfigure(1, weight=1, minsize=50, uniform="c")
-                frame.columnconfigure(2, weight=1, minsize=50, uniform="c")
-                frame.columnconfigure(3, weight=1, minsize=50, uniform="c")
-                frame.columnconfigure(4, weight=1, minsize=50, uniform="c")
-                frame.columnconfigure(5, weight=1, minsize=50, uniform="c")
-                frame.columnconfigure(6, weight=1, minsize=50, uniform="c")
+                frame.columnconfigure(1, weight=1)
+                frame.columnconfigure(2, weight=1)
+                frame.columnconfigure(3, weight=1)
+                frame.columnconfigure(4, weight=1)
+                frame.columnconfigure(5, weight=1)
             row += 1
         elif couple == "x and z":
             # couple xx and zz
@@ -380,36 +368,28 @@ class TkMinimization(lammps_step.TkEnergy):
                 self["YZ"].grid(row=row, column=3)
                 self["XZ"].grid(row=row, column=4)
                 self["XY"].grid(row=row, column=5)
-
             row += 1
-
             self["stress"].grid(row=row, column=0, sticky="e")
             self["Sxx"].grid(row=row, column=1, sticky="ew")
-
-            self["Sxx"].show("combobox")
             self["Syy"].grid(row=row, column=2, sticky="ew")
+            self["Sxx"].show("combobox")
             if not allow_shear:
                 self["Syy"].show("combobox", "units")
-                frame.columnconfigure(1, weight=1, minsize=50, uniform="d")
-                frame.columnconfigure(2, weight=1, minsize=50, uniform="d")
-                frame.columnconfigure(3, weight=1, minsize=50, uniform="d")
+                frame.columnconfigure(1, weight=1)
+                frame.columnconfigure(2, weight=1)
             else:
                 self["Syy"].show("combobox")
-
                 self["Syz"].grid(row=row, column=3, sticky="ew")
                 self["Sxz"].grid(row=row, column=4, sticky="ew")
                 self["Sxy"].grid(row=row, column=5, sticky="ew")
-
                 self["Syz"].show("combobox")
                 self["Sxz"].show("combobox", "units")
                 self["Sxy"].show("combobox")
-
-                frame.columnconfigure(1, weight=1, minsize=50, uniform="d")
-                frame.columnconfigure(2, weight=1, minsize=50, uniform="d")
-                frame.columnconfigure(3, weight=1, minsize=50, uniform="d")
-                frame.columnconfigure(4, weight=1, minsize=50, uniform="d")
-                frame.columnconfigure(5, weight=1, minsize=50, uniform="d")
-                frame.columnconfigure(6, weight=1, minsize=50, uniform="d")
+                frame.columnconfigure(1, weight=1)
+                frame.columnconfigure(2, weight=1)
+                frame.columnconfigure(3, weight=1)
+                frame.columnconfigure(4, weight=1)
+                frame.columnconfigure(5, weight=1)
             row += 1
         elif couple == "y and z":
             # couple yy and zz
@@ -419,34 +399,28 @@ class TkMinimization(lammps_step.TkEnergy):
                 self["YZ"].grid(row=row, column=3)
                 self["XZ"].grid(row=row, column=4)
                 self["XY"].grid(row=row, column=5)
-
             row += 1
-
             self["stress"].grid(row=row, column=0, sticky="e")
             self["Sxx"].grid(row=row, column=1, sticky="ew")
-            self["Sxx"].show("combobox")
             self["Syy"].grid(row=row, column=2, sticky="ew")
+            self["Sxx"].show("combobox")
             if not allow_shear:
                 self["Syy"].show("combobox", "units")
-                frame.columnconfigure(1, weight=1, minsize=50, uniform="e")
-                frame.columnconfigure(2, weight=1, minsize=50, uniform="e")
-                frame.columnconfigure(3, weight=1, minsize=50, uniform="e")
+                frame.columnconfigure(1, weight=1)
+                frame.columnconfigure(2, weight=1)
             else:
                 self["Syy"].show("combobox")
-
                 self["Syz"].grid(row=row, column=3, sticky="ew")
                 self["Sxz"].grid(row=row, column=4, sticky="ew")
                 self["Sxy"].grid(row=row, column=5, sticky="ew")
-
                 self["Syz"].show("combobox")
                 self["Sxz"].show("combobox")
                 self["Sxy"].show("combobox", "units")
-
-                frame.columnconfigure(1, weight=1, minsize=50, uniform="e")
-                frame.columnconfigure(2, weight=1, minsize=50, uniform="e")
-                frame.columnconfigure(3, weight=1, minsize=50, uniform="e")
-                frame.columnconfigure(4, weight=1, minsize=50, uniform="e")
-                frame.columnconfigure(5, weight=1, minsize=50, uniform="e")
+                frame.columnconfigure(1, weight=1)
+                frame.columnconfigure(2, weight=1)
+                frame.columnconfigure(3, weight=1)
+                frame.columnconfigure(4, weight=1)
+                frame.columnconfigure(5, weight=1)
             row += 1
         else:
             # if couple == 'none':
@@ -458,9 +432,7 @@ class TkMinimization(lammps_step.TkEnergy):
                 self["YZ"].grid(row=row, column=4)
                 self["XZ"].grid(row=row, column=5)
                 self["XY"].grid(row=row, column=6)
-
             row += 1
-
             self["stress"].grid(row=row, column=0, sticky="e")
             self["Sxx"].grid(row=row, column=1, sticky="ew")
             self["Sxx"].show("combobox")
@@ -469,24 +441,21 @@ class TkMinimization(lammps_step.TkEnergy):
             self["Szz"].grid(row=row, column=3, sticky="ew")
             if not allow_shear:
                 self["Szz"].show("combobox", "units")
-                frame.columnconfigure(1, weight=1, minsize=50, uniform="a")
-                frame.columnconfigure(2, weight=1, minsize=50, uniform="a")
-                frame.columnconfigure(3, weight=1, minsize=50, uniform="a")
+                frame.columnconfigure(1, weight=1)
+                frame.columnconfigure(2, weight=1)
+                frame.columnconfigure(3, weight=1)
             else:
                 self["Szz"].show("combobox")
-
                 self["Syz"].grid(row=row, column=4, sticky="ew")
                 self["Sxz"].grid(row=row, column=5, sticky="ew")
                 self["Sxy"].grid(row=row, column=6, sticky="ew")
-
                 self["Syz"].show("combobox")
                 self["Sxz"].show("combobox")
                 self["Sxy"].show("combobox", "units")
-
-                frame.columnconfigure(1, weight=1, minsize=50, uniform="a")
-                frame.columnconfigure(2, weight=1, minsize=50, uniform="a")
-                frame.columnconfigure(3, weight=1, minsize=50, uniform="a")
-                frame.columnconfigure(4, weight=1, minsize=50, uniform="a")
-                frame.columnconfigure(5, weight=1, minsize=50, uniform="a")
-                frame.columnconfigure(6, weight=1, minsize=50, uniform="a")
+                frame.columnconfigure(1, weight=1)
+                frame.columnconfigure(2, weight=1)
+                frame.columnconfigure(3, weight=1)
+                frame.columnconfigure(4, weight=1)
+                frame.columnconfigure(5, weight=1)
+                frame.columnconfigure(6, weight=1)
             row += 1
