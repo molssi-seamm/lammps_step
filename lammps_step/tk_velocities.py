@@ -2,9 +2,10 @@
 
 """The graphical part of a LAMMPS velocities step"""
 
+import tkinter as tk
+
 import seamm
 import seamm_widgets as sw
-import tkinter as tk
 
 
 class TkVelocities(seamm.TkNode):

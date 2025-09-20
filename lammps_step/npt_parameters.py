@@ -24,14 +24,6 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
                 "small shear stresses."
             ),
         },
-        "keep orthorhombic": {
-            "default": "yes",
-            "kind": "boolean",
-            "format_string": "s",
-            "enumeration": ("no", "yes"),
-            "description": "Let cell become non-orthorhombic",
-            "help_text": "Whether the call angles can change from 90 degrees.",
-        },
         "barostat": {
             "default": "Nose-Hoover",
             "kind": "string",
@@ -50,6 +42,14 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
                 "Change the pressure linearly with time "
                 "during the run, i.e. anneal the system."
             ),
+        },
+        "allow shear": {
+            "default": "no",
+            "kind": "boolean",
+            "format_string": "s",
+            "enumeration": ("no", "yes"),
+            "description": "Allow the cell to shear",
+            "help_text": "Whether the cell angles can change.",
         },
         "use_stress": {
             "default": "isotropic pressure",
@@ -106,24 +106,27 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             ),
         },
         "Sxx,initial": {
-            "default": 1.0,
+            "default": -1.0,
             "kind": "float",
+            "enumeration": ("fixed",),
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Sxx initial:",
             "help_text": "The initial components of the stress tensor.",
         },
         "Syy,initial": {
-            "default": 1.0,
+            "default": -1.0,
             "kind": "float",
+            "enumeration": ("fixed",),
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Syy initial:",
             "help_text": "The initial components of the stress tensor.",
         },
         "Szz,initial": {
-            "default": 1.0,
+            "default": -1.0,
             "kind": "float",
+            "enumeration": ("fixed",),
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Szz initial:",
@@ -132,6 +135,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
         "Sxy,initial": {
             "default": 0.0,
             "kind": "float",
+            "enumeration": ("fixed",),
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Sxy initial:",
@@ -140,6 +144,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
         "Sxz,initial": {
             "default": 0.0,
             "kind": "float",
+            "enumeration": ("fixed",),
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Sxz initial:",
@@ -148,30 +153,34 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
         "Syz,initial": {
             "default": 0.0,
             "kind": "float",
+            "enumeration": ("fixed",),
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Syz initial:",
             "help_text": "The initial components of the stress tensor.",
         },
         "Sxx,final": {
-            "default": 1.0,
+            "default": -1.0,
             "kind": "float",
+            "enumeration": ("fixed",),
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Sxx final:",
             "help_text": "The final components of the stress tensor.",
         },
         "Syy,final": {
-            "default": 1.0,
+            "default": -1.0,
             "kind": "float",
+            "enumeration": ("fixed",),
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Syy final:",
             "help_text": "The final components of the stress tensor.",
         },
         "Szz,final": {
-            "default": 1.0,
+            "default": -1.0,
             "kind": "float",
+            "enumeration": ("fixed",),
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Szz final:",
@@ -181,6 +190,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "default": 0.0,
             "kind": "float",
             "default_units": "atm",
+            "enumeration": ("fixed",),
             "format_string": ".2f",
             "description": "Sxy final:",
             "help_text": "The final components of the stress tensor.",
@@ -188,6 +198,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
         "Sxz,final": {
             "default": 0.0,
             "kind": "float",
+            "enumeration": ("fixed",),
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Sxz final:",
@@ -196,6 +207,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
         "Syz,final": {
             "default": 0.0,
             "kind": "float",
+            "enumeration": ("fixed",),
             "default_units": "atm",
             "format_string": ".2f",
             "description": "Syz final:",
@@ -321,5 +333,13 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
     def __init__(self, defaults={}, data=None):
         """Initialize the instance, by default from the default
         parameters given in the class"""
+
+        # Fix incompatible changes.
+        if data is not None and "keep orthorhombic" in data:
+            tmp = data.pop("keep orthorhombic")
+            if tmp == "yes":
+                data["allow shear"] = {"units": None, "value": "no"}
+            else:
+                data["allow shear"] = {"units": None, "value": "yes"}
 
         super().__init__(defaults={**NPT_Parameters.parameters, **defaults}, data=data)

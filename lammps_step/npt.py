@@ -177,6 +177,10 @@ class NPT(lammps_step.NVT):
 
         self.description.append(__(self.description_text(PP), **PP, indent=4 * " "))
 
+        # May need to force a triclinic cell
+        if P["allow shear"]:
+            self.parent.force_triclinic = True
+
         time = lammps_step.to_lammps_units(P["time"], quantity="time")
         nsteps = round(time / timestep)
 
@@ -270,73 +274,92 @@ class NPT(lammps_step.NVT):
                         level=1,
                         note="Citation for NPT barostat.",
                     )
-        elif P["thermostat"] == "Berendsen":
+        elif P["barostat"] == "Berendsen":
             nfixes += 1
             lines.append(
-                "fix                 {} ".format(nfixes)
-                + "all temp/berendsen "
-                + " {} {} {}".format(T0, T1, Tdamp)
-            )
-            nfixes += 1
-            lines.append("fix                 {} ".format(nfixes) + "all nve")
-        elif "csvr" in P["thermostat"]:
-            seed = P["seed"]
-            nfixes += 1
-            lines.append(
-                "fix                 {} ".format(nfixes)
-                + "all temp/csvr "
-                + " {} {} {} {}".format(T0, T1, Tdamp, seed)
-            )
-            nfixes += 1
-            lines.append("fix                 {} ".format(nfixes) + "all nve")
-        elif "csld" in P["thermostat"]:
-            seed = P["seed"]
-            nfixes += 1
-            lines.append(
-                "fix                 {} ".format(nfixes)
-                + "all temp/csld "
-                + " {} {} {} {}".format(T0, T1, Tdamp, seed)
-            )
-            nfixes += 1
-            lines.append("fix                 {} ".format(nfixes) + "all nve")
-        elif P["thermostat"] == "velocity rescaling":
-            frequency = P["frequency"]
-            nevery = max(1, round(nsteps / (frequency / timestep)))
-            window = lammps_step.to_lammps_units(P["window"], quantity="temperature")
-            fraction = P["fraction"]
-            nfixes += 1
-            lines.append(
-                "fix                 {} ".format(nfixes)
-                + "all temp/rescale "
-                + "{} {} {} {} {}".format(nevery, T0, T1, window, fraction)
-            )
-            nfixes += 1
-            lines.append("fix                 {} ".format(nfixes) + "all nve")
-        elif P["thermostat"] == "Langevin":
-            seed = P["seed"]
-            nfixes += 1
-            lines.append(
-                "fix                 {} ".format(nfixes)
-                + "all langevin "
-                + "{} {} {} {} ".format(T0, T1, Tdamp, seed)
-            )
-            nfixes += 1
-            lines.append("fix                 {} ".format(nfixes) + "all nve")
-        else:
-            raise RuntimeError(
-                "Don't recognize temperature control " + "'{}'".format(P["thermostat"])
+                "fix                 {} all ".format(nfixes)
+                + "press/berendsen "
+                + ptext
+                + " modulus {}".format(modulus)
             )
 
-        # Add the citation for the thermostat
-        metadata = lammps_step.thermostat_metadata
-        for citation in metadata[P["thermostat"]]["references"]:
-            self.references.cite(
-                raw=self._bibliography[citation],
-                alias=citation,
-                module="lammps_step",
-                level=1,
-                note="Citation for thermostat.",
-            )
+            for citation in NPT.methods["Berendsen"]["references"]:
+                self.references.cite(
+                    raw=self._bibliography[citation],
+                    alias=citation,
+                    module="lammps_step",
+                    level=1,
+                    note="Citation for NPT barostat.",
+                )
+            if P["thermostat"] == "Berendsen":
+                nfixes += 1
+                lines.append(
+                    "fix                 {} ".format(nfixes)
+                    + "all temp/berendsen "
+                    + " {} {} {}".format(T0, T1, Tdamp)
+                )
+                nfixes += 1
+                lines.append("fix                 {} ".format(nfixes) + "all nve")
+            elif "csvr" in P["thermostat"]:
+                seed = P["seed"]
+                nfixes += 1
+                lines.append(
+                    "fix                 {} ".format(nfixes)
+                    + "all temp/csvr "
+                    + " {} {} {} {}".format(T0, T1, Tdamp, seed)
+                )
+                nfixes += 1
+                lines.append("fix                 {} ".format(nfixes) + "all nve")
+            elif "csld" in P["thermostat"]:
+                seed = P["seed"]
+                nfixes += 1
+                lines.append(
+                    "fix                 {} ".format(nfixes)
+                    + "all temp/csld "
+                    + " {} {} {} {}".format(T0, T1, Tdamp, seed)
+                )
+                nfixes += 1
+                lines.append("fix                 {} ".format(nfixes) + "all nve")
+            elif P["thermostat"] == "velocity rescaling":
+                frequency = P["frequency"]
+                nevery = max(1, round(nsteps / (frequency / timestep)))
+                window = lammps_step.to_lammps_units(
+                    P["window"], quantity="temperature"
+                )
+                fraction = P["fraction"]
+                nfixes += 1
+                lines.append(
+                    "fix                 {} ".format(nfixes)
+                    + "all temp/rescale "
+                    + "{} {} {} {} {}".format(nevery, T0, T1, window, fraction)
+                )
+                nfixes += 1
+                lines.append("fix                 {} ".format(nfixes) + "all nve")
+            elif P["thermostat"] == "Langevin":
+                seed = P["seed"]
+                nfixes += 1
+                lines.append(
+                    "fix                 {} ".format(nfixes)
+                    + "all langevin "
+                    + "{} {} {} {} ".format(T0, T1, Tdamp, seed)
+                )
+                nfixes += 1
+                lines.append("fix                 {} ".format(nfixes) + "all nve")
+            else:
+                raise RuntimeError(
+                    f"Don't recognize temperature control {P['thermostat']}"
+                )
+
+            # Add the citation for the thermostat
+            metadata = lammps_step.thermostat_metadata
+            for citation in metadata[P["thermostat"]]["references"]:
+                self.references.cite(
+                    raw=self._bibliography[citation],
+                    alias=citation,
+                    module="lammps_step",
+                    level=1,
+                    note="Citation for thermostat.",
+                )
 
         # For the heat flux, if requested, we need extra input
         if P["heat flux"] != "never":
@@ -478,196 +501,138 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
             "use python": False,
         }
 
-    def get_pressure_text(self, P, keep_orthorhombic):
+    def get_pressure_text(self, _P):
         """Work out and return the pressure/stress part of the
         'fix npt' or 'fix berendsen' in LAMMPS
         """
-        system_type = P["system type"]
-        Panneal = P["Panneal"]
+        system_type = _P["system type"]
+        Panneal = _P["Panneal"]
+
         if system_type == "fluid":
-            use_stress = "isotropic pressure"
-            couple = "x, y and z"
-        else:
-            use_stress = P["use_stress"]
-            couple = P["couple"]
-
-        if use_stress == "isotropic pressure":
-            if couple == "x, y and z":
-                if keep_orthorhombic:
-                    ptext = " iso {P0} {P1} {Pdamp}"
-                else:
-                    ptext = (
-                        " couple xyz "
-                        "x {P0} {P1} {Pdamp} "
-                        "y {P0} {P1} {Pdamp} "
-                        "z {P0} {P1} {Pdamp}"
-                    )
-                if not keep_orthorhombic:
-                    ptext += (
-                        " xy 0.0 0.0 {Pdamp} "
-                        "xz 0.0 0.0 {Pdamp} "
-                        "yz 0.0 0.0 {Pdamp}"
-                    )
-            elif couple == "x and y":
-                ptext = (
-                    " couple xy "
-                    "x {P0} {P1} {Pdamp} "
-                    "y {P0} {P1} {Pdamp} "
-                    "z {P0} {P1} {Pdamp}"
-                )
-                if not keep_orthorhombic:
-                    ptext += (
-                        " xy 0.0 0.0 {Pdamp} "
-                        "xz 0.0 0.0 {Pdamp} "
-                        "yz 0.0 0.0 {Pdamp}"
-                    )
-            elif couple == "x and z":
-                ptext = (
-                    " couple xz "
-                    "x {P0} {P1} {Pdamp} "
-                    "y {P0} {P1} {Pdamp} "
-                    "z {P0} {P1} {Pdamp}"
-                )
-                if not keep_orthorhombic:
-                    ptext += (
-                        " xy 0.0 0.0 {Pdamp} "
-                        "xz 0.0 0.0 {Pdamp} "
-                        "yz 0.0 0.0 {Pdamp}"
-                    )
-            elif couple == "y and z":
-                ptext = (
-                    " couple yz "
-                    "x {P0} {P1} {Pdamp} "
-                    "y {P0} {P1} {Pdamp} "
-                    "z {P0} {P1} {Pdamp}"
-                )
-                if not keep_orthorhombic:
-                    ptext += (
-                        " xy 0.0 0.0 {Pdamp} "
-                        "xz 0.0 0.0 {Pdamp} "
-                        "yz 0.0 0.0 {Pdamp}"
-                    )
-            else:
-                if keep_orthorhombic:
-                    ptext = " aniso {P0} {P1} {Pdamp}"
-                else:
-                    ptext = " tri {P0} {P1} {Pdamp}"
-
-            P0 = lammps_step.to_lammps_units(P["Pinitial"], quantity="pressure")
+            P0 = lammps_step.to_lammps_units(_P["Pinitial"], quantity="pressure")
+            Pdamp = lammps_step.to_lammps_units(_P["Pdamp"], quantity="time")
             if Panneal:
-                P1 = lammps_step.to_lammps_units(P["Pfinal"], quantity="pressure")
+                P1 = lammps_step.to_lammps_units(_P["Pfinal"], quantity="pressure")
+                return f" iso {P0:.3f} {P1:.3f} {Pdamp:.3f}"
+            else:
+                return f" iso {P0:.3f} {P0:.3f} {Pdamp:.3f}"
+
+        use_pressure = "pressure" in _P["use_stress"]
+        couple = _P["couple"]
+        allow_shear = _P["allow shear"]
+
+        if couple == "x, y and z":
+            ptext = " couple xyz"
+        elif couple == "x and y":
+            ptext = " couple xy"
+        elif couple == "x and z":
+            ptext = " couple xz "
+        elif couple == "y and z":
+            ptext = " couple yz "
+        else:
+            ptext = " couple none"
+
+        if use_pressure:
+            P0 = lammps_step.to_lammps_units(_P["Pinitial"], quantity="pressure")
+            if Panneal:
+                P1 = lammps_step.to_lammps_units(_P["Pfinal"], quantity="pressure")
             else:
                 P1 = P0
-            Pdamp = lammps_step.to_lammps_units(P["Pdamp"], quantity="time")
+            Pdamp = lammps_step.to_lammps_units(_P["Pdamp"], quantity="time")
 
-            ptext = ptext.format(P0=P0, P1=P1, Pdamp=Pdamp)
+            P0 = round(P0, 3)
+            P1 = round(P1, 3)
+            Pdamp = round(Pdamp, 3)
+
+            ptext += f" x {P0} {P1} {Pdamp} y {P0} {P1} {Pdamp} z {P0} {P1} {Pdamp}"
+            if allow_shear:
+                ptext += f" xy 0.0 0.0 {Pdamp} xz 0.0 0.0 {Pdamp} yz 0.0 0.0 {Pdamp}"
         else:
-            if couple == "x, y and z":
-                ptext = (
-                    " couple = xyz "
-                    "x {Sxx0} {Sxx1} {Dxx} "
-                    "y {Sxx0} {Sxx1} {Dxx} "
-                    "z {Sxx0} {Sxx1} {Dxx}"
-                )
-            elif couple == "x and y":
-                ptext = (
-                    " couple = xy "
-                    "x {Sxx0} {Sxx1} {Dxx} "
-                    "y {Sxx0} {Sxx1} {Dxx} "
-                    "z {Szz0} {Szz1} {Dzz}"
-                )
-            elif couple == "x and z":
-                ptext = (
-                    " couple = xz "
-                    "x {Sxx0} {Sxx1} {Dxx} "
-                    "y {Syy0} {Syy1} {Dyy} "
-                    "z {Sxx0} {Sxx1} {Dxx}"
-                )
-            elif couple == "y and z":
-                ptext = (
-                    " couple = yz "
-                    "x {Sxx0} {Sxx1} {Dxx} "
-                    "y {Syy0} {Syy1} {Dyy} "
-                    "z {Syy0} {Syy1} {Dyy}"
-                )
-            else:
-                # elif couple == 'none':
-                ptext = (
-                    " couple = none "
-                    "x {Sxx0} {Sxx1} {Dxx} "
-                    "y {Syy0} {Syy1} {Dyy} "
-                    "z {Szz0} {Szz1} {Dzz}"
-                )
-
-            if not keep_orthorhombic:
-                ptext += (
-                    " xy {Sxy0} {Sxy1} {Dxy} "
-                    "xz {Sxz0} {Sxz1} {Dxz} "
-                    "yz {Syz0} {Syz1} {Dyz}"
-                )
-
-            Tmp = {}
-            Tmp["Sxx0"] = lammps_step.to_lammps_units(
-                P["Sxx,initial"], quantity="pressure"
-            )
-            Tmp["Syy0"] = lammps_step.to_lammps_units(
-                P["Syy,initial"], quantity="pressure"
-            )
-            Tmp["Szz0"] = lammps_step.to_lammps_units(
-                P["Szz,initial"], quantity="pressure"
-            )
+            Sxx0 = _P["Sxx,initial"]
+            Syy0 = _P["Syy,initial"]
+            Szz0 = _P["Szz,initial"]
+            if Sxx0 != "fixed":
+                Sxx0 = lammps_step.to_lammps_units(Sxx0, quantity="pressure")
+            if Syy0 != "fixed":
+                Syy0 = lammps_step.to_lammps_units(Syy0, quantity="pressure")
+            if Szz0 != "fixed":
+                Szz0 = lammps_step.to_lammps_units(Szz0, quantity="pressure")
             if Panneal:
-                Tmp["Sxx1"] = lammps_step.to_lammps_units(
-                    P["Sxx,final"], quantity="pressure"
-                )
-                Tmp["Syy1"] = lammps_step.to_lammps_units(
-                    P["Syy,final"], quantity="pressure"
-                )
-                Tmp["Szz1"] = lammps_step.to_lammps_units(
-                    P["Szz,final"], quantity="pressure"
-                )
+                Sxx1 = _P["Sxx,final"]
+                Syy1 = _P["Syy,final"]
+                Szz1 = _P["Szz,final"]
+                if Sxx1 != "fixed":
+                    Sxx1 = lammps_step.to_lammps_units(Sxx1, quantity="pressure")
+                if Syy1 != "fixed":
+                    Syy1 = lammps_step.to_lammps_units(Syy1, quantity="pressure")
+                if Szz1 != "fixed":
+                    Szz1 = lammps_step.to_lammps_units(Szz1, quantity="pressure")
             else:
-                Tmp["Sxx1"] = Tmp["Sxx0"]
-                Tmp["Syy1"] = Tmp["Syy0"]
-                Tmp["Szz1"] = Tmp["Szz0"]
-            Tmp["Dxx"] = lammps_step.to_lammps_units(P["Sxx damp"], quantity="pressure")
-            Tmp["Dyy"] = lammps_step.to_lammps_units(P["Syy damp"], quantity="pressure")
-            Tmp["Dzz"] = lammps_step.to_lammps_units(P["Szz damp"], quantity="pressure")
+                Sxx1 = Sxx0
+                Syy1 = Syy0
+                Szz1 = Szz0
+            Dxx = lammps_step.to_lammps_units(_P["Sxx damp"], quantity="pressure")
+            Dyy = lammps_step.to_lammps_units(_P["Syy damp"], quantity="pressure")
+            Dzz = lammps_step.to_lammps_units(_P["Szz damp"], quantity="pressure")
 
-            if not keep_orthorhombic:
-                Tmp["Sxy0"] = lammps_step.to_lammps_units(
-                    P["Sxy,initial"], quantity="pressure"
-                )
-                Tmp["Sxz0"] = lammps_step.to_lammps_units(
-                    P["Sxz,initial"], quantity="pressure"
-                )
-                Tmp["Syz0"] = lammps_step.to_lammps_units(
-                    P["Syz,initial"], quantity="pressure"
-                )
+            if couple == "x, y and z":
+                Syy0 = Szz0 = Sxx0
+                Syy1 = Szz1 = Sxx1
+                Dyy = Dzz = Dxx
+            elif couple == "x and y":
+                Syy0 = Sxx0
+                Syy1 = Sxx1
+                Dyy = Dxx
+            elif couple == "x and z":
+                Szz0 = Sxx0
+                Szz1 = Sxx1
+                Dzz = Dxx
+            elif couple == "y and z":
+                Szz0 = Syy0
+                Szz1 = Szz1
+                Dzz = Dyy
+
+            # LAMMPS uses pressures = -stress, & also format nicely
+            if Sxx0 != "fixed":
+                ptext += f" x {-Sxx0:.3f} {-Sxx1:.3f} {Dxx:.3f} "
+            if Syy0 != "fixed":
+                ptext += f" y {-Syy0:.3f} {-Syy1:.3f} {Dyy:.3f} "
+            if Szz0 != "fixed":
+                ptext += f" z {-Szz0:.3f} {-Szz1:.3f} {Dzz:.3f} "
+
+            if allow_shear:
+                Syz0 = _P["Syz,initial"]
+                Sxz0 = _P["Sxz,initial"]
+                Sxy0 = _P["Sxy,initial"]
+                if Syz0 != "fixed":
+                    Syz0 = lammps_step.to_lammps_units(Syz0, quantity="pressure")
+                if Sxz0 != "fixed":
+                    Sxz0 = lammps_step.to_lammps_units(Sxz0, quantity="pressure")
+                if Sxy0 != "fixed":
+                    Sxy0 = lammps_step.to_lammps_units(Sxy0, quantity="pressure")
                 if Panneal:
-                    Tmp["Sxy1"] = lammps_step.to_lammps_units(
-                        P["Sxy,final"], quantity="pressure"
-                    )
-                    Tmp["Sxz1"] = lammps_step.to_lammps_units(
-                        P["Sxz,final"], quantity="pressure"
-                    )
-                    Tmp["Syz1"] = lammps_step.to_lammps_units(
-                        P["Syz,final"], quantity="pressure"
-                    )
+                    Syz1 = _P["Syz,final"]
+                    Sxz1 = _P["Sxz,final"]
+                    Sxy1 = _P["Sxy,final"]
+                    if Syz1 != "fixed":
+                        Syz1 = lammps_step.to_lammps_units(Syz1, quantity="pressure")
+                    if Sxz1 != "fixed":
+                        Sxz1 = lammps_step.to_lammps_units(Sxz1, quantity="pressure")
+                    if Sxy1 != "fixed":
+                        Sxy1 = lammps_step.to_lammps_units(Sxy1, quantity="pressure")
                 else:
-                    Tmp["Sxy1"] = Tmp["Sxy0"]
-                    Tmp["Sxz1"] = Tmp["Sxz0"]
-                    Tmp["Syz1"] = Tmp["Syz0"]
-                Tmp["Dxy"] = lammps_step.to_lammps_units(
-                    P["Sxy damp"], quantity="pressure"
-                )
-                Tmp["Dxz"] = lammps_step.to_lammps_units(
-                    P["Sxz damp"], quantity="pressure"
-                )
-                Tmp["Dyz"] = lammps_step.to_lammps_units(
-                    P["Syz damp"], quantity="pressure"
-                )
+                    Syz1 = Syz0
+                    Sxz1 = Sxz0
+                    Sxy1 = Sxy0
+                Dyz = lammps_step.to_lammps_units(_P["Syz damp"], quantity="pressure")
+                Dxz = lammps_step.to_lammps_units(_P["Sxz damp"], quantity="pressure")
+                Dxy = lammps_step.to_lammps_units(_P["Sxy damp"], quantity="pressure")
 
-            ptext = ptext.format(**Tmp)
-
+                # LAMMPS uses pressures = -stress, & also format nicely
+                if Syz0 != "fixed":
+                    ptext += f" yz {-Syz0:.3f} {-Syz1:.3f} {Dyz:.3f} "
+                if Sxz0 != "fixed":
+                    ptext += f" xz {-Sxz0:.3f} {-Sxz1:.3f} {Dxz:.3f} "
+                if Sxy0 != "fixed":
+                    ptext += f" xy {-Sxy0:.3f} {-Sxy1:.3f} {Dxy:.3f} "
         return ptext

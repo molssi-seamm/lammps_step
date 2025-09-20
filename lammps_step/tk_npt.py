@@ -4,7 +4,6 @@
 
 import lammps_step
 import seamm_widgets as sw
-import tkinter as tk
 import tkinter.ttk as ttk
 
 
@@ -65,6 +64,7 @@ class TkNPT(lammps_step.TkNVT):
             "system type",
             "barostat",
             "Panneal",
+            "allow shear",
             "use_stress",
             "couple",
             "nreset",
@@ -80,12 +80,33 @@ class TkNPT(lammps_step.TkNVT):
         )
 
         # The last widgets
-        for key in lammps_step.NPT_Parameters.parameters:
-            if key not in self:
-                if key[0] == "S":
-                    self[key] = P[key].widget(s_frame, width=8, unitswidth=6)
-                else:
-                    self[key] = P[key].widget(s_frame)
+        for key in ("Pinitial", "Pfinal", "Pdamp"):
+            self[key] = P[key].widget(s_frame)
+        for key in (
+            "Sxx,initial",
+            "Syy,initial",
+            "Szz,initial",
+            "Sxy,initial",
+            "Sxz,initial",
+            "Syz,initial",
+            "Sxx,final",
+            "Syy,final",
+            "Szz,final",
+            "Sxy,final",
+            "Sxz,final",
+            "Syz,final",
+        ):
+            self[key] = P[key].widget(s_frame, unitswidth=6, width=8)
+
+        for key in (
+            "Sxx damp",
+            "Syy damp",
+            "Szz damp",
+            "Sxy damp",
+            "Sxz damp",
+            "Syz damp",
+        ):
+            self[key] = P[key].widget(s_frame, unitswidth=6, width=8)
 
         # and labels for the directions, couplings, etc.
         for text in (
@@ -110,21 +131,74 @@ class TkNPT(lammps_step.TkNVT):
         # and adding bindings for appropriate widgets
         for key in ("system type", "barostat"):
             self[key].combobox.bind("<<ComboboxSelected>>", self.reset_pressure_frame)
-        for key in ("Panneal", "use_stress", "couple"):
+        for key in ("Panneal", "use_stress", "allow shear", "couple"):
             self[key].combobox.bind("<<ComboboxSelected>>", self.reset_stress_frame)
+        # Keep the units of stress and pressure consistent throughout.
+        for key in (
+            "Pinitial",
+            "Pfinal",
+            "Sxx,initial",
+            "Syy,initial",
+            "Szz,initial",
+            "Sxy,initial",
+            "Sxz,initial",
+            "Syz,initial",
+            "Sxx,final",
+            "Syy,final",
+            "Szz,final",
+            "Sxy,final",
+            "Sxz,final",
+            "Syz,final",
+        ):
+            self[key].units.bind("<<ComboboxSelected>>", self._handle_units)
+
+    def _handle_units(self, event=None):
+        """Callback used to keep the pressure units consistent.
+
+        When the units of a stress or the pressure is changed, sets all the others to
+        the same units. This is needed because most of the units are hidden.
+
+        Parameters
+        ----------
+        event : tkinter event object
+        """
+
+        units = event.widget.get()
+
+        for key in (
+            "Pinitial",
+            "Pfinal",
+            "Sxx,initial",
+            "Syy,initial",
+            "Szz,initial",
+            "Sxy,initial",
+            "Sxz,initial",
+            "Syz,initial",
+            "Sxx,final",
+            "Syy,final",
+            "Szz,final",
+            "Sxy,final",
+            "Sxz,final",
+            "Syz,final",
+        ):
+            self[key].units.set(units)
 
     def reset_dialog(self, widget=None):
         """Layout the widgets as needed for the current state"""
 
         row = super().reset_dialog()
 
-        # Reset the trajectory frame to span 2 columns
-        self["control_frame"].grid(row=0, column=0, columnspan=2)
-
-        self["temperature_frame"].grid(row=row, column=0, sticky=tk.N, padx=10, pady=10)
+        self["temperature_frame"].grid(row=0, column=1, sticky="n", padx=10, pady=10)
         self.reset_temperature_frame()
 
-        self["pressure_frame"].grid(row=row, column=1, sticky=tk.N, padx=10, pady=10)
+        self["pressure_frame"].grid(
+            row=row,
+            column=0,
+            columnspan=2,
+            sticky="n",
+            padx=10,
+            pady=10,
+        )
         self.reset_pressure_frame()
 
         row += 1
@@ -133,6 +207,10 @@ class TkNPT(lammps_step.TkNVT):
         if self.node.calculation == "npt":
             self["structure"].grid(row=row, column=0, columnspan=2)
             row += 1
+
+        frame = self["frame"]
+        frame.columnconfigure(1, weight=0, uniform="a")
+        frame.columnconfigure(1, weight=1, uniform="a")
 
         return row
 
@@ -150,50 +228,32 @@ class TkNPT(lammps_step.TkNVT):
             slave.grid_forget()
 
         row = 0
+        widgets = []
 
         # and place the needed ones back in
-        self["system type"].grid(row=row, column=0, sticky=tk.W)
-        row += 1
-
-        self["barostat"].grid(row=row, column=0, sticky=tk.W)
-        row += 1
-
-        self["Panneal"].grid(row=row, column=0, sticky=tk.W)
-        row += 1
-
-        if system_type == "fluid":
-            sw.align_labels(
-                (self["system type"], self["barostat"], self["Panneal"]),
-                sticky=tk.E,
-            )
-        else:
-            self["use_stress"].grid(row=row, column=0, sticky=tk.W)
+        for key in ("system type", "barostat", "Panneal"):
+            self[key].grid(row=row, column=0, sticky="ew")
+            widgets.append(self[key])
             row += 1
 
-            self["couple"].grid(row=row, column=0, sticky=tk.W)
-            row += 1
+        if system_type != "fluid":
+            for key in ("allow shear", "use_stress", "couple"):
+                self[key].grid(row=row, column=0, sticky="ew")
+                widgets.append(self[key])
+                row += 1
 
-            sw.align_labels(
-                (
-                    self["system type"],
-                    self["barostat"],
-                    self["Panneal"],
-                    self["use_stress"],
-                    self["couple"],
-                ),
-                sticky=tk.E,
-            )
+        sw.align_labels(widgets, sticky="e")
 
-        self["stress_frame"].grid(row=row, column=0, sticky=tk.W)
+        self["stress_frame"].grid(row=row, column=0, sticky="ew")
         row += 1
 
         if barostat == "Nose-Hoover":
-            self["nreset"].grid(row=row, column=0, sticky=tk.W)
+            self["nreset"].grid(row=row, column=0, sticky="ew")
             row += 1
-            self["mtk"].grid(row=row, column=0, sticky=tk.W)
-            sw.align_labels((self["nreset"], self["mtk"]), sticky=tk.E)
+            self["mtk"].grid(row=row, column=0, sticky="ew")
+            sw.align_labels((self["nreset"], self["mtk"]), sticky="e")
         else:
-            self["modulus"].grid(row=row, column=0, sticky=tk.W)
+            self["modulus"].grid(row=row, column=0, sticky="ew")
 
         # and lay out the pressure or stress terms
         self.reset_stress_frame()
@@ -219,6 +279,7 @@ class TkNPT(lammps_step.TkNVT):
         system_type = self["system type"].get()
         barostat = self["barostat"].get()
         Panneal = self["Panneal"].get()
+        allow_shear = self["allow shear"].get() != "no"
         if system_type == "fluid":
             use_stress = "isotropic pressure"
             couple = "x, y and z"
@@ -231,188 +292,140 @@ class TkNPT(lammps_step.TkNVT):
         for slave in frame.grid_slaves():
             slave.grid_forget()
 
+        frame.columnconfigure(1, weight=0)
+        frame.columnconfigure(2, weight=0)
+        frame.columnconfigure(3, weight=0)
+        frame.columnconfigure(4, weight=0)
+        frame.columnconfigure(5, weight=0)
+        frame.columnconfigure(6, weight=0)
+
         row = 0
         # and place the needed ones back in
-
-        keep_orthorhombic = self["keep orthorhombic"].get()
-
         if use_stress != "isotropic pressure":
             # Annealing and stresses
             if couple == "x, y and z":
                 # all stresses
                 self["XX+YY+ZZ"].grid(row=row, column=1)
-                if not keep_orthorhombic:
+                if allow_shear:
                     self["XY"].grid(row=row, column=2)
                     self["XZ"].grid(row=row, column=3)
                     self["YZ"].grid(row=row, column=4)
-
                 row += 1
-
-                self["initial stress"].grid(row=row, column=0, sticky=tk.E)
-                if keep_orthorhombic:
-                    self["Sxx,initial"].grid(
-                        row=row, column=1, columnspan=3, sticky=tk.W
-                    )
-                    self["Sxx,initial"].show("entry", "units")
-                    frame.columnconfigure(1, weight=1, uniform="b")
-                    frame.columnconfigure(2, weight=1, uniform="b")
+                self["initial stress"].grid(row=row, column=0, sticky="e")
+                if not allow_shear:
+                    self["Sxx,initial"].grid(row=row, column=1, sticky="ew")
+                    self["Sxx,initial"].show("combobox", "units")
+                    frame.columnconfigure(1, weight=1, minsize=10)
                 else:
-                    self["Sxx,initial"].grid(row=row, column=1)
-                    self["Sxx,initial"].show("entry")
-
-                    self["Sxy,initial"].grid(row=row, column=2)
-                    self["Sxz,initial"].grid(row=row, column=3)
-                    self["Syz,initial"].grid(
-                        row=row, column=4, columnspan=3, sticky=tk.W
-                    )
-
-                    self["Sxy,initial"].show("entry")
-                    self["Sxz,initial"].show("entry")
-                    self["Syz,initial"].show("entry", "units")
-
-                    frame.columnconfigure(1, weight=1, uniform="b")
-                    frame.columnconfigure(2, weight=1, uniform="b")
-                    frame.columnconfigure(3, weight=1, uniform="b")
-                    frame.columnconfigure(4, weight=1, uniform="b")
-                    frame.columnconfigure(5, weight=1, uniform="b")
-                    frame.columnconfigure(6, weight=1, uniform="b")
+                    self["Sxx,initial"].grid(row=row, column=1, sticky="ew")
+                    self["Sxx,initial"].show("combobox")
+                    self["Sxy,initial"].grid(row=row, column=2, sticky="ew")
+                    self["Sxz,initial"].grid(row=row, column=3, sticky="ew")
+                    self["Syz,initial"].grid(row=row, column=4, sticky="ew")
+                    self["Sxy,initial"].show("combobox")
+                    self["Sxz,initial"].show("combobox")
+                    self["Syz,initial"].show("combobox", "units")
+                    frame.columnconfigure(1, weight=1, minsize=10)
+                    frame.columnconfigure(2, weight=1, minsize=10)
+                    frame.columnconfigure(3, weight=1, minsize=10)
+                    frame.columnconfigure(4, weight=1, minsize=10)
                 row += 1
-
                 if Panneal != "no":
-                    self["final stress"].grid(row=row, column=0, sticky=tk.E)
-                    if keep_orthorhombic:
-                        self["Sxx,final"].grid(
-                            row=row, column=1, columnspan=3, sticky=tk.W
-                        )
-                        self["Sxx,final"].show("entry", "units")
+                    self["final stress"].grid(row=row, column=0, sticky="e")
+                    if not allow_shear:
+                        self["Sxx,final"].grid(row=row, column=1, sticky="ew")
+                        self["Sxx,final"].show("combobox", "units")
                     else:
-                        self["Sxx,final"].grid(row=row, column=1)
-                        self["Sxx,final"].show("entry")
-
-                        self["Sxy,final"].grid(row=row, column=2)
-                        self["Sxz,final"].grid(row=row, column=3)
-                        self["Syz,final"].grid(
-                            row=row, column=4, columnspan=3, sticky=tk.W
-                        )
-
-                        self["Sxy,final"].show("entry")
-                        self["Sxz,final"].show("entry")
-                        self["Syz,final"].show("entry", "units")
-
+                        self["Sxx,final"].grid(row=row, column=1, sticky="ew")
+                        self["Sxx,final"].show("combobox")
+                        self["Sxy,final"].grid(row=row, column=2, sticky="ew")
+                        self["Sxz,final"].grid(row=row, column=3, sticky="ew")
+                        self["Syz,final"].grid(row=row, column=4, sticky="ew")
+                        self["Sxy,final"].show("combobox")
+                        self["Sxz,final"].show("combobox")
+                        self["Syz,final"].show("combobox", "units")
                     row += 1
-
                 if barostat == "Nose-Hoover":
-                    self["damping"].grid(row=row, column=0, sticky=tk.E)
-                    if keep_orthorhombic:
-                        self["Sxx damp"].grid(
-                            row=row, column=1, columnspan=3, sticky=tk.W
-                        )
+                    self["damping"].grid(row=row, column=0, sticky="e")
+                    if not allow_shear:
+                        self["Sxx damp"].grid(row=row, column=1, sticky="ew")
                         self["Sxx damp"].show("entry", "units")
                     else:
-                        self["Sxx damp"].grid(row=row, column=1)
+                        self["Sxx damp"].grid(row=row, column=1, sticky="ew")
                         self["Sxx damp"].show("entry")
-
-                        self["Sxy damp"].grid(row=row, column=2)
-                        self["Sxz damp"].grid(row=row, column=3)
-                        self["Syz damp"].grid(
-                            row=row, column=4, columnspan=3, sticky=tk.W
-                        )
-
+                        self["Sxy damp"].grid(row=row, column=2, sticky="ew")
+                        self["Sxz damp"].grid(row=row, column=3, sticky="ew")
+                        self["Syz damp"].grid(row=row, column=4, sticky="ew")
                         self["Sxy damp"].show("entry")
                         self["Sxz damp"].show("entry")
                         self["Syz damp"].show("entry", "units")
+                row += 1
             elif couple == "x and y":
                 # couple xx and yy
                 self["XX+YY"].grid(row=row, column=1)
                 self["ZZ"].grid(row=row, column=2)
-                if not keep_orthorhombic:
+                if allow_shear:
                     self["XY"].grid(row=row, column=3)
                     self["XZ"].grid(row=row, column=4)
                     self["YZ"].grid(row=row, column=5)
-
                 row += 1
-
                 if Panneal != "no":
-                    self["initial stress"].grid(row=row, column=0, sticky=tk.E)
+                    self["initial stress"].grid(row=row, column=0, sticky="e")
                 else:
-                    self["stress"].grid(row=row, column=0, sticky=tk.E)
-                self["Sxx,initial"].grid(row=row, column=1)
-
-                self["Sxx,initial"].show("entry")
-                if keep_orthorhombic:
-                    self["Szz,initial"].grid(
-                        row=row, column=2, columnspan=3, sticky=tk.W
-                    )
-                    self["Szz,initial"].show("entry", "units")
-                    frame.columnconfigure(1, weight=1, uniform="c")
-                    frame.columnconfigure(2, weight=1, uniform="c")
-                    frame.columnconfigure(3, weight=1, uniform="c")
+                    self["stress"].grid(row=row, column=0, sticky="e")
+                self["Sxx,initial"].grid(row=row, column=1, sticky="ew")
+                self["Sxx,initial"].show("combobox")
+                self["Szz,initial"].grid(row=row, column=2, sticky="ew")
+                if not allow_shear:
+                    self["Szz,initial"].show("combobox", "units")
+                    frame.columnconfigure(1, weight=1, minsize=10)
+                    frame.columnconfigure(2, weight=1, minsize=10)
                 else:
-                    self["Szz,initial"].show("entry")
-
-                    self["Sxy,initial"].grid(row=row, column=3)
-                    self["Sxz,initial"].grid(row=row, column=4)
-                    self["Syz,initial"].grid(
-                        row=row, column=5, columnspan=3, sticky=tk.W
-                    )
-
-                    self["Sxy,initial"].show("entry")
-                    self["Sxz,initial"].show("entry")
-                    self["Syz,initial"].show("entry", "units")
-
-                    frame.columnconfigure(1, weight=1, uniform="c")
-                    frame.columnconfigure(2, weight=1, uniform="c")
-                    frame.columnconfigure(3, weight=1, uniform="c")
-                    frame.columnconfigure(4, weight=1, uniform="c")
-                    frame.columnconfigure(5, weight=1, uniform="c")
-                    frame.columnconfigure(6, weight=1, uniform="c")
+                    self["Szz,initial"].show("combobox")
+                    self["Sxy,initial"].grid(row=row, column=3, sticky="ew")
+                    self["Sxz,initial"].grid(row=row, column=4, sticky="ew")
+                    self["Syz,initial"].grid(row=row, column=5, sticky="ew")
+                    self["Sxy,initial"].show("combobox")
+                    self["Sxz,initial"].show("combobox")
+                    self["Syz,initial"].show("combobox", "units")
+                    frame.columnconfigure(1, weight=1, minsize=10)
+                    frame.columnconfigure(2, weight=1, minsize=10)
+                    frame.columnconfigure(3, weight=1, minsize=10)
+                    frame.columnconfigure(4, weight=1, minsize=10)
+                    frame.columnconfigure(5, weight=1, minsize=10)
                 row += 1
-
                 if Panneal != "no":
-                    self["final stress"].grid(row=row, column=0, sticky=tk.E)
-                    self["Sxx,final"].grid(row=row, column=1)
-
-                    self["Sxx,final"].show("entry")
-                    if keep_orthorhombic:
-                        self["Szz,final"].grid(
-                            row=row, column=2, columnspan=3, sticky=tk.W
-                        )
-                        self["Szz,final"].show("entry", "units")
+                    self["final stress"].grid(row=row, column=0, sticky="e")
+                    self["Sxx,final"].grid(row=row, column=1, sticky="ew")
+                    self["Sxx,final"].show("combobox")
+                    if not allow_shear:
+                        self["Szz,final"].grid(row=row, column=2, sticky="ew")
+                        self["Szz,final"].show("combobox", "units")
                     else:
-                        self["Szz,final"].grid(row=row, column=2)
-                        self["Szz,final"].show("entry")
-
-                        self["Sxy,final"].grid(row=row, column=3)
-                        self["Sxz,final"].grid(row=row, column=4)
-                        self["Syz,final"].grid(
-                            row=row, column=5, columnspan=3, sticky=tk.W
-                        )
-
-                        self["Sxy,final"].show("entry")
-                        self["Sxz,final"].show("entry")
-                        self["Syz,final"].show("entry", "units")
-
+                        self["Szz,final"].grid(row=row, column=2, sticky="ew")
+                        self["Szz,final"].show("combobox")
+                        self["Sxy,final"].grid(row=row, column=3, sticky="ew")
+                        self["Sxz,final"].grid(row=row, column=4, sticky="ew")
+                        self["Syz,final"].grid(row=row, column=5, sticky="ew")
+                        self["Sxy,final"].show("combobox")
+                        self["Sxz,final"].show("combobox")
+                        self["Syz,final"].show("combobox", "units")
                     row += 1
-
                 if barostat == "Nose-Hoover":
-                    self["damping"].grid(row=row, column=0, sticky=tk.E)
-                    self["Sxx damp"].grid(row=row, column=1)
+                    self["damping"].grid(row=row, column=0, sticky="e")
+                    self["Sxx damp"].grid(row=row, column=1, sticky="ew")
 
                     self["Sxx damp"].show("entry")
-                    if keep_orthorhombic:
-                        self["Szz damp"].grid(
-                            row=row, column=2, columnspan=3, sticky=tk.W
-                        )
+                    if not allow_shear:
+                        self["Szz damp"].grid(row=row, column=2, sticky="ew")
                         self["Szz damp"].show("entry", "units")
                     else:
-                        self["Szz damp"].grid(row=row, column=2)
+                        self["Szz damp"].grid(row=row, column=2, sticky="ew")
                         self["Szz damp"].show("entry")
 
-                        self["Sxy damp"].grid(row=row, column=3)
-                        self["Sxz damp"].grid(row=row, column=4)
-                        self["Syz damp"].grid(
-                            row=row, column=5, columnspan=3, sticky=tk.W
-                        )
+                        self["Sxy damp"].grid(row=row, column=3, sticky="ew")
+                        self["Sxz damp"].grid(row=row, column=4, sticky="ew")
+                        self["Syz damp"].grid(row=row, column=5, sticky="ew")
 
                         self["Sxy damp"].show("entry")
                         self["Sxz damp"].show("entry")
@@ -420,189 +433,134 @@ class TkNPT(lammps_step.TkNVT):
             elif couple == "x and z":
                 # couple xx and zz
                 self["XX+ZZ"].grid(row=row, column=1)
-                self["YY"].grid(row=row, column=2)
-                if not keep_orthorhombic:
-                    self["XY"].grid(row=row, column=3)
-                    self["XZ"].grid(row=row, column=4)
-                    self["YZ"].grid(row=row, column=5)
-
+                self["YY"].grid(row=row, column=2, sticky="ew")
+                if allow_shear:
+                    self["XY"].grid(row=row, column=3, sticky="ew")
+                    self["XZ"].grid(row=row, column=4, sticky="ew")
+                    self["YZ"].grid(row=row, column=5, sticky="ew")
                 row += 1
-
                 if Panneal != "no":
-                    self["initial stress"].grid(row=row, column=0, sticky=tk.E)
+                    self["initial stress"].grid(row=row, column=0, sticky="e")
                 else:
-                    self["stress"].grid(row=row, column=0, sticky=tk.E)
-                self["Sxx,initial"].grid(row=row, column=1)
-
-                self["Sxx,initial"].show("entry")
-                if keep_orthorhombic:
-                    self["Syy,initial"].grid(
-                        row=row, column=2, columnspan=3, sticky=tk.W
-                    )
-                    self["Syy,initial"].show("entry", "units")
-                    frame.columnconfigure(1, weight=1, uniform="d")
-                    frame.columnconfigure(2, weight=1, uniform="d")
-                    frame.columnconfigure(3, weight=1, uniform="d")
+                    self["stress"].grid(row=row, column=0, sticky="e")
+                self["Sxx,initial"].grid(row=row, column=1, sticky="ew")
+                self["Sxx,initial"].show("combobox")
+                self["Syy,initial"].grid(row=row, column=2, sticky="ew")
+                if not allow_shear:
+                    self["Syy,initial"].show("combobox", "units")
+                    frame.columnconfigure(1, weight=1, minsize=10)
+                    frame.columnconfigure(2, weight=1, minsize=10)
                 else:
-                    self["Syy,initial"].grid(row=row, column=2)
-                    self["Syy,initial"].show("entry")
-
-                    self["Sxy,initial"].grid(row=row, column=3)
-                    self["Sxz,initial"].grid(row=row, column=4)
-                    self["Syz,initial"].grid(
-                        row=row, column=5, columnspan=3, sticky=tk.W
-                    )
-
-                    self["Sxy,initial"].show("entry")
-                    self["Sxz,initial"].show("entry")
-                    self["Syz,initial"].show("entry", "units")
-
-                    frame.columnconfigure(1, weight=1, uniform="d")
-                    frame.columnconfigure(2, weight=1, uniform="d")
-                    frame.columnconfigure(3, weight=1, uniform="d")
-                    frame.columnconfigure(4, weight=1, uniform="d")
-                    frame.columnconfigure(5, weight=1, uniform="d")
-                    frame.columnconfigure(6, weight=1, uniform="d")
+                    self["Syy,initial"].show("combobox")
+                    self["Sxy,initial"].grid(row=row, column=3, sticky="ew")
+                    self["Sxz,initial"].grid(row=row, column=4, sticky="ew")
+                    self["Syz,initial"].grid(row=row, column=5, sticky="ew")
+                    self["Sxy,initial"].show("combobox")
+                    self["Sxz,initial"].show("combobox")
+                    self["Syz,initial"].show("combobox", "units")
+                    frame.columnconfigure(1, weight=1)
+                    frame.columnconfigure(2, weight=1)
+                    frame.columnconfigure(3, weight=1)
+                    frame.columnconfigure(4, weight=1)
+                    frame.columnconfigure(5, weight=1)
                 row += 1
-
                 if Panneal != "no":
-                    self["final stress"].grid(row=row, column=0, sticky=tk.E)
-                    self["Sxx,final"].grid(row=row, column=1)
-
-                    self["Sxx,final"].show("entry")
-                    if keep_orthorhombic:
-                        self["Syy,final"].grid(
-                            row=row, column=2, columnspan=3, sticky=tk.W
-                        )
-                        self["Syy,final"].show("entry", "units")
+                    self["final stress"].grid(row=row, column=0, sticky="e")
+                    self["Sxx,final"].grid(row=row, column=1, sticky="ew")
+                    self["Sxx,final"].show("combobox")
+                    self["Syy,final"].grid(row=row, column=2, sticky="ew")
+                    if not allow_shear:
+                        self["Syy,final"].show("combobox", "units")
                     else:
-                        self["Syy,final"].grid(row=row, column=2)
-                        self["Syy,final"].show("entry")
-
-                        self["Sxy,final"].grid(row=row, column=3)
-                        self["Sxz,final"].grid(row=row, column=4)
-                        self["Syz,final"].grid(
-                            row=row, column=5, columnspan=3, sticky=tk.W
-                        )
-
-                        self["Sxy,final"].show("entry")
-                        self["Sxz,final"].show("entry")
-                        self["Syz,final"].show("entry", "units")
+                        self["Syy,final"].show("combobox")
+                        self["Sxy,final"].grid(row=row, column=3, sticky="ew")
+                        self["Sxz,final"].grid(row=row, column=4, sticky="ew")
+                        self["Syz,final"].grid(row=row, column=5, sticky="ew")
+                        self["Sxy,final"].show("combobox")
+                        self["Sxz,final"].show("combobox")
+                        self["Syz,final"].show("combobox", "units")
                     row += 1
-
                 if barostat == "Nose-Hoover":
-                    self["damping"].grid(row=row, column=0, sticky=tk.E)
-                    self["Sxx damp"].grid(row=row, column=1)
-
+                    self["damping"].grid(row=row, column=0, sticky="e")
+                    self["Sxx damp"].grid(row=row, column=1, sticky="ew")
                     self["Sxx damp"].show("entry")
-                    if keep_orthorhombic:
-                        self["Syy damp"].grid(
-                            row=row, column=2, columnspan=3, sticky=tk.W
-                        )
+                    self["Syy damp"].grid(row=row, column=2, sticky="ew")
+                    if not allow_shear:
                         self["Syy damp"].show("entry", "units")
                     else:
-                        self["Syy damp"].grid(row=row, column=2)
                         self["Syy damp"].show("entry")
-
-                        self["Sxy damp"].grid(row=row, column=3)
-                        self["Sxz damp"].grid(row=row, column=4)
-                        self["Syz damp"].grid(row=row, column=5)
-
+                        self["Sxy damp"].grid(row=row, column=3, sticky="ew")
+                        self["Sxz damp"].grid(row=row, column=4, sticky="ew")
+                        self["Syz damp"].grid(row=row, column=5, sticky="ew")
                         self["Sxy damp"].show("entry")
                         self["Sxz damp"].show("entry")
                         self["Syz damp"].show("entry", "units")
             elif couple == "y and z":
                 # couple yy and zz
                 self["XX"].grid(row=row, column=1)
-                self["YY+ZZ"].grid(row=row, column=2)
-                if not keep_orthorhombic:
-                    self["XY"].grid(row=row, column=3)
-                    self["XZ"].grid(row=row, column=4)
-                    self["YZ"].grid(row=row, column=5)
-
+                self["YY+ZZ"].grid(row=row, column=2, sticky="ew")
+                if allow_shear:
+                    self["XY"].grid(row=row, column=3, sticky="ew")
+                    self["XZ"].grid(row=row, column=4, sticky="ew")
+                    self["YZ"].grid(row=row, column=5, sticky="ew")
                 row += 1
-
                 if Panneal != "no":
-                    self["initial stress"].grid(row=row, column=0, sticky=tk.E)
+                    self["initial stress"].grid(row=row, column=0, sticky="e")
                 else:
-                    self["stress"].grid(row=row, column=0, sticky=tk.E)
-                self["Sxx,initial"].grid(row=row, column=1)
-
-                self["Sxx,initial"].show("entry")
-                if keep_orthorhombic:
-                    self["Syy,initial"].grid(
-                        row=row, column=2, columnspan=3, sticky=tk.W
-                    )
-                    self["Syy,initial"].show("entry", "units")
-                    frame.columnconfigure(1, weight=1, uniform="e")
-                    frame.columnconfigure(2, weight=1, uniform="e")
-                    frame.columnconfigure(3, weight=1, uniform="e")
+                    self["stress"].grid(row=row, column=0, sticky="e")
+                self["Sxx,initial"].grid(row=row, column=1, sticky="ew")
+                self["Sxx,initial"].show("combobox")
+                self["Syy,initial"].grid(row=row, column=2, sticky="ew")
+                if not allow_shear:
+                    self["Syy,initial"].show("combobox", "units")
+                    frame.columnconfigure(1, weight=1, minsize=10)
+                    frame.columnconfigure(2, weight=1, minsize=10)
                 else:
-                    self["Syy,initial"].grid(row=row, column=2)
-                    self["Syy,initial"].show("entry")
+                    self["Syy,initial"].show("combobox")
 
-                    self["Sxy,initial"].grid(row=row, column=3)
-                    self["Sxz,initial"].grid(row=row, column=4)
-                    self["Syz,initial"].grid(row=row, column=5)
+                    self["Sxy,initial"].grid(row=row, column=3, sticky="ew")
+                    self["Sxz,initial"].grid(row=row, column=4, sticky="ew")
+                    self["Syz,initial"].grid(row=row, column=5, sticky="ew")
 
-                    self["Sxy,initial"].show("entry")
-                    self["Sxz,initial"].show("entry")
-                    self["Syz,initial"].show("entry", "units")
+                    self["Sxy,initial"].show("combobox")
+                    self["Sxz,initial"].show("combobox")
+                    self["Syz,initial"].show("combobox", "units")
 
-                    frame.columnconfigure(1, weight=1, uniform="e")
-                    frame.columnconfigure(2, weight=1, uniform="e")
-                    frame.columnconfigure(3, weight=1, uniform="e")
-                    frame.columnconfigure(4, weight=1, uniform="e")
-                    frame.columnconfigure(5, weight=1, uniform="e")
-                    frame.columnconfigure(6, weight=1, uniform="e")
+                    frame.columnconfigure(1, weight=1, minsize=10)
+                    frame.columnconfigure(2, weight=1, minsize=10)
+                    frame.columnconfigure(3, weight=1, minsize=10)
+                    frame.columnconfigure(4, weight=1, minsize=10)
+                    frame.columnconfigure(5, weight=1, minsize=10)
                 row += 1
-
                 if Panneal != "no":
-                    self["final stress"].grid(row=row, column=0, sticky=tk.E)
-                    self["Sxx,final"].grid(row=row, column=1)
-
-                    self["Sxx,final"].show("entry")
-                    if keep_orthorhombic:
-                        self["Syy,final"].grid(
-                            row=row, column=2, columnspan=3, sticky=tk.W
-                        )
-                        self["Syy,final"].show("entry", "units")
+                    self["final stress"].grid(row=row, column=0, sticky="e")
+                    self["Sxx,final"].grid(row=row, column=1, sticky="ew")
+                    self["Sxx,final"].show("combobox")
+                    self["Syy,final"].grid(row=row, column=2, sticky="ew")
+                    if not allow_shear:
+                        self["Syy,final"].show("combobox", "units")
                     else:
-                        self["Syy,final"].grid(row=row, column=2)
-                        self["Syy,final"].show("entry")
-
-                        self["Sxy,final"].grid(row=row, column=3)
-                        self["Sxz,final"].grid(row=row, column=4)
-                        self["Syz,final"].grid(
-                            row=row, column=5, columnspan=3, sticky=tk.W
-                        )
-
-                        self["Sxy,final"].show("entry")
-                        self["Sxz,final"].show("entry")
-                        self["Syz,final"].show("entry", "units")
-
+                        self["Syy,final"].show("combobox")
+                        self["Sxy,final"].grid(row=row, column=3, sticky="ew")
+                        self["Sxz,final"].grid(row=row, column=4, sticky="ew")
+                        self["Syz,final"].grid(row=row, column=5)
+                        self["Sxy,final"].show("combobox")
+                        self["Sxz,final"].show("combobox")
+                        self["Syz,final"].show("combobox", "units")
                     row += 1
-
                 if barostat == "Nose-Hoover":
-                    self["damping"].grid(row=row, column=0, sticky=tk.E)
-                    self["Sxx damp"].grid(row=row, column=1)
+                    self["damping"].grid(row=row, column=0, sticky="e")
+                    self["Sxx damp"].grid(row=row, column=1, sticky="ew")
 
                     self["Sxx damp"].show("entry")
-                    if keep_orthorhombic:
-                        self["Syy damp"].grid(
-                            row=row, column=2, columnspan=3, sticky=tk.W
-                        )
+                    self["Syy damp"].grid(row=row, column=2, sticky="ew")
+                    if not allow_shear:
                         self["Syy damp"].show("entry", "units")
                     else:
-                        self["Syy damp"].grid(row=row, column=2)
                         self["Syy damp"].show("entry")
-
-                        self["Sxy damp"].grid(row=row, column=3)
-                        self["Sxz damp"].grid(row=row, column=4)
-                        self["Syz damp"].grid(
-                            row=row, column=5, columnspan=3, sticky=tk.W
-                        )
-
+                        self["Sxy damp"].grid(row=row, column=3, sticky="ew")
+                        self["Sxz damp"].grid(row=row, column=4, sticky="ew")
+                        self["Syz damp"].grid(row=row, column=5, sticky="ew")
                         self["Sxy damp"].show("entry")
                         self["Sxz damp"].show("entry")
                         self["Syz damp"].show("entry", "units")
@@ -612,105 +570,74 @@ class TkNPT(lammps_step.TkNVT):
                 self["XX"].grid(row=row, column=1)
                 self["YY"].grid(row=row, column=2)
                 self["ZZ"].grid(row=row, column=3)
-                if not keep_orthorhombic:
+                if allow_shear:
                     self["XY"].grid(row=row, column=4)
                     self["XZ"].grid(row=row, column=5)
                     self["YZ"].grid(row=row, column=6)
-
                 row += 1
-
                 if Panneal != "no":
-                    self["initial stress"].grid(row=row, column=0, sticky=tk.E)
+                    self["initial stress"].grid(row=row, column=0, sticky="e")
                 else:
-                    self["stress"].grid(row=row, column=0, sticky=tk.E)
-                self["Sxx,initial"].grid(row=row, column=1)
-                self["Syy,initial"].grid(row=row, column=2)
-
-                self["Sxx,initial"].show("entry")
-                self["Syy,initial"].show("entry")
-                if keep_orthorhombic:
-                    self["Szz,initial"].grid(
-                        row=row, column=3, columnspan=3, sticky=tk.W
-                    )
-                    self["Szz,initial"].show("entry", "units")
-                    frame.columnconfigure(1, weight=1, uniform="a")
-                    frame.columnconfigure(2, weight=1, uniform="a")
-                    frame.columnconfigure(3, weight=1, uniform="a")
-                    frame.columnconfigure(4, weight=1, uniform="a")
+                    self["stress"].grid(row=row, column=0, sticky="e")
+                self["Sxx,initial"].grid(row=row, column=1, sticky="ew")
+                self["Syy,initial"].grid(row=row, column=2, sticky="ew")
+                self["Szz,initial"].grid(row=row, column=3, sticky="ew")
+                self["Sxx,initial"].show("combobox")
+                self["Syy,initial"].show("combobox")
+                if not allow_shear:
+                    self["Szz,initial"].show("combobox", "units")
+                    frame.columnconfigure(1, weight=1, minsize=10)
+                    frame.columnconfigure(2, weight=1, minsize=10)
+                    frame.columnconfigure(3, weight=1, minsize=10)
                 else:
-                    self["Szz,initial"].grid(row=row, column=3)
-                    self["Szz,initial"].show("entry")
-
-                    self["Sxy,initial"].grid(row=row, column=4)
-                    self["Sxz,initial"].grid(row=row, column=5)
-                    self["Syz,initial"].grid(
-                        row=row, column=6, columnspan=3, sticky=tk.W
-                    )
-
-                    self["Sxy,initial"].show("entry")
-                    self["Sxz,initial"].show("entry")
-                    self["Syz,initial"].show("entry", "units")
-
-                    frame.columnconfigure(1, weight=1, uniform="a")
-                    frame.columnconfigure(2, weight=1, uniform="a")
-                    frame.columnconfigure(3, weight=1, uniform="a")
-                    frame.columnconfigure(4, weight=1, uniform="a")
-                    frame.columnconfigure(5, weight=1, uniform="a")
-                    frame.columnconfigure(6, weight=1, uniform="a")
-                    frame.columnconfigure(7, weight=1, uniform="a")
+                    self["Szz,initial"].show("combobox")
+                    self["Sxy,initial"].grid(row=row, column=4, sticky="ew")
+                    self["Sxz,initial"].grid(row=row, column=5, sticky="ew")
+                    self["Syz,initial"].grid(row=row, column=6, sticky="ew")
+                    self["Sxy,initial"].show("combobox")
+                    self["Sxz,initial"].show("combobox")
+                    self["Syz,initial"].show("combobox", "units")
+                    frame.columnconfigure(1, weight=1, minsize=10)
+                    frame.columnconfigure(2, weight=1, minsize=10)
+                    frame.columnconfigure(3, weight=1, minsize=10)
+                    frame.columnconfigure(4, weight=1, minsize=10)
+                    frame.columnconfigure(5, weight=1, minsize=10)
+                    frame.columnconfigure(6, weight=1, minsize=10)
                 row += 1
-
                 if Panneal != "no":
-                    self["final stress"].grid(row=row, column=0, sticky=tk.E)
-                    self["Sxx,final"].grid(row=row, column=1)
-                    self["Syy,final"].grid(row=row, column=2)
-
-                    self["Sxx,final"].show("entry")
-                    self["Syy,final"].show("entry")
-
-                    if keep_orthorhombic:
-                        self["Szz,final"].grid(
-                            row=row, column=3, columnspan=3, sticky=tk.W
-                        )
-                        self["Szz,final"].show("entry", "units")
+                    self["final stress"].grid(row=row, column=0, sticky="e")
+                    self["Sxx,final"].grid(row=row, column=1, sticky="ew")
+                    self["Syy,final"].grid(row=row, column=2, sticky="ew")
+                    self["Szz,final"].grid(row=row, column=3, sticky="ew")
+                    self["Sxx,final"].show("combobox")
+                    self["Syy,final"].show("combobox")
+                    if not allow_shear:
+                        self["Szz,final"].show("combobox", "units")
                     else:
-                        self["Szz,final"].grid(row=row, column=3)
-                        self["Szz,final"].show("entry")
-
-                        self["Sxy,final"].grid(row=row, column=4)
-                        self["Sxz,final"].grid(row=row, column=5)
-                        self["Syz,final"].grid(
-                            row=row, column=6, columnspan=3, sticky=tk.W
-                        )
-
-                        self["Sxy,final"].show("entry")
-                        self["Sxz,final"].show("entry")
-                        self["Syz,final"].show("entry", "units")
+                        self["Szz,final"].show("combobox")
+                        self["Sxy,final"].grid(row=row, column=4, sticky="ew")
+                        self["Sxz,final"].grid(row=row, column=5, sticky="ew")
+                        self["Syz,final"].grid(row=row, column=6, sticky="ew")
+                        self["Sxy,final"].show("combobox")
+                        self["Sxz,final"].show("combobox")
+                        self["Syz,final"].show("combobox", "units")
                     row += 1
 
                 if barostat == "Nose-Hoover":
-                    self["damping"].grid(row=row, column=0, sticky=tk.E)
-                    self["Sxx damp"].grid(row=row, column=1)
-                    self["Syy damp"].grid(row=row, column=2)
-                    self["Szz damp"].grid(row=row, column=3)
-
+                    self["damping"].grid(row=row, column=0, sticky="e")
+                    self["Sxx damp"].grid(row=row, column=1, sticky="ew")
+                    self["Syy damp"].grid(row=row, column=2, sticky="ew")
+                    self["Szz damp"].grid(row=row, column=3, sticky="ew")
+                    self["Szz damp"].grid(row=row, column=3, sticky="ew")
                     self["Sxx damp"].show("entry")
                     self["Syy damp"].show("entry")
-                    if keep_orthorhombic:
-                        self["Szz damp"].grid(
-                            row=row, column=3, columnspan=3, sticky=tk.W
-                        )
+                    if not allow_shear:
                         self["Szz damp"].show("entry", "units")
                     else:
-                        self["Szz damp"].grid(row=row, column=3)
                         self["Szz damp"].show("entry")
-
-                        self["Sxy damp"].grid(row=row, column=4)
-                        self["Sxz damp"].grid(row=row, column=5)
-                        self["Syz damp"].grid(
-                            row=row, column=6, columnspan=3, sticky=tk.W
-                        )
-
+                        self["Sxy damp"].grid(row=row, column=4, sticky="ew")
+                        self["Sxz damp"].grid(row=row, column=5, sticky="ew")
+                        self["Syz damp"].grid(row=row, column=6, sticky="ew")
                         self["Sxy damp"].show("entry")
                         self["Sxz damp"].show("entry")
                         self["Syz damp"].show("entry", "units")
@@ -720,20 +647,20 @@ class TkNPT(lammps_step.TkNVT):
                 self["Pinitial"].label.configure(text="Initial pressure:")
             else:
                 self["Pinitial"].label.configure(text="Pressure:")
-            self["Pinitial"].grid(row=row, column=0, sticky=tk.W)
+            self["Pinitial"].grid(row=row, column=0, sticky="ew")
             widgets.append(self["Pinitial"])
             row += 1
 
             if Panneal != "no":
-                self["Pfinal"].grid(row=row, column=0, sticky=tk.W)
+                self["Pfinal"].grid(row=row, column=0, sticky="ew")
                 widgets.append(self["Pfinal"])
                 row += 1
 
             if barostat == "Nose-Hoover":
-                self["Pdamp"].grid(row=row, column=0, sticky=tk.W)
+                self["Pdamp"].grid(row=row, column=0, sticky="ew")
                 widgets.append(self["Pdamp"])
                 row += 1
-            sw.align_labels(widgets, sticky=tk.E)
+            sw.align_labels(widgets, sticky="e")
 
     def handle_dialog(self, result):
         """Handle when the user clicks a button on the dialog,

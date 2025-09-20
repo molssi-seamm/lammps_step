@@ -81,36 +81,6 @@ class Energy(seamm.Node):
 
         return self.header + "\n" + __(text, indent=4 * " ").__str__()
 
-    def get_input(self, extras=None):
-        """Get the input for an energy calculation for LAMMPS"""
-
-        P = self.parameters.values_to_dict()
-
-        # Have to fix formatting for printing...
-        PP = dict(P)
-        for key in PP:
-            if isinstance(PP[key], units_class):
-                PP[key] = "{:~P}".format(PP[key])
-
-        self.description = []
-        self.description.append(__(self.description_text(PP), **PP, indent=4 * " "))
-
-        lines = []
-
-        filename = f"@{self._id[-1]}+forces.dump"
-        lines.append("")
-        lines.append(f"# {self.header}")
-        lines.append("")
-        lines.append(f"dump                1 all custom 1 {filename} id fx fy fz")
-        lines.append("run                 0")
-        lines.append("undump              1")
-
-        return {
-            "script": lines,
-            "postscript": None,
-            "use python": False,
-        }
-
     def analyze(self, indent="", data={}, table=None, output=[], **kwargs):
         """Parse the output and generating the text output and store the
         data in variables for other stages to access
@@ -253,3 +223,33 @@ class Energy(seamm.Node):
             data=data | self.results,
             create_tables=self.parameters["create tables"].get(),
         )
+
+    def get_input(self, extras=None):
+        """Get the input for an energy calculation for LAMMPS"""
+
+        P = self.parameters.values_to_dict()
+
+        # Have to fix formatting for printing...
+        PP = dict(P)
+        for key in PP:
+            if isinstance(PP[key], units_class):
+                PP[key] = "{:~P}".format(PP[key])
+
+        self.description = []
+        self.description.append(__(self.description_text(PP), **PP, indent=4 * " "))
+
+        lines = []
+
+        filename = f"@{self._id[-1]}+forces.dump"
+        lines.append("")
+        lines.append(f"# {self.header}")
+        lines.append("")
+        lines.append(f"dump                1 all custom 1 {filename} id fx fy fz")
+        lines.append("run                 0")
+        lines.append("undump              1")
+
+        return {
+            "script": lines,
+            "postscript": None,
+            "use python": False,
+        }
