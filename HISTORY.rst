@@ -1,6 +1,9 @@
 =======
 History
 =======
+2025.9.21 -- Bugfix: error in NPT dynamics
+   * Fixed an error that slipped through and caused the code to crash.
+     
 2025.9.20 -- Completed handling of stress in NPT dynamics
    * Added the ability to define the offdiagonal stresses XY, XZ, and YZ, as well as to
      fix any of the directions. This is now handled in the same way as the Minimization
