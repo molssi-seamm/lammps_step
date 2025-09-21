@@ -150,8 +150,6 @@ class NPT(lammps_step.NVT):
     def get_input(self, extras=None):
         """Get the input for an NPT dynamics run in LAMMPS"""
 
-        keep_orthorhombic = True
-
         self.description = []
 
         _, configuration = self.get_system_configuration()
@@ -193,7 +191,7 @@ class NPT(lammps_step.NVT):
             modulus = lammps_step.to_lammps_units(P["modulus"], quantity="pressure")
 
         # Work out the pressure/stress part of the command
-        ptext = self.get_pressure_text(P, keep_orthorhombic)
+        ptext = self.get_pressure_text(P)
 
         thermo_properties = (
             "time temp press etotal ke pe ebond "
