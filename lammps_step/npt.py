@@ -199,10 +199,14 @@ class NPT(lammps_step.NVT):
         )
 
         properties = (
-            "v_time v_temp v_press v_vol v_density v_cella v_cellb "
-            "v_cellc v_etotal v_ke v_pe v_epair"
+            "v_time v_temp v_press v_vol v_density "
+            "v_etotal v_ke v_pe v_epair "
+            "v_cella v_cellb v_cellc"
         )
-        title2 = "tstep t T P V density a b c Etot Eke Epe Epair"
+        title2 = "tstep t T P V density Etot Eke Epe Epair a b c"
+        if P["allow shear"]:
+            properties += " v_cellalpha v_cellbeta v_cellgamma"
+            title2 += " alpha beta gamma"
         if configuration.periodicity == 3:
             properties += " v_sxx v_syy v_szz v_sxy v_sxz v_syz"
             title2 += " Sxx Syy Szz Sxy Sxz Syz"

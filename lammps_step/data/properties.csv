@@ -11,6 +11,18 @@ Property,Type,Units,Description,URL
 "cell_c, stderr#LAMMPS#{model}",float,Å,"The standard error of the cell_c.",https://en.wikipedia.org/wiki/Standard_error
 "cell_c, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the cell_c.",https://en.wikipedia.org/wiki/Autocorrelation
 "cell_c, inefficiency#LAMMPS#{model}",float,,"The statistical inefficiency of the cell_c sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+"cell_alpha#LAMMPS#{model}",float,degree,"The cell angle alpha.",https://en.wikipedia.org/wiki/Unit_cell
+"cell_alpha, stderr#LAMMPS#{model}",float,degree,"The standard error of the cell angle alpha.",https://en.wikipedia.org/wiki/Standard_error
+"cell_alpha, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the cell angle alpha.",https://en.wikipedia.org/wiki/Autocorrelation
+"cell_alpha, inefficiency#LAMMPS#{model}",float,,"The statistical inefficiency of the cell angle alpha sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+"cell_beta#LAMMPS#{model}",float,degree,"The cell angle beta.",https://en.wikipedia.org/wiki/Unit_cell
+"cell_beta, stderr#LAMMPS#{model}",float,degree,"The standard error of the cell angle beta.",https://en.wikipedia.org/wiki/Standard_error
+"cell_beta, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the cell angle beta.",https://en.wikipedia.org/wiki/Autocorrelation
+"cell_beta, inefficiency#LAMMPS#{model}",float,,"The statistical inefficiency of the cell angle beta sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
+"cell_gamma#LAMMPS#{model}",float,degree,"The cell angle gamma.",https://en.wikipedia.org/wiki/Unit_cell
+"cell_gamma, stderr#LAMMPS#{model}",float,degree,"The standard error of the cell angle gamma.",https://en.wikipedia.org/wiki/Standard_error
+"cell_gamma, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the cell angle gamma.",https://en.wikipedia.org/wiki/Autocorrelation
+"cell_gamma, inefficiency#LAMMPS#{model}",float,,"The statistical inefficiency of the cell angle gamma sampling.",https://en.wikipedia.org/wiki/Efficiency_(statistics)
 "density#LAMMPS#{model}",float,g/mL,"The density.",https://en.wikipedia.org/wiki/Density
 "density, stderr#LAMMPS#{model}",float,g/mL,"The standard error of the density.",https://en.wikipedia.org/wiki/Standard_error
 "density, tau#LAMMPS#{model}",float,fs,"The autocorrelation time of the density.",https://en.wikipedia.org/wiki/Autocorrelation
