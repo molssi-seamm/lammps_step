@@ -1,6 +1,10 @@
 =======
 History
 =======
+2025.9.21.1 -- Added cell angle parameters to properties
+   * The cell lengths, but not angles, were available as properties. This update adds
+     the angles.
+     
 2025.9.21 -- Bugfix: error in NPT dynamics
    * Fixed an error that slipped through and caused the code to crash.
      
