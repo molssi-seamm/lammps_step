@@ -1,6 +1,10 @@
 =======
 History
 =======
+2025.9.24 -- Bugfix: Error with cell angles for sheared cells
+   * Fixed an error with sheared cells that actualy had 90 degree angles, which were
+     incorrectly made to be 0 degress :-)
+     
 2025.9.21.1 -- Added cell angle parameters to properties
    * The cell lengths, but not angles, were available as properties. This update adds
      the angles.

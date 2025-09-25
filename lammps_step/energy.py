@@ -222,6 +222,7 @@ class Energy(seamm.Node):
             configuration=configuration,
             data=data | self.results,
             create_tables=self.parameters["create tables"].get(),
+            printer=printer,
         )
 
     def get_input(self, extras=None):

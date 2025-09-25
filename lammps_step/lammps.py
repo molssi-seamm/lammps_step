@@ -378,9 +378,9 @@ class LAMMPS(seamm.Node):
             a = lx
             b = ly
             c = lz
-            alpha = 0.0
-            beta = 0.0
-            gamma = 0.0
+            alpha = 90.0
+            beta = 90.0
+            gamma = 90.0
         else:
             a = lx
             b = sqrt(ly**2 + xy**2)
