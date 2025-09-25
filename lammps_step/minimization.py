@@ -350,7 +350,7 @@ class Minimization(lammps_step.Energy):
             printer.normal("")
 
         if configuration is not None:
-            self.store_results(configuration=configuration, data=data)
+            self.store_results(configuration=configuration, data=data, printer=printer)
 
     def description_text(self, P=None):
         """Create the text description of what this step will do."""
