@@ -3,7 +3,7 @@ History
 =======
 2025.11.5 -- Bugfix: Fixed errors with trajectories using OpenKIM potentials
    * Fixed an error writing the dumpfile for trajectories for e.g. MEAM potentials where
-     there are no charges, and the Opne KIM atom tpye does not support charges on the
+     there are no charges, and the Open KIM atom type does not support charges on the
      atoms.
    * Fixed an error with the element labels for OpenKIM potentials.
 
