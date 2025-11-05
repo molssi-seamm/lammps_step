@@ -766,10 +766,16 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
                 n = max(1, nsteps // P["trajectory number of samples"])
             ndumps += 1
             filename = f"@{self._id[-1]}+trajectory.dump_trj.gz"
-            line = (
-                f"dump                {ndumps} all custom {n} {filename} id element "
-                "q xu yu zu"
-            )
+            if "charges" in self.parent.eex:
+                line = (
+                    f"dump                {ndumps} all custom {n} {filename} id element"
+                    " q xu yu zu"
+                )
+            else:
+                line = (
+                    f"dump                {ndumps} all custom {n} {filename} id element"
+                    " xu yu zu"
+                )
             if P["trajectory forces"]:
                 line += " fx fy fz"
             if P["trajectory velocities"]:

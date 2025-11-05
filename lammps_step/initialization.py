@@ -718,7 +718,6 @@ class Initialization(seamm.Node):
         # The elements used for e.g. dump statements
         elements = atoms.symbols
         eex["elements"] = []
-        eex["elements"].extend(elements)
 
         # The periodicity & cell parameters
         periodicity = eex["periodicity"] = configuration.periodicity
@@ -734,6 +733,7 @@ class Initialization(seamm.Node):
             if element in atom_types:
                 index = atom_types.index(element) + 1
             else:
+                eex["elements"].append(element)
                 atom_types.append(element)
                 index = len(atom_types)
                 masses.append(

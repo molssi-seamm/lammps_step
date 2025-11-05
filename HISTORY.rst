@@ -1,6 +1,12 @@
 =======
 History
 =======
+2025.11.5 -- Bugfix: Fixed errors with trajectories using OpenKIM potentials
+   * Fixed an error writing the dumpfile for trajectories for e.g. MEAM potentials where
+     there are no charges, and the Opne KIM atom tpye does not support charges on the
+     atoms.
+   * Fixed an error with the element labels for OpenKIM potentials.
+
 2025.9.24 -- Bugfix: Error with cell angles for sheared cells
    * Fixed an error with sheared cells that actualy had 90 degree angles, which were
      incorrectly made to be 0 degress :-)
