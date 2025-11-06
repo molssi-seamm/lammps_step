@@ -1046,14 +1046,14 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
             # The energy is the potential, not total energy which includes kinetic
             efact = Q_("kcal/mol").m_as("eV")
             line += f" REF_energy={efact*float(data['Epe']):.4f}"
-        if "Pxx" in data:
+        if "Sxx" in data:
             sfact = Q_("atm").m_as("eV/Å^3")
             Sxx = f"{sfact*float(data['Sxx']):.7f}"
             Syy = f"{sfact*float(data['Syy']):.7f}"
             Szz = f"{sfact*float(data['Szz']):.7f}"
             Syz = f"{sfact*float(data['Syz']):.7f}"
             Sxz = f"{sfact*float(data['Sxz']):.7f}"
-            Sxy = f"{sfact*float(data['sxy']):.7f}"
+            Sxy = f"{sfact*float(data['Sxy']):.7f}"
             line += f' REF_stress="{Sxx} {Syy} {Szz} {Syz} {Sxz} {Sxy}" pbc="T T T"'
         else:
             line += ' pbc="F F F"'

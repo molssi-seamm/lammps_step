@@ -1,6 +1,10 @@
 =======
 History
 =======
+2025.11.6 -- Bugfix: Error in writing extxyz trajecotry files.
+   * A typo in the name of stress variables casued the extxyz trajectory file to omit
+     the stress and periodicity.
+     
 2025.11.5 -- Bugfix: Fixed errors with trajectories using OpenKIM potentials
    * Fixed an error writing the dumpfile for trajectories for e.g. MEAM potentials where
      there are no charges, and the Open KIM atom type does not support charges on the
