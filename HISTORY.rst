@@ -1,6 +1,10 @@
 =======
 History
 =======
+2025.11.6 -- Bugfix: Error in writing extxyz trajectory files.
+    * Fixed the condition check from "Pxx" to "Sxx" to properly detect stress data
+    * Corrected the case of the stress component variable from 'sxy' to 'Sxy' for consistency
+     
 2025.11.5 -- Bugfix: Fixed errors with trajectories using OpenKIM potentials
    * Fixed an error writing the dumpfile for trajectories for e.g. MEAM potentials where
      there are no charges, and the Open KIM atom type does not support charges on the
