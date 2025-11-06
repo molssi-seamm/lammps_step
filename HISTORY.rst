@@ -1,9 +1,9 @@
 =======
 History
 =======
-2025.11.6 -- Bugfix: Error in writing extxyz trajecotry files.
-   * A typo in the name of stress variables casued the extxyz trajectory file to omit
-     the stress and periodicity.
+2025.11.6 -- Bugfix: Error in writing extxyz trajectory files.
+    * Fixed the condition check from "Pxx" to "Sxx" to properly detect stress data
+    * Corrected the case of the stress component variable from 'sxy' to 'Sxy' for consistency
      
 2025.11.5 -- Bugfix: Fixed errors with trajectories using OpenKIM potentials
    * Fixed an error writing the dumpfile for trajectories for e.g. MEAM potentials where
