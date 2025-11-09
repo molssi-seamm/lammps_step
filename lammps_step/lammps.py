@@ -1960,6 +1960,17 @@ class LAMMPS(seamm.Node):
 
             self.logger.info("Analyzing {}, nsamples = {}".format(column, len(yy)))
 
+            # Change from the units LAMMPS is using to the ones that we want
+            if meta_units not in ("???", "º"):
+                try:
+                    factor = lammps_step.from_lammps_units(1, meta_units)
+                    yy *= factor.magnitude
+                except Exception:
+                    raise RuntimeError(
+                        "Cannot convert LAMMPS units for column '{column}' to "
+                        "{meta_units}. Please notify support of this error!"
+                    )
+
             # compute indices of uncorrelated timeseries using pymbar
             # Their algorithm is quadratic in length of Y unless you
             # use 'nskip'. I set it so there are about 100 time origins, so

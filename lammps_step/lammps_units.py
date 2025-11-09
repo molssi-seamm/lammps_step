@@ -9,6 +9,7 @@ unit_systems = {
     "real": {
         "mass": "grams/mole",
         "distance": "angstroms",
+        "volume": "angstroms^3",
         "time": "femtoseconds",
         "energy": "kcal/mole",
         "velocity": "angstroms/femtosecond",
@@ -25,6 +26,7 @@ unit_systems = {
     "metal": {
         "mass": "grams/mole",
         "distance": "angstroms",
+        "volume": "angstroms^3",
         "time": "picoseconds",
         "energy": "eV",
         "velocity": "angstroms/picosecond",
@@ -41,6 +43,7 @@ unit_systems = {
     "si": {
         "mass": "kilograms",
         "distance": "meters",
+        "volume": "meters^3",
         "time": "seconds",
         "energy": "joules",
         "velocity": "meters/second",
@@ -57,6 +60,7 @@ unit_systems = {
     "cgs": {
         "mass": "grams",
         "distance": "centimeters",
+        "volume": "centimeters^3",
         "time": "seconds",
         "energy": "ergs",
         "velocity": "centimeters/second",
@@ -73,6 +77,7 @@ unit_systems = {
     "electron": {
         "mass": "amu",
         "distance": "bohr",
+        "volume": "bohr^3",
         "time": "femtoseconds",
         "energy": "hartrees",
         "velocity": "bohr/a_u_time",
@@ -86,6 +91,7 @@ unit_systems = {
     "micro": {
         "mass": "picograms",
         "distance": "micrometers",
+        "volume": "micrometers^3",
         "time": "microseconds",
         "energy": "picogram*micrometer^2/microsecond^2",
         "velocity": "micrometers/microsecond",
@@ -102,6 +108,7 @@ unit_systems = {
     "nano": {
         "mass": "attograms",
         "distance": "nanometers",
+        "volume": "nanometers^3",
         "time": "nanoseconds",
         "energy": "attogram*nanometer^2/nanosecond^2",
         "velocity": "nanometers/nanosecond",
@@ -148,6 +155,7 @@ quantity_to_dimensionality = {
     ],
     "density": ["[mass] / [length] ** 3"],
     "dipole moment": ["[current] * [length] * [time]"],
+    "volume": ["[length] ** 3"],
 }
 
 dimensionality_to_quantity = {
@@ -173,6 +181,7 @@ dimensionality_to_quantity = {
     "[length] * [mass] / [current] / [time] ** 3": ["electric field"],
     "[mass] ** 0.5 / [length] ** 0.5 / [time]": ["electric field"],
     "[mass] / [length] ** 3": ["density"],
+    "[length] ** 3": ["volume"],
 }
 
 
