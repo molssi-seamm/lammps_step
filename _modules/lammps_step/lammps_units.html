@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps_units &#8212; SEAMM LAMMPS Plug-in 2025.11.6 documentation</title>
+    <title>lammps_step.lammps_units &#8212; SEAMM LAMMPS Plug-in 2025.11.9 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=a525cc99"></script>
+    <script src="../../_static/documentation_options.js?v=4d3f6f5b"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.11.6" />
+  <meta name="docsearch:version" content="2025.11.9" />
   </head>
   
   
@@ -480,6 +480,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="s2">&quot;real&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;mass&quot;</span><span class="p">:</span> <span class="s2">&quot;grams/mole&quot;</span><span class="p">,</span>
         <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="s2">&quot;angstroms&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="s2">&quot;angstroms^3&quot;</span><span class="p">,</span>
         <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;femtoseconds&quot;</span><span class="p">,</span>
         <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="s2">&quot;kcal/mole&quot;</span><span class="p">,</span>
         <span class="s2">&quot;velocity&quot;</span><span class="p">:</span> <span class="s2">&quot;angstroms/femtosecond&quot;</span><span class="p">,</span>
@@ -496,6 +497,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="s2">&quot;metal&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;mass&quot;</span><span class="p">:</span> <span class="s2">&quot;grams/mole&quot;</span><span class="p">,</span>
         <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="s2">&quot;angstroms&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="s2">&quot;angstroms^3&quot;</span><span class="p">,</span>
         <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;picoseconds&quot;</span><span class="p">,</span>
         <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="s2">&quot;eV&quot;</span><span class="p">,</span>
         <span class="s2">&quot;velocity&quot;</span><span class="p">:</span> <span class="s2">&quot;angstroms/picosecond&quot;</span><span class="p">,</span>
@@ -512,6 +514,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="s2">&quot;si&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;mass&quot;</span><span class="p">:</span> <span class="s2">&quot;kilograms&quot;</span><span class="p">,</span>
         <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="s2">&quot;meters&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="s2">&quot;meters^3&quot;</span><span class="p">,</span>
         <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;seconds&quot;</span><span class="p">,</span>
         <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="s2">&quot;joules&quot;</span><span class="p">,</span>
         <span class="s2">&quot;velocity&quot;</span><span class="p">:</span> <span class="s2">&quot;meters/second&quot;</span><span class="p">,</span>
@@ -528,6 +531,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="s2">&quot;cgs&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;mass&quot;</span><span class="p">:</span> <span class="s2">&quot;grams&quot;</span><span class="p">,</span>
         <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="s2">&quot;centimeters&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="s2">&quot;centimeters^3&quot;</span><span class="p">,</span>
         <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;seconds&quot;</span><span class="p">,</span>
         <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="s2">&quot;ergs&quot;</span><span class="p">,</span>
         <span class="s2">&quot;velocity&quot;</span><span class="p">:</span> <span class="s2">&quot;centimeters/second&quot;</span><span class="p">,</span>
@@ -544,6 +548,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="s2">&quot;electron&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;mass&quot;</span><span class="p">:</span> <span class="s2">&quot;amu&quot;</span><span class="p">,</span>
         <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="s2">&quot;bohr&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="s2">&quot;bohr^3&quot;</span><span class="p">,</span>
         <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;femtoseconds&quot;</span><span class="p">,</span>
         <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="s2">&quot;hartrees&quot;</span><span class="p">,</span>
         <span class="s2">&quot;velocity&quot;</span><span class="p">:</span> <span class="s2">&quot;bohr/a_u_time&quot;</span><span class="p">,</span>
@@ -557,6 +562,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="s2">&quot;micro&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;mass&quot;</span><span class="p">:</span> <span class="s2">&quot;picograms&quot;</span><span class="p">,</span>
         <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="s2">&quot;micrometers&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="s2">&quot;micrometers^3&quot;</span><span class="p">,</span>
         <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;microseconds&quot;</span><span class="p">,</span>
         <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="s2">&quot;picogram*micrometer^2/microsecond^2&quot;</span><span class="p">,</span>
         <span class="s2">&quot;velocity&quot;</span><span class="p">:</span> <span class="s2">&quot;micrometers/microsecond&quot;</span><span class="p">,</span>
@@ -573,6 +579,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="s2">&quot;nano&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;mass&quot;</span><span class="p">:</span> <span class="s2">&quot;attograms&quot;</span><span class="p">,</span>
         <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="s2">&quot;nanometers&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="s2">&quot;nanometers^3&quot;</span><span class="p">,</span>
         <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;nanoseconds&quot;</span><span class="p">,</span>
         <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="s2">&quot;attogram*nanometer^2/nanosecond^2&quot;</span><span class="p">,</span>
         <span class="s2">&quot;velocity&quot;</span><span class="p">:</span> <span class="s2">&quot;nanometers/nanosecond&quot;</span><span class="p">,</span>
@@ -619,6 +626,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="p">],</span>
     <span class="s2">&quot;density&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;[mass] / [length] ** 3&quot;</span><span class="p">],</span>
     <span class="s2">&quot;dipole moment&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;[current] * [length] * [time]&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;[length] ** 3&quot;</span><span class="p">],</span>
 <span class="p">}</span>
 
 <span class="n">dimensionality_to_quantity</span> <span class="o">=</span> <span class="p">{</span>
@@ -644,6 +652,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="s2">&quot;[length] * [mass] / [current] / [time] ** 3&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;electric field&quot;</span><span class="p">],</span>
     <span class="s2">&quot;[mass] ** 0.5 / [length] ** 0.5 / [time]&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;electric field&quot;</span><span class="p">],</span>
     <span class="s2">&quot;[mass] / [length] ** 3&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;density&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;[length] ** 3&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;volume&quot;</span><span class="p">],</span>
 <span class="p">}</span>
 
 
