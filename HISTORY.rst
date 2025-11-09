@@ -2,9 +2,18 @@
 History
 =======
 2025.11.9 -- Bugfix: Error with units in trajectories when using OpenKIM
-    * Many of the potentials in the OpenKIM database use "metal" units in LAMMPS. The
-      trajectory analysis has now been fixed to correctly convert from the "metal" units
-      to the units used in SEAMM.
+
+     This release adds support for volume units across all LAMMPS unit systems to fix
+     a bug in trajectory analysis when using OpenKIM potentials that use "metal" units.
+     The changes enable proper unit conversion for volume quantities during trajectory
+     analysis.
+
+     Key changes
+     -----------
+     * Added "volume" definitions to all seven LAMMPS unit systems
+     * Added volume dimensionality mappings in the unit conversion dictionaries
+     * Implemented unit conversion logic in trajectory analysis to convert from LAMMPS
+       units to SEAMM units
       
 2025.11.6 -- Bugfix: Error in writing extxyz trajectory files.
     * Fixed the condition check from "Pxx" to "Sxx" to properly detect stress data

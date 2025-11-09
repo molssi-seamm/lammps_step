@@ -1967,8 +1967,8 @@ class LAMMPS(seamm.Node):
                     yy *= factor.magnitude
                 except Exception:
                     raise RuntimeError(
-                        "Cannot convert LAMMPS units for column '{column}' to "
-                        "{meta_units}. Please notify support of this error!"
+                        f"Cannot convert LAMMPS units for column '{column}' to "
+                        f"{meta_units}. Please notify support of this error!"
                     )
 
             # compute indices of uncorrelated timeseries using pymbar
