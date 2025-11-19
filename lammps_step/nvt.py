@@ -219,8 +219,8 @@ class NVT(lammps_step.NVE):
         properties = "v_time v_temp v_press v_etotal v_ke v_pe v_epair"
         title2 = "tstep t T P Etot Eke Epe Epair"
         if configuration.periodicity == 3:
-            properties += " v_sxx v_syy v_szz v_sxy v_sxz v_syz"
-            title2 += " Sxx Syy Szz Sxy Sxz Syz"
+            properties += " v_sxx v_syy v_szz v_syz v_sxz v_sxy"
+            title2 += " Sxx Syy Szz Syz Sxz Sxy"
         if self.parent.have_dreiding_hbonds:
             thermo_properties += " v_N_hbond v_E_hbond"
             properties += " v_N_hbond v_E_hbond"

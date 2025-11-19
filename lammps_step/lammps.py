@@ -224,9 +224,9 @@ class LAMMPS(seamm.Node):
         "Sxx": "atm",
         "Syy": "atm",
         "Szz": "atm",
-        "Sxy": "atm",
-        "Sxz": "atm",
         "Syz": "atm",
+        "Sxz": "atm",
+        "Sxy": "atm",
     }
     display_title = {
         "T": "Temperature",
@@ -256,9 +256,9 @@ class LAMMPS(seamm.Node):
         "Sxx": "Sxx",
         "Syy": "Syy",
         "Szz": "Szz",
-        "Sxy": "Sxy",
-        "Sxz": "Sxz",
         "Syz": "Syz",
+        "Sxz": "Sxz",
+        "Sxy": "Sxy",
     }
 
     def __init__(
@@ -1858,6 +1858,26 @@ class LAMMPS(seamm.Node):
                     for key in ("stderr", "tau", "inefficiency", "n_samples"):
                         if key in v:
                             values[f"{k},{key}"] = v[key]
+
+                # Get the stress vector is the stresses exist
+                stress = []
+                tmp = {
+                    "stderr": [],
+                    "tau": [],
+                    "inefficiency": [],
+                    "n_samples": [],
+                }
+                for key in ("Sxx", "Syy", "Szz", "Syz", "Sxz", "Sxy"):
+                    if key in values:
+                        stress.append(values[key])
+                        for item in tmp.keys():
+                            if f"{key},{item}" in values:
+                                tmp[item].append(values[f"{key},{item}"])
+                if len(stress) == 6:
+                    values["stress"] = stress
+                for item, vector in tmp.items():
+                    if len(vector) == 6:
+                        values[f"stress,{item}"] = vector
             else:
                 node_data = None
                 values = {}

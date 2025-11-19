@@ -2,15 +2,19 @@
 
 """NVE (microcanonical) dynamics in LAMMPS"""
 
+import bz2
 import gzip
 import json
+import os
 from pathlib import Path
 import traceback
 
+import numpy as np
+from tabulate import tabulate
+
 import lammps_step
-from lammps_step import LAMMPS, from_lammps_units
+from lammps_step import from_lammps_units
 import logging
-from molsystem import Cell
 import seamm
 from seamm_util import ureg, Q_, units_class  # noqa: F401
 import seamm_util.printing as printing
@@ -51,7 +55,105 @@ class NVE(lammps_step.Energy):
         Parameters
         ----------
         """
-        super().analyze(data=data, properties=properties, table=table, output=output)
+        # Calculate the enthalpy of formation, if possible
+        tmp_text = self.calculate_enthalpy_of_formation(data)
+        if tmp_text != "":
+            path = self.wd / "Thermochemistry.txt"
+            path.write_text(tmp_text)
+
+        # Print the results from the analysis of the state trajectory
+        for i, _property in enumerate(table["Property"]):
+            if _property.startswith("Epe"):
+                stderr = table["StdErr"][i]
+                i += 1
+                new = {k: v[0:i] for k, v in table.items()}
+                for key in ("DfE0", "E atomization"):
+                    if key in data:
+                        new["Property"].append(key)
+                        new["Value"].append(f"{data[key]:.2f}")
+                        new[" "].append("±")
+                        new["StdErr"].append(stderr)
+                        new["Units"].append("kcal/mol")
+                        new["convergence"].append("")
+                        new["tau"].append("")
+                        new["inefficiency"].append("")
+                for key, value in table.items():
+                    new[key].extend(table[key][i:])
+                table = new
+                break
+        else:
+            for key in ("DfE0", "E atomization"):
+                if key in data:
+                    table["Property"].append(key)
+                    table["Value"].append(f"{data[key]:.2f}")
+                    table[" "].append("±")
+                    table["StdErr"].append("")
+                    table["Units"].append("kcal/mol")
+                    table["convergence"].append("")
+                    table["tau"].append("")
+                    table["inefficiency"].append("")
+
+        # Print out a table of results.
+        text = ""
+        tmp = tabulate(
+            table,
+            headers="keys",
+            tablefmt="simple",
+            disable_numparse=True,
+            colalign=(
+                "center",
+                "decimal",
+                "center",
+                "decimal",
+                "left",
+                "decimal",
+                "decimal",
+                "decimal",
+            ),
+        )
+        length = len(tmp.splitlines()[0])
+        text += "\n"
+        text += "Properties".center(length)
+        text += "\n"
+        text += tmp
+        text += "\n"
+
+        printer.normal(__(text, indent=8 * " ", wrap=False, dedent=False))
+
+        have_warning = False
+        for value in table["Property"]:
+            if len(value) > 0 and value[-1] == "*":
+                have_warning = True
+                break
+
+        have_acf_warning = False
+        for value in table["tau"]:
+            if len(value) > 0 and value[-1] == "^":
+                have_acf_warning = True
+                break
+
+        if have_warning:
+            printer.normal(
+                __(
+                    "          * this property has less than 100 independent "
+                    "samples, so may not be accurate.",
+                    wrap=False,
+                    dedent=False,
+                )
+            )
+
+        if have_acf_warning:
+            printer.normal(
+                __(
+                    "          ^ there are not enough samples after "
+                    "equilibration to plot the ACF.",
+                    wrap=False,
+                    dedent=False,
+                )
+            )
+
+        if have_warning or have_acf_warning:
+            printer.normal("\n")
 
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data
@@ -99,6 +201,12 @@ class NVE(lammps_step.Energy):
                 model=self.model,
             )
             printer.normal(__(text, **data, indent=self.indent + 4 * " "))
+            printer.normal("")
+
+        # Save the trajectory to a new system and its configurations
+        if P["trajectory save"]:
+            text = self._save_trajectory(P)
+            printer.normal(__(text, indent=self.indent + 4 * " "))
             printer.normal("")
 
         # Import or convert the trajectory.
@@ -206,6 +314,7 @@ class NVE(lammps_step.Energy):
             )
 
         # Do it!
+        _, timestep = self.timestep(P["timestep"])
         _, configuration = self.get_system_configuration()
         symbols = configuration.atoms.symbols
 
@@ -213,19 +322,28 @@ class NVE(lammps_step.Energy):
         if filename.startswith("/"):
             path = Path(self.flowchart.root_directory) / filename[1:]
         else:
-            path = Path(filename)
+            path = self.wd / Path(filename)
 
         nskip = P["trajectory extxyz skip frames"]
-        if P["trajectory extxyz append"]:
-            mode = "at"
-            text += "Appended"
-        else:
-            mode = "wt"
-            text += "Wrote"
         frame = 0
         start_line = 0
         lines = []
-        with gzip.open(dump, "rt") as fdin, gzip.open(path, mode) as fdout:
+
+        append = P["trajectory extxyz append"]
+        mode = "a" if append else "w"
+        text += "Appended" if append else "Wrote"
+        with (
+            gzip.open(dump, "rt") as fdin,
+            (
+                gzip.open(path, mode=mode + "t")
+                if path.suffix == ".gz"
+                else (
+                    bz2.open(path, mode=mode + "t")
+                    if path.suffix == ".bz2"
+                    else open(path, mode)
+                )
+            ) as fdout,
+        ):
             for line in fdin:
                 line = line.strip()
                 if line.startswith("ITEM: TIMESTEP"):
@@ -242,7 +360,7 @@ class NVE(lammps_step.Energy):
                                     )
                                 }
                             )
-                            extxyz = self._to_extxyz(results)
+                            extxyz = self._to_extxyz(results, timestep=timestep)
                             fdout.write(extxyz)
                         start_line += len(lines)
                         lines = []
@@ -256,204 +374,16 @@ class NVE(lammps_step.Energy):
                     results.update(
                         {k: v for k, v in zip(state_variables, trj_data[frame - 1])}
                     )
-                    extxyz = self._to_extxyz(results)
+                    extxyz = self._to_extxyz(results, timestep=timestep)
                     fdout.write(extxyz)
         if nskip > 0:
             text += (
-                f" {frame - nskip} frames to the trajectory in .extxyz format, "
+                f" {frame - nskip} frames of the trajectory to {path}, "
                 f"skipping the first {nskip} frames."
             )
         else:
-            text += f" {frame - nskip} frames to the trajectory in .extxyz format."
+            text += f" {frame - nskip} frames of the trajectory to {path}."
         return text
-
-    def _parse_dump_frame(self, lines, line_no=0):
-        """Process a single frame of a LAMMPS dump file.
-
-        Parameters
-        ----------
-        lines : [str]
-            The lines of the section.
-
-        lineno : int
-            The count of lines before this frame, used for error messages
-
-        Returns
-        -------
-        dict(str, any)
-            The results keyed by the item name.
-        """
-        results = {}
-        it = iter(lines)
-
-        def next_line(it, line_no):
-            return (next(it).strip(), line_no + 1)
-
-        line, line_no = next_line(it, line_no)
-
-        while True:
-            try:
-                if not line.startswith("ITEM:"):
-                    raise ValueError(
-                        f"Error reading dump file: line {line_no} should be 'ITEM: ...'"
-                        f"\n\t'{line}'"
-                    )
-                section = line[6:].strip()
-                self.logger.debug("   section = " + section)
-
-                if section == "TIMESTEP":
-                    line, line_no = next_line(it, line_no)
-                    results["timestep"] = int(line)
-                    line, line_no = next_line(it, line_no)
-                    continue
-                elif section == "NUMBER OF ATOMS":
-                    line, line_no = next_line(it, line_no)
-                    results["n_atoms"] = n_atoms = int(line)
-                    line, line_no = next_line(it, line_no)
-                    continue
-                elif "BOX BOUNDS" in section:
-                    if len(section.split()) == 8:
-                        line, line_no = next_line(it, line_no)
-                        xlo_bound, xhi_bound, xy = line.split()
-                        line, line_no = next_line(it, line_no)
-                        ylo_bound, yhi_bound, xz = line.split()
-                        line, line_no = next_line(it, line_no)
-                        zlo, zhi, yz = line.split()
-
-                        xlo_bound = float(xlo_bound)
-                        xhi_bound = float(xhi_bound)
-                        ylo_bound = float(ylo_bound)
-                        yhi_bound = float(yhi_bound)
-                        zlo = float(zlo)
-                        zhi = float(zhi)
-                        xy = float(xy)
-                        xz = float(xz)
-                        yz = float(yz)
-
-                        xlo = xlo_bound - min(0.0, xy, xz, xy + xz)
-                        xhi = xhi_bound - max(0.0, xy, xz, xy + xz)
-                        ylo = ylo_bound - min(0.0, yz)
-                        yhi = yhi_bound - max(0.0, yz)
-                        cell = LAMMPS.box_to_cell(
-                            xhi - xlo, yhi - ylo, zhi - zlo, xy, xz, yz
-                        )
-                        tmp = Cell(*cell)
-                        lattice = []
-                        for v in tmp.vectors():
-                            lattice.extend(v)
-                    else:
-                        line, line_no = next_line(it, line_no)
-                        xlo, xhi = line.split()
-                        line, line_no = next_line(it, line_no)
-                        ylo, yhi = line.split()
-                        line, line_no = next_line(it, line_no)
-                        zlo, zhi = line.split()
-
-                        xlo = float(xlo)
-                        xhi = float(xhi)
-                        ylo = float(ylo)
-                        yhi = float(yhi)
-                        zlo = float(zlo)
-                        zhi = float(zhi)
-
-                        lattice = (
-                            xhi - xlo,
-                            0.0,
-                            0.0,
-                            0.0,
-                            yhi - ylo,
-                            0.0,
-                            0.0,
-                            0.0,
-                            zhi - zlo,
-                        )
-                        cell = (xhi - xlo, yhi - ylo, zhi - zlo, 90, 90, 90)
-                    results["cell"] = cell
-                    results["lattice"] = lattice
-                    line, line_no = next_line(it, line_no)
-                elif "ATOMS" in section:
-                    xyz = []
-                    f = []
-                    v = []
-                    keys = section.split()[1:]
-
-                    # Coordinates
-                    ixyz = None
-                    if "x" in keys and "y" in keys and "z" in keys:
-                        ixyz = (keys.index("x"), keys.index("y"), keys.index("z"))
-                        xyz_type = "cartesian"
-                        fxyz = from_lammps_units(1, "Å").magnitude
-                    elif "xu" in keys and "yu" in keys and "zu" in keys:
-                        ixyz = (keys.index("xu"), keys.index("yu"), keys.index("zu"))
-                        xyz_type = "cartesian"
-                        fxyz = from_lammps_units(1, "Å").magnitude
-                    elif "xs" in keys and "ys" in keys and "zs" in keys:
-                        ixyz = (keys.index("xs"), keys.index("ys"), keys.index("zs"))
-                        xyz_type = "fractional"
-                        fxyz = 1
-                    elif "xsu" in keys and "ysu" in keys and "zsu" in keys:
-                        ixyz = (keys.index("xsu"), keys.index("ysu"), keys.index("zsu"))
-                        xyz_type = "fractional"
-                        fxyz = 1
-
-                    # Forces
-                    fi = None
-                    if "fx" in keys and "fy" in keys and "fz" in keys:
-                        fi = (keys.index("fx"), keys.index("fy"), keys.index("fz"))
-                        ff = from_lammps_units(1, "kcal/mol/Å").magnitude
-
-                    # Velocities
-                    vi = None
-                    if "vx" in keys and "vy" in keys and "vz" in keys:
-                        vi = (keys.index("vx"), keys.index("vy"), keys.index("vz"))
-                        fv = from_lammps_units(1, "m/s").magnitude
-
-                    for i in range(n_atoms):
-                        line, line_no = next_line(it, line_no)
-                        values = line.split()
-                        if ixyz is not None:
-                            xyz.append(
-                                [
-                                    fxyz * float(values[ixyz[0]]),
-                                    fxyz * float(values[ixyz[1]]),
-                                    fxyz * float(values[ixyz[2]]),
-                                ]
-                            )
-                        if fi is not None:
-                            f.append(
-                                [
-                                    ff * float(values[fi[0]]),
-                                    ff * float(values[fi[1]]),
-                                    ff * float(values[fi[2]]),
-                                ]
-                            )
-                        if vi is not None:
-                            v.append(
-                                [
-                                    fv * float(values[vi[0]]),
-                                    fv * float(values[vi[1]]),
-                                    fv * float(values[vi[2]]),
-                                ]
-                            )
-                    if ixyz is not None:
-                        if xyz_type == "cartesian":
-                            results["xyz"] = xyz
-                        elif xyz_type == "fractional":
-                            results["abc"] = xyz
-                    if fi is not None:
-                        results["forces"] = f
-                    if vi is not None:
-                        results["velocities"] = v
-
-                    line, line_no = next_line(it, line_no)
-                else:
-                    raise ValueError(
-                        f"Don't recognize section {section} in the dump file"
-                    )
-            except StopIteration:
-                break
-
-        return results
 
     def get_input(self, extras=None):
         """Get the input for an NVE dynamics run in LAMMPS"""
@@ -495,8 +425,8 @@ class NVE(lammps_step.Energy):
         properties = "v_time v_temp v_press v_etotal v_ke v_pe v_emol v_epair"
         title2 = "tstep t T P Etot Eke Epe Emol Epair"
         if configuration.periodicity == 3:
-            properties += " v_sxx v_syy v_szz v_sxy v_sxz v_syz"
-            title2 += " Sxx Syy Szz Sxy Sxz Syz"
+            properties += " v_sxx v_syy v_szz v_syz v_sxz v_sxy"
+            title2 += " Sxx Syy Szz Syz Sxz Sxy"
         if self.parent.have_dreiding_hbonds:
             thermo_properties += " v_N_hbond v_E_hbond"
             properties += " v_N_hbond v_E_hbond"
@@ -722,6 +652,8 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
         elif value == "coarse but fast":
             timestep = 2.0 * factor
             value = Q_(timestep, ureg.fs)
+        else:
+            value = Q_(value)
 
         timestep = lammps_step.to_lammps_units(value, quantity="time")
 
@@ -817,8 +749,8 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
                 separators=(",", ":"),
             )
             title1 = "!MolSSI trajectory 2.0 " + text
-            title2 += " Sxx Syy Szz Sxy Sxz Syz"
-            properties += " v_sxx v_syy v_szz v_sxy v_sxz v_syz"
+            title2 += " Sxx Syy Szz Syz Sxz Sxy"
+            properties += " v_sxx v_syy v_szz v_syz v_sxz v_sxy"
             lines.append(
                 "\n"
                 f"fix                 {nfixes} all ave/time {n} 1 {n} "
@@ -1003,13 +935,217 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
 
         return lines, ncomputes, ndumps, nfixes
 
-    def _to_extxyz(self, data):
+    def _save_trajectory(self, P):
+        """Save the trajectory to configurations.
+
+        Parameters
+        ----------
+        P : dict(str, value)
+            The control parameters for this step
+
+        Returns
+        -------
+        str
+            A text string for printing, containing warnings, etc.
+        """
+        text = ""
+        dump = Path(self.directory) / "trajectory.dump_trj.gz"
+        trj = Path(self.directory) / "trajectory.trj"
+
+        if not dump.exists() and not trj.exists():
+            return (
+                "Neither the coordinate or energy part of the trajectory exists, so "
+                "cannot save it."
+            )
+        if trj.exists():
+            trj_data = trj.read_text().splitlines()
+            header = trj_data[0]
+            if not header.startswith("!MolSSI trajectory"):
+                trj_data = None
+                text = (
+                    "The file for the energies etc. for the trajectory exists "
+                    "but is not the right type of file, so the energies, etc. "
+                    "will not be saved with the configuration. "
+                )
+            else:
+                state_variables = trj_data[1].split()
+                trj_data = [i.split() for i in trj_data[2:]]
+        else:
+            trj_data = None
+            text = (
+                "The energies etc. for the trajectory are missing so they will "
+                "not be saved with the configuration. "
+            )
+
+        # Get the elements from the starting configuration
+        initial_system, initial_configuration = self.get_system_configuration()
+        symbols = initial_configuration.atoms.symbols
+
+        # Make a new system
+        name = P["trajectory system name"]
+        system_db = initial_system.system_db
+        if name == "current":
+            system = system_db.system
+        else:
+            if system_db.system_exists(name):
+                system = system_db.get_system(name)
+            else:
+                system = system_db.create_system(name=name)
+        if P["make current"]:
+            system_db.system = system
+
+        # Read the trajectory dump file and process
+        _, timestep = self.timestep(P["timestep"])
+        frame = 0
+        start_line = 0
+        lines = []
+
+        with gzip.open(dump, "rt") as fdin:
+            for line in fdin:
+                line = line.strip()
+                if line.startswith("ITEM: TIMESTEP"):
+                    if len(lines) > 0:
+                        frame += 1
+                        results = self._parse_dump_frame(lines, start_line)
+                        results["symbols"] = symbols
+                        results.update(
+                            {k: v for k, v in zip(state_variables, trj_data[frame - 1])}
+                        )
+                        # Make a new configuration
+                        time = timestep * results["timestep"]
+                        name = f"{time:.1f~P}"
+                        configuration = system.copy_configuration(
+                            configuration=initial_configuration, name=name
+                        )
+                        self._to_configuration(configuration, results)
+                    start_line += len(lines)
+                    lines = []
+                lines.append(line)
+            # Process last frame
+            if len(lines) > 0:
+                frame += 1
+                results = self._parse_dump_frame(lines, start_line)
+                results["symbols"] = symbols
+                results.update(
+                    {k: v for k, v in zip(state_variables, trj_data[frame - 1])}
+                )
+                # Make a new configuration
+                time = timestep * results["timestep"]
+                name = f"{time:.1f~P}"
+                configuration = system.copy_configuration(
+                    configuration=initial_configuration, name=name
+                )
+                self._to_configuration(configuration, results)
+        text += f"Created {frame} configurations of system '{system.name}'"
+        if P["make current"]:
+            text += ", which was made the current system,"
+        text += " from the trajectory."
+        return text
+
+    def _check_property(self, properties, _property, **kwargs):
+        """Check if a property exists after substitution and create if necessary.
+
+        Parameters
+        ----------
+        properties : molsystem._Properties
+            The properties object
+
+        _property : str
+            The name of the property
+
+        **kwargs : {str: str}
+            Optional variables for substituting in the property name.
+        """
+        expanded_property = _property.format_map(kwargs)
+        if not properties.exists(expanded_property):
+            # Get the general property's info to create the model property.
+            _type, units, description = properties.metadata(_property)
+            properties.add(
+                expanded_property,
+                _type=_type,
+                units=units,
+                description=description.format_map(kwargs),
+            )
+        return expanded_property
+
+    def _to_configuration(self, configuration, data):
+        """Update a configuration with the data from a step in a trajectory.
+
+        Parameters
+        ----------
+        configuration : molsystem._Configuration
+            The configuration to update
+        data : dict(str, any)
+            Dictionary containing coordinates and other atom properties
+        """
+        if configuration.periodicity == 3:
+            # Set the cell
+            if "cell" in data:
+                configuration.cell.parameters = data["cell"]
+
+            # Stress
+            if "Sxx" in data:
+                sfact = from_lammps_units(1, "atm").magnitude
+                stress = [
+                    sfact * float(data["Sxx"]),
+                    sfact * float(data["Syy"]),
+                    sfact * float(data["Szz"]),
+                    sfact * float(data["Syz"]),
+                    sfact * float(data["Sxz"]),
+                    sfact * float(data["Sxy"]),
+                ]
+                _property = self._check_property(
+                    configuration.properties, "stress#LAMMPS#{model}", model=self.model
+                )
+                configuration.properties.put(_property, stress)
+
+        # Coordinates
+        if "abc" in data:
+            configuration.atoms.set_coordinates(data["abc"], fractionals=True)
+        elif "xyz" in data:
+            configuration.atoms.set_coordinates(data["xyz"], fractionals=False)
+
+        if "velocities" in data:
+            # LAMMPS only has Cartesian velocities. Already in Å/fs
+            tmp = np.array(data["velocities"])
+            configuration.atoms.set_velocities(tmp, fractionals=False)
+
+        if "gradients" in data:
+            # LAMMPS only has Cartesian forces, already in kJ/mol/Å
+            tmp = np.array(data["gradients"])
+            configuration.atoms.set_gradients(tmp, fractionals=False)
+
+        # Energy
+        if "Epe" in data:
+            _property = self._check_property(
+                configuration.properties,
+                "potential energy#LAMMPS#{model}",
+                model=self.model,
+            )
+            tmp = from_lammps_units(float(data["Epe"]), "kcal/mol").magnitude
+            configuration.properties.put(_property, tmp)
+
+            # Calculate the energy of formation if we can
+            tmp_data = {"Epe": tmp}
+            self.calculate_enthalpy_of_formation(tmp_data)
+            if "DfE0" in tmp_data:
+                _property = self._check_property(
+                    configuration.properties,
+                    "DfE0#LAMMPS#{model}",
+                    model=self.model,
+                )
+                configuration.properties.put(_property, tmp_data["DfE0"])
+
+    def _to_extxyz(self, data, timestep=None):
         """Create the text of ASE extxyz format for a structure
 
         Parameters
         ----------
         data : dict(str, any)
             Dictionary containing symbols, coordinates, and other atom properties
+
+        timestep : pint.units
+            The timestep.
 
         Note
         ----
@@ -1031,23 +1167,36 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
 
         # The lattice/properties line
         if "lattice" in data:
+            # already in Å
             line = 'Lattice="'
             line += " ".join([f"{v:.5f}" for v in data["lattice"]])
             line += '"'
         line += " Properties=species:S:1:pos:R:3"
-        if "forces" in data:
+        if "gradients" in data:
+            # currently in kJ/mol/Å
             line += ":REF_forces:R:3"
-            ffact = Q_("kcal/mol/Å").m_as("eV/Å")
+            ffact = -Q_(1, "kJ/mol/Å").m_as("eV/Å")
         if "velocities" in data:
+            # currentl in Å/fs
             line += ":vel:R:3"
+            vfact = Q_(1, "Å/fs").m_as("eV^0.5/amu^0.5")
 
         # Add in other properties, like the energy ... currently just energy and stress
         if "Epe" in data:
-            # The energy is the potential, not total energy which includes kinetic
-            efact = Q_("kcal/mol").m_as("eV")
-            line += f" REF_energy={efact*float(data['Epe']):.4f}"
+            # Calculate the energy of formation if we can
+            tmp_data = {
+                "Epe": from_lammps_units(float(data["Epe"]), "kcal/mol").magnitude
+            }
+            self.calculate_enthalpy_of_formation(tmp_data)
+            if "DfE0" in tmp_data:
+                value = Q_(tmp_data["DfE0"], "kcal/mol").m_as("eV")
+                line += f" REF_energy={value:.4f}"
+            else:
+                # The energy is the potential, not total energy which includes kinetic
+                efact = from_lammps_units(1, "eV").magnitude
+                line += f" REF_energy={efact*float(data['Epe']):.4f}"
         if "Sxx" in data:
-            sfact = Q_("atm").m_as("eV/Å^3")
+            sfact = from_lammps_units(1, "eV/Å^3").magnitude
             Sxx = f"{sfact*float(data['Sxx']):.7f}"
             Syy = f"{sfact*float(data['Syy']):.7f}"
             Szz = f"{sfact*float(data['Szz']):.7f}"
@@ -1058,6 +1207,20 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
         else:
             line += ' pbc="F F F"'
 
+        # The time
+        if timestep is not None and "timestep" in data:
+            time = timestep * data["timestep"]
+            line += f' time="{time:.1f~P}"'
+
+        # Add the model, jobserver, and job id if available
+        line += f' model="{self.model}"'
+        if "SEAMM_JOBSERVER" in os.environ:
+            tmp = os.environ["SEAMM_JOBSERVER"]
+            line += f' jobserver="{tmp}"'
+        if "SEAMM_JOB_ID" in os.environ:
+            tmp = os.environ["SEAMM_JOB_ID"]
+            line += f' job_id="{tmp}"'
+
         lines.append(line)
 
         # And the coordinate lines
@@ -1065,12 +1228,12 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
             line = f"{symbol:<2}"
             for val in data["xyz"][i]:
                 line += f" {val:14.8f}"
-            if "forces" in data:
-                for val in data["forces"][i]:
+            if "gradients" in data:
+                for val in data["gradients"][i]:
                     line += f" {ffact*val:14.8f}"
             if "velocities" in data:
                 for val in data["velocities"][i]:
-                    line += f" {val:14.8f}"
+                    line += f" {vfact*val:14.8f}"
             lines.append(line)
 
         # Add empty line so text ends with newline

@@ -79,31 +79,48 @@ class Minimization(lammps_step.Energy):
                 data.update(tmp)
 
         # Read the dump file and get the structure
+        xyz = None
+        cell = None
+        gradients = None
+        velocities = None
         dump_file = self.wd / "minimization.dump"
         if dump_file.exists:
             try:
-                xyz, fractional, cell, vxyz = self.parent.read_dump(dump_file)
+                text = dump_file.read_text().splitlines()
+                results = self._parse_dump_frame(text)
+                if "xyz" in results:
+                    xyz = results["xyz"]
+                    fractional = False
+                elif "abc" in results:
+                    xyz = results["abc"]
+                    fractional = True
+                else:
+                    xyz = None
+                cell = results["cell"] if "cell" in results else None
+                gradients = results["gradients"] if "gradients" in results else None
+                velocities = results["velocities"] if "velocities" in results else None
+                if gradients is not None:
+                    data["gradients"] = gradients
+                if velocities is not None:
+                    data["velocities"] = velocities
             except Exception as e:
-                xyz = None
-                cell = None
-                vxyz = None
                 printer.normal("Warning: unable to read the LAMMPS dumpfile")
                 logger.warning(f"The was a problem reading the LAMMPS dumpfile: {e}")
                 logger.warning(traceback.format_exc())
         else:
             printer.normal("Warning: there is no 'dump' file from LAMMPS")
-            xyz = None
-            cell = None
-            vxyz = None
 
         if configuration is not None:
             if cell is not None:
                 configuration.cell.parameters = cell
             if xyz is not None:
                 configuration.atoms.set_coordinates(xyz, fractionals=fractional)
-            if vxyz is not None:
+            if gradients is not None:
+                # LAMMPS only has Cartesian gradients
+                configuration.atoms.set_gradients(gradients, fractionals=False)
+            if velocities is not None:
                 # LAMMPS only has Cartesian velocities
-                configuration.atoms.set_velocities(vxyz, fractionals=False)
+                configuration.atoms.set_velocities(velocities, fractionals=False)
 
             # And the name of the configuration.
             text = seamm.standard_parameters.set_names(
@@ -168,12 +185,24 @@ class Minimization(lammps_step.Energy):
             line = output[first + 2]
             if "Energy initial, next-to-last, final =" in line:
                 Es = [float(e) for e in output[first + 3].split()]
+                E = lammps_step.from_lammps_units(Es[2], "kcal/mol")
+                data["energy"] = E.magnitude
+
+                # Calculate the enthalpy of formation, if possible
+                tmp_text = self.calculate_enthalpy_of_formation(data)
+                if tmp_text != "":
+                    path = self.wd / "Thermochemistry.txt"
+                    path.write_text(tmp_text)
+
+                for key in ("DfE0", "E atomization"):
+                    if key in data:
+                        table["Property"].append(key)
+                        table["Value"].append(f"{data[key]:.2f}")
+                        table["Units"].append("kcal/mol")
 
                 table["Property"].append("Final Energy")
-                E = lammps_step.from_lammps_units(Es[2], "kcal/mol")
                 table["Value"].append(f"{E.magnitude:.2f}")
                 table["Units"].append("kcal/mol")
-                data["energy"] = E.magnitude
 
                 table["Property"].append("Initial Energy")
                 E = lammps_step.from_lammps_units(Es[0], "kcal/mol")
@@ -275,13 +304,26 @@ class Minimization(lammps_step.Energy):
         data["minimizer"] = self._save["minimizer"]
 
         # For periodic systems, the stress
+        stress = []
         if initial_configuration.periodicity != 0:
+            # Pressure
+            if "P" in data:
+                key = "P"
+                table["Property"].append(key)
+                value = Q_(data[key], data[key + ",units"]).m_as("atm")
+                table["Value"].append(f"{value:.3f}")
+                table["Units"].append("atm")
+
             for key in ("Sxx", "Syy", "Szz", "Syz", "Sxz", "Sxy"):
                 if key in data:
                     table["Property"].append(key)
-                    value = Q_(data[key], data[key + ",units"]).m_as("GPa")
+                    value = Q_(data[key], data[key + ",units"]).m_as("atm")
                     table["Value"].append(f"{value:.3f}")
-                    table["Units"].append("GPa")
+                    table["Units"].append("atm")
+                    stress.append(value)
+            if len(stress) == 6:
+                data["stress"] = stress
+                data["stress,units"] = "atm"
 
         tmp = tabulate(
             table,
@@ -480,6 +522,8 @@ class Minimization(lammps_step.Energy):
             units = lammps_step.lammps_units("pressure")
             lines.append(
                 'print               """{\n'
+                '    "P": $(v_press:%.3f),\n'
+                f'    "P,units": "{units}",\n'
                 '    "Sxx": $(v_sxx:%.3f),\n'
                 f'    "Sxx,units": "{units}",\n'
                 '    "Syy": $(v_syy:%.3f),\n'
