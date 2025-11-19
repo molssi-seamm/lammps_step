@@ -60,6 +60,7 @@ class TkNVE(lammps_step.TkEnergy):
         )
         for key in (
             "trajectory",
+            "trajectory save",
             "trajectory export",
             "atomic positions",
             "com positions",
@@ -80,6 +81,8 @@ class TkNVE(lammps_step.TkEnergy):
             "trajectory number of samples",
             "trajectory forces",
             "trajectory velocities",
+            "trajectory system name",
+            "make current",
             "trajectory extxyz",
             "trajectory extxyz skip frames",
             "trajectory extxyz filename",
@@ -195,6 +198,7 @@ class TkNVE(lammps_step.TkEnergy):
     def reset_trajectory_frame(self, widget=None):
         """Layout the trajectory frame according to its contents."""
         trajectory = self["trajectory"].get()
+        save = self["trajectory save"].get()
         export = self["trajectory export"].get()
         atomic_positions = self["atomic positions"].get()
         com_positions = self["com positions"].get()
@@ -234,11 +238,23 @@ class TkNVE(lammps_step.TkEnergy):
             for key in (
                 "trajectory forces",
                 "trajectory velocities",
-                "trajectory export",
+                "trajectory save",
             ):
                 self[key].grid(row=row, column=1, columnspan=4, sticky=tk.EW)
                 widgets1.append(self[key])
                 row += 1
+
+            if save != "no":
+                for key in ("trajectory system name", "make current"):
+                    self[key].grid(row=row, column=2, columnspan=3, sticky=tk.EW)
+                    widgets2.append(self[key])
+                    row += 1
+
+            for key in ("trajectory export",):
+                self[key].grid(row=row, column=1, columnspan=4, sticky=tk.EW)
+                widgets1.append(self[key])
+                row += 1
+
             if export != "no":
                 for key in ("trajectory extxyz",):
                     self[key].grid(row=row, column=2, columnspan=3, sticky=tk.EW)

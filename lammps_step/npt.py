@@ -208,8 +208,8 @@ class NPT(lammps_step.NVT):
             properties += " v_cellalpha v_cellbeta v_cellgamma"
             title2 += " alpha beta gamma"
         if configuration.periodicity == 3:
-            properties += " v_sxx v_syy v_szz v_sxy v_sxz v_syz"
-            title2 += " Sxx Syy Szz Sxy Sxz Syz"
+            properties += " v_sxx v_syy v_szz v_syz v_sxz v_sxy"
+            title2 += " Sxx Syy Szz Syz Sxz Sxy"
         if self.parent.have_dreiding_hbonds:
             thermo_properties += " v_N_hbond v_E_hbond"
             properties += " v_N_hbond v_E_hbond"
