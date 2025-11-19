@@ -81,7 +81,7 @@ total energy#LAMMPS#{model},float,kcal/mol,The {model} total energy.,
 "total energy, inefficiency"#LAMMPS#{model},float,,The statistical inefficiency of the {model} total energy.,https://en.wikipedia.org/wiki/Efficiency_(statistics)
 "total energy, stderr"#LAMMPS#{model},float,kcal/mol,The standard error of the {model} total energy.,https://en.wikipedia.org/wiki/Standard_error
 "total energy, tau"#LAMMPS#{model},float,fs,The autocorellation time of the {model} total energy.,https://en.wikipedia.org/wiki/Autocorrelation
-volume#LAMMPS#{model},float,g/mL,The volume.,https://en.wikipedia.org/wiki/volume
+volume#LAMMPS#{model},float,Å^3,The volume.,https://en.wikipedia.org/wiki/volume
 "volume, inefficiency"#LAMMPS#{model},float,,The statistical inefficiency of the volume sampling.,https://en.wikipedia.org/wiki/Efficiency_(statistics)
-"volume, stderr"#LAMMPS#{model},float,g/mL,The standard error of the volume.,https://en.wikipedia.org/wiki/Standard_error
+"volume, stderr"#LAMMPS#{model},float,Å^3,The standard error of the volume.,https://en.wikipedia.org/wiki/Standard_error
 "volume, tau"#LAMMPS#{model},float,fs,The autocorrelation time of the volume.,https://en.wikipedia.org/wiki/Autocorrelation

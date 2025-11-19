@@ -62,11 +62,11 @@ class NVE(lammps_step.Energy):
             path.write_text(tmp_text)
 
         # Print the results from the analysis of the state trajectory
-        for i, key in enumerate(table["Property"]):
-            if key.startswith("Epe"):
+        for i, _property in enumerate(table["Property"]):
+            if _property.startswith("Epe"):
                 stderr = table["StdErr"][i]
                 i += 1
-                new = {key: value[0:i] for key, value in table.items()}
+                new = {k: v[0:i] for k, v in table.items()}
                 for key in ("DfE0", "E atomization"):
                     if key in data:
                         new["Property"].append(key)
@@ -129,7 +129,7 @@ class NVE(lammps_step.Energy):
         have_acf_warning = False
         for value in table["tau"]:
             if len(value) > 0 and value[-1] == "^":
-                have_warning = True
+                have_acf_warning = True
                 break
 
         if have_warning:
@@ -329,7 +329,6 @@ class NVE(lammps_step.Energy):
         start_line = 0
         lines = []
 
-        compress = path.suffix in (".gz", ".bz2")
         append = P["trajectory extxyz append"]
         mode = "a" if append else "w"
         text += "Appended" if append else "Wrote"
@@ -362,10 +361,7 @@ class NVE(lammps_step.Energy):
                                 }
                             )
                             extxyz = self._to_extxyz(results, timestep=timestep)
-                            if compress:
-                                fdout.write(extxyz)
-                            else:
-                                fdout.write(extxyz)
+                            fdout.write(extxyz)
                         start_line += len(lines)
                         lines = []
                 lines.append(line)
@@ -379,10 +375,7 @@ class NVE(lammps_step.Energy):
                         {k: v for k, v in zip(state_variables, trj_data[frame - 1])}
                     )
                     extxyz = self._to_extxyz(results, timestep=timestep)
-                    if compress:
-                        fdout.write(extxyz)
-                    else:
-                        fdout.write(extxyz)
+                    fdout.write(extxyz)
         if nskip > 0:
             text += (
                 f" {frame - nskip} frames of the trajectory to {path}, "
@@ -660,7 +653,7 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
             timestep = 2.0 * factor
             value = Q_(timestep, ureg.fs)
         else:
-            value = Q_(timestep)
+            value = Q_(value)
 
         timestep = lammps_step.to_lammps_units(value, quantity="time")
 
@@ -1141,7 +1134,7 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
                     "DfE0#LAMMPS#{model}",
                     model=self.model,
                 )
-            configuration.properties.put(_property, tmp_data["DfE0"])
+                configuration.properties.put(_property, tmp_data["DfE0"])
 
     def _to_extxyz(self, data, timestep=None):
         """Create the text of ASE extxyz format for a structure

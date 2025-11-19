@@ -2,14 +2,18 @@
 History
 =======
 2025.11.19 -- Enhancements to properties and storing trajectories in the database
-    * Added a property for stress as a 6-vector in the Voigt order.
-    * Added the formation energy as a property (DfE0) is the tabulated element
-      energies exist either in the release or the users data directory.
-    * Added reference energies for the MEAM potential of Cui, et al.
-    * Added the ability to import trajectories into the database as systems &
-      configurations.
-    * Improved the output the energy calculations
-    * Added DfE0 to the output  where available.
+
+    This release enhances the LAMMPS step with property calculations and trajectory storage
+    capabilities. The main focus is adding formation energy calculations (DfE0) using
+    tabulated element energies, storing stress as a 6-component Voigt vector, and
+    enabling trajectory import into the database as system configurations.
+
+    * Added formation energy (DfE0) and atomization energy calculations using tabulated
+      reference data for atomic energies
+    * Implemented trajectory save functionality to store MD trajectories as
+      configurations in the database 
+    * Reorganized stress tensor output to follow Voigt ordering (Sxx, Syy, Szz, Syz,
+      Sxz, Sxy) and added stress vector property 
       
 2025.11.9 -- Bugfix: Error with units in trajectories when using OpenKIM
 

@@ -174,7 +174,6 @@ class Energy(seamm.Node):
             except Exception as e:
                 printer.normal(f"Warning: error reading {filename}: {e}")
                 logger.warning(f"Error with {filename}: {e}")
-                pass
             else:
                 data.update(tmp)
 
@@ -436,9 +435,6 @@ class Energy(seamm.Node):
         if atom_energy is None:
             atom_energy = [0.0] * len(atom_formation_energy)
 
-        if atom_formation_energy is None:
-            self.logger.debug("     and didn't find it!")
-
         DfH0gas = None
         references = None
         term_symbols = None
@@ -454,8 +450,6 @@ class Energy(seamm.Node):
                 references = table["Reference"].to_list()
             if "Term Symbol" in table.columns:
                 term_symbols = table["Term Symbol"].to_list()
-        if references is not None:
-            len(references)
 
         # Get the atomic numbers and counts
         _, configuration = self.get_system_configuration(None)
