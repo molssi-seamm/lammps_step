@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps_units &#8212; SEAMM LAMMPS Plug-in 2025.11.9 documentation</title>
+    <title>lammps_step.lammps_units &#8212; SEAMM LAMMPS Plug-in 2025.11.19 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=4d3f6f5b"></script>
+    <script src="../../_static/documentation_options.js?v=90bdc6fa"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.11.9" />
+  <meta name="docsearch:version" content="2025.11.19" />
   </head>
   
   
@@ -637,6 +637,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="s2">&quot;[length] ** 2 * [mass] / [substance] / [time] ** 2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">,</span> <span class="s2">&quot;torque&quot;</span><span class="p">],</span>
     <span class="s2">&quot;[mass] * [length] ** 2 / [time] ** 2 / [substance]&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">,</span> <span class="s2">&quot;torque&quot;</span><span class="p">],</span>
     <span class="s2">&quot;[length] ** 2 * [mass] / [time] ** 2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">,</span> <span class="s2">&quot;torque&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;[mass] * [length] ** 2 / [time] ** 2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">,</span> <span class="s2">&quot;torque&quot;</span><span class="p">],</span>
     <span class="s2">&quot;[length] / [time]&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;velocity&quot;</span><span class="p">],</span>
     <span class="s2">&quot;[length] * [mass] / [substance] / [time] ** 2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;force&quot;</span><span class="p">],</span>
     <span class="s2">&quot;[length] * [mass] / [time] ** 2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;force&quot;</span><span class="p">],</span>
@@ -644,6 +645,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="s2">&quot;[mass] * [length] / [time] ** 2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;force&quot;</span><span class="p">],</span>
     <span class="s2">&quot;[temperature]&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;temperature&quot;</span><span class="p">],</span>
     <span class="s2">&quot;[mass] / [length] / [time] ** 2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;[mass] / [time] ** 2 / [length]&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">],</span>
     <span class="s2">&quot;[mass] / [length] / [time]&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;dynamic viscosity&quot;</span><span class="p">],</span>
     <span class="s2">&quot;[current] * [time]&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;charge&quot;</span><span class="p">],</span>
     <span class="s2">&quot;[length] ** 1.5 * [mass] ** 0.5 / [time]&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;charge&quot;</span><span class="p">],</span>

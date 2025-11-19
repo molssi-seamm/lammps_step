@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.energy &#8212; SEAMM LAMMPS Plug-in 2025.11.9 documentation</title>
+    <title>lammps_step.energy &#8212; SEAMM LAMMPS Plug-in 2025.11.19 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=4d3f6f5b"></script>
+    <script src="../../_static/documentation_options.js?v=90bdc6fa"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.11.9" />
+  <meta name="docsearch:version" content="2025.11.19" />
   </head>
   
   
@@ -473,19 +473,92 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <span class="sd">&quot;&quot;&quot;A single-point energy in LAMMPS&quot;&quot;&quot;</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">isnan</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pkg_resources</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tabulate</span><span class="w"> </span><span class="kn">import</span> <span class="n">tabulate</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">lammps_step</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lammps_step</span><span class="w"> </span><span class="kn">import</span> <span class="n">LAMMPS</span><span class="p">,</span> <span class="n">from_lammps_units</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">molsystem</span><span class="w"> </span><span class="kn">import</span> <span class="n">elements</span><span class="p">,</span> <span class="n">Cell</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seamm</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util</span><span class="w"> </span><span class="kn">import</span> <span class="n">units_class</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util</span><span class="w"> </span><span class="kn">import</span> <span class="n">units_class</span><span class="p">,</span> <span class="n">Q_</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seamm_util.printing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">printing</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util.printing</span><span class="w"> </span><span class="kn">import</span> <span class="n">FormattedText</span> <span class="k">as</span> <span class="n">__</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 <span class="n">printer</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">(</span><span class="s2">&quot;lammps&quot;</span><span class="p">)</span>
+
+
+<span class="n">_subscript</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;0&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\N{SUBSCRIPT ZERO}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\N{SUBSCRIPT ONE}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\N{SUBSCRIPT TWO}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;3&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\N{SUBSCRIPT THREE}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;4&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\N{SUBSCRIPT FOUR}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;5&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\N{SUBSCRIPT FIVE}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;6&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\N{SUBSCRIPT SIX}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;7&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\N{SUBSCRIPT SEVEN}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;8&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\N{SUBSCRIPT EIGHT}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;9&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\N{SUBSCRIPT NINE}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="subscript">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.energy.subscript">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">subscript</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the number using Unicode subscript characters.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">_subscript</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)])</span></div>
+
+
+
+<span class="n">one_half</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\N{VULGAR FRACTION ONE HALF}</span><span class="s2">&quot;</span>
+<span class="n">degree_sign</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\N{DEGREE SIGN}</span><span class="s2">&quot;</span>
+<span class="n">standard_state</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;H&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">one_half</span><span class="si">}</span><span class="s2">H</span><span class="si">{</span><span class="n">subscript</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">(g)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;He&quot;</span><span class="p">:</span> <span class="s2">&quot;He(g)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Li&quot;</span><span class="p">:</span> <span class="s2">&quot;Li(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Be&quot;</span><span class="p">:</span> <span class="s2">&quot;Be(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="s2">&quot;B(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="s2">&quot;C(s,gr)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;N&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">one_half</span><span class="si">}</span><span class="s2">N</span><span class="si">{</span><span class="n">subscript</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">(g)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;O&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">one_half</span><span class="si">}</span><span class="s2">O</span><span class="si">{</span><span class="n">subscript</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">(g)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;F&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">one_half</span><span class="si">}</span><span class="s2">F</span><span class="si">{</span><span class="n">subscript</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">(g)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Ne&quot;</span><span class="p">:</span> <span class="s2">&quot;Ne(g)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Na&quot;</span><span class="p">:</span> <span class="s2">&quot;Na(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Mg&quot;</span><span class="p">:</span> <span class="s2">&quot;Mg(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Al&quot;</span><span class="p">:</span> <span class="s2">&quot;Al(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Si&quot;</span><span class="p">:</span> <span class="s2">&quot;Si(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P&quot;</span><span class="p">:</span> <span class="s2">&quot;P(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;S&quot;</span><span class="p">:</span> <span class="s2">&quot;S(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Cl&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">one_half</span><span class="si">}</span><span class="s2">Cl</span><span class="si">{</span><span class="n">subscript</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">(g)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Ar&quot;</span><span class="p">:</span> <span class="s2">&quot;Ar(g)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;K&quot;</span><span class="p">:</span> <span class="s2">&quot;K(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Ca&quot;</span><span class="p">:</span> <span class="s2">&quot;Ca(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Sc&quot;</span><span class="p">:</span> <span class="s2">&quot;Sc(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Ti&quot;</span><span class="p">:</span> <span class="s2">&quot;Ti(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;V&quot;</span><span class="p">:</span> <span class="s2">&quot;V(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Cr&quot;</span><span class="p">:</span> <span class="s2">&quot;Cr(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Mn&quot;</span><span class="p">:</span> <span class="s2">&quot;Mn(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Fe&quot;</span><span class="p">:</span> <span class="s2">&quot;Fe(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Co&quot;</span><span class="p">:</span> <span class="s2">&quot;Co(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Ni&quot;</span><span class="p">:</span> <span class="s2">&quot;Ni(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Cu&quot;</span><span class="p">:</span> <span class="s2">&quot;Cu(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Zn&quot;</span><span class="p">:</span> <span class="s2">&quot;Zn(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Ga&quot;</span><span class="p">:</span> <span class="s2">&quot;Ga(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Ge&quot;</span><span class="p">:</span> <span class="s2">&quot;Ge(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;As&quot;</span><span class="p">:</span> <span class="s2">&quot;As(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Se&quot;</span><span class="p">:</span> <span class="s2">&quot;Se(s)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Br&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">one_half</span><span class="si">}</span><span class="s2">Br</span><span class="si">{</span><span class="n">subscript</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">(l)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Kr&quot;</span><span class="p">:</span> <span class="s2">&quot;(g)&quot;</span><span class="p">,</span>
+<span class="p">}</span>
 
 
 <div class="viewcode-block" id="Energy">
@@ -563,66 +636,51 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse the output and generating the text output and store the</span>
 <span class="sd">        data in variables for other stages to access</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">table</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-            <span class="n">tmp</span> <span class="o">=</span> <span class="n">tabulate</span><span class="p">(</span>
-                <span class="n">table</span><span class="p">,</span>
-                <span class="n">headers</span><span class="o">=</span><span class="s2">&quot;keys&quot;</span><span class="p">,</span>
-                <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;simple&quot;</span><span class="p">,</span>
-                <span class="n">disable_numparse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">colalign</span><span class="o">=</span><span class="p">(</span>
-                    <span class="s2">&quot;center&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;decimal&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;center&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;decimal&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;left&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;decimal&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;decimal&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;decimal&quot;</span><span class="p">,</span>
-                <span class="p">),</span>
-            <span class="p">)</span>
-            <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;Properties&quot;</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">length</span><span class="p">)</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="n">tmp</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">current_values_to_dict</span><span class="p">(</span>
+            <span class="n">context</span><span class="o">=</span><span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">_data</span>
+        <span class="p">)</span>
 
-            <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">8</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dedent</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+        <span class="c1"># Get the initial structure</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">initial_configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">()</span>
 
-            <span class="n">have_warning</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]:</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">value</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
-                    <span class="n">have_warning</span> <span class="o">=</span> <span class="kc">True</span>
-                    <span class="k">break</span>
+        <span class="c1"># Handle the new structure as needed</span>
+        <span class="n">system</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
 
-            <span class="n">have_acf_warning</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">table</span><span class="p">[</span><span class="s2">&quot;tau&quot;</span><span class="p">]:</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">value</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;^&quot;</span><span class="p">:</span>
-                    <span class="n">have_warning</span> <span class="o">=</span> <span class="kc">True</span>
-                    <span class="k">break</span>
+        <span class="c1"># See if there are other results in json files</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wd</span> <span class="o">/</span> <span class="s2">&quot;energy.json&quot;</span>
+        <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">filename</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+                    <span class="n">tmp</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: error reading </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error with </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">have_warning</span> <span class="ow">or</span> <span class="n">have_acf_warning</span><span class="p">:</span>
-                <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">have_warning</span><span class="p">:</span>
-                <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
-                    <span class="n">__</span><span class="p">(</span>
-                        <span class="s2">&quot;          * this property has less than 100 independent &quot;</span>
-                        <span class="s2">&quot;samples, so may not be accurate.&quot;</span><span class="p">,</span>
-                        <span class="n">wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                        <span class="n">dedent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="p">)</span>
-                <span class="p">)</span>
+        <span class="c1"># Get the stress vector</span>
+        <span class="n">stress</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">initial_configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;Sxx&quot;</span><span class="p">,</span> <span class="s2">&quot;Syy&quot;</span><span class="p">,</span> <span class="s2">&quot;Szz&quot;</span><span class="p">,</span> <span class="s2">&quot;Syz&quot;</span><span class="p">,</span> <span class="s2">&quot;Sxz&quot;</span><span class="p">,</span> <span class="s2">&quot;Sxy&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="n">key</span> <span class="o">+</span> <span class="s2">&quot;,units&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;atm&quot;</span><span class="p">)</span>
+                    <span class="n">stress</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">key</span> <span class="o">+</span> <span class="s2">&quot;,units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;atm&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stress</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;stress&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stress</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;stress,units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;atm&quot;</span>
 
-            <span class="k">if</span> <span class="n">have_acf_warning</span><span class="p">:</span>
-                <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
-                    <span class="n">__</span><span class="p">(</span>
-                        <span class="s2">&quot;          ^ there are not enough samples after &quot;</span>
-                        <span class="s2">&quot;equilibration to plot the ACF.&quot;</span><span class="p">,</span>
-                        <span class="n">wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                        <span class="n">dedent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="p">)</span>
-                <span class="p">)</span>
+        <span class="c1"># Pressure</span>
+        <span class="k">if</span> <span class="s2">&quot;P&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;P&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;P&quot;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;P,units&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;atm&quot;</span><span class="p">)</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;P,units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;atm&quot;</span>
+
+        <span class="c1"># Energies</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;Epe&quot;</span><span class="p">,</span> <span class="s2">&quot;Etot&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="n">key</span> <span class="o">+</span> <span class="s2">&quot;,units&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">key</span> <span class="o">+</span> <span class="s2">&quot;,units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;kcal/mol&quot;</span>
 
         <span class="c1"># Process the output to get the energy</span>
         <span class="n">lines</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
@@ -636,7 +694,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">line</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
                     <span class="n">tmp</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-                    <span class="n">energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="n">energy</span> <span class="o">=</span> <span class="n">from_lammps_units</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
                     <span class="n">data</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">energy</span>
                     <span class="n">data</span><span class="p">[</span><span class="s2">&quot;energy,units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;kcal/mol&quot;</span>
 
@@ -662,38 +720,137 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">_e</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LAMMPS loop time: </span><span class="si">{</span><span class="n">_e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="c1"># See if forces have been dumped</span>
-        <span class="n">wdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="n">wdir</span> <span class="o">/</span> <span class="s2">&quot;forces.dump&quot;</span>
-        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">get_dump</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-
-            <span class="n">fields</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;fields&quot;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="s2">&quot;fx&quot;</span> <span class="ow">in</span> <span class="n">fields</span> <span class="ow">and</span> <span class="s2">&quot;fy&quot;</span> <span class="ow">in</span> <span class="n">fields</span> <span class="ow">and</span> <span class="s2">&quot;fz&quot;</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
-                <span class="n">ix</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;fx&quot;</span><span class="p">)</span>
-                <span class="n">iy</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;fy&quot;</span><span class="p">)</span>
-                <span class="n">iz</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;fz&quot;</span><span class="p">)</span>
-                <span class="n">fxs</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">ix</span><span class="p">]</span>
-                <span class="n">fys</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">iy</span><span class="p">]</span>
-                <span class="n">fzs</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">iz</span><span class="p">]</span>
-                <span class="n">gradients</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="n">fx</span><span class="p">,</span> <span class="o">-</span><span class="n">fy</span><span class="p">,</span> <span class="o">-</span><span class="n">fz</span><span class="p">]</span> <span class="k">for</span> <span class="n">fx</span><span class="p">,</span> <span class="n">fy</span><span class="p">,</span> <span class="n">fz</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fxs</span><span class="p">,</span> <span class="n">fys</span><span class="p">,</span> <span class="n">fzs</span><span class="p">)]</span>
-                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;gradients&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gradients</span>
-                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;gradients,units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;kcal/mol/angstrom&quot;</span>
-
-        <span class="c1"># Get the configuration</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="c1"># Calculate the enthalpy of formation, if possible</span>
+        <span class="n">tmp_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_enthalpy_of_formation</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tmp_text</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wd</span> <span class="o">/</span> <span class="s2">&quot;Thermochemistry.txt&quot;</span>
+            <span class="n">path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">tmp_text</span><span class="p">)</span>
 
         <span class="c1"># Add static properties such as density for e.g NVE and NVT calculations</span>
-        <span class="k">if</span> <span class="s2">&quot;density&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;density&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">density</span>
-        <span class="k">if</span> <span class="s2">&quot;a&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">a</span>
-        <span class="k">if</span> <span class="s2">&quot;b&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">b</span>
-        <span class="k">if</span> <span class="s2">&quot;c&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">c</span>
-        <span class="k">if</span> <span class="s2">&quot;volume&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;volume&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">volume</span>
+        <span class="k">if</span> <span class="n">initial_configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;density&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;density&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">initial_configuration</span><span class="o">.</span><span class="n">density</span>
+            <span class="k">if</span> <span class="s2">&quot;a&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">initial_configuration</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">a</span>
+            <span class="k">if</span> <span class="s2">&quot;b&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">initial_configuration</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">b</span>
+            <span class="k">if</span> <span class="s2">&quot;c&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">initial_configuration</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">c</span>
+            <span class="k">if</span> <span class="s2">&quot;alpha&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;alpha&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">initial_configuration</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">alpha</span>
+            <span class="k">if</span> <span class="s2">&quot;beta&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;beta&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">initial_configuration</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">beta</span>
+            <span class="k">if</span> <span class="s2">&quot;gamma&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;gamma&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">initial_configuration</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">gamma</span>
+            <span class="k">if</span> <span class="s2">&quot;volume&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;volume&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">initial_configuration</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">volume</span>
+
+        <span class="c1"># Print the table of results</span>
+        <span class="k">if</span> <span class="n">table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;Property&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;Value&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;Units&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="p">}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;DfH0_reax&quot;</span><span class="p">,</span> <span class="s2">&quot;DfE0&quot;</span><span class="p">,</span> <span class="s2">&quot;energy&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Å&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">char</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">((</span><span class="s2">&quot;alpha&quot;</span><span class="p">,</span> <span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="s2">&quot;gamma&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;𝞪&quot;</span><span class="p">,</span> <span class="s2">&quot;𝞫&quot;</span><span class="p">,</span> <span class="s2">&quot;𝞬&quot;</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;°&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;P&quot;</span><span class="p">,</span> <span class="s2">&quot;Sxx&quot;</span><span class="p">,</span> <span class="s2">&quot;Syy&quot;</span><span class="p">,</span> <span class="s2">&quot;Szz&quot;</span><span class="p">,</span> <span class="s2">&quot;Syz&quot;</span><span class="p">,</span> <span class="s2">&quot;Sxz&quot;</span><span class="p">,</span> <span class="s2">&quot;Sxy&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;atm&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;density&quot;</span><span class="p">,):</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;g/mL&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;volume&quot;</span><span class="p">,):</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Property&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Å^3&quot;</span><span class="p">)</span>
+
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">tabulate</span><span class="p">(</span>
+            <span class="n">table</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="s2">&quot;keys&quot;</span><span class="p">,</span>
+            <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;rounded_outline&quot;</span><span class="p">,</span>
+            <span class="n">colalign</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="s2">&quot;decimal&quot;</span><span class="p">,</span> <span class="s2">&quot;left&quot;</span><span class="p">),</span>
+            <span class="n">disable_numparse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">text_lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">text_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Single Point Energy&quot;</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">length</span><span class="p">))</span>
+        <span class="n">text_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+        <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">text_lines</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">7</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
+        <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Read the dump file and get the structure</span>
+        <span class="n">xyz</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cell</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">gradients</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">velocities</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">dump_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wd</span> <span class="o">/</span> <span class="s2">&quot;energy.dump&quot;</span>
+        <span class="k">if</span> <span class="n">dump_file</span><span class="o">.</span><span class="n">exists</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">dump_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_dump_frame</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s2">&quot;xyz&quot;</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+                    <span class="n">xyz</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;xyz&quot;</span><span class="p">]</span>
+                    <span class="n">fractional</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">elif</span> <span class="s2">&quot;abc&quot;</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+                    <span class="n">xyz</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;abc&quot;</span><span class="p">]</span>
+                    <span class="n">fractional</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">xyz</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">cell</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;cell&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;cell&quot;</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="n">gradients</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;gradients&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;gradients&quot;</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="n">velocities</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;velocities&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;velocities&quot;</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">gradients</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;gradients&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gradients</span>
+                <span class="k">if</span> <span class="n">velocities</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;velocities&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">velocities</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;Warning: unable to read the LAMMPS dumpfile&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The was a problem reading the LAMMPS dumpfile: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;Warning: there is no &#39;dump&#39; file from LAMMPS&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">cell</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">configuration</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">cell</span>
+            <span class="k">if</span> <span class="n">xyz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">fractionals</span><span class="o">=</span><span class="n">fractional</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">gradients</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># LAMMPS only has Cartesian gradients</span>
+                <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_gradients</span><span class="p">(</span><span class="n">gradients</span><span class="p">,</span> <span class="n">fractionals</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">velocities</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># LAMMPS only has Cartesian velocities</span>
+                <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_velocities</span><span class="p">(</span><span class="n">velocities</span><span class="p">,</span> <span class="n">fractionals</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="c1"># And the name of the configuration.</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">standard_parameters</span><span class="o">.</span><span class="n">set_names</span><span class="p">(</span>
+                <span class="n">system</span><span class="p">,</span>
+                <span class="n">configuration</span><span class="p">,</span>
+                <span class="n">P</span><span class="p">,</span>
+                <span class="n">_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
         <span class="c1"># Put any requested results into variables or tables</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">store_results</span><span class="p">(</span>
@@ -702,6 +859,439 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">create_tables</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;create tables&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span>
             <span class="n">printer</span><span class="o">=</span><span class="n">printer</span><span class="p">,</span>
         <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Energy.calculate_enthalpy_of_formation">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.energy.Energy.calculate_enthalpy_of_formation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_enthalpy_of_formation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the enthalpy of formation from the results of a calculation.</span>
+
+<span class="sd">        This uses tabulated values of the enthalpy of formation of the atoms for</span>
+<span class="sd">        the elements and tabulated energies calculated for atoms with the current</span>
+<span class="sd">        method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : dict</span>
+<span class="sd">            The results of the calculation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">J_to_cal</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;J&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;cal&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Read the tabulated values from either user or data directory</span>
+        <span class="n">personal_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;~/.seamm.d/data/element_energies.csv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">personal_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">personal_table</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">personal_file</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">personal_table</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">pkg_resources</span><span class="o">.</span><span class="n">resource_filename</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;data/&quot;</span><span class="p">))</span>
+        <span class="n">csv_file</span> <span class="o">=</span> <span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;element_energies.csv&quot;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">csv_file</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;self.model = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check if have the data</span>
+        <span class="n">atom_formation_energy</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">atom_energy</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">column</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Looking for &#39;</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># atom_formation_energy is the energy of formation of the standard state,</span>
+        <span class="c1"># per atom.</span>
+        <span class="c1"># atom_energy is the calculated energy of the atom, which defaults to zero</span>
+        <span class="n">column2</span> <span class="o">=</span> <span class="n">column</span> <span class="o">+</span> <span class="s2">&quot; atom energy&quot;</span>
+        <span class="k">if</span> <span class="n">personal_table</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">personal_table</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">atom_formation_energy</span> <span class="o">=</span> <span class="p">(</span><span class="n">J_to_cal</span> <span class="o">*</span> <span class="n">personal_table</span><span class="p">[</span><span class="n">column</span><span class="p">])</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">column2</span> <span class="ow">in</span> <span class="n">personal_table</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">atom_energy</span> <span class="o">=</span> <span class="p">(</span><span class="n">J_to_cal</span> <span class="o">*</span> <span class="n">personal_table</span><span class="p">[</span><span class="n">column2</span><span class="p">])</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">atom_formation_energy</span> <span class="o">=</span> <span class="p">(</span><span class="n">J_to_cal</span> <span class="o">*</span> <span class="n">table</span><span class="p">[</span><span class="n">column</span><span class="p">])</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">column2</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">atom_energy</span> <span class="o">=</span> <span class="p">(</span><span class="n">J_to_cal</span> <span class="o">*</span> <span class="n">table</span><span class="p">[</span><span class="n">column2</span><span class="p">])</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">atom_formation_energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Not found!</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;There are no tabulated atom energies for </span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="c1"># Assume an offset energy -- the energy of an isolated atom -- is zero if not</span>
+        <span class="c1"># tabulated</span>
+        <span class="k">if</span> <span class="n">atom_energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">atom_energy</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">atom_formation_energy</span><span class="p">)</span>
+
+        <span class="n">DfH0gas</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">references</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">term_symbols</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">personal_table</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;ΔfH°gas&quot;</span> <span class="ow">in</span> <span class="n">personal_table</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">DfH0gas</span> <span class="o">=</span> <span class="n">personal_table</span><span class="p">[</span><span class="s2">&quot;ΔfH°gas&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s2">&quot;Reference&quot;</span> <span class="ow">in</span> <span class="n">personal_table</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">references</span> <span class="o">=</span> <span class="n">personal_table</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s2">&quot;Term Symbol&quot;</span> <span class="ow">in</span> <span class="n">personal_table</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">term_symbols</span> <span class="o">=</span> <span class="n">personal_table</span><span class="p">[</span><span class="s2">&quot;Term Symbols&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="s2">&quot;ΔfH°gas&quot;</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">DfH0gas</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">&quot;ΔfH°gas&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s2">&quot;Reference&quot;</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">references</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s2">&quot;Term Symbol&quot;</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">term_symbols</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term Symbol&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+
+        <span class="c1"># Get the atomic numbers and counts</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">atomic_numbers</span><span class="p">)</span>
+
+        <span class="c1"># Get the Hill formula as a list</span>
+        <span class="n">symbols</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">elements</span><span class="o">.</span><span class="n">to_symbols</span><span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+        <span class="n">composition</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="s2">&quot;C&quot;</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">:</span>
+            <span class="n">composition</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="n">counts</span><span class="p">[</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="n">symbols</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;H&quot;</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">:</span>
+                <span class="n">composition</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;H&quot;</span><span class="p">,</span> <span class="n">counts</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+                <span class="n">symbols</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;H&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">:</span>
+            <span class="n">atno</span> <span class="o">=</span> <span class="n">elements</span><span class="o">.</span><span class="n">symbol_to_atno</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
+            <span class="n">composition</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">atno</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">counts</span><span class="p">[</span><span class="n">atno</span><span class="p">]))</span>
+
+        <span class="c1"># And the reactions. First, for atomization energy</span>
+        <span class="n">middot</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\N{MIDDLE DOT}</span><span class="s2">&quot;</span>
+        <span class="n">lDelta</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\N{GREEK CAPITAL LETTER DELTA}</span><span class="s2">&quot;</span>
+        <span class="n">formula</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">atno</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">composition</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">formula</span> <span class="o">+=</span> <span class="n">symbol</span>
+                <span class="n">tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">(g)&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">formula</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">symbol</span><span class="si">}{</span><span class="n">subscript</span><span class="p">(</span><span class="n">count</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">count</span><span class="si">}{</span><span class="n">middot</span><span class="si">}{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">(g)&quot;</span><span class="p">)</span>
+        <span class="n">gas_atoms</span> <span class="o">=</span> <span class="s2">&quot; + &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">atno</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">composition</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">standard_state</span><span class="p">[</span><span class="n">symbol</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">count</span><span class="si">}{</span><span class="n">middot</span><span class="si">}{</span><span class="n">standard_state</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">standard_elements</span> <span class="o">=</span> <span class="s2">&quot; + &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+
+        <span class="c1"># The energy - any offsets is the negative of the atomization energy</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Formula: &quot;</span> <span class="o">+</span> <span class="n">formula</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">PC_iupac_name</span><span class="p">(</span><span class="n">fallback</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Formula: &quot;</span> <span class="o">+</span> <span class="n">formula</span>
+
+        <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Thermochemistry of </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> with </span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;Atomization Energy</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;------------------</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;The atomization energy,  </span><span class="si">{</span><span class="n">lDelta</span><span class="si">}</span><span class="s2">atE</span><span class="si">{</span><span class="n">degree_sign</span><span class="si">}</span><span class="s2">, is the energy to break&quot;</span>
+            <span class="s2">&quot; all the bonds in the system, separating the atoms from each other.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">    </span><span class="si">{</span><span class="n">formula</span><span class="si">}</span><span class="s2"> --&gt; </span><span class="si">{</span><span class="n">gas_atoms</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
+            <span class="s2">&quot;The following table shows in detail the calculation. The first line is &quot;</span>
+            <span class="s2">&quot;the system and its calculated energy. The next lines are the energies &quot;</span>
+            <span class="s2">&quot;of each type of atom in the system. These have been tabulated by running &quot;</span>
+            <span class="s2">&quot;calculations on each atom, and are included in the SEAMM release. &quot;</span>
+            <span class="s2">&quot;The line give the formation energy from atoms in kcal/mol.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;System&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;Term&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;Value&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;Units&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="s2">&quot;Epe&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">E</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Epe&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="s2">&quot;energy&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">E</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;The energy is not in results from the calculation!&quot;</span>
+
+        <span class="n">Eatoms</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">Ef0</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">atno</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">composition</span><span class="p">:</span>
+            <span class="n">Eatom</span> <span class="o">=</span> <span class="n">atom_energy</span><span class="p">[</span><span class="n">atno</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">isnan</span><span class="p">(</span><span class="n">Eatom</span><span class="p">):</span>
+                <span class="c1"># Don&#39;t have the data for this element</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Do not have tabulated atom energies for </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">Eatoms</span> <span class="o">+=</span> <span class="n">count</span> <span class="o">*</span> <span class="n">Eatom</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;System&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">(g)&quot;</span><span class="p">)</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> * </span><span class="si">{</span><span class="n">Eatom</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">count</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Eatom</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+            <span class="n">Ef0</span> <span class="o">+=</span> <span class="n">count</span> <span class="o">*</span> <span class="n">atom_formation_energy</span><span class="p">[</span><span class="n">atno</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;DfE0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">E</span> <span class="o">-</span> <span class="n">Ef0</span>
+
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;kcal/mol&quot;</span>
+
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;System&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;^&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;System&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="o">-</span><span class="n">E</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="o">-</span><span class="n">E</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span>
+
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;E atomization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Eatoms</span> <span class="o">-</span> <span class="n">E</span>
+
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;System&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;E atomization&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;System&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lDelta</span><span class="si">}</span><span class="s2">atE&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span>
+
+        <span class="n">factor</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;kJ/mol&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;System&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">factor</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;E atomization&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kJ/mol&quot;</span><span class="p">)</span>
+
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">tabulate</span><span class="p">(</span>
+            <span class="n">table</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="s2">&quot;keys&quot;</span><span class="p">,</span>
+            <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;rounded_outline&quot;</span><span class="p">,</span>
+            <span class="n">colalign</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="s2">&quot;decimal&quot;</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">),</span>
+            <span class="n">disable_numparse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">text_lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">text_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Atomization Energy for </span><span class="si">{</span><span class="n">formula</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">length</span><span class="p">))</span>
+        <span class="n">text_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">text_lines</span><span class="p">),</span> <span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;H&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;Cannot calculate enthalpy of formation without the enthalpy&quot;</span>
+            <span class="k">return</span> <span class="n">text</span>
+        <span class="k">if</span> <span class="n">DfH0gas</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;Cannot calculate enthalpy of formation without the tabulated</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;atomization enthalpies of the elements.&quot;</span>
+            <span class="k">return</span> <span class="n">text</span>
+
+        <span class="c1"># Atomization enthalpy of the elements, experimental</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;System&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;Term&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;Value&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;Units&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;Reference&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="p">}</span>
+
+        <span class="n">E</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span>
+
+        <span class="n">DfH_at</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">refno</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">atno</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">composition</span><span class="p">:</span>
+            <span class="n">DfH_atom</span> <span class="o">=</span> <span class="n">DfH0gas</span><span class="p">[</span><span class="n">atno</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">DfH_at</span> <span class="o">+=</span> <span class="n">count</span> <span class="o">*</span> <span class="n">DfH_atom</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">DfH_atom</span><span class="p">,</span> <span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;E_h&quot;</span><span class="p">)</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;System&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">(g)&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tmp</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> * </span><span class="si">{</span><span class="n">tmp</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">count</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">tmp</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">refno</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">refno</span><span class="p">)</span>
+
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;E_h&quot;</span>
+
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;System&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;^&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;System&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">standard_elements</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;0.0&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;E_h&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;System&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">Q_</span><span class="p">(</span><span class="n">DfH_at</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;E_h&quot;</span><span class="p">)</span><span class="si">:</span><span class="s1">.6f</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;System&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lDelta</span><span class="si">}</span><span class="s2">atH</span><span class="si">{</span><span class="n">degree_sign</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;E_h&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;System&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">DfH_at</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">tabulate</span><span class="p">(</span>
+            <span class="n">table</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="s2">&quot;keys&quot;</span><span class="p">,</span>
+            <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;rounded_outline&quot;</span><span class="p">,</span>
+            <span class="n">colalign</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="s2">&quot;decimal&quot;</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">),</span>
+            <span class="n">disable_numparse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">text_lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">text_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="s2">&quot;Atomization enthalpy of the elements (experimental)&quot;</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">length</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">text_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;Enthalpy of Formation</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;---------------------</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;The enthalpy of formation, </span><span class="si">{</span><span class="n">lDelta</span><span class="si">}</span><span class="s2">fHº, is the enthalpy of creating the &quot;</span>
+            <span class="s2">&quot;molecule from the elements in their standard state:&quot;</span>
+        <span class="p">)</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">   </span><span class="si">{</span><span class="n">standard_elements</span><span class="si">}</span><span class="s2"> --&gt; </span><span class="si">{</span><span class="n">formula</span><span class="si">}</span><span class="s2"> (1)</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
+            <span class="s2">&quot;The standard state of the element, denoted by the superscript º,&quot;</span>
+            <span class="s2">&quot; is its form at 298.15 K and 1 atm pressure, e.g. graphite for carbon, &quot;</span>
+            <span class="s2">&quot;H2 gas for hydrogen, etc.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
+            <span class="s2">&quot;Since it is not easy to calculate the enthalpy of e.g. graphite we will &quot;</span>
+            <span class="s2">&quot;use two sequential reactions that are equivalent. First, we will create &quot;</span>
+            <span class="s2">&quot;gas phase atoms from the elements:&quot;</span>
+        <span class="p">)</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">    </span><span class="si">{</span><span class="n">standard_elements</span><span class="si">}</span><span class="s2"> --&gt; </span><span class="si">{</span><span class="n">gas_atoms</span><span class="si">}</span><span class="s2"> (2)</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
+            <span class="s2">&quot;This will use the experimental values of the enthalpy of formation of the &quot;</span>
+            <span class="s2">&quot;atoms in the gas phase to calculate the enthalpy of this reaction. &quot;</span>
+            <span class="s2">&quot;Then we react the atoms to get the desired system:&quot;</span>
+        <span class="p">)</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">    </span><span class="si">{</span><span class="n">gas_atoms</span><span class="si">}</span><span class="s2"> --&gt; </span><span class="si">{</span><span class="n">formula</span><span class="si">}</span><span class="s2"> (3)</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
+            <span class="s2">&quot;Note that this is reverse of the atomization reaction, so &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lDelta</span><span class="si">}</span><span class="s2">H = -</span><span class="si">{</span><span class="n">lDelta</span><span class="si">}</span><span class="s2">atH.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
+            <span class="s2">&quot;First we calculate the enthalpy of the atomization of the elements in &quot;</span>
+            <span class="s2">&quot;their standard state, using tabulated experimental values:&quot;</span>
+        <span class="p">)</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">text_lines</span><span class="p">),</span> <span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+
+        <span class="c1"># And the calculated atomization enthalpy</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;System&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;Term&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;Value&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;Units&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="p">}</span>
+
+        <span class="n">Hatoms</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">dH</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="mf">6.197</span><span class="p">,</span> <span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;E_h&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">atno</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">composition</span><span class="p">:</span>
+            <span class="n">Eatom</span> <span class="o">=</span> <span class="n">atom_formation_energy</span><span class="p">[</span><span class="n">atno</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="c1"># 6.197 is the H298-H0 for an atom</span>
+            <span class="n">Hatoms</span> <span class="o">+=</span> <span class="n">count</span> <span class="o">*</span> <span class="p">(</span><span class="n">Eatom</span> <span class="o">+</span> <span class="mf">6.197</span><span class="p">)</span>
+
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;System&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">(g)&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="o">-</span><span class="n">Eatom</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> + </span><span class="si">{</span><span class="n">dH</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> * (</span><span class="si">{</span><span class="o">-</span><span class="n">Eatom</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> + </span><span class="si">{</span><span class="n">dH</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="o">-</span><span class="n">count</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">Eatom</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">dH</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;System&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;^&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">H</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">]</span>
+
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;System&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">H</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span>
+
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;H atomization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Hatoms</span> <span class="o">-</span> <span class="n">Q_</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="s2">&quot;E_h&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;DfH0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">DfH_at</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;H atomization&quot;</span><span class="p">]</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;System&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;System&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;H atomization&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span>
+
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">tabulate</span><span class="p">(</span>
+            <span class="n">table</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="s2">&quot;keys&quot;</span><span class="p">,</span>
+            <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;rounded_outline&quot;</span><span class="p">,</span>
+            <span class="n">colalign</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="s2">&quot;decimal&quot;</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">),</span>
+            <span class="n">disable_numparse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">text_lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">text_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Atomization Enthalpy (calculated)&quot;</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">length</span><span class="p">))</span>
+        <span class="n">text_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+
+        <span class="n">text</span> <span class="o">+=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
+            <span class="s2">&quot;Next we calculate the atomization enthalpy of the system. We have the &quot;</span>
+            <span class="s2">&quot;calculated enthalpy of the system, but need the enthalpy of gas phase &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;atoms at the standard state (25</span><span class="si">{</span><span class="n">degree_sign</span><span class="si">}</span><span class="s2">C, 1 atm). The tabulated &quot;</span>
+            <span class="s2">&quot;energies for the atoms, used above, are identical to H0 for an atom. &quot;</span>
+            <span class="s2">&quot;We will add H298 - H0 to each atom, which [1] is 5/2RT = 0.002360 E_h&quot;</span>
+        <span class="p">)</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">text_lines</span><span class="p">),</span> <span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
+            <span class="s2">&quot;The enthalpy change for reaction (3) is the negative of this atomization&quot;</span>
+            <span class="s2">&quot; enthalpy. Putting the two reactions together with the negative for Rxn 3:&quot;</span>
+        <span class="p">)</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lDelta</span><span class="si">}</span><span class="s2">fH</span><span class="si">{</span><span class="n">degree_sign</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">lDelta</span><span class="si">}</span><span class="s2">H(rxn 2) - </span><span class="si">{</span><span class="n">lDelta</span><span class="si">}</span><span class="s2">H(rxn 3)</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;     = </span><span class="si">{</span><span class="n">DfH_at</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;H atomization&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;     = </span><span class="si">{</span><span class="n">DfH_at</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;H atomization&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> kcal/mol</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;References</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;----------</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;1. https://en.wikipedia.org/wiki/Monatomic_gas</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">refno</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">atno</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">composition</span><span class="p">:</span>
+            <span class="n">refno</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">refno</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="n">lDelta</span><span class="si">}</span><span class="s2">fH</span><span class="si">{</span><span class="n">degree_sign</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">DfH0gas</span><span class="p">[</span><span class="n">atno</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> kcal/mol&quot;</span>
+            <span class="k">if</span> <span class="n">term_symbols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; for </span><span class="si">{</span><span class="n">term_symbols</span><span class="p">[</span><span class="n">atno</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; for </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">references</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; from </span><span class="si">{</span><span class="n">references</span><span class="p">[</span><span class="n">atno</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="n">text</span></div>
 
 
 <div class="viewcode-block" id="Energy.get_input">
@@ -717,6 +1307,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">units_class</span><span class="p">):</span>
                 <span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;{:~P}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
 
+        <span class="n">_</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">()</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description_text</span><span class="p">(</span><span class="n">PP</span><span class="p">),</span> <span class="o">**</span><span class="n">PP</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
 
@@ -730,12 +1322,236 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;run                 0&quot;</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;undump              1&quot;</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Write out the stress</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+energy.json&quot;</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">lammps_units</span><span class="p">(</span><span class="s2">&quot;pressure&quot;</span><span class="p">)</span>
+            <span class="n">eunits</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">lammps_units</span><span class="p">(</span><span class="s2">&quot;energy&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s1">&#39;print               &quot;&quot;&quot;{</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s1">&#39;    &quot;P&quot;: $(v_press:</span><span class="si">%.3f</span><span class="s1">),</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;    &quot;P,units&quot;: &quot;</span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s1">&quot;,</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s1">&#39;    &quot;Sxx&quot;: $(v_sxx:</span><span class="si">%.3f</span><span class="s1">),</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;    &quot;Sxx,units&quot;: &quot;</span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s1">&quot;,</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s1">&#39;    &quot;Syy&quot;: $(v_syy:</span><span class="si">%.3f</span><span class="s1">),</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;    &quot;Syy,units&quot;: &quot;</span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s1">&quot;,</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s1">&#39;    &quot;Szz&quot;: $(v_szz:</span><span class="si">%.3f</span><span class="s1">),</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;    &quot;Szz,units&quot;: &quot;</span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s1">&quot;,</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s1">&#39;    &quot;Syz&quot;: $(v_syz:</span><span class="si">%.3f</span><span class="s1">),</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;    &quot;Syz,units&quot;: &quot;</span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s1">&quot;,</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s1">&#39;    &quot;Sxz&quot;: $(v_sxz:</span><span class="si">%.3f</span><span class="s1">),</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;    &quot;Sxz,units&quot;: &quot;</span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s1">&quot;,</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s1">&#39;    &quot;Sxy&quot;: $(v_sxy:</span><span class="si">%.3f</span><span class="s1">),</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;    &quot;Sxy,units&quot;: &quot;</span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s1">&quot;,</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s1">&#39;    &quot;Etot&quot;: $(v_etotal:</span><span class="si">%.4f</span><span class="s1">),</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;    &quot;Etot,units&quot;: &quot;</span><span class="si">{</span><span class="n">eunits</span><span class="si">}</span><span class="s1">&quot;,</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s1">&#39;    &quot;Epe&quot;: $(v_etotal:</span><span class="si">%.4f</span><span class="s1">),</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;    &quot;Epe,units&quot;: &quot;</span><span class="si">{</span><span class="n">eunits</span><span class="si">}</span><span class="s1">&quot;</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s2">&quot;}&quot;</span>
+                <span class="sa">f</span><span class="s1">&#39;&quot;&quot;&quot; file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+energy.dump&quot;</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;write_dump          all custom  </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> id xu yu zu fx fy fz&quot;</span>
+            <span class="s2">&quot; modify flush yes sort id&quot;</span>
+        <span class="p">)</span>
+
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;script&quot;</span><span class="p">:</span> <span class="n">lines</span><span class="p">,</span>
             <span class="s2">&quot;postscript&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
             <span class="s2">&quot;use python&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
         <span class="p">}</span></div>
-</div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_dump_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">,</span> <span class="n">line_no</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process a single frame of a LAMMPS dump file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        lines : [str]</span>
+<span class="sd">            The lines of the section.</span>
+
+<span class="sd">        lineno : int</span>
+<span class="sd">            The count of lines before this frame, used for error messages</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict(str, any)</span>
+<span class="sd">            The results keyed by the item name.</span>
+<span class="sd">            The units are Å, kJ/mol, and fs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">it</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">it</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">line_no</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;ITEM:&quot;</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Error reading dump file: line </span><span class="si">{</span><span class="n">line_no</span><span class="si">}</span><span class="s2"> should be &#39;ITEM: ...&#39;&quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">&#39;</span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">section</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">6</span><span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;   section = &quot;</span> <span class="o">+</span> <span class="n">section</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">section</span> <span class="o">==</span> <span class="s2">&quot;TIMESTEP&quot;</span><span class="p">:</span>
+                    <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                    <span class="n">results</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">elif</span> <span class="n">section</span> <span class="o">==</span> <span class="s2">&quot;NUMBER OF ATOMS&quot;</span><span class="p">:</span>
+                    <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                    <span class="n">results</span><span class="p">[</span><span class="s2">&quot;n_atoms&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_atoms</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">elif</span> <span class="s2">&quot;BOX BOUNDS&quot;</span> <span class="ow">in</span> <span class="n">section</span><span class="p">:</span>
+                    <span class="n">factor</span> <span class="o">=</span> <span class="n">from_lammps_units</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Å&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">section</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
+                        <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                        <span class="n">xlo_bound</span><span class="p">,</span> <span class="n">xhi_bound</span><span class="p">,</span> <span class="n">xy</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                        <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                        <span class="n">ylo_bound</span><span class="p">,</span> <span class="n">yhi_bound</span><span class="p">,</span> <span class="n">xz</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                        <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                        <span class="n">zlo</span><span class="p">,</span> <span class="n">zhi</span><span class="p">,</span> <span class="n">yz</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+                        <span class="n">xlo_bound</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">xlo_bound</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+                        <span class="n">xhi_bound</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">xhi_bound</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+                        <span class="n">ylo_bound</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">ylo_bound</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+                        <span class="n">yhi_bound</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">yhi_bound</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+                        <span class="n">zlo</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zlo</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+                        <span class="n">zhi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zhi</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+                        <span class="n">xy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+                        <span class="n">xz</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">xz</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+                        <span class="n">yz</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">yz</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+
+                        <span class="n">xlo</span> <span class="o">=</span> <span class="n">xlo_bound</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">xy</span><span class="p">,</span> <span class="n">xz</span><span class="p">,</span> <span class="n">xy</span> <span class="o">+</span> <span class="n">xz</span><span class="p">)</span>
+                        <span class="n">xhi</span> <span class="o">=</span> <span class="n">xhi_bound</span> <span class="o">-</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">xy</span><span class="p">,</span> <span class="n">xz</span><span class="p">,</span> <span class="n">xy</span> <span class="o">+</span> <span class="n">xz</span><span class="p">)</span>
+                        <span class="n">ylo</span> <span class="o">=</span> <span class="n">ylo_bound</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">yz</span><span class="p">)</span>
+                        <span class="n">yhi</span> <span class="o">=</span> <span class="n">yhi_bound</span> <span class="o">-</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">yz</span><span class="p">)</span>
+                        <span class="n">cell</span> <span class="o">=</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">box_to_cell</span><span class="p">(</span>
+                            <span class="n">xhi</span> <span class="o">-</span> <span class="n">xlo</span><span class="p">,</span> <span class="n">yhi</span> <span class="o">-</span> <span class="n">ylo</span><span class="p">,</span> <span class="n">zhi</span> <span class="o">-</span> <span class="n">zlo</span><span class="p">,</span> <span class="n">xy</span><span class="p">,</span> <span class="n">xz</span><span class="p">,</span> <span class="n">yz</span>
+                        <span class="p">)</span>
+                        <span class="n">tmp</span> <span class="o">=</span> <span class="n">Cell</span><span class="p">(</span><span class="o">*</span><span class="n">cell</span><span class="p">)</span>
+                        <span class="n">lattice</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">tmp</span><span class="o">.</span><span class="n">vectors</span><span class="p">():</span>
+                            <span class="n">lattice</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                        <span class="n">xlo</span><span class="p">,</span> <span class="n">xhi</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                        <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                        <span class="n">ylo</span><span class="p">,</span> <span class="n">yhi</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                        <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                        <span class="n">zlo</span><span class="p">,</span> <span class="n">zhi</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+                        <span class="n">xlo</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">xlo</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+                        <span class="n">xhi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">xhi</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+                        <span class="n">ylo</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">ylo</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+                        <span class="n">yhi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">yhi</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+                        <span class="n">zlo</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zlo</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+                        <span class="n">zhi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zhi</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+
+                        <span class="n">lattice</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">xhi</span> <span class="o">-</span> <span class="n">xlo</span><span class="p">,</span>
+                            <span class="mf">0.0</span><span class="p">,</span>
+                            <span class="mf">0.0</span><span class="p">,</span>
+                            <span class="mf">0.0</span><span class="p">,</span>
+                            <span class="n">yhi</span> <span class="o">-</span> <span class="n">ylo</span><span class="p">,</span>
+                            <span class="mf">0.0</span><span class="p">,</span>
+                            <span class="mf">0.0</span><span class="p">,</span>
+                            <span class="mf">0.0</span><span class="p">,</span>
+                            <span class="n">zhi</span> <span class="o">-</span> <span class="n">zlo</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="n">cell</span> <span class="o">=</span> <span class="p">(</span><span class="n">xhi</span> <span class="o">-</span> <span class="n">xlo</span><span class="p">,</span> <span class="n">yhi</span> <span class="o">-</span> <span class="n">ylo</span><span class="p">,</span> <span class="n">zhi</span> <span class="o">-</span> <span class="n">zlo</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span>
+                    <span class="n">results</span><span class="p">[</span><span class="s2">&quot;cell&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cell</span>
+                    <span class="n">results</span><span class="p">[</span><span class="s2">&quot;lattice&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lattice</span>
+                    <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="s2">&quot;ATOMS&quot;</span> <span class="ow">in</span> <span class="n">section</span><span class="p">:</span>
+                    <span class="n">xyz</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">f</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">v</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">keys</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]</span>
+
+                    <span class="c1"># Coordinates</span>
+                    <span class="n">ixyz</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">if</span> <span class="s2">&quot;x&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;y&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;z&quot;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                        <span class="n">ixyz</span> <span class="o">=</span> <span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">))</span>
+                        <span class="n">xyz_type</span> <span class="o">=</span> <span class="s2">&quot;cartesian&quot;</span>
+                        <span class="n">fxyz</span> <span class="o">=</span> <span class="n">from_lammps_units</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Å&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+                    <span class="k">elif</span> <span class="s2">&quot;xu&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;yu&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;zu&quot;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                        <span class="n">ixyz</span> <span class="o">=</span> <span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;xu&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;yu&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;zu&quot;</span><span class="p">))</span>
+                        <span class="n">xyz_type</span> <span class="o">=</span> <span class="s2">&quot;cartesian&quot;</span>
+                        <span class="n">fxyz</span> <span class="o">=</span> <span class="n">from_lammps_units</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Å&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+                    <span class="k">elif</span> <span class="s2">&quot;xs&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;ys&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;zs&quot;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                        <span class="n">ixyz</span> <span class="o">=</span> <span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;xs&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;ys&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;zs&quot;</span><span class="p">))</span>
+                        <span class="n">xyz_type</span> <span class="o">=</span> <span class="s2">&quot;fractional&quot;</span>
+                        <span class="n">fxyz</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">elif</span> <span class="s2">&quot;xsu&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;ysu&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;zsu&quot;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                        <span class="n">ixyz</span> <span class="o">=</span> <span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;xsu&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;ysu&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;zsu&quot;</span><span class="p">))</span>
+                        <span class="n">xyz_type</span> <span class="o">=</span> <span class="s2">&quot;fractional&quot;</span>
+                        <span class="n">fxyz</span> <span class="o">=</span> <span class="mi">1</span>
+
+                    <span class="c1"># Forces</span>
+                    <span class="n">fi</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">if</span> <span class="s2">&quot;fx&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;fy&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;fz&quot;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                        <span class="n">fi</span> <span class="o">=</span> <span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;fx&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;fy&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;fz&quot;</span><span class="p">))</span>
+                        <span class="n">ff</span> <span class="o">=</span> <span class="o">-</span><span class="n">from_lammps_units</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;kJ/mol/Å&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+
+                    <span class="c1"># Velocities</span>
+                    <span class="n">vi</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">if</span> <span class="s2">&quot;vx&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;vy&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="s2">&quot;vz&quot;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                        <span class="n">vi</span> <span class="o">=</span> <span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;vx&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;vy&quot;</span><span class="p">),</span> <span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;vz&quot;</span><span class="p">))</span>
+                        <span class="n">fv</span> <span class="o">=</span> <span class="n">from_lammps_units</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Å/fs&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_atoms</span><span class="p">):</span>
+                        <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                        <span class="n">values</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="n">ixyz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">xyz</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                <span class="p">[</span>
+                                    <span class="n">fxyz</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">ixyz</span><span class="p">[</span><span class="mi">0</span><span class="p">]]),</span>
+                                    <span class="n">fxyz</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">ixyz</span><span class="p">[</span><span class="mi">1</span><span class="p">]]),</span>
+                                    <span class="n">fxyz</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">ixyz</span><span class="p">[</span><span class="mi">2</span><span class="p">]]),</span>
+                                <span class="p">]</span>
+                            <span class="p">)</span>
+                        <span class="k">if</span> <span class="n">fi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">f</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                <span class="p">[</span>
+                                    <span class="n">ff</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">fi</span><span class="p">[</span><span class="mi">0</span><span class="p">]]),</span>
+                                    <span class="n">ff</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">fi</span><span class="p">[</span><span class="mi">1</span><span class="p">]]),</span>
+                                    <span class="n">ff</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">fi</span><span class="p">[</span><span class="mi">2</span><span class="p">]]),</span>
+                                <span class="p">]</span>
+                            <span class="p">)</span>
+                        <span class="k">if</span> <span class="n">vi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">v</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                <span class="p">[</span>
+                                    <span class="n">fv</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">vi</span><span class="p">[</span><span class="mi">0</span><span class="p">]]),</span>
+                                    <span class="n">fv</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">vi</span><span class="p">[</span><span class="mi">1</span><span class="p">]]),</span>
+                                    <span class="n">fv</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">vi</span><span class="p">[</span><span class="mi">2</span><span class="p">]]),</span>
+                                <span class="p">]</span>
+                            <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">ixyz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">xyz_type</span> <span class="o">==</span> <span class="s2">&quot;cartesian&quot;</span><span class="p">:</span>
+                            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;xyz&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xyz</span>
+                        <span class="k">elif</span> <span class="n">xyz_type</span> <span class="o">==</span> <span class="s2">&quot;fractional&quot;</span><span class="p">:</span>
+                            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;abc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xyz</span>
+                    <span class="k">if</span> <span class="n">fi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;gradients&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span>
+                    <span class="k">if</span> <span class="n">vi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;velocities&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+                    <span class="n">line</span><span class="p">,</span> <span class="n">line_no</span> <span class="o">=</span> <span class="n">next_line</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">line_no</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Don&#39;t recognize section </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2"> in the dump file&quot;</span>
+                    <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="k">return</span> <span class="n">results</span></div>
 
 </pre></div>
 
