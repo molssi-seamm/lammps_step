@@ -1,6 +1,10 @@
 =======
 History
 =======
+2025.11.19.1 -- Bugfix: Properties not handled in MD runs
+    * Due to an inadvertant error in the previous release, properties were not placed in
+      local variables, tables or as properties on the configuration if requested.
+      
 2025.11.19 -- Enhancements to properties and storing trajectories in the database
 
     This release enhances the LAMMPS step with property calculations and trajectory storage

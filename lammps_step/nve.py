@@ -215,6 +215,9 @@ class NVE(lammps_step.Energy):
             printer.normal(__(text, indent=self.indent + 4 * " "))
             printer.normal("")
 
+        if configuration is not None:
+            self.store_results(configuration=configuration, data=data, printer=printer)
+
     def description_text(self, P=None):
         """Return a short description of this step.
 
