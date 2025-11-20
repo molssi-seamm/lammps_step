@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2025.11.19 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2025.11.19.1 documentation</title>
   
   
   
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=90bdc6fa"></script>
+    <script src="_static/documentation_options.js?v=bdb65334"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.11.19" />
+  <meta name="docsearch:version" content="2025.11.19.1" />
   </head>
   
   
@@ -480,6 +480,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                   
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
+<dl class="simple">
+<dt>2025.11.19.1 – Bugfix: Properties not handled in MD runs</dt><dd><ul class="simple">
+<li><p>Due to an inadvertant error in the previous release, properties were not placed in
+local variables, tables or as properties on the configuration if requested.</p></li>
+</ul>
+</dd>
+</dl>
 <p>2025.11.19 – Enhancements to properties and storing trajectories in the database</p>
 <blockquote>
 <div><p>This release enhances the LAMMPS step with property calculations and trajectory storage
