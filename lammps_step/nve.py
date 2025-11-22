@@ -1114,8 +1114,9 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
             configuration.atoms.set_velocities(tmp, fractionals=False)
 
         if "gradients" in data:
-            # LAMMPS only has Cartesian forces, already in kJ/mol/Å
-            tmp = np.array(data["gradients"])
+            # LAMMPS only has Cartesian forces, in kcal/mol/Å
+            factor = Q_("kcal/mol/Å").m_as("kJ/mol/Å")
+            tmp = factor * np.array(data["gradients"])
             configuration.atoms.set_gradients(tmp, fractionals=False)
 
         # Energy
