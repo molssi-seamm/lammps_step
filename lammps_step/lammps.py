@@ -1983,12 +1983,16 @@ class LAMMPS(seamm.Node):
             # Change from the units LAMMPS is using to the ones that we want
             if meta_units not in ("???", "º"):
                 try:
-                    factor = lammps_step.from_lammps_units(1, meta_units)
-                    yy *= factor.magnitude
-                except Exception:
+                    factor = lammps_step.from_lammps_units(1.0, meta_units)
+                    # Do not use inplace operator *= because yy might be int
+                    yy = factor.magnitude * yy
+                except Exception as e:
                     raise RuntimeError(
                         f"Cannot convert LAMMPS units for column '{column}' to "
-                        f"{meta_units}. Please notify support of this error!"
+                        f"{meta_units}.\n"
+                        f"{type(yy)=} {type(factor.magnitude)=}\n"
+                        "Please notify support of this error!"
+                        f"\n{str(e)}"
                     )
 
             # compute indices of uncorrelated timeseries using pymbar
@@ -2530,7 +2534,7 @@ class LAMMPS(seamm.Node):
                             logger.error(f"Can't handle dump file, {keys=}")
                         if len(keys) >= 7 and keys[4:7] == ["vx", "vy", "vz"]:
                             have_velocities = True
-                            factor = lammps_step.from_lammps_units(1, "fs").magnitude
+                            factor = lammps_step.from_lammps_units(1.0, "fs").magnitude
                             factor = 1 / factor
                             for tmp in section_lines:
                                 x, y, z, vx, vy, vz = tmp.split()[1:7]
@@ -2567,7 +2571,7 @@ class LAMMPS(seamm.Node):
                 logger.error(f"Can't handle dump file, {keys=}")
             if len(keys) >= 7 and keys[4:7] == ["vx", "vy", "vz"]:
                 have_velocities = True
-                factor = 1.0 / lammps_step.from_lammps_units(1, "fs").magnitude
+                factor = 1.0 / lammps_step.from_lammps_units(1.0, "fs").magnitude
                 for tmp in section_lines:
                     x, y, z, vx, vy, vz = tmp.split()[1:7]
                     xyz.append([float(x), float(y), float(z)])

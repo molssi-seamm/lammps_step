@@ -572,11 +572,11 @@ class Energy(seamm.Node):
         table["Value"].append(result)
         table["Units"].append("kcal/mol")
 
-        factor = Q_("kcal/mol").m_as("kJ/mol")
+        factor = Q_("kcal/mol").m_as("kcal/mol")
         table["System"].append("")
         table["Term"].append("")
         table["Value"].append(f'{factor * data["E atomization"]:.2f}')
-        table["Units"].append("kJ/mol")
+        table["Units"].append("kcal/mol")
 
         tmp = tabulate(
             table,
@@ -890,7 +890,7 @@ class Energy(seamm.Node):
         -------
         dict(str, any)
             The results keyed by the item name.
-            The units are Å, kJ/mol, and fs
+            The units are Å, kcal/mol, and fs
         """
         results = {}
         it = iter(lines)
@@ -1010,7 +1010,7 @@ class Energy(seamm.Node):
                     fi = None
                     if "fx" in keys and "fy" in keys and "fz" in keys:
                         fi = (keys.index("fx"), keys.index("fy"), keys.index("fz"))
-                        ff = -from_lammps_units(1, "kJ/mol/Å").magnitude
+                        ff = -from_lammps_units(1, "kcal/mol/Å").magnitude
 
                     # Velocities
                     vi = None

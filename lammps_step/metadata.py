@@ -21,7 +21,7 @@ metadata["results"] = {
         "dimensionality": "scalar",
         "property": "DfE0#LAMMPS#{model}",
         "type": "float",
-        "units": "kJ/mol",
+        "units": "kcal/mol",
         "format": ".2f",
     },
     "E atomization": {
@@ -29,7 +29,7 @@ metadata["results"] = {
         "dimensionality": "scalar",
         "property": "E atomization#LAMMPS#{model}",
         "type": "float",
-        "units": "kJ/mol",
+        "units": "kcal/mol",
         "format": ".2f",
     },
     "gradients": {
@@ -496,7 +496,7 @@ metadata["results"] = {
         "dimensionality": "scalar",
         "property": "volume#LAMMPS#{model}",
         "type": "float",
-        "units": "g/ml",
+        "units": "Å^3",
     },
     "V,stderr": {
         "calculation": ["npt"],
@@ -504,7 +504,7 @@ metadata["results"] = {
         "dimensionality": "scalar",
         "property": "volume, stderr#LAMMPS#{model}",
         "type": "float",
-        "units": "g/ml",
+        "units": "Å^3",
     },
     "V,tau": {
         "calculation": ["npt"],

@@ -1,6 +1,11 @@
 =======
 History
 =======
+2025.11.22 -- Bugfixes: volume units and converting pressure units.
+    * Fixed the incorrect units for volume in the metadata for LAMMPS.
+    * Fixed a crash caused by LAMMPS storing large pressures as integers, not floating
+      point numbers.
+      
 2025.11.19.1 -- Bugfix: Properties not handled in MD runs
     * Due to an inadvertant error in the previous release, properties were not placed in
       local variables, tables or as properties on the configuration if requested.
