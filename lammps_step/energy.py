@@ -11,6 +11,7 @@ import pkg_resources
 import textwrap
 import traceback
 
+import numpy as np
 import pandas
 from tabulate import tabulate
 
@@ -354,8 +355,10 @@ class Energy(seamm.Node):
             if xyz is not None:
                 configuration.atoms.set_coordinates(xyz, fractionals=fractional)
             if gradients is not None:
-                # LAMMPS only has Cartesian gradients
-                configuration.atoms.set_gradients(gradients, fractionals=False)
+                # LAMMPS only has Cartesian gradients, in kcal/mol/Å
+                factor = Q_("kcal/mol/Å").m_as("kJ/mol/Å")
+                tmp = factor * np.array(gradients)
+                configuration.atoms.set_gradients(tmp, fractionals=False)
             if velocities is not None:
                 # LAMMPS only has Cartesian velocities
                 configuration.atoms.set_velocities(velocities, fractionals=False)
@@ -572,11 +575,11 @@ class Energy(seamm.Node):
         table["Value"].append(result)
         table["Units"].append("kcal/mol")
 
-        factor = Q_("kcal/mol").m_as("kJ/mol")
+        factor = Q_("kcal/mol").m_as("kcal/mol")
         table["System"].append("")
         table["Term"].append("")
         table["Value"].append(f'{factor * data["E atomization"]:.2f}')
-        table["Units"].append("kJ/mol")
+        table["Units"].append("kcal/mol")
 
         tmp = tabulate(
             table,
@@ -890,7 +893,7 @@ class Energy(seamm.Node):
         -------
         dict(str, any)
             The results keyed by the item name.
-            The units are Å, kJ/mol, and fs
+            The units are Å, kcal/mol, and fs
         """
         results = {}
         it = iter(lines)
@@ -1010,7 +1013,7 @@ class Energy(seamm.Node):
                     fi = None
                     if "fx" in keys and "fy" in keys and "fz" in keys:
                         fi = (keys.index("fx"), keys.index("fy"), keys.index("fz"))
-                        ff = -from_lammps_units(1, "kJ/mol/Å").magnitude
+                        ff = -from_lammps_units(1, "kcal/mol/Å").magnitude
 
                     # Velocities
                     vi = None
