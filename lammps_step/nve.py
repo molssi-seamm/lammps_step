@@ -1177,9 +1177,9 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
             line += '"'
         line += " Properties=species:S:1:pos:R:3"
         if "gradients" in data:
-            # currently in kJ/mol/Å
+            # currently in kcal/mol/Å
             line += ":REF_forces:R:3"
-            ffact = -Q_(1, "kJ/mol/Å").m_as("eV/Å")
+            ffact = -Q_(1, "kcal/mol/Å").m_as("eV/Å")
         if "velocities" in data:
             # currentl in Å/fs
             line += ":vel:R:3"
