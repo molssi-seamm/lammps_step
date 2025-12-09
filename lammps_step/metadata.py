@@ -102,11 +102,6 @@ metadata["results"] = {
         "units": "",
     },
     "P": {
-        "calculation": [
-            "nve",
-            "nvt",
-            "npt",
-        ],
         "description": "pressure",
         "dimensionality": "scalar",
         "property": "pressure#LAMMPS#{model}",
@@ -157,11 +152,6 @@ metadata["results"] = {
         "units": "atm",
     },
     "stress,stderr": {
-        "calculation": [
-            "nve",
-            "nvt",
-            "npt",
-        ],
         "description": "stderr of stress",
         "dimensionality": "[6]",
         "property": "stress, stderr#LAMMPS#{model}",
@@ -451,11 +441,6 @@ metadata["results"] = {
         "units": "",
     },
     "density": {
-        "calculation": [
-            "nve",
-            "nvt",
-            "npt",
-        ],
         "description": "density",
         "dimensionality": "scalar",
         "property": "density#LAMMPS#{model}",
@@ -486,12 +471,13 @@ metadata["results"] = {
         "type": "float",
         "units": "",
     },
+    "delta density": {
+        "description": "change in density",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "g/ml",
+    },
     "V": {
-        "calculation": [
-            "nve",
-            "nvt",
-            "npt",
-        ],
         "description": "V",
         "dimensionality": "scalar",
         "property": "volume#LAMMPS#{model}",
@@ -522,12 +508,13 @@ metadata["results"] = {
         "type": "float",
         "units": "",
     },
+    "delta V": {
+        "description": "change in V",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "Å^3",
+    },
     "a": {
-        "calculation": [
-            "nve",
-            "nvt",
-            "npt",
-        ],
         "description": "cell parameter 'a'",
         "dimensionality": "scalar",
         "property": "cell_a#LAMMPS#{model}",
@@ -558,12 +545,13 @@ metadata["results"] = {
         "type": "float",
         "units": "",
     },
+    "delta a": {
+        "description": "change in 'a'",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "Å",
+    },
     "b": {
-        "calculation": [
-            "nve",
-            "nvt",
-            "npt",
-        ],
         "description": "cell parameter 'b'",
         "dimensionality": "scalar",
         "property": "cell_b#LAMMPS#{model}",
@@ -571,7 +559,6 @@ metadata["results"] = {
         "units": "Å",
     },
     "b,stderr": {
-        "calculation": ["npt"],
         "description": "stderr of cell 'b'",
         "dimensionality": "scalar",
         "property": "cell_b, stderr#LAMMPS#{model}",
@@ -594,12 +581,13 @@ metadata["results"] = {
         "type": "float",
         "units": "",
     },
+    "delta b": {
+        "description": "change in 'b'",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "Å",
+    },
     "c": {
-        "calculation": [
-            "nve",
-            "nvt",
-            "npt",
-        ],
         "description": "cell parameter 'c'",
         "dimensionality": "scalar",
         "property": "cell_c#LAMMPS#{model}",
@@ -630,8 +618,13 @@ metadata["results"] = {
         "type": "float",
         "units": "",
     },
+    "delta c": {
+        "description": "change in 'c'",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "Å",
+    },
     "alpha": {
-        "calculation": ["npt"],
         "description": "cell parameter 'alpha'",
         "dimensionality": "scalar",
         "property": "cell_alpha#LAMMPS#{model}",
@@ -662,8 +655,13 @@ metadata["results"] = {
         "type": "float",
         "units": "",
     },
+    "delta alpha": {
+        "description": "change in 'alpha'",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "degree",
+    },
     "beta": {
-        "calculation": ["npt"],
         "description": "cell parameter 'beta'",
         "dimensionality": "scalar",
         "property": "cell_beta#LAMMPS#{model}",
@@ -694,8 +692,13 @@ metadata["results"] = {
         "type": "float",
         "units": "",
     },
+    "delta beta": {
+        "description": "change in 'beta'",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "degree",
+    },
     "gamma": {
-        "calculation": ["npt"],
         "description": "cell parameter 'gamma'",
         "dimensionality": "scalar",
         "property": "cell_gamma#LAMMPS#{model}",
@@ -725,6 +728,12 @@ metadata["results"] = {
         "property": "cell_gamma, inefficiency#LAMMPS#{model}",
         "type": "float",
         "units": "",
+    },
+    "delta gamma": {
+        "description": "change in 'gamma'",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "degree",
     },
     "Etot": {
         "calculation": [
