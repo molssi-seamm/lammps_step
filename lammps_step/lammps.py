@@ -804,6 +804,12 @@ class LAMMPS(seamm.Node):
             cl = {"NTASKS": np}
             ce = seamm_exec.computational_environment(cl)
 
+            # For PyTorch need at least 1 GPU and only 1 MPI process per GPU
+            ff_form = self.ff_form()
+            if ff_form == "PyTorch" and "NGPUS" not in ce:
+                ce["NGPUS"] = 1
+                ce["NTASKS"] = 1
+
             executor = self.flowchart.executor
 
             # Read configuration file for LAMMPS if it exists

@@ -1,6 +1,14 @@
 =======
 History
 =======
+2025.12.9 -- Enhancements: Running on GPUs and output from minimization
+    * Ensured that at least 1 GPU is used when running using PyTorch potentials. This
+      allows running from the commmand-line or locally in addition to using SLURM, which
+      already worked.
+    * Added the cell parameters, volume, and density, plus the change in each, whne
+      running minimizations. These are now results that can be stores in tables and
+      saved in variables.
+
 2025.11.22 -- Bugfixes: volume units and converting pressure units.
     * Fixed the incorrect units for volume in the metadata for LAMMPS.
     * Fixed a crash caused by LAMMPS storing large pressures as integers, not floating

@@ -10,7 +10,7 @@ import traceback
 import numpy as np
 from tabulate import tabulate
 
-from molsystem import RMSD
+from molsystem import RMSD, Cell
 import seamm
 from seamm_util import Q_, units_class
 import seamm_util.printing as printing
@@ -61,6 +61,9 @@ class Minimization(lammps_step.Energy):
         # Save the initial cell parameter if periodic
         if initial_configuration.periodicity != 0:
             a0, b0, c0, alpha0, beta0, gamma0 = initial_configuration.cell.parameters
+            V0 = initial_configuration.cell.volume
+            rho0 = initial_configuration.density
+            mass = initial_configuration.mass
 
         # Handle the new structure as needed
         system, configuration = self.get_system_configuration(P, model=self.model)
@@ -340,56 +343,72 @@ class Minimization(lammps_step.Energy):
         printer.normal("")
 
         # For periodic systems, the change in cell
-        if (
-            cell is not None
-            and initial_configuration.periodicity != 0
-            and P["optimize cell"]
-        ):
+        if cell is not None and initial_configuration.periodicity != 0:
             a, b, c, alpha, beta, gamma = cell
-            ctable = {
-                "": ("𝗮", "𝗯", "𝗰", "𝞪", "𝞫", "𝞬"),
-                "Initial": (
-                    f"{a0:.3f}",
-                    f"{b0:.3f}",
-                    f"{c0:.3f}",
-                    f"{alpha0:.1f}",
-                    f"{beta0:.1f}",
-                    f"{gamma0:.1f}",
-                ),
-                "Final": (
-                    f"{a:.3f}",
-                    f"{b:.3f}",
-                    f"{c:.3f}",
-                    f"{alpha:.1f}",
-                    f"{beta:.1f}",
-                    f"{gamma:.1f}",
-                ),
-                "Change": (
-                    f"{a - a0:.3f}",
-                    f"{b - b0:.3f}",
-                    f"{c - c0:.3f}",
-                    f"{alpha - alpha0:.1f}",
-                    f"{beta - beta0:.1f}",
-                    f"{gamma - gamma0:.1f}",
-                ),
-                "Units": ("Å", "Å", "Å", "°", "°", "°"),
-            }
+            data["a"] = a
+            data["b"] = b
+            data["c"] = c
+            data["alpha"] = alpha
+            data["beta"] = beta
+            data["gamma"] = gamma
+            data["delta a"] = a - a0
+            data["delta b"] = b - b0
+            data["delta c"] = c - c0
+            data["delta alpha"] = alpha - alpha0
+            data["delta beta"] = beta - beta0
+            data["delta gamma"] = gamma - gamma0
+            tmp_cell = Cell(*cell)
+            V = tmp_cell.volume
+            rho = Q_(mass / V, "g/mol/Å^3").m_as("g/cm^3")
+            data["V"] = V
+            data["density"] = rho
+            data["delta V"] = V - V0
+            data["delta density"] = rho - rho0
+            if P["optimize cell"]:
+                ctable = {
+                    "": ("𝗮", "𝗯", "𝗰", "𝞪", "𝞫", "𝞬"),
+                    "Initial": (
+                        f"{a0:.3f}",
+                        f"{b0:.3f}",
+                        f"{c0:.3f}",
+                        f"{alpha0:.1f}",
+                        f"{beta0:.1f}",
+                        f"{gamma0:.1f}",
+                    ),
+                    "Final": (
+                        f"{a:.3f}",
+                        f"{b:.3f}",
+                        f"{c:.3f}",
+                        f"{alpha:.1f}",
+                        f"{beta:.1f}",
+                        f"{gamma:.1f}",
+                    ),
+                    "Change": (
+                        f"{a - a0:.3f}",
+                        f"{b - b0:.3f}",
+                        f"{c - c0:.3f}",
+                        f"{alpha - alpha0:.1f}",
+                        f"{beta - beta0:.1f}",
+                        f"{gamma - gamma0:.1f}",
+                    ),
+                    "Units": ("Å", "Å", "Å", "°", "°", "°"),
+                }
 
-            tmp = tabulate(
-                ctable,
-                headers="keys",
-                tablefmt="rounded_outline",
-                colalign=("center", "decimal", "decimal", "decimal", "center"),
-                disable_numparse=True,
-            )
-            length = len(tmp.splitlines()[0])
-            text_lines = []
-            text_lines.append("Cell Parameters".center(length))
-            text_lines.append(tmp)
-            printer.normal(
-                textwrap.indent("\n".join(text_lines), self.indent + 7 * " ")
-            )
-            printer.normal("")
+                tmp = tabulate(
+                    ctable,
+                    headers="keys",
+                    tablefmt="rounded_outline",
+                    colalign=("center", "decimal", "decimal", "decimal", "center"),
+                    disable_numparse=True,
+                )
+                length = len(tmp.splitlines()[0])
+                text_lines = []
+                text_lines.append("Cell Parameters".center(length))
+                text_lines.append(tmp)
+                printer.normal(
+                    textwrap.indent("\n".join(text_lines), self.indent + 7 * " ")
+                )
+                printer.normal("")
 
         if configuration is not None:
             self.store_results(configuration=configuration, data=data, printer=printer)
