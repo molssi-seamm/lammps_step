@@ -1,6 +1,10 @@
 =======
 History
 =======
+2026.1.8 -- Improved handling of atom position and velocity trajectories.
+    * Added the time and units for the time to the atomic poisition and velocity
+      trajectories used in e.g. diffusivity to ensure the correct times are used.
+
 2025.12.9 -- Enhancements: Running on GPUs and output from minimization
     * Ensured that at least 1 GPU is used when running using PyTorch potentials. This
       allows running from the commmand-line or locally in addition to using SLURM, which
