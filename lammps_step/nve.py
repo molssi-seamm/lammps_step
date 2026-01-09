@@ -776,7 +776,7 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
             lines.append(
                 "\n"
                 f"dump                {ndumps} all custom {n} {filename} id xu yu zu\n"
-                f"dump_modify         {ndumps} sort id"
+                f"dump_modify         {ndumps} sort id time yes units yes"
             )
         sampling = P["com positions"]
         if sampling != "never":
@@ -832,7 +832,7 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
             lines.append(
                 "\n"
                 f"dump                {ndumps} all custom {n} {filename} id vx vy vz\n"
-                f"dump_modify         {ndumps} sort id"
+                f"dump_modify         {ndumps} sort id time yes units yes"
             )
         sampling = P["com velocities"]
         if sampling != "never":
