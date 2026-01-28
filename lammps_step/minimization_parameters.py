@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 """Control parameters for minimization"""
+
 import logging
 
 from .energy_parameters import EnergyParameters
-
 
 logger = logging.getLogger(__name__)
 

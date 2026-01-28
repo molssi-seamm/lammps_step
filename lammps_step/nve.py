@@ -461,8 +461,7 @@ class NVE(lammps_step.Energy):
             factor = factor.m_as("W/m^2")
             if ff_form == "class2" or not P["use centroid stress"]:
                 # Centroid/stress/atom does not handle class2 ff ... cross-terms?
-                lines.append(
-                    f"""
+                lines.append(f"""
 compute             KE all ke/atom
 compute             PE all pe/atom
 
@@ -475,11 +474,9 @@ variable            factor equal {factor}
 variable            Jx equal v_factor*c_flux_p[1]/vol
 variable            Jy equal v_factor*c_flux_p[2]/vol
 variable            Jz equal v_factor*c_flux_p[3]/vol
-"""
-                )
+""")
             else:
-                lines.append(
-                    f"""
+                lines.append(f"""
 compute             KE all ke/atom
 compute             PE all pe/atom
 
@@ -496,8 +493,7 @@ variable            factor equal {factor}
 variable            Jx equal v_factor*(c_flux_p[1]+c_flux_b[1])/vol
 variable            Jy equal v_factor*(c_flux_p[2]+c_flux_b[2])/vol
 variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
-"""
-                )
+""")
 
         # summary output written 10 times during run so we can see progress
         nevery = 10
