@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """Definition of unit systems in LAMMPS."""
+
 from seamm_util import ureg, Q_, units_class  # noqa: F401
 
 lammps_unit_system = "real"

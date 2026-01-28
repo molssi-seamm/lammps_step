@@ -310,8 +310,7 @@ class HeatFlux(NVE):
 
         if "cff" in ffname:
             # Centroid/stress/atom does not handle class2 ff ... cross-terms?
-            lines.append(
-                f"""
+            lines.append(f"""
 #          Green-Kubo method
 
 fix                 dynamics all nve
@@ -372,11 +371,9 @@ thermo_style        custom {thermo_properties}
 fix                 J_filter all external pf/callback 1 1
 fix_modify          J_filter energy yes
 fix_modify          J_filter virial yes
-"""
-            )
+""")
         else:
-            lines.append(
-                f"""
+            lines.append(f"""
 #          Green-Kubo method
 
 fix                 dynamics all nve
@@ -472,8 +469,7 @@ thermo_style        custom {thermo_properties}
 fix                 J_filter all external pf/callback 1 1
 fix_modify          J_filter energy yes
 fix_modify          J_filter virial yes
-"""
-            )
+""")
 
         # instantaneous output written for averaging
         if P["sampling"] == "none":
@@ -560,8 +556,7 @@ fix_modify          J_filter virial yes
                 " modify flush yes sort id"
             )
 
-        post_lines = [
-            f"""
+        post_lines = [f"""
 
 run                 {nsteps}
 
@@ -582,8 +577,7 @@ unfix               PE0
 unfix               S_p_ave
 unfix               PE_ave
 unfix               dynamics
-"""
-        ]
+"""]
         for compute in computes:
             post_lines.append(f"uncompute           {compute}")
         for fix in fixes:
