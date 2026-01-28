@@ -981,8 +981,10 @@ class Energy(seamm.Node):
                             zhi - zlo,
                         )
                         cell = (xhi - xlo, yhi - ylo, zhi - zlo, 90, 90, 90)
-                    results["cell"] = cell
-                    results["lattice"] = lattice
+                    # Ignore for non-periodic systems
+                    if "ss" not in section:
+                        results["cell"] = cell
+                        results["lattice"] = lattice
                     line, line_no = next_line(it, line_no)
                 elif "ATOMS" in section:
                     xyz = []

@@ -1,6 +1,11 @@
 =======
 History
 =======
+2026.1.28 -- Bugfix: Fixed error in analysis of non-periodic molecules
+    * Recent additions to the analysis introduced a bug for non-periodic systems, where
+      in some circumstances the code crashed due to interpreting the cell info in LAMMPS
+      dump files.
+
 2026.1.8 -- Improved handling of atom position and velocity trajectories.
     * Added the time and units for the time to the atomic poisition and velocity
       trajectories used in e.g. diffusivity to ensure the correct times are used.
