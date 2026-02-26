@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.installer &#8212; SEAMM LAMMPS Plug-in 2026.1.28 documentation</title>
+    <title>lammps_step.installer &#8212; SEAMM LAMMPS Plug-in 2026.2.25 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=77e8914b"></script>
+    <script src="../../_static/documentation_options.js?v=3b3878d4"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.1.28" />
+  <meta name="docsearch:version" content="2026.2.25" />
   </head>
   
   
@@ -477,9 +477,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">package `lammps-step`.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pkg_resources</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">seamm_installer</span>
@@ -538,7 +538,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="bp">self</span><span class="o">.</span><span class="n">environment</span> <span class="o">=</span> <span class="s2">&quot;seamm-lammps&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">section</span> <span class="o">=</span> <span class="s2">&quot;lammps-step&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">executables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lmp&quot;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">resource_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">pkg_resources</span><span class="o">.</span><span class="n">resource_filename</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;data/&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_path</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="s2">&quot;lammps_step&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span>
 
         <span class="c1"># The environment.yaml file for Conda installations.</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;data directory: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
