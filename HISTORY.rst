@@ -1,6 +1,10 @@
 =======
 History
 =======
+2026.2.25 -- Added support for ML-IAP forcefields.
+    * Handle forcefields with the extension .pt and containing 'mliap' in their name using
+      ML-IAP.
+
 2026.1.28 -- Bugfix: Fixed error in analysis of non-periodic molecules
     * Recent additions to the analysis introduced a bug for non-periodic systems, where
       in some circumstances the code crashed due to interpreting the cell info in LAMMPS

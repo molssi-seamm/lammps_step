@@ -794,8 +794,14 @@ class Initialization(seamm.Node):
         lines.append("")
         lines.append("#    define the style for MACE")
 
-        lines.append("pair_style          mace no_domain_decomposition")
-        lines.append(f"pair_coeff          * * {model} {' '.join(eex['atom types'])}")
+        if "mliap" in model:
+            lines.append(f"pair_style          mliap unified {model} 0")
+            lines.append(f"pair_coeff          * * {' '.join(eex['atom types'])}")
+        else:
+            lines.append("pair_style          mace no_domain_decomposition")
+            lines.append(
+                f"pair_coeff          * * {model} {' '.join(eex['atom types'])}"
+            )
 
         # Set up standard variables
         for variable in thermo_variables:
