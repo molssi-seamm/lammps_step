@@ -5,7 +5,6 @@
 import importlib
 import json
 import logging
-from pathlib import Path
 
 import lammps_step
 from .nve import NVE
