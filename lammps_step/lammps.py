@@ -80,7 +80,6 @@ with logging_disabled(highest_level=logging.WARNING):
 
 
 # Add LAMMPS's properties to the standard properties
-# path = Path(pkg_resources.resource_filename(__name__, "data/"))
 path = importlib.resources.files("lammps_step") / "data"
 csv_file = path / "properties.csv"
 molsystem.add_properties_from_file(csv_file)

@@ -3,11 +3,11 @@
 """A single-point energy in LAMMPS"""
 
 from collections import Counter
+import importlib
 import json
 import logging
 from math import isnan
 from pathlib import Path
-import pkg_resources
 import textwrap
 import traceback
 
@@ -403,7 +403,7 @@ class Energy(seamm.Node):
         else:
             personal_table = None
 
-        path = Path(pkg_resources.resource_filename(__name__, "data/"))
+        path = importlib.resources.files("lammps_step") / "data"
         csv_file = path / "element_energies.csv"
         table = pandas.read_csv(csv_file, index_col=False)
 
