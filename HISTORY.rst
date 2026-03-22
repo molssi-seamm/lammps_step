@@ -1,6 +1,12 @@
 =======
 History
 =======
+2026.3.22 -- Added support for MDI and GPUs, mainly for MLFFs
+    * Added monitoring of GPU utilization and memory utilization
+    * Added more output about the performance of the run to the job output.
+    * Added the ability to run MACE MLFFs using MDI. This avoids needing a GPU version
+      of LAMMPS that supports ML-IAP, making it much easier to run these MLFFs.
+    
 2026.2.25 -- Added support for ML-IAP forcefields.
     * Handle forcefields with the extension .pt and containing 'mliap' in their name using
       ML-IAP.

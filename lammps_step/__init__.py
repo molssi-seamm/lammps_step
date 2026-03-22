@@ -74,6 +74,8 @@ from .heat_flux import HeatFlux
 from .heat_flux_parameters import HeatFluxParameters
 from .tk_heat_flux import TkHeatFlux
 
+from .gpu_memory_parser import print_multi_gpu_summary, print_gpu_summary
+
 # Handle versioneer
 from ._version import get_versions
 
