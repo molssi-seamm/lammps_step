@@ -1126,20 +1126,14 @@ class LAMMPS(seamm.Node):
                 ):
                     cmd.extend(["--cmd-args", config["gpu-cmd-args"]])
             else:
-                if (
-                    "NGPUS" not in ce
-                    and "cmd-args" in config
-                    and config["cmd-args"] != ""
-                ):
-                    cmd = ["{code}"]
-                    cmd.extend(config["cmd-args"].split())
-                if (
-                    "NGPUS" in ce
-                    and "gpu-cmd-args" in config
-                    and config["gpu-cmd-args"] != ""
-                ):
+                if "NGPUS" in ce:
                     cmd = ["{gpu-code}"]
-                    cmd.extend(config["gpu-cmd-args"].split())
+                    if "gpu-cmd-args" in config and config["gpu-cmd-args"] != "":
+                        cmd.extend(config["gpu-cmd-args"].split())
+                else:
+                    cmd = ["{code}"]
+                    if "cmd-args" in config and config["cmd-args"] != "":
+                        cmd.extend(config["cmd-args"].split())
                 cmd.extend(["-in", "input.dat"])
 
             if "NGPUS" in ce:
