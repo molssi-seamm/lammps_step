@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.2.25 documentation</title>
+    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.3.22 documentation</title>
   
   
   
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=3b3878d4"></script>
+    <script src="../_static/documentation_options.js?v=e277d403"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="lammps_step" href="modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.2.25" />
+  <meta name="docsearch:version" content="2026.3.22" />
   </head>
   
   
@@ -711,6 +711,53 @@ method.</p>
 <span class="sig-name descname"><span class="pre">my_description</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'description':</span> <span class="pre">'A</span> <span class="pre">single-point</span> <span class="pre">energy</span> <span class="pre">calculation',</span> <span class="pre">'group':</span> <span class="pre">'Calculations',</span> <span class="pre">'name':</span> <span class="pre">'Energy'}</span></span><a class="headerlink" href="#lammps_step.energy_step.EnergyStep.my_description" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+</section>
+<section id="module-lammps_step.gpu_memory_parser">
+<span id="lammps-step-gpu-memory-parser-module"></span><h2>lammps_step.gpu_memory_parser module<a class="headerlink" href="#module-lammps_step.gpu_memory_parser" title="Link to this heading">#</a></h2>
+<p>gpu_memory_parser.py</p>
+<p>Parse nvidia-smi memory monitor logs produced by gpu_bind.sh and summarize
+GPU memory usage and utilization, including multi-GPU summaries.</p>
+<p>The command for nvidia-smi looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Start background memory monitor, writing peak to a log file</span>
+<span class="n">MEMORY_LOG</span><span class="o">=</span><span class="s2">&quot;${SEAMM_MEMORY_LOG:-./gpu_$</span><span class="si">{GPU_ID}</span><span class="s2">_rank_$</span><span class="si">{LOCAL_RANK}</span><span class="s2">.log}&quot;</span>
+
+<span class="n">nvidia</span><span class="o">-</span><span class="n">smi</span> <span class="o">--</span><span class="n">query</span><span class="o">-</span><span class="n">gpu</span><span class="o">=</span><span class="n">timestamp</span><span class="p">,</span><span class="n">memory</span><span class="o">.</span><span class="n">used</span><span class="p">,</span><span class="n">memory</span><span class="o">.</span><span class="n">free</span><span class="p">,</span><span class="n">utilization</span><span class="o">.</span><span class="n">gpu</span>                <span class="o">--</span><span class="nb">format</span><span class="o">=</span><span class="n">csv</span> <span class="o">-</span><span class="n">l</span> <span class="mi">5</span> <span class="o">-</span><span class="n">i</span> <span class="s2">&quot;$GPU_ID&quot;</span> <span class="o">&gt;</span> <span class="s2">&quot;$MEMORY_LOG&quot;</span> <span class="o">&amp;</span>
+</pre></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py" id="lammps_step.gpu_memory_parser.parse_gpu_memory_log">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.gpu_memory_parser.</span></span><span class="sig-name descname"><span class="pre">parse_gpu_memory_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/gpu_memory_parser.html#parse_gpu_memory_log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.gpu_memory_parser.parse_gpu_memory_log" title="Link to this definition">#</a></dt>
+<dd><p>Parse a gpu_bind.sh memory monitor log file and return summary statistics.</p>
+<p>Initialization phase: samples before GPU utilization first becomes non-zero
+AND memory has stabilized (no longer growing significantly).
+Production phase: all samples after initialization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>log_path</strong> – Path to the nvidia-smi log file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict with statistics, or None if file cannot be parsed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lammps_step.gpu_memory_parser.print_gpu_summary">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.gpu_memory_parser.</span></span><span class="sig-name descname"><span class="pre">print_gpu_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/gpu_memory_parser.html#print_gpu_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.gpu_memory_parser.print_gpu_summary" title="Link to this definition">#</a></dt>
+<dd><p>Print summary for a single GPU log.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lammps_step.gpu_memory_parser.print_multi_gpu_summary">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.gpu_memory_parser.</span></span><span class="sig-name descname"><span class="pre">print_multi_gpu_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/gpu_memory_parser.html#print_multi_gpu_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.gpu_memory_parser.print_multi_gpu_summary" title="Link to this definition">#</a></dt>
+<dd><p>Parse multiple GPU log files and print per-GPU and combined summary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>log_paths</strong> – list of paths to log files</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -2666,6 +2713,12 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.energy_step.EnergyStep.my_description"><code class="docutils literal notranslate"><span class="pre">EnergyStep.my_description</span></code></a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.gpu_memory_parser">lammps_step.gpu_memory_parser module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.gpu_memory_parser.parse_gpu_memory_log"><code class="docutils literal notranslate"><span class="pre">parse_gpu_memory_log()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.gpu_memory_parser.print_gpu_summary"><code class="docutils literal notranslate"><span class="pre">print_gpu_summary()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.gpu_memory_parser.print_multi_gpu_summary"><code class="docutils literal notranslate"><span class="pre">print_multi_gpu_summary()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.heat_flux">lammps_step.heat_flux module</a><ul class="visible nav section-nav flex-column">

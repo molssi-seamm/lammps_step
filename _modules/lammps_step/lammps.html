@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.2.25 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.3.22 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=3b3878d4"></script>
+    <script src="../../_static/documentation_options.js?v=e277d403"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.2.25" />
+  <meta name="docsearch:version" content="2026.3.22" />
   </head>
   
   
@@ -481,25 +481,29 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">degrees</span><span class="p">,</span> <span class="n">radians</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">acos</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">degrees</span><span class="p">,</span> <span class="n">radians</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">acos</span><span class="p">,</span> <span class="n">inf</span> <span class="k">as</span> <span class="n">infinity</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">platform</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pprint</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">bibtexparser</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cpuinfo</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_cpu_info</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">GPUtil</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">statsmodels.tsa.stattools</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stattools</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tabulate</span><span class="w"> </span><span class="kn">import</span> <span class="n">tabulate</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">lammps_step</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">molsystem</span>
@@ -516,6 +520,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;lammps&quot;</span><span class="p">)</span>
 <span class="n">job</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">()</span>
 <span class="n">printer</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">(</span><span class="s2">&quot;lammps&quot;</span><span class="p">)</span>
+
+<span class="n">VERSION_PATTERN</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^#\s?MolSSI\s+lammps_step\s+(\S+)\s+([\d.]+)&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_script_version</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract file type and version from a MolSSI header line.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (file_type, version) e.g. (&quot;lammps_step:mdi_bind&quot;, &quot;1.0&quot;)</span>
+<span class="sd">        or (None, None) if no header found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[:</span><span class="mi">3</span><span class="p">]:</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">VERSION_PATTERN</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
 
 <span class="c1"># Temporarily used here to stop pymbar&#39;s annoying warning.</span>
@@ -925,6 +945,33 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
             <span class="n">parser_name</span><span class="p">,</span>
+            <span class="s2">&quot;--ngpus&quot;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="s2">&quot;available&quot;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">&quot;The maximum number of gpus to use for LAMMPS. &quot;</span>
+                <span class="s2">&quot;Default: all available gpus.&quot;</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="n">parser_name</span><span class="p">,</span>
+            <span class="s2">&quot;--gpu-load&quot;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="s2">&quot;10&quot;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">&quot;The percent maximum cpu or memory usage on GPU considered idle. &quot;</span>
+                <span class="s2">&quot;Default: 10&quot;</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="n">parser_name</span><span class="p">,</span>
+            <span class="s2">&quot;--gpu-wait-time&quot;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="s2">&quot;unlimited&quot;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">&quot;How long to wait for a GPU to become available, in seconds. &quot;</span>
+                <span class="s2">&quot;Default: unlimited&quot;</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="n">parser_name</span><span class="p">,</span>
             <span class="s2">&quot;--atoms-per-core&quot;</span><span class="p">,</span>
             <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
             <span class="n">default</span><span class="o">=</span><span class="s2">&quot;100&quot;</span><span class="p">,</span>
@@ -1097,42 +1144,80 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a LAMMPS simulation&quot;&quot;&quot;</span>
+
+        <span class="n">next_node</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">printer</span><span class="p">)</span>
+
         <span class="c1"># Set the model</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_forcefield&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;OpenKIM&quot;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;OpenKIM/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_OpenKIM_Potential&quot;</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;PyTorch/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_pytorch_model&quot;</span><span class="p">)</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_pytorch_model&quot;</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;PyTorch/&quot;</span> <span class="o">+</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">current_forcefield</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Print headers</span>
+        <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
 
         <span class="n">system_db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_system_db&quot;</span><span class="p">)</span>
         <span class="n">configuration</span> <span class="o">=</span> <span class="n">system_db</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">configuration</span>
 
         <span class="n">n_atoms</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">n_atoms</span>
         <span class="k">if</span> <span class="n">n_atoms</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="s2">&quot;    There is no structure! Must exit&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;LAMMPS run(): there is no structure!&quot;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;LAMMPS run(): there is no structure!&quot;</span><span class="p">)</span>
 
         <span class="c1"># Initialize storage</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_results</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="n">next_node</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">printer</span><span class="p">)</span>
-
         <span class="c1"># Get the options</span>
         <span class="n">o</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span>
         <span class="n">global_options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_options</span>
 
         <span class="c1"># Whether to run parallel and if so, how many mpi processes</span>
+        <span class="n">ff_form</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_form</span><span class="p">()</span>
+
+        <span class="c1"># Only worry about GPU&#39;s when using PyTorch, for the moment</span>
+        <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span><span class="p">:</span>
+            <span class="n">maxload</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;gpu_load&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="mi">100</span>
+            <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">o</span><span class="p">[</span><span class="s2">&quot;gpu_wait_time&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="s2">&quot;unlimited&quot;</span><span class="p">:</span>
+                <span class="n">t_end</span> <span class="o">=</span> <span class="n">infinity</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">t_end</span> <span class="o">=</span> <span class="n">t0</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">gpus</span> <span class="o">=</span> <span class="n">GPUtil</span><span class="o">.</span><span class="n">getAvailable</span><span class="p">(</span>
+                    <span class="n">order</span><span class="o">=</span><span class="s2">&quot;first&quot;</span><span class="p">,</span>
+                    <span class="n">limit</span><span class="o">=</span><span class="mi">99</span><span class="p">,</span>
+                    <span class="n">maxLoad</span><span class="o">=</span><span class="n">maxload</span><span class="p">,</span>
+                    <span class="n">maxMemory</span><span class="o">=</span><span class="n">maxload</span><span class="p">,</span>
+                    <span class="n">includeNan</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gpus</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span> <span class="o">&gt;</span> <span class="n">t_end</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gpus</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">ngpus</span> <span class="o">=</span> <span class="mi">0</span>
+
         <span class="k">if</span> <span class="n">global_options</span><span class="p">[</span><span class="s2">&quot;parallelism&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;any&quot;</span><span class="p">,</span> <span class="s2">&quot;mpi&quot;</span><span class="p">):</span>
             <span class="n">np</span> <span class="o">=</span> <span class="n">n_atoms</span> <span class="o">//</span> <span class="n">o</span><span class="p">[</span><span class="s2">&quot;atoms_per_core&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="n">np_text</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;The calculation can use </span><span class="si">{</span><span class="n">np</span><span class="si">}</span><span class="s2"> cores given </span><span class="si">{</span><span class="n">n_atoms</span><span class="si">}</span><span class="s2"> atoms and &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;the requested </span><span class="si">{</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;atoms_per_core&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> atoms per core.&quot;</span>
             <span class="p">)</span>
+            <span class="k">if</span> <span class="n">o</span><span class="p">[</span><span class="s2">&quot;ngpus&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;available&quot;</span><span class="p">:</span>
+                <span class="n">ngpus</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gpus</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ngpus</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gpus</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;ngpus&quot;</span><span class="p">]))</span>
             <span class="k">if</span> <span class="n">o</span><span class="p">[</span><span class="s2">&quot;ncores&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;available&quot;</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">np</span> <span class="o">&gt;</span> <span class="nb">int</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;ncores&quot;</span><span class="p">]):</span>
                     <span class="n">np_text</span> <span class="o">+=</span> <span class="p">(</span>
@@ -1147,13 +1232,42 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <span class="sa">f</span><span class="s2">&quot;limit of </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">global_options</span><span class="p">[</span><span class="s1">&#39;ncores&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> cores.&quot;</span>
                     <span class="p">)</span>
                 <span class="n">np</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">global_options</span><span class="p">[</span><span class="s2">&quot;ncores&quot;</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">ngpus</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
+                        <span class="s2">&quot;    Using PyTorch forcefield, but no GPUs! Must exit.&quot;</span>
+                    <span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                        <span class="s2">&quot;LAMMPS: PyTorch forcefield requested, but no GPUs!&quot;</span>
+                        <span class="s2">&quot; Must stop.&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">np</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="p">,</span> <span class="n">ngpus</span><span class="p">)</span>
+                <span class="n">ngpus</span> <span class="o">=</span> <span class="n">np</span>
+                <span class="n">np_text</span> <span class="o">+=</span> <span class="p">(</span>
+                    <span class="s2">&quot; Because LAMMPS is using a PyTorch forcefield, the number of GPUs&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; must be the same as the number of cores = </span><span class="si">{</span><span class="n">ngpus</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">np_text</span> <span class="o">=</span> <span class="s2">&quot;No parallelism requested: </span><span class="si">{global_options[&#39;parallelism&#39;]}</span><span class="s2">&quot;</span>
             <span class="n">np</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">ngpus</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
+                        <span class="s2">&quot;    Using PyTorch forcefield, but no GPUs! Must exit.&quot;</span>
+                    <span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                        <span class="s2">&quot;LAMMPS: PyTorch forcefield requested, but no GPUs!&quot;</span>
+                        <span class="s2">&quot; Must stop.&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">ngpus</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">np_text</span> <span class="o">+=</span> <span class="p">(</span>
+                    <span class="s2">&quot; Because LAMMPS is using a PyTorch forcefield, the number of GPUs&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; must be the same as the number of cores = </span><span class="si">{</span><span class="n">ngpus</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+        <span class="k">if</span> <span class="n">ngpus</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">gpus</span> <span class="o">=</span> <span class="n">gpus</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">ngpus</span><span class="p">]</span>
 
-        <span class="c1"># Print headers and get to work</span>
-        <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
-
+        <span class="c1"># Get to the actual work</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">subflowchart</span><span class="o">.</span><span class="n">root_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span>
 
         <span class="n">files</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1178,7 +1292,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s2">&quot;forcefield&quot;</span><span class="p">,</span> <span class="s2">&quot;OpenKIM &quot;</span> <span class="o">+</span> <span class="n">potential</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span><span class="p">:</span>
             <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_pytorch_model&quot;</span><span class="p">)</span>
-            <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s2">&quot;forcefield&quot;</span><span class="p">,</span> <span class="s2">&quot;OpenKIM &quot;</span> <span class="o">+</span> <span class="n">model</span><span class="p">])</span>
+            <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s2">&quot;forcefield&quot;</span><span class="p">,</span> <span class="s2">&quot;PyTorch &quot;</span> <span class="o">+</span> <span class="n">model</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s2">&quot;forcefield&quot;</span><span class="p">,</span> <span class="n">ff</span><span class="o">.</span><span class="n">current_forcefield</span><span class="p">])</span>
         <span class="k">while</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1255,8 +1369,61 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="bp">self</span><span class="o">.</span><span class="n">_timing_data</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">control</span><span class="p">)</span>
         <span class="n">control</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_single_sim</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="n">np</span><span class="p">,</span> <span class="n">np_text</span><span class="o">=</span><span class="n">np_text</span><span class="p">)</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_single_sim</span><span class="p">(</span>
+            <span class="n">files</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="n">np</span><span class="p">,</span> <span class="n">np_text</span><span class="o">=</span><span class="n">np_text</span><span class="p">,</span> <span class="n">ngpus</span><span class="o">=</span><span class="n">ngpus</span><span class="p">,</span> <span class="n">gpus</span><span class="o">=</span><span class="n">gpus</span>
+        <span class="p">)</span>
 
+        <span class="c1"># Analyze any GPU logs</span>
+        <span class="n">gpu_logs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wd</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;gpu_*.log&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gpu_logs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wd</span> <span class="o">/</span> <span class="s2">&quot;gpu_statistics.log&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+                <span class="n">stats</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">print_multi_gpu_summary</span><span class="p">(</span><span class="n">gpu_logs</span><span class="p">,</span> <span class="n">fd</span><span class="o">=</span><span class="n">fd</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">stats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Print a table with the gpu statistics to the output.</span>
+                <span class="n">table</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;Statistic&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">*</span><span class="n">stats</span><span class="o">.</span><span class="n">keys</span><span class="p">()],</span>
+                    <span class="s2">&quot;Value&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">*</span><span class="n">stats</span><span class="o">.</span><span class="n">values</span><span class="p">()],</span>
+                    <span class="s2">&quot;Units&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="p">}</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">stats</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="s2">&quot;%&quot;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+                        <span class="n">tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;%&quot;</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="s2">&quot;memory&quot;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+                        <span class="n">tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;GiB&quot;</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="s2">&quot;utilization&quot;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+                        <span class="n">tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;%&quot;</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="s2">&quot;time&quot;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+                        <span class="n">tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+                <span class="n">max_atoms</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_atoms</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">100</span> <span class="o">/</span> <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;</span><span class="si">% G</span><span class="s2">PU memory used&quot;</span><span class="p">]))</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Statistic&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# of atoms&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_atoms</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Statistic&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Maximum # of atoms possible&quot;</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">max_atoms</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">tabulate</span><span class="p">(</span>
+                    <span class="n">table</span><span class="p">,</span>
+                    <span class="n">headers</span><span class="o">=</span><span class="s2">&quot;keys&quot;</span><span class="p">,</span>
+                    <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;rounded_outline&quot;</span><span class="p">,</span>
+                    <span class="n">colalign</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="s2">&quot;decimal&quot;</span><span class="p">,</span> <span class="s2">&quot;left&quot;</span><span class="p">),</span>
+                    <span class="n">disable_numparse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">text_lines</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">text_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;GPU Usage Statistics&quot;</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">length</span><span class="p">))</span>
+                <span class="n">text_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+                <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
+                    <span class="n">textwrap</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">text_lines</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">7</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># And analyze the results</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">nodes</span><span class="o">=</span><span class="n">history_nodes</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1266,7 +1433,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">return</span> <span class="n">next_node</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_execute_single_sim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">files</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">np_text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">return_files</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_execute_single_sim</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">files</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">np_text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">ngpus</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">gpus</span><span class="o">=</span><span class="p">[],</span> <span class="n">return_files</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Step #1: Execute input file</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1308,9 +1477,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
             <span class="c1"># For PyTorch need at least 1 GPU and only 1 MPI process per GPU</span>
             <span class="n">ff_form</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_form</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span> <span class="ow">and</span> <span class="s2">&quot;NGPUS&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ce</span><span class="p">:</span>
-                <span class="n">ce</span><span class="p">[</span><span class="s2">&quot;NGPUS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-                <span class="n">ce</span><span class="p">[</span><span class="s2">&quot;NTASKS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;NGPUS&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ce</span><span class="p">:</span>
+                    <span class="n">ce</span><span class="p">[</span><span class="s2">&quot;NGPUS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ngpus</span>
+                <span class="k">if</span> <span class="s2">&quot;NTASKS&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ce</span><span class="p">:</span>
+                    <span class="n">ce</span><span class="p">[</span><span class="s2">&quot;NTASKS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ngpus</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">ce</span><span class="p">[</span><span class="s2">&quot;NTASKS&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">ngpus</span><span class="p">:</span>
+                        <span class="n">ce</span><span class="p">[</span><span class="s2">&quot;NTASKS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ngpus</span>
 
             <span class="n">executor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">executor</span>
 
@@ -1321,18 +1495,64 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">path</span> <span class="o">=</span> <span class="n">ini_dir</span> <span class="o">/</span> <span class="s2">&quot;lammps.ini&quot;</span>
 
             <span class="c1"># If the config file doesn&#39;t exists, get the default</span>
+            <span class="n">resources</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="s2">&quot;lammps_step&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-                <span class="n">resources</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="s2">&quot;lammps_step&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span>
                 <span class="n">ini_text</span> <span class="o">=</span> <span class="p">(</span><span class="n">resources</span> <span class="o">/</span> <span class="s2">&quot;lammps.ini&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
                 <span class="n">txt_config</span> <span class="o">=</span> <span class="n">Configuration</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
                 <span class="n">txt_config</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">ini_text</span><span class="p">)</span>
 
                 <span class="c1"># Work out the conda info needed</span>
-                <span class="n">txt_config</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="s2">&quot;conda&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;CONDA_EXE&quot;</span><span class="p">])</span>
+                <span class="n">conda_exe</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                    <span class="s2">&quot;CONDA_EXE&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;please fill in the path to conda&gt;&quot;</span>
+                <span class="p">)</span>
+                <span class="n">txt_config</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="s2">&quot;conda&quot;</span><span class="p">,</span> <span class="n">conda_exe</span><span class="p">)</span>
                 <span class="n">txt_config</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="s2">&quot;conda-environment&quot;</span><span class="p">,</span> <span class="s2">&quot;seamm-lammps&quot;</span><span class="p">)</span>
                 <span class="n">txt_config</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-                <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wrote the LAMMPS configuration file to </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">conda_exe</span> <span class="o">==</span> <span class="s2">&quot;&lt;please fill in the path to conda&gt;&quot;</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Cannot locate the conda executable. Please edit </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="s2">&quot;look for the &lt;conda&gt; key in the local section, and put in</span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="s2">&quot;the path, which you can get using &#39;echo $CONDA_EXE&#39;.&quot;</span>
+                    <span class="p">)</span>
+                    <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wrote the LAMMPS configuration file to </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Ensure the helper scripts for GPU/MDI execution are installed</span>
+            <span class="c1"># These are copied from the package data directory</span>
+            <span class="c1"># to ~/SEAMM/bin/ so they can be referenced in lammps.ini commands.</span>
+            <span class="n">bin_dir</span> <span class="o">=</span> <span class="n">ini_dir</span> <span class="o">/</span> <span class="s2">&quot;bin&quot;</span>
+            <span class="n">bin_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="n">helper_scripts</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;cpu_bind.sh&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;gpu_bind.sh&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;mace_mdi.py&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;mdi_bind.sh&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;mdi_monitor.sh&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">script_name</span> <span class="ow">in</span> <span class="n">helper_scripts</span><span class="p">:</span>
+                <span class="n">dest</span> <span class="o">=</span> <span class="n">bin_dir</span> <span class="o">/</span> <span class="n">script_name</span>
+                <span class="n">src</span> <span class="o">=</span> <span class="n">resources</span> <span class="o">/</span> <span class="n">script_name</span>
+                <span class="n">src_text</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">dest</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                    <span class="n">dest</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">src_text</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">script_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.sh&quot;</span><span class="p">):</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="mo">0o755</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Installed </span><span class="si">{</span><span class="n">script_name</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">bin_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">_</span><span class="p">,</span> <span class="n">src_version</span> <span class="o">=</span> <span class="n">_get_script_version</span><span class="p">(</span><span class="n">src_text</span><span class="p">)</span>
+                    <span class="n">_</span><span class="p">,</span> <span class="n">dest_version</span> <span class="o">=</span> <span class="n">_get_script_version</span><span class="p">(</span><span class="n">dest</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+                    <span class="k">if</span> <span class="n">src_version</span> <span class="ow">and</span> <span class="n">dest_version</span> <span class="ow">and</span> <span class="n">src_version</span> <span class="o">!=</span> <span class="n">dest_version</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">script_name</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">bin_dir</span><span class="si">}</span><span class="s2"> is version </span><span class="si">{</span><span class="n">dest_version</span><span class="si">}</span><span class="s2">, &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;but version </span><span class="si">{</span><span class="n">src_version</span><span class="si">}</span><span class="s2"> is available. &quot;</span>
+                            <span class="s2">&quot;Delete the file to get the updated version.&quot;</span>
+                        <span class="p">)</span>
 
             <span class="n">full_config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">ini_dir</span> <span class="o">/</span> <span class="s2">&quot;lammps.ini&quot;</span><span class="p">)</span>
 
@@ -1369,6 +1589,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="c1"># Use the matching version of the seamm-mopac image by default.</span>
             <span class="n">config</span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span>
 
+            <span class="c1"># Environment variables</span>
+            <span class="n">env</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="s2">&quot;NGPUS&quot;</span> <span class="ow">in</span> <span class="n">ce</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">gpus</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">env</span><span class="p">[</span><span class="s2">&quot;SEAMM_GPUS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">gpus</span><span class="p">])</span>
+                <span class="n">env</span><span class="p">[</span><span class="s2">&quot;OMP_PROC_BIND&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;spread&quot;</span>
+                <span class="n">env</span><span class="p">[</span><span class="s2">&quot;OMP_PLACES&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;threads&quot;</span>
+                <span class="n">env</span><span class="p">[</span><span class="s2">&quot;OMP_NUM_THREADS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>  <span class="c1"># usually best for GPU-dominant runs</span>
+
+            <span class="c1"># The forcefield file for PyTorch/MDI runs</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;PyTorch/&quot;</span><span class="p">):</span>
+                <span class="n">env</span><span class="p">[</span><span class="s2">&quot;SEAMM_FF&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_pytorch_model&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">env</span><span class="p">[</span><span class="s2">&quot;SEAMM_FF&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Unknown&quot;</span>
+
             <span class="n">executor_type</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">name</span>
             <span class="k">if</span> <span class="n">executor_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">full_config</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
@@ -1395,18 +1629,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="p">):</span>
                     <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;--cmd-args&quot;</span><span class="p">,</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;gpu-cmd-args&quot;</span><span class="p">]])</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">{code}</span><span class="s2">&quot;</span><span class="p">]</span>
                 <span class="k">if</span> <span class="p">(</span>
                     <span class="s2">&quot;NGPUS&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ce</span>
                     <span class="ow">and</span> <span class="s2">&quot;cmd-args&quot;</span> <span class="ow">in</span> <span class="n">config</span>
                     <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;cmd-args&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span>
                 <span class="p">):</span>
+                    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">{code}</span><span class="s2">&quot;</span><span class="p">]</span>
                     <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;cmd-args&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
                 <span class="k">if</span> <span class="p">(</span>
                     <span class="s2">&quot;NGPUS&quot;</span> <span class="ow">in</span> <span class="n">ce</span>
                     <span class="ow">and</span> <span class="s2">&quot;gpu-cmd-args&quot;</span> <span class="ow">in</span> <span class="n">config</span>
                     <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;gpu-cmd-args&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span>
                 <span class="p">):</span>
+                    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;{gpu-code}&quot;</span><span class="p">]</span>
                     <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;gpu-cmd-args&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
                 <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;-in&quot;</span><span class="p">,</span> <span class="s2">&quot;input.dat&quot;</span><span class="p">])</span>
 
@@ -1460,6 +1695,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">in_situ</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">ce</span><span class="o">=</span><span class="n">ce</span><span class="p">,</span>
+                <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span>
             <span class="p">)</span>
 
             <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time_ns</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1.0e9</span>
@@ -1717,6 +1953,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">mass</span><span class="p">,</span> <span class="n">itype</span> <span class="o">=</span> <span class="n">parameters</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:6d}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> # </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">mass</span><span class="p">,</span> <span class="n">itype</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s2">&quot;masses&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">mass</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="s2">&quot;extra molecule data&quot;</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Molecules&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">molecule</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s2">&quot;extra molecule data&quot;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">molecule</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># nonbonds</span>
         <span class="k">if</span> <span class="s2">&quot;nonbond parameters&quot;</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">:</span>

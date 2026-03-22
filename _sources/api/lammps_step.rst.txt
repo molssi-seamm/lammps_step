@@ -52,6 +52,14 @@ lammps\_step.energy\_step module
    :show-inheritance:
    :undoc-members:
 
+lammps\_step.gpu\_memory\_parser module
+---------------------------------------
+
+.. automodule:: lammps_step.gpu_memory_parser
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 lammps\_step.heat\_flux module
 ------------------------------
 
