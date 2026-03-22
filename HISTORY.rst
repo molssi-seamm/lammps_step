@@ -1,6 +1,10 @@
 =======
 History
 =======
+2026.3.22.1 -- Fixed issue running LAMMPS using a conda environment
+    * Fixed a problem running LAMMPS directly in a conda environment, due to the
+      construction of the command line having an error.
+
 2026.3.22 -- Added support for MDI and GPUs, mainly for MLFFs
     * Added monitoring of GPU utilization and memory utilization
     * Added more output about the performance of the run to the job output.
