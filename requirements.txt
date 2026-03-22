@@ -1,3 +1,4 @@
+gputil
 molsystem
 numpy
 pandas

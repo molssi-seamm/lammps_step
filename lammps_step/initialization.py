@@ -790,13 +790,20 @@ class Initialization(seamm.Node):
                 " or 3-D periodicity at the moment!"
             )
         lines.append("")
-        lines.append("read_data           structure.dat")
+        lines.append("fix                 prop all property/atom mol")
+        lines.append("read_data           structure.dat fix prop NULL Molecules")
         lines.append("")
         lines.append("#    define the style for MACE")
 
         if "mliap" in model:
             lines.append(f"pair_style          mliap unified {model} 0")
             lines.append(f"pair_coeff          * * {' '.join(eex['atom types'])}")
+        elif model.endswith(".mace.pt"):
+            # MDI setup: no pair style needed, but do need the fix
+            lines.append(
+                "fix                 mdi_fix all mdi/qm elements "
+                f"{' '.join(eex['atom types'])}"
+            )
         else:
             lines.append("pair_style          mace no_domain_decomposition")
             lines.append(
@@ -824,6 +831,7 @@ class Initialization(seamm.Node):
         # Get the configuration
         system_db = self.get_variable("_system_db")
         configuration = system_db.system.configuration
+        n_atoms = configuration.n_atoms
         atoms = configuration.atoms
 
         # The elements, used for e.g. dump statements
@@ -855,5 +863,12 @@ class Initialization(seamm.Node):
 
         eex["n_atoms"] = len(result)
         eex["n_atom_types"] = len(atom_types)
+
+        # molecule for each atom
+        molecule = eex["extra molecule data"] = [1] * n_atoms
+        molecules = configuration.find_molecules(as_indices=True)
+        for molecule_id, atoms in enumerate(molecules):
+            for atom in atoms:
+                molecule[atom] = molecule_id
 
         return eex

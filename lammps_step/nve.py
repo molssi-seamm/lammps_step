@@ -203,6 +203,133 @@ class NVE(lammps_step.Energy):
             printer.normal(__(text, **data, indent=self.indent + 4 * " "))
             printer.normal("")
 
+        # Get performance data from the output
+        if output != "":
+            table = {
+                "Metric": [],
+                "Value": [],
+                "Units": [],
+            }
+            table2 = {
+                "Section": [],
+                "Value": [],
+                "%Variance": [],
+                "%": [],
+            }
+            lines = iter(output)
+            for line in lines:
+                if line.startswith("Loop time of"):
+                    tmp = line.split()
+                    data["loop time"] = tmp[3]
+                    data["nprocs"] = tmp[5]
+                    data["nsteps"] = tmp[8]
+                    data["natoms"] = tmp[11]
+                    for key in ("loop time", "nprocs", "nsteps", "natoms"):
+                        table["Metric"].append(key)
+                        table["Value"].append(data[key])
+                    table["Units"] = ["s", "", "", ""]
+                elif line.startswith("Performance:"):
+                    tmp = line.split()
+                    data["per day"] = tmp[1]
+                    data["per day,units"] = tmp[2].rstrip(",")
+                    data["timesteps/s"] = tmp[5]
+                    data["timesteps/s,units"] = tmp[6].rstrip(",")
+                    data["rate"] = tmp[7]
+                    data["rate,units"] = tmp[8]
+                    line = next(lines)
+                    tmp = line.split()
+                    data["%cpu"] = line[0].rstrip("%")
+
+                    table["Metric"].append("rate(per day)")
+                    table["Value"].append(data["per day"])
+                    table["Units"].append(data["per day,units"])
+                    table["Metric"].append("rate(timesteps)")
+                    table["Value"].append(data["timesteps/s"])
+                    table["Units"].append(data["timesteps/s,units"])
+                    table["Metric"].append("rate")
+                    table["Value"].append(data["rate"])
+                    table["Units"].append(data["rate,units"])
+                    table["Metric"].append("%CPU")
+                    table["Value"].append(data["$cpu"])
+                    table["Units"].append(data["%"])
+                elif line.startswith("MPI task timing breakdown:"):
+                    detail = {}
+                    next(lines)
+                    next(lines)
+                    for line in lines:
+                        if line.strip() == "":
+                            break
+                        (
+                            section,
+                            _,
+                            min_time,
+                            _,
+                            avg_time,
+                            _,
+                            max_time,
+                            _,
+                            varavg,
+                            _,
+                            percent,
+                        ) = line.split()
+                        detail[section] = [
+                            min_time,
+                            avg_time,
+                            max_time,
+                            varavg,
+                            percent,
+                        ]
+                        table2["Section"].append(section)
+                        table2["Value"].append(avg_time)
+                        table2["%Variance"].append(varavg)
+                        table2["%"].append(percent)
+                    break
+            # Print out a table of results.
+            text = ""
+            tmp = tabulate(
+                table,
+                headers="keys",
+                tablefmt="simple",
+                disable_numparse=True,
+                colalign=(
+                    "center",
+                    "decimal",
+                    "center",
+                ),
+            )
+            length = len(tmp.splitlines()[0])
+            text += "\n"
+            text += "Performance".center(length)
+            text += "\n"
+            text += tmp
+            text += "\n"
+
+            printer.normal(__(text, indent=8 * " ", wrap=False, dedent=False))
+
+            if len(table2["Section"]) > 0:
+                # Print out a table oftimings per part of lammps.
+                text = ""
+                tmp = tabulate(
+                    table2,
+                    headers="keys",
+                    tablefmt="simple",
+                    disable_numparse=True,
+                    colalign=(
+                        "center",
+                        "decimal",
+                        "decimal",
+                        "decimal",
+                    ),
+                )
+                length = len(tmp.splitlines()[0])
+                text += "\n"
+                text += "Performance of Sections of LAMMPS".center(length)
+                text += "\n"
+                text += tmp
+                text += "\n"
+
+                printer.normal(__(text, indent=8 * " ", wrap=False, dedent=False))
+
         # Save the trajectory to a new system and its configurations
         if P["trajectory save"]:
             text = self._save_trajectory(P)

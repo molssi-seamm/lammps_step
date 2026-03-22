@@ -10,25 +10,29 @@ from datetime import datetime, timezone
 import importlib
 import json
 import logging
-from math import sqrt, exp, degrees, radians, cos, acos
+from math import sqrt, exp, degrees, radians, cos, acos, inf as infinity
 from pathlib import Path
 import os
 import os.path
 import platform
 import pprint
+import re
 import shlex
 import shutil
 import string
 import sys
+import textwrap
 import time
 import traceback
 import warnings
 
 import bibtexparser
 from cpuinfo import get_cpu_info
+import GPUtil
 import numpy as np
 import pandas
 import statsmodels.tsa.stattools as stattools
+from tabulate import tabulate
 
 import lammps_step
 import molsystem
@@ -45,6 +49,22 @@ from seamm_util.printing import FormattedText as __
 logger = logging.getLogger("lammps")
 job = printing.getPrinter()
 printer = printing.getPrinter("lammps")
+
+VERSION_PATTERN = re.compile(r"^#\s?MolSSI\s+lammps_step\s+(\S+)\s+([\d.]+)")
+
+
+def _get_script_version(text):
+    """Extract file type and version from a MolSSI header line.
+
+    Returns:
+        (file_type, version) e.g. ("lammps_step:mdi_bind", "1.0")
+        or (None, None) if no header found.
+    """
+    for line in text.splitlines()[:3]:
+        m = VERSION_PATTERN.match(line)
+        if m:
+            return m.group(1), m.group(2)
+    return None, None
 
 
 # Temporarily used here to stop pymbar's annoying warning.
@@ -435,6 +455,33 @@ class LAMMPS(seamm.Node):
         )
         parser.add_argument(
             parser_name,
+            "--ngpus",
+            default="available",
+            help=(
+                "The maximum number of gpus to use for LAMMPS. "
+                "Default: all available gpus."
+            ),
+        )
+        parser.add_argument(
+            parser_name,
+            "--gpu-load",
+            default="10",
+            help=(
+                "The percent maximum cpu or memory usage on GPU considered idle. "
+                "Default: 10"
+            ),
+        )
+        parser.add_argument(
+            parser_name,
+            "--gpu-wait-time",
+            default="unlimited",
+            help=(
+                "How long to wait for a GPU to become available, in seconds. "
+                "Default: unlimited"
+            ),
+        )
+        parser.add_argument(
+            parser_name,
             "--atoms-per-core",
             type=int,
             default="100",
@@ -595,42 +642,80 @@ class LAMMPS(seamm.Node):
 
     def run(self):
         """Run a LAMMPS simulation"""
+
+        next_node = super().run(printer)
+
         # Set the model
         try:
             ff = self.get_variable("_forcefield")
             if ff == "OpenKIM":
                 self.model = "OpenKIM/" + self.get_variable("_OpenKIM_Potential")
             elif ff == "PyTorch":
-                self.model = "PyTorch/" + self.get_variable("_pytorch_model")
+                path = Path(self.get_variable("_pytorch_model"))
+                self.model = "PyTorch/" + path.stem
             else:
                 self.model = ff.current_forcefield
         except Exception:
             self.model = None
+
+        # Print headers
+        printer.important(self.header)
 
         system_db = self.get_variable("_system_db")
         configuration = system_db.system.configuration
 
         n_atoms = configuration.n_atoms
         if n_atoms == 0:
+            printer.important("    There is no structure! Must exit")
             self.logger.error("LAMMPS run(): there is no structure!")
             raise RuntimeError("LAMMPS run(): there is no structure!")
 
         # Initialize storage
         self._results = {}
 
-        next_node = super().run(printer)
-
         # Get the options
         o = self.options
         global_options = self.global_options
 
         # Whether to run parallel and if so, how many mpi processes
+        ff_form = self.ff_form()
+
+        # Only worry about GPU's when using PyTorch, for the moment
+        if ff_form == "PyTorch":
+            maxload = float(o["gpu_load"]) / 100
+            t0 = time.time()
+            t = o["gpu_wait_time"]
+            if t == "unlimited":
+                t_end = infinity
+            else:
+                t_end = t0 + int(t)
+            while True:
+                gpus = GPUtil.getAvailable(
+                    order="first",
+                    limit=99,
+                    maxLoad=maxload,
+                    maxMemory=maxload,
+                    includeNan=False,
+                )
+                if len(gpus) > 0:
+                    break
+                if time.time() - t0 > t_end:
+                    break
+                time.sleep(1)
+        else:
+            gpus = []
+            ngpus = 0
+
         if global_options["parallelism"] in ("any", "mpi"):
             np = n_atoms // o["atoms_per_core"] + 1
             np_text = (
                 f"The calculation can use {np} cores given {n_atoms} atoms and "
                 f"the requested {o['atoms_per_core']} atoms per core."
             )
+            if o["ngpus"] == "available":
+                ngpus = len(gpus)
+            else:
+                ngpus = min(len(gpus), int(o["ngpus"]))
             if o["ncores"] != "available":
                 if np > int(o["ncores"]):
                     np_text += (
@@ -645,13 +730,42 @@ class LAMMPS(seamm.Node):
                         f"limit of {int(global_options['ncores'])} cores."
                     )
                 np = min(np, int(global_options["ncores"]))
+            if ff_form == "PyTorch":
+                if ngpus < 1:
+                    printer.important(
+                        "    Using PyTorch forcefield, but no GPUs! Must exit."
+                    )
+                    raise RuntimeError(
+                        "LAMMPS: PyTorch forcefield requested, but no GPUs!"
+                        " Must stop."
+                    )
+                np = min(np, ngpus)
+                ngpus = np
+                np_text += (
+                    " Because LAMMPS is using a PyTorch forcefield, the number of GPUs"
+                    f" must be the same as the number of cores = {ngpus}."
+                )
         else:
             np_text = "No parallelism requested: {global_options['parallelism']}"
             np = 1
+            if ff_form == "PyTorch":
+                if ngpus < 1:
+                    printer.important(
+                        "    Using PyTorch forcefield, but no GPUs! Must exit."
+                    )
+                    raise RuntimeError(
+                        "LAMMPS: PyTorch forcefield requested, but no GPUs!"
+                        " Must stop."
+                    )
+                ngpus = 1
+                np_text += (
+                    " Because LAMMPS is using a PyTorch forcefield, the number of GPUs"
+                    f" must be the same as the number of cores = {ngpus}."
+                )
+        if ngpus > 0:
+            gpus = gpus[0:ngpus]
 
-        # Print headers and get to work
-        printer.important(self.header)
-
+        # Get to the actual work
         self.subflowchart.root_directory = self.flowchart.root_directory
 
         files = {}
@@ -676,7 +790,7 @@ class LAMMPS(seamm.Node):
             control.append(["forcefield", "OpenKIM " + potential])
         elif ff == "PyTorch":
             model = self.get_variable("_pytorch_model")
-            control.append(["forcefield", "OpenKIM " + model])
+            control.append(["forcefield", "PyTorch " + model])
         else:
             control.append(["forcefield", ff.current_forcefield])
         while node is not None:
@@ -753,8 +867,61 @@ class LAMMPS(seamm.Node):
         self._timing_data[11] = json.dumps(control)
         control = []
 
-        files = self._execute_single_sim(files, np=np, np_text=np_text)
+        files = self._execute_single_sim(
+            files, np=np, np_text=np_text, ngpus=ngpus, gpus=gpus
+        )
 
+        # Analyze any GPU logs
+        gpu_logs = list(self.wd.glob("gpu_*.log"))
+        if len(gpu_logs) > 0:
+            with open(self.wd / "gpu_statistics.log", "w") as fd:
+                stats = lammps_step.print_multi_gpu_summary(gpu_logs, fd=fd)
+
+            if stats is not None:
+                # Print a table with the gpu statistics to the output.
+                table = {
+                    "Statistic": [*stats.keys()],
+                    "Value": [*stats.values()],
+                    "Units": [],
+                }
+                tmp = table["Units"]
+                for key in stats.keys():
+                    if "%" in key:
+                        tmp.append("%")
+                    elif "memory" in key:
+                        tmp.append("GiB")
+                    elif "utilization" in key:
+                        tmp.append("%")
+                    elif "time" in key:
+                        tmp.append("s")
+                    else:
+                        tmp.append("")
+
+                max_atoms = int(n_atoms * (1 + 100 / stats["% GPU memory used"]))
+                table["Statistic"].append("# of atoms")
+                table["Value"].append(n_atoms)
+                table["Units"].append("")
+                table["Statistic"].append("Maximum # of atoms possible")
+                table["Value"].append(max_atoms)
+                table["Units"].append("")
+
+                tmp = tabulate(
+                    table,
+                    headers="keys",
+                    tablefmt="rounded_outline",
+                    colalign=("center", "decimal", "left"),
+                    disable_numparse=True,
+                )
+                length = len(tmp.splitlines()[0])
+                text_lines = []
+                text_lines.append("GPU Usage Statistics".center(length))
+                text_lines.append(tmp)
+                printer.important(
+                    textwrap.indent("\n".join(text_lines), self.indent + 7 * " ")
+                )
+                printer.important("")
+
+        # And analyze the results
         self.analyze(nodes=history_nodes)
 
         self._trajectory = []
@@ -763,7 +930,9 @@ class LAMMPS(seamm.Node):
 
         return next_node
 
-    def _execute_single_sim(self, files, np=1, np_text="", return_files=None):
+    def _execute_single_sim(
+        self, files, np=1, np_text="", ngpus=0, gpus=[], return_files=None
+    ):
         """
         Step #1: Execute input file
         """
@@ -805,9 +974,14 @@ class LAMMPS(seamm.Node):
 
             # For PyTorch need at least 1 GPU and only 1 MPI process per GPU
             ff_form = self.ff_form()
-            if ff_form == "PyTorch" and "NGPUS" not in ce:
-                ce["NGPUS"] = 1
-                ce["NTASKS"] = 1
+            if ff_form == "PyTorch":
+                if "NGPUS" not in ce:
+                    ce["NGPUS"] = ngpus
+                if "NTASKS" not in ce:
+                    ce["NTASKS"] = ngpus
+                else:
+                    if ce["NTASKS"] > ngpus:
+                        ce["NTASKS"] = ngpus
 
             executor = self.flowchart.executor
 
@@ -818,18 +992,64 @@ class LAMMPS(seamm.Node):
             path = ini_dir / "lammps.ini"
 
             # If the config file doesn't exists, get the default
+            resources = importlib.resources.files("lammps_step") / "data"
             if not path.exists():
-                resources = importlib.resources.files("lammps_step") / "data"
                 ini_text = (resources / "lammps.ini").read_text()
                 txt_config = Configuration(path)
                 txt_config.from_string(ini_text)
 
                 # Work out the conda info needed
-                txt_config.set_value("local", "conda", os.environ["CONDA_EXE"])
+                conda_exe = os.environ.get(
+                    "CONDA_EXE", "<please fill in the path to conda>"
+                )
+                txt_config.set_value("local", "conda", conda_exe)
                 txt_config.set_value("local", "conda-environment", "seamm-lammps")
                 txt_config.save()
-                printer.normal(f"Wrote the LAMMPS configuration file to {path}")
-                printer.normal("")
+                if conda_exe == "<please fill in the path to conda>":
+                    msg = (
+                        f"Cannot locate the conda executable. Please edit {path}\n"
+                        "look for the <conda> key in the local section, and put in\n"
+                        "the path, which you can get using 'echo $CONDA_EXE'."
+                    )
+                    printer.important(msg)
+                    raise RuntimeError(msg)
+                else:
+                    printer.normal(f"Wrote the LAMMPS configuration file to {path}")
+                    printer.normal("")
+
+            # Ensure the helper scripts for GPU/MDI execution are installed
+            # These are copied from the package data directory
+            # to ~/SEAMM/bin/ so they can be referenced in lammps.ini commands.
+            bin_dir = ini_dir / "bin"
+            bin_dir.mkdir(exist_ok=True)
+
+            helper_scripts = [
+                "cpu_bind.sh",
+                "gpu_bind.sh",
+                "mace_mdi.py",
+                "mdi_bind.sh",
+                "mdi_monitor.sh",
+            ]
+
+            for script_name in helper_scripts:
+                dest = bin_dir / script_name
+                src = resources / script_name
+                src_text = src.read_text()
+
+                if not dest.exists():
+                    dest.write_text(src_text)
+                    if script_name.endswith(".sh"):
+                        os.chmod(dest, 0o755)
+                    self.logger.info(f"Installed {script_name} to {bin_dir}")
+                else:
+                    _, src_version = _get_script_version(src_text)
+                    _, dest_version = _get_script_version(dest.read_text())
+                    if src_version and dest_version and src_version != dest_version:
+                        self.logger.warning(
+                            f"{script_name} in {bin_dir} is version {dest_version}, "
+                            f"but version {src_version} is available. "
+                            "Delete the file to get the updated version."
+                        )
 
             full_config.read(ini_dir / "lammps.ini")
 
@@ -866,6 +1086,20 @@ class LAMMPS(seamm.Node):
             # Use the matching version of the seamm-mopac image by default.
             config["version"] = self.version
 
+            # Environment variables
+            env = {}
+            if "NGPUS" in ce and len(gpus) != 0:
+                env["SEAMM_GPUS"] = ",".join([str(i) for i in gpus])
+                env["OMP_PROC_BIND"] = "spread"
+                env["OMP_PLACES"] = "threads"
+                env["OMP_NUM_THREADS"] = "1"  # usually best for GPU-dominant runs
+
+            # The forcefield file for PyTorch/MDI runs
+            if self.model.startswith("PyTorch/"):
+                env["SEAMM_FF"] = self.get_variable("_pytorch_model")
+            else:
+                env["SEAMM_FF"] = "Unknown"
+
             executor_type = executor.name
             if executor_type not in full_config:
                 raise RuntimeError(
@@ -892,18 +1126,19 @@ class LAMMPS(seamm.Node):
                 ):
                     cmd.extend(["--cmd-args", config["gpu-cmd-args"]])
             else:
-                cmd = ["{code}"]
                 if (
                     "NGPUS" not in ce
                     and "cmd-args" in config
                     and config["cmd-args"] != ""
                 ):
+                    cmd = ["{code}"]
                     cmd.extend(config["cmd-args"].split())
                 if (
                     "NGPUS" in ce
                     and "gpu-cmd-args" in config
                     and config["gpu-cmd-args"] != ""
                 ):
+                    cmd = ["{gpu-code}"]
                     cmd.extend(config["gpu-cmd-args"].split())
                 cmd.extend(["-in", "input.dat"])
 
@@ -957,6 +1192,7 @@ class LAMMPS(seamm.Node):
                 in_situ=True,
                 shell=True,
                 ce=ce,
+                env=env,
             )
 
             t = (time.time_ns() - t0) / 1.0e9
@@ -1212,6 +1448,13 @@ class LAMMPS(seamm.Node):
             mass, itype = parameters
             lines.append("{:6d} {} # {}".format(i, mass, itype))
             self._data["masses"].append(float(mass))
+
+        if "extra molecule data" in eex:
+            lines.append("")
+            lines.append("Molecules")
+            lines.append("")
+            for i, molecule in enumerate(eex["extra molecule data"], start=1):
+                lines.append(f"{i:6d} {molecule + 1:6d}")
 
         # nonbonds
         if "nonbond parameters" in eex:
