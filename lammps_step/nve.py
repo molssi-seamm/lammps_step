@@ -98,7 +98,7 @@ class NVE(lammps_step.Energy):
         tmp = tabulate(
             table,
             headers="keys",
-            tablefmt="simple",
+            tablefmt="rounded_outline",
             disable_numparse=True,
             colalign=(
                 "center",
@@ -230,48 +230,57 @@ class NVE(lammps_step.Energy):
                     table["Units"] = ["s", "", "", ""]
                 elif line.startswith("Performance:"):
                     tmp = line.split()
-                    data["per day"] = tmp[1]
-                    data["per day,units"] = tmp[2].rstrip(",")
-                    data["timesteps/s"] = tmp[5]
-                    data["timesteps/s,units"] = tmp[6].rstrip(",")
-                    data["rate"] = tmp[7]
-                    data["rate,units"] = tmp[8]
+                    data["rate per day"] = Q_(float(tmp[1]), tmp[2].rstrip(",")).m_as(
+                        "ns/day"
+                    )
+                    data["rate timesteps/s"] = float(tmp[5])
+                    if tmp[6].lower().startswith("k"):
+                        data["rate timestep/s"] *= 1000
+                    data["katom-steps/s"] = float(tmp[7])
+                    if tmp[8].lower().startswith("m"):
+                        data["katom-steps/s"] *= 1000
                     line = next(lines)
                     tmp = line.split()
-                    data["%cpu"] = line[0].rstrip("%")
+                    data["%cpu"] = float(line[0].rstrip("%"))
 
                     table["Metric"].append("rate(per day)")
-                    table["Value"].append(data["per day"])
-                    table["Units"].append(data["per day,units"])
+                    table["Value"].append(data["rate per day"])
+                    table["Units"].append("ns/day")
                     table["Metric"].append("rate(timesteps)")
-                    table["Value"].append(data["timesteps/s"])
-                    table["Units"].append(data["timesteps/s,units"])
-                    table["Metric"].append("rate")
-                    table["Value"].append(data["rate"])
-                    table["Units"].append(data["rate,units"])
+                    table["Value"].append(data["rate timesteps/s"])
+                    table["Units"].append("timesteps/s")
+                    table["Metric"].append("katom-steps/s")
+                    table["Value"].append(data["katom-steps/s"])
+                    table["Units"].append("katom*steps/s")
                     table["Metric"].append("%CPU")
-                    table["Value"].append(data["$cpu"])
-                    table["Units"].append(data["%"])
+                    table["Value"].append(data["%cpu"])
+                    table["Units"].append("%")
                 elif line.startswith("MPI task timing breakdown:"):
+                    imbalance = []
+                    comms = 0
                     detail = {}
                     next(lines)
                     next(lines)
+                    # Pair    | 1.0275     | 1.2183     | 1.3807     |  12.1 | 24.85
+                    # Other   |            | 0.04275    |            |       |  0.90
                     for line in lines:
                         if line.strip() == "":
                             break
                         (
                             section,
-                            _,
                             min_time,
-                            _,
                             avg_time,
-                            _,
                             max_time,
-                            _,
                             varavg,
-                            _,
                             percent,
-                        ) = line.split()
+                        ) = line.split("|")
+                        section = section.strip()
+                        min_time = min_time.strip()
+                        avg_time = avg_time.strip()
+                        max_time = max_time.strip()
+                        varavg = varavg.strip()
+                        percent = percent.strip()
+
                         detail[section] = [
                             min_time,
                             avg_time,
@@ -279,6 +288,10 @@ class NVE(lammps_step.Energy):
                             varavg,
                             percent,
                         ]
+                        if varavg != "" and float(varavg) > 5:
+                            imbalance.append(section)
+                        if section == "Comm":
+                            comms = float(percent)
                         table2["Section"].append(section)
                         table2["Value"].append(avg_time)
                         table2["%Variance"].append(varavg)
@@ -289,7 +302,7 @@ class NVE(lammps_step.Energy):
             tmp = tabulate(
                 table,
                 headers="keys",
-                tablefmt="simple",
+                tablefmt="rounded_outline",
                 disable_numparse=True,
                 colalign=(
                     "center",
@@ -307,12 +320,12 @@ class NVE(lammps_step.Energy):
             printer.normal(__(text, indent=8 * " ", wrap=False, dedent=False))
 
             if len(table2["Section"]) > 0:
-                # Print out a table oftimings per part of lammps.
+                # Print out a table of timings per part of lammps.
                 text = ""
                 tmp = tabulate(
                     table2,
                     headers="keys",
-                    tablefmt="simple",
+                    tablefmt="rounded_outline",
                     disable_numparse=True,
                     colalign=(
                         "center",
@@ -329,6 +342,22 @@ class NVE(lammps_step.Energy):
                 text += "\n"
 
                 printer.normal(__(text, indent=8 * " ", wrap=False, dedent=False))
+
+                if len(imbalance) > 0 or comms > 10:
+                    text = ""
+                    if len(imbalance) > 0:
+                        tmp = ", ".join(imbalance)
+                        text += f"The variance of > 5% in the timing of {tmp}"
+                        text += "between processors suggests that LAMMPS is not "
+                        text += "partitioning the particles effectively. If possible "
+                        text += "turn on balancing either once before the run or "
+                        text += "at an interval during the run."
+                        text += "\n\n"
+                    if comms > 10:
+                        text += f"The communication overhead of {comms}% suggests "
+                        text += "that you are running on too many cores."
+                        text += "\n\n"
+                    printer.normal(__(text, indent=8 * " ", wrap=True, dedent=True))
 
         # Save the trajectory to a new system and its configurations
         if P["trajectory save"]:

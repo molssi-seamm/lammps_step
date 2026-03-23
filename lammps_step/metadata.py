@@ -924,6 +924,52 @@ metadata["results"] = {
         "units": "",
     },
     # Timings
+    "rate per day": {
+        "description": "Simulation time per day",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "ns/day",
+        "format": ".2f",
+    },
+    "rate timesteps/s": {
+        "description": "Timesteps per second",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "1/s",
+        "format": ".2f",
+    },
+    "katom-steps/s": {
+        "description": "Rate of simulation",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "1/s",
+        "format": ".2f",
+    },
+    "average gpu utilization": {
+        "description": "GPU utilization",
+        "dimensionality": "scalar",
+        "type": "float",
+        "format": ".1f",
+    },
+    "gpu memory used": {
+        "description": "GPU memory used",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "GiB",
+        "format": ".1f",
+    },
+    "gpu memory free": {
+        "description": "GPU memory free",
+        "dimensionality": "scalar",
+        "type": "float",
+        "units": "GiB",
+        "format": ".1f",
+    },
+    "gpu maximum atoms": {
+        "description": "GPU maximum atoms",
+        "dimensionality": "scalar",
+        "type": "integer",
+    },
     "t_lammps_wall": {
         "description": "The wall clock time for LAMMPS",
         "dimensionality": "scalar",
@@ -1096,7 +1142,7 @@ metadata["results"] = {
         "calculation": ["minimization"],
         "description": "Atom index with largest displacement",
         "dimensionality": "scalar",
-        "type": "int",
+        "type": "integer",
     },
     "maximum displacement": {
         "calculation": ["minimization"],
@@ -1116,7 +1162,7 @@ metadata["results"] = {
         "calculation": ["minimization"],
         "description": "Atom index with largest displacement, including H",
         "dimensionality": "scalar",
-        "type": "int",
+        "type": "integer",
     },
     "maximum displacement with H": {
         "calculation": ["minimization"],
