@@ -1,6 +1,8 @@
 =======
 History
 =======
+2026.3.23 -- Improved the performance output and results for MD
+
 2026.3.22.1 -- Fixed issue running LAMMPS using a conda environment
     * Fixed a problem running LAMMPS directly in a conda environment, due to the
       construction of the command line having an error.

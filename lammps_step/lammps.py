@@ -872,12 +872,17 @@ class LAMMPS(seamm.Node):
         )
 
         # Analyze any GPU logs
+        values = {}
         gpu_logs = list(self.wd.glob("gpu_*.log"))
         if len(gpu_logs) > 0:
             with open(self.wd / "gpu_statistics.log", "w") as fd:
                 stats = lammps_step.print_multi_gpu_summary(gpu_logs, fd=fd)
 
             if stats is not None:
+                # Add the values to the data to store
+                values["average gpu utilization"] = stats["Average GPU utilization"]
+                values["gpu memory used"] = stats["Maximum GPU memory used"]
+                values["gpu memory free"] = stats["Minimum free GPU memory"]
                 # Print a table with the gpu statistics to the output.
                 table = {
                     "Statistic": [*stats.keys()],
@@ -898,6 +903,7 @@ class LAMMPS(seamm.Node):
                         tmp.append("")
 
                 max_atoms = int(n_atoms * (1 + 100 / stats["% GPU memory used"]))
+                values["gpu maximum atoms"] = max_atoms
                 table["Statistic"].append("# of atoms")
                 table["Value"].append(n_atoms)
                 table["Units"].append("")
@@ -922,7 +928,7 @@ class LAMMPS(seamm.Node):
                 printer.important("")
 
         # And analyze the results
-        self.analyze(nodes=history_nodes)
+        self.analyze(nodes=history_nodes, values=values)
 
         self._trajectory = []
 
@@ -2028,7 +2034,7 @@ class LAMMPS(seamm.Node):
             "\n".join(dihedral_table),
         )
 
-    def analyze(self, indent="", nodes=None, **kwargs):
+    def analyze(self, indent="", nodes=None, values={}, **kwargs):
         """Analyze the output of the calculation"""
         if isinstance(nodes, list) is False:
             nodes = [nodes]
@@ -2093,10 +2099,9 @@ class LAMMPS(seamm.Node):
                         node_data, fd, indent=4, cls=CompactJSONEncoder, sort_keys=True
                     )
 
-                # Get just the values from the node data
-                values = {k: v["mean"] for k, v in node_data.items()}
-                # And the other key values
+                # Get the values from the node data
                 for k, v in node_data.items():
+                    values[k] = v["mean"]
                     for key in ("stderr", "tau", "inefficiency", "n_samples"):
                         if key in v:
                             values[f"{k},{key}"] = v[key]
@@ -2122,7 +2127,6 @@ class LAMMPS(seamm.Node):
                         values[f"stress,{item}"] = vector
             else:
                 node_data = None
-                values = {}
                 table = None
 
             values["model"] = self.model
