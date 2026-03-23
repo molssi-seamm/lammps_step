@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.3.22.1 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.3.23 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=8b710a42"></script>
+    <script src="../../_static/documentation_options.js?v=460f501a"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.3.22.1" />
+  <meta name="docsearch:version" content="2026.3.23" />
   </head>
   
   
@@ -1374,12 +1374,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="p">)</span>
 
         <span class="c1"># Analyze any GPU logs</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">gpu_logs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wd</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;gpu_*.log&quot;</span><span class="p">))</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gpu_logs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wd</span> <span class="o">/</span> <span class="s2">&quot;gpu_statistics.log&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
                 <span class="n">stats</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">print_multi_gpu_summary</span><span class="p">(</span><span class="n">gpu_logs</span><span class="p">,</span> <span class="n">fd</span><span class="o">=</span><span class="n">fd</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">stats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Add the values to the data to store</span>
+                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;average gpu utilization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;Average GPU utilization&quot;</span><span class="p">]</span>
+                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;gpu memory used&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;Maximum GPU memory used&quot;</span><span class="p">]</span>
+                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;gpu memory free&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;Minimum free GPU memory&quot;</span><span class="p">]</span>
                 <span class="c1"># Print a table with the gpu statistics to the output.</span>
                 <span class="n">table</span> <span class="o">=</span> <span class="p">{</span>
                     <span class="s2">&quot;Statistic&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">*</span><span class="n">stats</span><span class="o">.</span><span class="n">keys</span><span class="p">()],</span>
@@ -1400,6 +1405,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <span class="n">tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
                 <span class="n">max_atoms</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_atoms</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">100</span> <span class="o">/</span> <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;</span><span class="si">% G</span><span class="s2">PU memory used&quot;</span><span class="p">]))</span>
+                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;gpu maximum atoms&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_atoms</span>
                 <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Statistic&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# of atoms&quot;</span><span class="p">)</span>
                 <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_atoms</span><span class="p">)</span>
                 <span class="n">table</span><span class="p">[</span><span class="s2">&quot;Units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -1424,7 +1430,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
         <span class="c1"># And analyze the results</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">nodes</span><span class="o">=</span><span class="n">history_nodes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">nodes</span><span class="o">=</span><span class="n">history_nodes</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -2536,7 +2542,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="viewcode-block" id="LAMMPS.analyze">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.analyze">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">analyze</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">analyze</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="p">{},</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Analyze the output of the calculation&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
             <span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">nodes</span><span class="p">]</span>
@@ -2601,10 +2607,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <span class="n">node_data</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">CompactJSONEncoder</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span>
                     <span class="p">)</span>
 
-                <span class="c1"># Get just the values from the node data</span>
-                <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">node_data</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-                <span class="c1"># And the other key values</span>
+                <span class="c1"># Get the values from the node data</span>
                 <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">node_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">values</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span>
                     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;stderr&quot;</span><span class="p">,</span> <span class="s2">&quot;tau&quot;</span><span class="p">,</span> <span class="s2">&quot;inefficiency&quot;</span><span class="p">,</span> <span class="s2">&quot;n_samples&quot;</span><span class="p">):</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
                             <span class="n">values</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
@@ -2630,7 +2635,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <span class="n">values</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;stress,</span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vector</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">node_data</span> <span class="o">=</span> <span class="kc">None</span>
-                <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
                 <span class="n">table</span> <span class="o">=</span> <span class="kc">None</span>
 
             <span class="n">values</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
