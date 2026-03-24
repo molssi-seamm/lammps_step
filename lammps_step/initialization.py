@@ -801,7 +801,7 @@ class Initialization(seamm.Node):
         elif model.endswith(".mace.pt"):
             # MDI setup: no pair style needed, but do need the fix
             lines.append(
-                "fix                 mdi_fix all mdi/qm elements "
+                "fix                 mdi_fix all mdi/qm virial yes elements "
                 f"{' '.join(eex['atom types'])}"
             )
         else:

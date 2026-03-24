@@ -30,9 +30,9 @@ os.environ["TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD"] = "1"
 logging.basicConfig(level=logging.INFO)
 
 # Unit conversion factors that are needed
-ureg = pint.UnitRegistry()
-BOHR_TO_ANGSTROM = ureg.Quantity(1, "bohr").to("angstrom").magnitude
-HARTREE_TO_EV = ureg.Quantity(1, "hartree").to("eV").magnitude
+_ureg = pint.UnitRegistry()
+Bohr = _ureg.Quantity(1, "bohr").to("angstrom").magnitude  # Bohr -> Å
+Hartree = _ureg.Quantity(1, "hartree").to("eV").magnitude  # Hartree -> eV
 
 # ---------------------------------------------------------------------------
 # Neighbor list backends
@@ -192,6 +192,7 @@ class MACEEngine:
         # ---- Results ----
         self.energy = None
         self.forces = None
+        self.stress = None
         self._needs_calculation = True
 
         # ---- Timing ----
@@ -262,8 +263,8 @@ class MACEEngine:
         t_start = time.perf_counter()
 
         # Convert MDI Bohr -> Angstrom
-        positions_ang = self.positions_np * BOHR_TO_ANGSTROM
-        cell_ang = self.cell_np * BOHR_TO_ANGSTROM
+        positions_ang = self.positions_np * Bohr
+        cell_ang = self.cell_np * Bohr
 
         # ---- Neighbor list ----
         t0 = time.perf_counter()
@@ -312,17 +313,27 @@ class MACEEngine:
         # ---- Model forward pass ----
         out = self.model(
             input_dict,
-            compute_stress=False,
+            compute_stress=True,
             training=False,
         )
 
         t3 = time.perf_counter()
 
         # ---- Extract results, convert to MDI atomic units ----
-        self.energy = out["energy"].detach().cpu().item() / HARTREE_TO_EV
-        self.forces = out["forces"].detach().cpu().numpy() / (
-            HARTREE_TO_EV / BOHR_TO_ANGSTROM
+        self.energy = out["energy"].detach().cpu().item() / Hartree
+        self.forces = (
+            out["forces"].detach().cpu().to(torch.float64).numpy()
+            / (Hartree / Bohr)
         )
+
+        # Stress: MACE returns [1, 3, 3] in eV/Å³, MDI expects Hartree/Bohr³
+        if out.get("stress") is not None:
+            self.stress = (
+                -out["stress"].detach().cpu().to(torch.float64).numpy().reshape(3, 3)
+                / (Hartree / Bohr**3)
+            )
+        else:
+            self.stress = None
 
         t_end = time.perf_counter()
 
@@ -359,6 +370,7 @@ class MACEEngine:
             ">ELEMENTS",
             "<ENERGY",
             "<FORCES",
+            "<STRESS",
             "SCF",
             "EXIT",
         ]:
@@ -397,6 +409,8 @@ class MACEEngine:
                     self.natoms, 3
                 )
                 self._needs_calculation = True
+                if self._n_calc < 2:
+                    logging.debug(f"First 3 positions (Bohr): {self.positions_np[:3]}")
 
             elif command == "<ENERGY":
                 if self._needs_calculation:
@@ -412,9 +426,31 @@ class MACEEngine:
                     self.forces.flatten(), 3 * self.natoms, mdi.MDI_DOUBLE, comm
                 )
 
+            elif command == "<STRESS":
+                if self._needs_calculation:
+                    self.calculate()
+                    self._needs_calculation = False
+                if self.stress is not None:
+                    if self._n_calc < 2:
+                        logging.debug(f"MDI sending {self.stress=}")
+                    mdi.MDI_Send(
+                        self.stress.flatten(), 9, mdi.MDI_DOUBLE, comm
+                    )
+                else:
+                    # Send zeros if stress wasn't computed
+                    if self._n_calc < 2:
+                        logging.info("MDI sending zeroes for stress")
+                    mdi.MDI_Send(
+                        np.zeros(9), 9, mdi.MDI_DOUBLE, comm
+                    )
+
             elif command == "SCF":
                 self.calculate()
                 self._needs_calculation = False
+
+            else:
+                print(f"Error: unhandled MDI command {command}!", file=sys.stderr)
+                sys.exit(1)
 
         logging.info(
             f"Engine finished. {self._n_calc} calculations, "

@@ -1,6 +1,10 @@
 =======
 History
 =======
+2026.3.24 -- Bugfix: Issues calculating the stress and its sign.
+    * Added an option to the fix mdi/qm line to ensure that MDI calculates the stress.
+    * Fixed the sign issue in the stress between LAMMPS and MDI.
+
 2026.3.23 -- Improved the performance output and results for MD
 
 2026.3.22.1 -- Fixed issue running LAMMPS using a conda environment
