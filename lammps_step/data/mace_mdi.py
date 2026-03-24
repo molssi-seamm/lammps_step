@@ -321,17 +321,15 @@ class MACEEngine:
 
         # ---- Extract results, convert to MDI atomic units ----
         self.energy = out["energy"].detach().cpu().item() / Hartree
-        self.forces = (
-            out["forces"].detach().cpu().to(torch.float64).numpy()
-            / (Hartree / Bohr)
+        self.forces = out["forces"].detach().cpu().to(torch.float64).numpy() / (
+            Hartree / Bohr
         )
 
         # Stress: MACE returns [1, 3, 3] in eV/Å³, MDI expects Hartree/Bohr³
         if out.get("stress") is not None:
-            self.stress = (
-                -out["stress"].detach().cpu().to(torch.float64).numpy().reshape(3, 3)
-                / (Hartree / Bohr**3)
-            )
+            self.stress = -out["stress"].detach().cpu().to(
+                torch.float64
+            ).numpy().reshape(3, 3) / (Hartree / Bohr**3)
         else:
             self.stress = None
 
@@ -433,16 +431,12 @@ class MACEEngine:
                 if self.stress is not None:
                     if self._n_calc < 2:
                         logging.debug(f"MDI sending {self.stress=}")
-                    mdi.MDI_Send(
-                        self.stress.flatten(), 9, mdi.MDI_DOUBLE, comm
-                    )
+                    mdi.MDI_Send(self.stress.flatten(), 9, mdi.MDI_DOUBLE, comm)
                 else:
                     # Send zeros if stress wasn't computed
                     if self._n_calc < 2:
                         logging.info("MDI sending zeroes for stress")
-                    mdi.MDI_Send(
-                        np.zeros(9), 9, mdi.MDI_DOUBLE, comm
-                    )
+                    mdi.MDI_Send(np.zeros(9), 9, mdi.MDI_DOUBLE, comm)
 
             elif command == "SCF":
                 self.calculate()
