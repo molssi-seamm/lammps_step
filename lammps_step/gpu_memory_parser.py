@@ -284,6 +284,9 @@ def print_multi_gpu_summary(log_paths, fd=None):
                 print(f"  {'Initialization time:':25s} {max_init:.1f} s", file=fd)
             else:
                 print(f"  {'Max initialization time:':25s} {max_init:.1f} s", file=fd)
+        else:
+            print("    Could not determine the initialization time!")
+            max_init = -1
 
         return {
             "Number of GPUs": ngpus,

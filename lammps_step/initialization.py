@@ -790,6 +790,9 @@ class Initialization(seamm.Node):
                 " or 3-D periodicity at the moment!"
             )
         lines.append("")
+        if model.endswith(".mace.pt"):
+            lines.append("comm_modify         cutoff 2.0  # To remove warnings")
+            lines.append("")
         lines.append("fix                 prop all property/atom mol")
         lines.append("read_data           structure.dat fix prop NULL Molecules")
         lines.append("")
@@ -800,10 +803,16 @@ class Initialization(seamm.Node):
             lines.append(f"pair_coeff          * * {' '.join(eex['atom types'])}")
         elif model.endswith(".mace.pt"):
             # MDI setup: no pair style needed, but do need the fix
-            lines.append(
-                "fix                 mdi_fix all mdi/qm virial yes elements "
-                f"{' '.join(eex['atom types'])}"
-            )
+            if periodicity == 0:
+                lines.append(
+                    "fix                 mdi_fix all mdi/qm elements "
+                    f"{' '.join(eex['atom types'])}"
+                )
+            else:
+                lines.append(
+                    "fix                 mdi_fix all mdi/qm virial yes elements "
+                    f"{' '.join(eex['atom types'])}"
+                )
         else:
             lines.append("pair_style          mace no_domain_decomposition")
             lines.append(

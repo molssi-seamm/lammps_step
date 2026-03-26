@@ -944,6 +944,8 @@ class LAMMPS(seamm.Node):
         """
 
         return_files = [
+            "stdout.txt",
+            "stderr.txt",
             "summary_*.txt",
             "trajectory_*.seamm_trj",
             "*.json",
@@ -972,7 +974,11 @@ class LAMMPS(seamm.Node):
             path = Path(self.directory) / "stdout.txt"
             if path.exists():
                 result["stdout"] = path.read_text()
-            result["stderr"] = ""
+            path = Path(self.directory) / "stderr.txt"
+            if path.exists():
+                result["stderr"] = path.read_text()
+            else:
+                result["stderr"] = ""
         else:
             # Set up the computational limits and get the computational enviroment
             cl = {"NTASKS": np}
@@ -1212,9 +1218,12 @@ class LAMMPS(seamm.Node):
 
             self.logger.debug("\n" + pprint.pformat(result))
 
-            f = os.path.join(self.directory, "stdout.txt")
-            with open(f, mode="w") as fd:
-                fd.write(result["stdout"])
+            # f = os.path.join(self.directory, "stdout.txt")
+            # with open(f, mode="w") as fd:
+            #     fd.write(result["stdout"])
+            # f = os.path.join(self.directory, "stderr.txt")
+            # with open(f, mode="w") as fd:
+            #     fd.write(result["stderr"])
 
         # Add the citations, getting the version from stdout and any citations
         if "log.cite" in result:
