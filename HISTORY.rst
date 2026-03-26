@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.3.26 -- Bugfix: MDI stress not calculated and error catching
+    * MDI requires an option in fix mdi/qm for it to request the virial; it is not
+      automatic for e.g. NPT calculations. The code now adds the keywords for periodic
+      calculations but not molecular ones.
+    * Added code to catch errors in the analysis of the GPU performance in cases where
+      data is missing or cannot be interpreted correctly, so that calculation continues
+      without error.
+    * Fixed an issue returning the stdout and stderr from the LAMMPS/MDI
+      calculation. LAMMPS logs to stdout and MDI to stderr to keep the streams separate.
+
 2026.3.24 -- Bugfix: Issues calculating the stress and its sign.
     * Added an option to the fix mdi/qm line to ensure that MDI calculates the stress.
     * Fixed the sign issue in the stress between LAMMPS and MDI.
