@@ -67,21 +67,29 @@ except (ImportError, ModuleNotFoundError):
     OEQ_AVAILABLE = False
 
 
-def get_neighborhood_cpu(positions, cell, cutoff):
+def get_neighborhood_cpu(positions, cell, cutoff, pbc=(True, True, True)):
     """Compute neighbor list on CPU using matscipy.
 
     Args:
         positions: np.ndarray, shape [N, 3], in Angstroms
         cell: np.ndarray, shape [3, 3], in Angstroms
         cutoff: float, in Angstroms
+        pbc: tuple of 3 bools, periodic boundary conditions
 
     Returns:
         edge_index: np.ndarray [2, E]
         shifts: np.ndarray [E, 3]
         unit_shifts: np.ndarray [E, 3]
     """
-    pbc = (True, True, True)
     cell_copy = np.array(cell, dtype=float)
+
+    # For non-periodic directions, extend the cell so matscipy finds all neighbors
+    if not all(pbc):
+        identity = np.identity(3, dtype=float)
+        max_pos = np.max(np.absolute(positions)) + 1
+        for dim in range(3):
+            if not pbc[dim]:
+                cell_copy[dim, :] = max_pos * 5 * cutoff * identity[dim, :]
 
     sender, receiver, unit_shifts = neighbour_list(
         quantities="ijS",
@@ -120,7 +128,7 @@ class MACEEngine:
         self.dtype = torch.float32 if default_dtype == "float32" else torch.float64
 
         # ---- Load model ----
-        model = torch.load(f=model_path, map_location=self.device)
+        model = torch.load(f=model_path, map_location=self.device, weights_only=False)
 
         # Convert dtype if needed
         model_dtype = next(model.parameters()).dtype
@@ -180,6 +188,7 @@ class MACEEngine:
         self.elements_np = None  # numpy, received from LAMMPS
         self.positions_np = None  # numpy, in Bohr (MDI units)
         self.cell_np = None  # numpy, in Bohr (MDI units)
+        self.periodic = False  # set True when >CELL is received
 
         # ---- Cached tensors (allocated once, reused) ----
         self._node_attrs = None  # one-hot, on GPU
@@ -220,9 +229,7 @@ class MACEEngine:
             [self.head_index], dtype=torch.long, device=self.device
         )
         self._num_graphs = torch.tensor(1, dtype=torch.long, device=self.device)
-        self._pbc = torch.tensor(
-            [[True, True, True]], dtype=torch.bool, device=self.device
-        )
+        # _pbc is set when periodicity is determined (on first >CELL or calculate)
 
     def _build_graph_vesin(self, positions_t, cell_t):
         """Build graph edges on GPU using vesin-torch."""
@@ -231,7 +238,7 @@ class MACEEngine:
         i, j, S, D = self.vesin_nl.compute(
             points=positions_t,
             box=cell_t,
-            periodic=True,
+            periodic=self.periodic,
             quantities="ijSd",
         )
 
@@ -248,10 +255,10 @@ class MACEEngine:
 
         return edge_index, shifts, S.to(dtype=self.dtype)
 
-    def _build_graph_cpu(self, positions_np, cell_np):
+    def _build_graph_cpu(self, positions_np, cell_np, pbc=(True, True, True)):
         """Build graph edges on CPU using matscipy, transfer to GPU."""
         edge_index_np, shifts_np, unit_shifts_np = get_neighborhood_cpu(
-            positions_np, cell_np, self.r_max
+            positions_np, cell_np, self.r_max, pbc=pbc
         )
         edge_index = torch.tensor(edge_index_np, dtype=torch.long, device=self.device)
         shifts = torch.tensor(shifts_np, dtype=self.dtype, device=self.device)
@@ -264,7 +271,22 @@ class MACEEngine:
 
         # Convert MDI Bohr -> Angstrom
         positions_ang = self.positions_np * Bohr
-        cell_ang = self.cell_np * Bohr
+
+        if self.periodic:
+            cell_ang = self.cell_np * Bohr
+            pbc = (True, True, True)
+            compute_stress = True
+        else:
+            # Non-periodic: create a large fake cell for neighbor finding
+            max_pos = np.max(np.absolute(positions_ang)) + 1
+            fake_size = max_pos * 5 * self.r_max
+            cell_ang = np.diag([fake_size, fake_size, fake_size])
+            pbc = (False, False, False)
+            compute_stress = False
+
+        # Set PBC tensor on first call
+        if self._pbc is None:
+            self._pbc = torch.tensor([list(pbc)], dtype=torch.bool, device=self.device)
 
         # ---- Neighbor list ----
         t0 = time.perf_counter()
@@ -281,7 +303,7 @@ class MACEEngine:
         else:
             # CPU path: build graph on CPU, then transfer
             edge_index, shifts, unit_shifts = self._build_graph_cpu(
-                positions_ang, cell_ang
+                positions_ang, cell_ang, pbc=pbc
             )
             positions_t = torch.tensor(
                 positions_ang, dtype=self.dtype, device=self.device
@@ -313,7 +335,7 @@ class MACEEngine:
         # ---- Model forward pass ----
         out = self.model(
             input_dict,
-            compute_stress=True,
+            compute_stress=compute_stress,
             training=False,
         )
 
@@ -399,6 +421,12 @@ class MACEEngine:
             elif command == ">CELL":
                 cell = mdi.MDI_Recv(9, mdi.MDI_DOUBLE, comm)
                 self.cell_np = np.array(cell, dtype=np.float64).reshape(3, 3)
+                if not self.periodic:
+                    self.periodic = True
+                    self._pbc = torch.tensor(
+                        [[True, True, True]], dtype=torch.bool, device=self.device
+                    )
+                    logging.info("Periodic system detected")
                 self._needs_calculation = True
 
             elif command == ">COORDS":
@@ -409,6 +437,7 @@ class MACEEngine:
                 self._needs_calculation = True
                 if self._n_calc < 2:
                     logging.debug(f"First 3 positions (Bohr): {self.positions_np[:3]}")
+                    self._needs_calculation = True
 
             elif command == "<ENERGY":
                 if self._needs_calculation:
@@ -435,7 +464,7 @@ class MACEEngine:
                 else:
                     # Send zeros if stress wasn't computed
                     if self._n_calc < 2:
-                        logging.info("MDI sending zeroes for stress")
+                        logging.debug("MDI sending zeroes for stress")
                     mdi.MDI_Send(np.zeros(9), 9, mdi.MDI_DOUBLE, comm)
 
             elif command == "SCF":
