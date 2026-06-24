@@ -193,10 +193,10 @@ class NPT(lammps_step.NVT):
         # Work out the pressure/stress part of the command
         ptext = self.get_pressure_text(P)
 
-        thermo_properties = (
-            "time temp press etotal ke pe ebond "
-            "eangle edihed eimp evdwl etail ecoul elong"
-        )
+        form = self.parent.ff_form()
+        thermo_properties = "time temp press etotal ke pe"
+        if form != "PyTorch":
+            thermo_properties += " ebond eangle edihed eimp evdwl etail ecoul elong"
 
         properties = (
             "v_time v_temp v_press v_vol v_density "

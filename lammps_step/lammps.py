@@ -681,7 +681,7 @@ class LAMMPS(seamm.Node):
         ff_form = self.ff_form()
 
         # Only worry about GPU's when using PyTorch, for the moment
-        if ff_form == "PyTorch":
+        if ff_form == "PyTorch" and platform.system() != "Darwin":
             maxload = float(o["gpu_load"]) / 100
             t0 = time.time()
             t = o["gpu_wait_time"]
@@ -730,7 +730,7 @@ class LAMMPS(seamm.Node):
                         f"limit of {int(global_options['ncores'])} cores."
                     )
                 np = min(np, int(global_options["ncores"]))
-            if ff_form == "PyTorch":
+            if ff_form == "PyTorch" and platform.system() != "Darwin":
                 if ngpus < 1:
                     printer.important(
                         "    Using PyTorch forcefield, but no GPUs! Must exit."
