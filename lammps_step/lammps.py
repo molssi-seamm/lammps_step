@@ -19,6 +19,7 @@ import pprint
 import re
 import shlex
 import shutil
+import socket
 import string
 import sys
 import textwrap
@@ -65,6 +66,79 @@ def _get_script_version(text):
         if m:
             return m.group(1), m.group(2)
     return None, None
+
+
+def _free_tcp_port(hostname="localhost"):
+    """Ask the OS for a free TCP port for the MDI rendezvous.
+
+    Bind a throwaway socket to port 0, read back the port the OS assigned,
+    release it, and return that integer for both the engine and the LAMMPS
+    driver to use. There is an unavoidable race between releasing the socket
+    and the engine re-binding it (classic TOCTOU); acceptable for the typical
+    one-job-per-node case. See campaigns/2026-06-22/NOTES_C.rst (D5).
+    """
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.bind((hostname, 0))
+        return s.getsockname()[1]
+    finally:
+        s.close()
+
+
+def _mdi_launch_script(engine_argv, port, config, ce, hostname="localhost"):
+    """Compose the bash launch script for QM-MD over MDI.
+
+    The QM engine is the listener (it binds the port and blocks in
+    MDI_Accept_Communicator), so it is backgrounded first; the LAMMPS driver
+    runs second and connects; then we wait on the engine. ``executor.run``
+    wraps this whole script in the seamm-lammps conda env, while the engine
+    line carries its own ``conda run -n seamm-mopac`` so each code stays in its
+    own environment. See campaigns/2026-06-22/NOTES_C.rst.
+
+    Parameters
+    ----------
+    engine_argv : list of str
+        The fully resolved engine launch argv (from the program step's
+        get_mdi_engine_command); rendered with shlex.join.
+    port : int
+        The TCP port both sides use.
+    config : dict
+        The lammps.ini section. The driver command comes from its "code" /
+        "cmd-args" keys (D4).
+    ce : dict
+        The computational environment, for resolving ini templates such as
+        {NTASKS}.
+    hostname : str
+        The rendezvous host (default "localhost").
+
+    Returns
+    -------
+    str
+        The launch-script text.
+    """
+    # Driver (LAMMPS) command: resolve the ini templates the same way
+    # executor.run does (nested .format), then add the MDI DRIVER flag.
+    driver = config["code"]
+    while True:
+        resolved = driver.format(**config, **ce)
+        if resolved == driver:
+            break
+        driver = resolved
+    if config.get("cmd-args", "") != "":
+        driver += " " + config["cmd-args"]
+    driver += (
+        f' -mdi "-role DRIVER -name LAMMPS -method TCP '
+        f'-port {port} -hostname {hostname}" -in input.dat'
+    )
+
+    return (
+        "#!/bin/bash\n"
+        "set -e\n"
+        f"{shlex.join(engine_argv)} &\n"
+        "ENGINE_PID=$!\n"
+        f"{driver}\n"
+        "wait $ENGINE_PID\n"
+    )
 
 
 # Temporarily used here to stop pymbar's annoying warning.
@@ -628,6 +702,11 @@ class LAMMPS(seamm.Node):
 
     def ff_form(self):
         """Return the form of the forcefield."""
+        # A QM-MD flowchart selects a model chemistry (Model Chemistry step)
+        # and has no Forcefield step, so check this *before* "_forcefield",
+        # which would not exist. See campaigns/2026-06-22/NOTES_C.rst (D1).
+        if self.variable_exists("_model_chemistry"):
+            return "MDI/QM"
         ff = self.get_variable("_forcefield")
         if ff == "OpenKIM":
             ff_form = "OpenKIM"
@@ -640,6 +719,56 @@ class LAMMPS(seamm.Node):
                 ff_form = "unknown"
         return ff_form
 
+    def _mdi_engine_launch(self, configuration):
+        """Resolve the "_model_chemistry" selection into an MDI engine launch.
+
+        Reads the "_model_chemistry" workspace variable published by the Model
+        Chemistry step (Phase B), validates that the selection can be driven via
+        MDI, resolves the owning program step, and asks it for the engine launch
+        argv (Phase A's get_mdi_engine_command). LAMMPS is the driver and owns
+        the rendezvous, so the TCP port is chosen here and passed to the engine;
+        the driver side must use the same port and hostname.
+
+        Parameters
+        ----------
+        configuration : molsystem._Configuration
+            The current configuration, for periodicity and the charge /
+            multiplicity (the SEAMM convention -- never from the model
+            chemistry step).
+
+        Returns
+        -------
+        (list of str, int)
+            The engine launch argv and the TCP port both sides must use.
+        """
+        mc = self.get_variable("_model_chemistry")
+        options = mc["options"]
+
+        periodic = configuration.periodicity != 0
+        if not options.get("mdi_capable", False):
+            raise ValueError(
+                f"The model chemistry '{mc['model_chemistry']}' cannot be driven "
+                "via MDI; choose an MDI-capable model chemistry."
+            )
+        if periodic and not options.get("periodic_mdi", False):
+            raise ValueError(
+                f"The model chemistry '{mc['model_chemistry']}' is not validated "
+                "for periodic systems via MDI."
+            )
+
+        port = _free_tcp_port()
+        step = self.flowchart.plugin_manager.get(mc["step"])
+        engine_argv = step.get_mdi_engine_command(
+            self.flowchart.executor,
+            self.global_options,
+            method=mc["method"],
+            port=port,
+            hostname="localhost",
+            charge=configuration.charge,
+            multiplicity=configuration.spin_multiplicity,
+        )
+        return engine_argv, port
+
     def run(self):
         """Run a LAMMPS simulation"""
 
@@ -647,14 +776,18 @@ class LAMMPS(seamm.Node):
 
         # Set the model
         try:
-            ff = self.get_variable("_forcefield")
-            if ff == "OpenKIM":
-                self.model = "OpenKIM/" + self.get_variable("_OpenKIM_Potential")
-            elif ff == "PyTorch":
-                path = Path(self.get_variable("_pytorch_model"))
-                self.model = "PyTorch/" + path.stem
+            if self.variable_exists("_model_chemistry"):
+                mc = self.get_variable("_model_chemistry")
+                self.model = "MDI/QM/" + mc["model_chemistry"]
             else:
-                self.model = ff.current_forcefield
+                ff = self.get_variable("_forcefield")
+                if ff == "OpenKIM":
+                    self.model = "OpenKIM/" + self.get_variable("_OpenKIM_Potential")
+                elif ff == "PyTorch":
+                    path = Path(self.get_variable("_pytorch_model"))
+                    self.model = "PyTorch/" + path.stem
+                else:
+                    self.model = ff.current_forcefield
         except Exception:
             self.model = None
 
@@ -784,15 +917,19 @@ class LAMMPS(seamm.Node):
         files = {}
 
         control = []
-        ff = self.get_variable("_forcefield")
-        if ff == "OpenKIM":
-            potential = self.get_variable("_OpenKIM_Potential")
-            control.append(["forcefield", "OpenKIM " + potential])
-        elif ff == "PyTorch":
-            model = self.get_variable("_pytorch_model")
-            control.append(["forcefield", "PyTorch " + model])
+        if self.variable_exists("_model_chemistry"):
+            mc = self.get_variable("_model_chemistry")
+            control.append(["model_chemistry", mc["model_chemistry"]])
         else:
-            control.append(["forcefield", ff.current_forcefield])
+            ff = self.get_variable("_forcefield")
+            if ff == "OpenKIM":
+                potential = self.get_variable("_OpenKIM_Potential")
+                control.append(["forcefield", "OpenKIM " + potential])
+            elif ff == "PyTorch":
+                model = self.get_variable("_pytorch_model")
+                control.append(["forcefield", "PyTorch " + model])
+            else:
+                control.append(["forcefield", ff.current_forcefield])
         while node is not None:
             P = node.parameters.current_values_to_dict(
                 context=seamm.flowchart_variables._data
@@ -1123,7 +1260,17 @@ class LAMMPS(seamm.Node):
             # Setup the command lines
             cmd = []
 
-            if "run_lammps" in files:
+            if ff_form == "MDI/QM":
+                # QM-MD over MDI: launch the QM engine (the listener, in its own
+                # conda environment) and the LAMMPS driver together, rendezvousing
+                # over TCP. See campaigns/2026-06-22/NOTES_C.rst.
+                _, configuration = self.get_system_configuration()
+                engine_argv, port = self._mdi_engine_launch(configuration)
+                files["mdi_launch.sh"] = _mdi_launch_script(
+                    engine_argv, port, config, ce
+                )
+                cmd = ["bash", "mdi_launch.sh"]
+            elif "run_lammps" in files:
                 cmd = ["{python}", "run_lammps"]
                 if (
                     "NGPUS" not in ce
@@ -2933,24 +3080,23 @@ class LAMMPS(seamm.Node):
             The name for this section in the file.
 
         values : {str: int, float, or str}
-            The dictionary of the constants for this angle term.
+            The dictionary of the constants for this angle term. It looks like
+            this::
+
+                {
+                    'reference': '5',
+                    'Eqn': 'K/8*(1-cos(n*Theta)) + A/(2*Rb*sin(Theta/2))**12',
+                    'K': 278.4416826003824,
+                    'n': 4,
+                    'Rb': 1.606,
+                    'A': 11.950286806883364,
+                    'zero-shift': 0.001
+                }
 
         Returns
         -------
         [str]
             A list of lines of the tabulated angle file.
-
-        values looks like this::
-
-            {
-                'reference': '5',
-                'Eqn': 'K/8*(1-cos(n*Theta)) + A/(2*Rb*sin(Theta/2))**12',
-                'K': 278.4416826003824,
-                'n': 4,
-                'Rb': 1.606,
-                'A': 11.950286806883364,
-                'zero-shift': 0.001
-            }
         """
         lines = []
 
