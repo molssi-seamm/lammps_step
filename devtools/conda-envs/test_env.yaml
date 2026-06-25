@@ -33,6 +33,7 @@ dependencies:
   # Pip-only installs
   - pip:
     - gputil
+    - model-chemistry-step
     - pymbar>=4.0
     - seamm-exec
     # Documentation
