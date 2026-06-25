@@ -101,9 +101,11 @@ def _fake_self(mc=None, variables=None, step=None):
 
 
 def _mc(mdi_capable=True, periodic_mdi=False):
+    # The _model_chemistry wrapper as the Model Chemistry step now stores it:
+    # a level spec (owner/type/method/...), not a full model chemistry.
     return {
-        "model_chemistry": "MOPAC:SQM@PM6-ORG",
-        "program": "MOPAC",
+        "level": "MOPAC:SQM@PM6-ORG",
+        "owner": "MOPAC",
         "type": "SQM",
         "method": "PM6-ORG",
         "basis": None,
@@ -204,6 +206,26 @@ def test_mdi_engine_launch_allows_periodic_when_validated():
     engine_argv, port = LAMMPS._mdi_engine_launch(me, configuration)
     assert len(step.calls) == 1
     assert engine_argv[-2:] == ["--port", str(port)]
+
+
+# ---------------------------------------------------------------------------
+# model_chemistry -- the full driver:task|level provenance label
+# ---------------------------------------------------------------------------
+def test_model_chemistry_label_composes_full_string():
+    me = _fake_self(mc=_mc())
+    # MDI/QM: LAMMPS drives, MOPAC owns the PES -> owner kept on the level side.
+    assert LAMMPS.model_chemistry(me, "MD") == "LAMMPS:MD|MOPAC:SQM@PM6-ORG"
+    assert LAMMPS.model_chemistry(me, "OPT") == "LAMMPS:OPT|MOPAC:SQM@PM6-ORG"
+
+
+def test_model_chemistry_label_classical_falls_back():
+    """With no _model_chemistry (classical/MLFF/OpenKIM) the legacy bare label
+    is returned unchanged -- no spurious grammar string."""
+    me = types.SimpleNamespace(
+        variable_exists=lambda name: False,
+        model="OPLS-AA",
+    )
+    assert LAMMPS.model_chemistry(me, "MD") == "OPLS-AA"
 
 
 # ---------------------------------------------------------------------------

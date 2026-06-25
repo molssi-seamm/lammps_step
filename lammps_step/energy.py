@@ -116,10 +116,20 @@ class Energy(seamm.Node):
 
         self.description = "A single point energy calculation"
 
+    # The model-chemistry task this operation performs (SP | OPT | MD); used to
+    # compose the provenance label. Overridden in the dynamics / minimization
+    # subclasses. See model_chemistry_naming.rst.
+    task = "SP"
+
     @property
     def model(self):
-        """The name of the forcefield."""
-        return self.parent.model
+        """The full ``driver:task|level`` provenance label for this operation.
+
+        Composed from the parent's model chemistry and this step's ``task`` --
+        e.g. ``LAMMPS:MD|MOPAC:SQM@PM6-ORG`` -- so results are labeled (and made
+        comparable) by what was actually done.
+        """
+        return self.parent.model_chemistry(self.task)
 
     @model.setter
     def model(self, value):

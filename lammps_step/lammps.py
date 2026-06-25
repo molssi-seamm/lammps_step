@@ -747,12 +747,12 @@ class LAMMPS(seamm.Node):
         periodic = configuration.periodicity != 0
         if not options.get("mdi_capable", False):
             raise ValueError(
-                f"The model chemistry '{mc['model_chemistry']}' cannot be driven "
+                f"The model chemistry '{mc['level']}' cannot be driven "
                 "via MDI; choose an MDI-capable model chemistry."
             )
         if periodic and not options.get("periodic_mdi", False):
             raise ValueError(
-                f"The model chemistry '{mc['model_chemistry']}' is not validated "
+                f"The model chemistry '{mc['level']}' is not validated "
                 "for periodic systems via MDI."
             )
 
@@ -769,6 +769,33 @@ class LAMMPS(seamm.Node):
         )
         return engine_argv, port
 
+    def model_chemistry(self, task):
+        """Compose the full ``driver:task|level`` provenance label for a task.
+
+        ``task`` is the LAMMPS operation -- ``"SP"``, ``"OPT"``, ``"MD"``. For a
+        QM-MD-over-MDI run the level (owner/type/method/...) comes from the
+        ``_model_chemistry`` variable, giving e.g.
+        ``"LAMMPS:MD|MOPAC:SQM@PM6-ORG"`` (or, classical, the owner collapses to
+        ``"LAMMPS:MD|VFF@OPLS-AA"``). For classical / MLFF / OpenKIM runs the
+        level is not yet classified into ``type@method``, so the legacy bare
+        label (``self.model``) is returned unchanged. See
+        ``model_chemistry_naming.rst``.
+        """
+        if self.variable_exists("_model_chemistry"):
+            from model_chemistry_step.grammar import compose_model_chemistry
+
+            mc = self.get_variable("_model_chemistry")
+            return compose_model_chemistry(
+                driver="LAMMPS",
+                task=task,
+                owner=mc["owner"],
+                type=mc["type"],
+                method=mc["method"],
+                basis=mc["basis"],
+                cutoff=mc["cutoff"],
+            )
+        return self.model
+
     def run(self):
         """Run a LAMMPS simulation"""
 
@@ -777,8 +804,11 @@ class LAMMPS(seamm.Node):
         # Set the model
         try:
             if self.variable_exists("_model_chemistry"):
+                # Task-agnostic provenance base; the per-operation substeps
+                # compose the full "LAMMPS:<task>|<level>" label via
+                # model_chemistry(task). See model_chemistry_naming.rst.
                 mc = self.get_variable("_model_chemistry")
-                self.model = "MDI/QM/" + mc["model_chemistry"]
+                self.model = mc["level"]
             else:
                 ff = self.get_variable("_forcefield")
                 if ff == "OpenKIM":
@@ -919,7 +949,7 @@ class LAMMPS(seamm.Node):
         control = []
         if self.variable_exists("_model_chemistry"):
             mc = self.get_variable("_model_chemistry")
-            control.append(["model_chemistry", mc["model_chemistry"]])
+            control.append(["model_chemistry", mc["level"]])
         else:
             ff = self.get_variable("_forcefield")
             if ff == "OpenKIM":
@@ -1117,6 +1147,13 @@ class LAMMPS(seamm.Node):
             else:
                 result["stderr"] = ""
         else:
+            # For QM-MD over MDI the QM engine does essentially all the work and
+            # is the bottleneck; LAMMPS is just the driver, so run it on a single
+            # core (the OMP/MKL thread caps below keep the engine single-threaded
+            # too). See campaigns/2026-06-22/NOTES_C.rst.
+            if self.ff_form() == "MDI/QM":
+                np = 1
+
             # Set up the computational limits and get the computational enviroment
             cl = {"NTASKS": np}
             ce = seamm_exec.computational_environment(cl)
@@ -1243,8 +1280,16 @@ class LAMMPS(seamm.Node):
                 env["OMP_PLACES"] = "threads"
                 env["OMP_NUM_THREADS"] = "1"  # usually best for GPU-dominant runs
 
-            # The forcefield file for PyTorch/MDI runs
-            if self.model.startswith("PyTorch/"):
+            # Keep the QM engine (MOPAC) and the LAMMPS driver single-threaded:
+            # the engine is a small serial SQM calc and oversubscribing cores
+            # only hurts. Applies to the whole launch script, so both inherit it.
+            if ff_form == "MDI/QM":
+                env["OMP_NUM_THREADS"] = "1"
+                env["MKL_NUM_THREADS"] = "1"
+
+            # The forcefield file for PyTorch/MDI runs (keyed off the forcefield
+            # form, not the model label, which is now a grammar string).
+            if ff_form == "PyTorch":
                 env["SEAMM_FF"] = self.get_variable("_pytorch_model")
             else:
                 env["SEAMM_FF"] = "Unknown"

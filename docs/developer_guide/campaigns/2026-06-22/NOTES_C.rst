@@ -6,8 +6,16 @@ Phase C -- LAMMPS driver: read ``_model_chemistry``, launch the MDI engine
 
 :Author: Paul Saxe (with Claude)
 :Date: 2026-06-24
-:Status: Implemented (2026-06-24) -- ``lammps.py`` + ``initialization.py`` +
-         unit tests done (14 pass). Manual end-to-end run still pending.
+:Status: MDI launch path verified end-to-end (2026-06-24). ``lammps.py`` +
+         ``initialization.py`` + unit tests (14 pass). A MOPAC PM6-ORG
+         minimization of a 45-atom C/O/H system ran via MDI: engine launched in
+         seamm-mopac, connected over TCP, drove LAMMPS, exited cleanly (energy
+         -266.7 -> -309.5 kcal/mol). Open: the CG min stopped at
+         "linesearch alpha is zero" (not converged) -- investigate QM
+         energy/force consistency, separate from the launch path. NOTE: reusing
+         the lammps.ini ``code`` key requires it to be a plain LAMMPS launcher
+         (``mpirun -n {NTASKS} lmp``), NOT a MACE-style MDI/MPMD line -- that is
+         what ``gpu-code`` is for.
 :Campaign: LAMMPS + MOPAC/xTB QM-MD via MDI
 
 .. contents:: Contents
@@ -276,6 +284,27 @@ Decisions (resolved 2026-06-24)
    into ``get_mdi_engine_command`` (what ``mopac.py`` itself does). Note: LAMMPS's
    ``fix mdi/qm`` does **not** send ``>TOTCHARGE`` / ``>ELEC_MULT``, so these are
    fixed for the whole run at launch -- acceptable for a single-species MD box.
+
+
+Post-verification refinements (2026-06-24)
+==========================================
+
+Found while running the first NVT and minimization jobs:
+
+#. **Single core / single thread.** The QM engine does essentially all the work
+   and is the bottleneck, so LAMMPS is forced to ``np = 1`` on the MDI/QM path
+   (``lammps.py``), and ``OMP_NUM_THREADS`` / ``MKL_NUM_THREADS`` are set to 1 in
+   the run environment. Because that environment wraps the whole launch script,
+   both the MOPAC engine (which was otherwise grabbing all cores via OpenMP) and
+   the LAMMPS driver stay single-threaded.
+
+#. **Thermo columns.** As for MLFFs (the ``PyTorch`` form), the per-term energy
+   columns ``ebond eangle edihed eimp evdwl etail ecoul elong`` are dropped from
+   the ``thermo_style`` on the MDI/QM path -- they are always zero when the
+   energy comes from an external engine. The guard
+   ``if form not in ("PyTorch", "MDI/QM")`` now covers ``nve.py``, ``nvt.py``,
+   ``npt.py`` and ``minimization.py`` (the last previously emitted the zero
+   columns even for MLFFs).
 
 
 Tests

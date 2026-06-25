@@ -195,7 +195,9 @@ class NPT(lammps_step.NVT):
 
         form = self.parent.ff_form()
         thermo_properties = "time temp press etotal ke pe"
-        if form != "PyTorch":
+        # PyTorch (MACE) and MDI/QM get their energy from an external engine, so
+        # LAMMPS computes no bonded/pair terms -- those columns would be all zero.
+        if form not in ("PyTorch", "MDI/QM"):
             thermo_properties += " ebond eangle edihed eimp evdwl etail ecoul elong"
 
         properties = (
