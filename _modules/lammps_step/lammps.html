@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.3.26 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.6.25 documentation</title>
   
   
   
@@ -26,8 +26,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -35,10 +35,10 @@
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=c224919a" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
 
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -48,33 +48,40 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=1e06cea4"></script>
+    <script src="../../_static/documentation_options.js?v=702088bc"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lammps_step/lammps';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
 
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.3.26" />
+  <meta name="docsearch:version" content="2026.6.25" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -100,7 +107,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
@@ -230,11 +237,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -247,8 +261,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           
           
           
-          <a href="https://github.com/molssi-seamm/lammps_step" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/molssi-seamm/lammps_step" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -259,8 +272,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           
           
           
-          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">Twitter</span></a>
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
         </li>
 </ul></div>
       
@@ -375,11 +387,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -392,8 +411,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           
           
           
-          <a href="https://github.com/molssi-seamm/lammps_step" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/molssi-seamm/lammps_step" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -404,8 +422,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           
           
           
-          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">Twitter</span></a>
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
         </li>
 </ul></div>
         
@@ -490,6 +507,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
@@ -536,6 +554,79 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
     <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_free_tcp_port</span><span class="p">(</span><span class="n">hostname</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ask the OS for a free TCP port for the MDI rendezvous.</span>
+
+<span class="sd">    Bind a throwaway socket to port 0, read back the port the OS assigned,</span>
+<span class="sd">    release it, and return that integer for both the engine and the LAMMPS</span>
+<span class="sd">    driver to use. There is an unavoidable race between releasing the socket</span>
+<span class="sd">    and the engine re-binding it (classic TOCTOU); acceptable for the typical</span>
+<span class="sd">    one-job-per-node case. See campaigns/2026-06-22/NOTES_C.rst (D5).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="n">hostname</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">getsockname</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_mdi_launch_script</span><span class="p">(</span><span class="n">engine_argv</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">ce</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compose the bash launch script for QM-MD over MDI.</span>
+
+<span class="sd">    The QM engine is the listener (it binds the port and blocks in</span>
+<span class="sd">    MDI_Accept_Communicator), so it is backgrounded first; the LAMMPS driver</span>
+<span class="sd">    runs second and connects; then we wait on the engine. ``executor.run``</span>
+<span class="sd">    wraps this whole script in the seamm-lammps conda env, while the engine</span>
+<span class="sd">    line carries its own ``conda run -n seamm-mopac`` so each code stays in its</span>
+<span class="sd">    own environment. See campaigns/2026-06-22/NOTES_C.rst.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    engine_argv : list of str</span>
+<span class="sd">        The fully resolved engine launch argv (from the program step&#39;s</span>
+<span class="sd">        get_mdi_engine_command); rendered with shlex.join.</span>
+<span class="sd">    port : int</span>
+<span class="sd">        The TCP port both sides use.</span>
+<span class="sd">    config : dict</span>
+<span class="sd">        The lammps.ini section. The driver command comes from its &quot;code&quot; /</span>
+<span class="sd">        &quot;cmd-args&quot; keys (D4).</span>
+<span class="sd">    ce : dict</span>
+<span class="sd">        The computational environment, for resolving ini templates such as</span>
+<span class="sd">        {NTASKS}.</span>
+<span class="sd">    hostname : str</span>
+<span class="sd">        The rendezvous host (default &quot;localhost&quot;).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        The launch-script text.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Driver (LAMMPS) command: resolve the ini templates the same way</span>
+    <span class="c1"># executor.run does (nested .format), then add the MDI DRIVER flag.</span>
+    <span class="n">driver</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;code&quot;</span><span class="p">]</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">resolved</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="p">,</span> <span class="o">**</span><span class="n">ce</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resolved</span> <span class="o">==</span> <span class="n">driver</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">driver</span> <span class="o">=</span> <span class="n">resolved</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cmd-args&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="n">driver</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;cmd-args&quot;</span><span class="p">]</span>
+    <span class="n">driver</span> <span class="o">+=</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s1">&#39; -mdi &quot;-role DRIVER -name LAMMPS -method TCP &#39;</span>
+        <span class="sa">f</span><span class="s1">&#39;-port </span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s1"> -hostname </span><span class="si">{</span><span class="n">hostname</span><span class="si">}</span><span class="s1">&quot; -in input.dat&#39;</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="s2">&quot;#!/bin/bash</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;set -e</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">engine_argv</span><span class="p">)</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;ENGINE_PID=$!</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">driver</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;wait $ENGINE_PID</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
 
 
 <span class="c1"># Temporarily used here to stop pymbar&#39;s annoying warning.</span>
@@ -1127,6 +1218,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.ff_form">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">ff_form</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the form of the forcefield.&quot;&quot;&quot;</span>
+        <span class="c1"># A QM-MD flowchart selects a model chemistry (Model Chemistry step)</span>
+        <span class="c1"># and has no Forcefield step, so check this *before* &quot;_forcefield&quot;,</span>
+        <span class="c1"># which would not exist. See campaigns/2026-06-22/NOTES_C.rst (D1).</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_exists</span><span class="p">(</span><span class="s2">&quot;_model_chemistry&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot;MDI/QM&quot;</span>
         <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_forcefield&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;OpenKIM&quot;</span><span class="p">:</span>
             <span class="n">ff_form</span> <span class="o">=</span> <span class="s2">&quot;OpenKIM&quot;</span>
@@ -1140,6 +1236,86 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">return</span> <span class="n">ff_form</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_mdi_engine_launch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configuration</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve the &quot;_model_chemistry&quot; selection into an MDI engine launch.</span>
+
+<span class="sd">        Reads the &quot;_model_chemistry&quot; workspace variable published by the Model</span>
+<span class="sd">        Chemistry step (Phase B), validates that the selection can be driven via</span>
+<span class="sd">        MDI, resolves the owning program step, and asks it for the engine launch</span>
+<span class="sd">        argv (Phase A&#39;s get_mdi_engine_command). LAMMPS is the driver and owns</span>
+<span class="sd">        the rendezvous, so the TCP port is chosen here and passed to the engine;</span>
+<span class="sd">        the driver side must use the same port and hostname.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        configuration : molsystem._Configuration</span>
+<span class="sd">            The current configuration, for periodicity and the charge /</span>
+<span class="sd">            multiplicity (the SEAMM convention -- never from the model</span>
+<span class="sd">            chemistry step).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        (list of str, int)</span>
+<span class="sd">            The engine launch argv and the TCP port both sides must use.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_model_chemistry&quot;</span><span class="p">)</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="n">mc</span><span class="p">[</span><span class="s2">&quot;options&quot;</span><span class="p">]</span>
+
+        <span class="n">periodic</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">!=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mdi_capable&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The model chemistry &#39;</span><span class="si">{</span><span class="n">mc</span><span class="p">[</span><span class="s1">&#39;level&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39; cannot be driven &quot;</span>
+                <span class="s2">&quot;via MDI; choose an MDI-capable model chemistry.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">periodic</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;periodic_mdi&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The model chemistry &#39;</span><span class="si">{</span><span class="n">mc</span><span class="p">[</span><span class="s1">&#39;level&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39; is not validated &quot;</span>
+                <span class="s2">&quot;for periodic systems via MDI.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">port</span> <span class="o">=</span> <span class="n">_free_tcp_port</span><span class="p">()</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">plugin_manager</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mc</span><span class="p">[</span><span class="s2">&quot;step&quot;</span><span class="p">])</span>
+        <span class="n">engine_argv</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">get_mdi_engine_command</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">executor</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">global_options</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">mc</span><span class="p">[</span><span class="s2">&quot;method&quot;</span><span class="p">],</span>
+            <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span>
+            <span class="n">hostname</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+            <span class="n">charge</span><span class="o">=</span><span class="n">configuration</span><span class="o">.</span><span class="n">charge</span><span class="p">,</span>
+            <span class="n">multiplicity</span><span class="o">=</span><span class="n">configuration</span><span class="o">.</span><span class="n">spin_multiplicity</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">engine_argv</span><span class="p">,</span> <span class="n">port</span>
+
+<div class="viewcode-block" id="LAMMPS.model_chemistry">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.model_chemistry">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model_chemistry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compose the full ``driver:task|level`` provenance label for a task.</span>
+
+<span class="sd">        ``task`` is the LAMMPS operation -- ``&quot;SP&quot;``, ``&quot;OPT&quot;``, ``&quot;MD&quot;``. For a</span>
+<span class="sd">        QM-MD-over-MDI run the level (owner/type/method/...) comes from the</span>
+<span class="sd">        ``_model_chemistry`` variable, giving e.g.</span>
+<span class="sd">        ``&quot;LAMMPS:MD|MOPAC:SQM@PM6-ORG&quot;`` (or, classical, the owner collapses to</span>
+<span class="sd">        ``&quot;LAMMPS:MD|VFF@OPLS-AA&quot;``). For classical / MLFF / OpenKIM runs the</span>
+<span class="sd">        level is not yet classified into ``type@method``, so the legacy bare</span>
+<span class="sd">        label (``self.model``) is returned unchanged. See</span>
+<span class="sd">        ``model_chemistry_naming.rst``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_exists</span><span class="p">(</span><span class="s2">&quot;_model_chemistry&quot;</span><span class="p">):</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">model_chemistry_step.grammar</span><span class="w"> </span><span class="kn">import</span> <span class="n">compose_model_chemistry</span>
+
+            <span class="n">mc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_model_chemistry&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">compose_model_chemistry</span><span class="p">(</span>
+                <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;LAMMPS&quot;</span><span class="p">,</span>
+                <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span>
+                <span class="n">owner</span><span class="o">=</span><span class="n">mc</span><span class="p">[</span><span class="s2">&quot;owner&quot;</span><span class="p">],</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">mc</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">],</span>
+                <span class="n">method</span><span class="o">=</span><span class="n">mc</span><span class="p">[</span><span class="s2">&quot;method&quot;</span><span class="p">],</span>
+                <span class="n">basis</span><span class="o">=</span><span class="n">mc</span><span class="p">[</span><span class="s2">&quot;basis&quot;</span><span class="p">],</span>
+                <span class="n">cutoff</span><span class="o">=</span><span class="n">mc</span><span class="p">[</span><span class="s2">&quot;cutoff&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span></div>
+
+
 <div class="viewcode-block" id="LAMMPS.run">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1149,14 +1325,21 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <span class="c1"># Set the model</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_forcefield&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;OpenKIM&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;OpenKIM/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_OpenKIM_Potential&quot;</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span><span class="p">:</span>
-                <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_pytorch_model&quot;</span><span class="p">))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;PyTorch/&quot;</span> <span class="o">+</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_exists</span><span class="p">(</span><span class="s2">&quot;_model_chemistry&quot;</span><span class="p">):</span>
+                <span class="c1"># Task-agnostic provenance base; the per-operation substeps</span>
+                <span class="c1"># compose the full &quot;LAMMPS:&lt;task&gt;|&lt;level&gt;&quot; label via</span>
+                <span class="c1"># model_chemistry(task). See model_chemistry_naming.rst.</span>
+                <span class="n">mc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_model_chemistry&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">mc</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">current_forcefield</span>
+                <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_forcefield&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;OpenKIM&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;OpenKIM/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_OpenKIM_Potential&quot;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span><span class="p">:</span>
+                    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_pytorch_model&quot;</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;PyTorch/&quot;</span> <span class="o">+</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">current_forcefield</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -1183,7 +1366,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">ff_form</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_form</span><span class="p">()</span>
 
         <span class="c1"># Only worry about GPU&#39;s when using PyTorch, for the moment</span>
-        <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span> <span class="ow">and</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;Darwin&quot;</span><span class="p">:</span>
             <span class="n">maxload</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;gpu_load&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="mi">100</span>
             <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
             <span class="n">t</span> <span class="o">=</span> <span class="n">o</span><span class="p">[</span><span class="s2">&quot;gpu_wait_time&quot;</span><span class="p">]</span>
@@ -1232,7 +1415,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <span class="sa">f</span><span class="s2">&quot;limit of </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">global_options</span><span class="p">[</span><span class="s1">&#39;ncores&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> cores.&quot;</span>
                     <span class="p">)</span>
                 <span class="n">np</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">global_options</span><span class="p">[</span><span class="s2">&quot;ncores&quot;</span><span class="p">]))</span>
-            <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span> <span class="ow">and</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;Darwin&quot;</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">ngpus</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
                         <span class="s2">&quot;    Using PyTorch forcefield, but no GPUs! Must exit.&quot;</span>
@@ -1286,15 +1469,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">files</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="n">control</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_forcefield&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;OpenKIM&quot;</span><span class="p">:</span>
-            <span class="n">potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_OpenKIM_Potential&quot;</span><span class="p">)</span>
-            <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s2">&quot;forcefield&quot;</span><span class="p">,</span> <span class="s2">&quot;OpenKIM &quot;</span> <span class="o">+</span> <span class="n">potential</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span><span class="p">:</span>
-            <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_pytorch_model&quot;</span><span class="p">)</span>
-            <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s2">&quot;forcefield&quot;</span><span class="p">,</span> <span class="s2">&quot;PyTorch &quot;</span> <span class="o">+</span> <span class="n">model</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_exists</span><span class="p">(</span><span class="s2">&quot;_model_chemistry&quot;</span><span class="p">):</span>
+            <span class="n">mc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_model_chemistry&quot;</span><span class="p">)</span>
+            <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s2">&quot;model_chemistry&quot;</span><span class="p">,</span> <span class="n">mc</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">]])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s2">&quot;forcefield&quot;</span><span class="p">,</span> <span class="n">ff</span><span class="o">.</span><span class="n">current_forcefield</span><span class="p">])</span>
+            <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_forcefield&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;OpenKIM&quot;</span><span class="p">:</span>
+                <span class="n">potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_OpenKIM_Potential&quot;</span><span class="p">)</span>
+                <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s2">&quot;forcefield&quot;</span><span class="p">,</span> <span class="s2">&quot;OpenKIM &quot;</span> <span class="o">+</span> <span class="n">potential</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span><span class="p">:</span>
+                <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_pytorch_model&quot;</span><span class="p">)</span>
+                <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s2">&quot;forcefield&quot;</span><span class="p">,</span> <span class="s2">&quot;PyTorch &quot;</span> <span class="o">+</span> <span class="n">model</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">control</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s2">&quot;forcefield&quot;</span><span class="p">,</span> <span class="n">ff</span><span class="o">.</span><span class="n">current_forcefield</span><span class="p">])</span>
         <span class="k">while</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">P</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">current_values_to_dict</span><span class="p">(</span>
                 <span class="n">context</span><span class="o">=</span><span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">_data</span>
@@ -1483,6 +1670,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stderr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># For QM-MD over MDI the QM engine does essentially all the work and</span>
+            <span class="c1"># is the bottleneck; LAMMPS is just the driver, so run it on a single</span>
+            <span class="c1"># core (the OMP/MKL thread caps below keep the engine single-threaded</span>
+            <span class="c1"># too). See campaigns/2026-06-22/NOTES_C.rst.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_form</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;MDI/QM&quot;</span><span class="p">:</span>
+                <span class="n">np</span> <span class="o">=</span> <span class="mi">1</span>
+
             <span class="c1"># Set up the computational limits and get the computational enviroment</span>
             <span class="n">cl</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;NTASKS&quot;</span><span class="p">:</span> <span class="n">np</span><span class="p">}</span>
             <span class="n">ce</span> <span class="o">=</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">computational_environment</span><span class="p">(</span><span class="n">cl</span><span class="p">)</span>
@@ -1609,8 +1803,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">env</span><span class="p">[</span><span class="s2">&quot;OMP_PLACES&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;threads&quot;</span>
                 <span class="n">env</span><span class="p">[</span><span class="s2">&quot;OMP_NUM_THREADS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>  <span class="c1"># usually best for GPU-dominant runs</span>
 
-            <span class="c1"># The forcefield file for PyTorch/MDI runs</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;PyTorch/&quot;</span><span class="p">):</span>
+            <span class="c1"># Keep the QM engine (MOPAC) and the LAMMPS driver single-threaded:</span>
+            <span class="c1"># the engine is a small serial SQM calc and oversubscribing cores</span>
+            <span class="c1"># only hurts. Applies to the whole launch script, so both inherit it.</span>
+            <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;MDI/QM&quot;</span><span class="p">:</span>
+                <span class="n">env</span><span class="p">[</span><span class="s2">&quot;OMP_NUM_THREADS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
+                <span class="n">env</span><span class="p">[</span><span class="s2">&quot;MKL_NUM_THREADS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
+
+            <span class="c1"># The forcefield file for PyTorch/MDI runs (keyed off the forcefield</span>
+            <span class="c1"># form, not the model label, which is now a grammar string).</span>
+            <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;PyTorch&quot;</span><span class="p">:</span>
                 <span class="n">env</span><span class="p">[</span><span class="s2">&quot;SEAMM_FF&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_pytorch_model&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">env</span><span class="p">[</span><span class="s2">&quot;SEAMM_FF&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Unknown&quot;</span>
@@ -1626,7 +1828,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="c1"># Setup the command lines</span>
             <span class="n">cmd</span> <span class="o">=</span> <span class="p">[]</span>
 
-            <span class="k">if</span> <span class="s2">&quot;run_lammps&quot;</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">&quot;MDI/QM&quot;</span><span class="p">:</span>
+                <span class="c1"># QM-MD over MDI: launch the QM engine (the listener, in its own</span>
+                <span class="c1"># conda environment) and the LAMMPS driver together, rendezvousing</span>
+                <span class="c1"># over TCP. See campaigns/2026-06-22/NOTES_C.rst.</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">()</span>
+                <span class="n">engine_argv</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdi_engine_launch</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+                <span class="n">files</span><span class="p">[</span><span class="s2">&quot;mdi_launch.sh&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_mdi_launch_script</span><span class="p">(</span>
+                    <span class="n">engine_argv</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">ce</span>
+                <span class="p">)</span>
+                <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;bash&quot;</span><span class="p">,</span> <span class="s2">&quot;mdi_launch.sh&quot;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="s2">&quot;run_lammps&quot;</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
                 <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">{python}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;run_lammps&quot;</span><span class="p">]</span>
                 <span class="k">if</span> <span class="p">(</span>
                     <span class="s2">&quot;NGPUS&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ce</span>
@@ -3453,24 +3665,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">            The name for this section in the file.</span>
 
 <span class="sd">        values : {str: int, float, or str}</span>
-<span class="sd">            The dictionary of the constants for this angle term.</span>
+<span class="sd">            The dictionary of the constants for this angle term. It looks like</span>
+<span class="sd">            this::</span>
+
+<span class="sd">                {</span>
+<span class="sd">                    &#39;reference&#39;: &#39;5&#39;,</span>
+<span class="sd">                    &#39;Eqn&#39;: &#39;K/8*(1-cos(n*Theta)) + A/(2*Rb*sin(Theta/2))**12&#39;,</span>
+<span class="sd">                    &#39;K&#39;: 278.4416826003824,</span>
+<span class="sd">                    &#39;n&#39;: 4,</span>
+<span class="sd">                    &#39;Rb&#39;: 1.606,</span>
+<span class="sd">                    &#39;A&#39;: 11.950286806883364,</span>
+<span class="sd">                    &#39;zero-shift&#39;: 0.001</span>
+<span class="sd">                }</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        [str]</span>
 <span class="sd">            A list of lines of the tabulated angle file.</span>
-
-<span class="sd">        values looks like this::</span>
-
-<span class="sd">            {</span>
-<span class="sd">                &#39;reference&#39;: &#39;5&#39;,</span>
-<span class="sd">                &#39;Eqn&#39;: &#39;K/8*(1-cos(n*Theta)) + A/(2*Rb*sin(Theta/2))**12&#39;,</span>
-<span class="sd">                &#39;K&#39;: 278.4416826003824,</span>
-<span class="sd">                &#39;n&#39;: 4,</span>
-<span class="sd">                &#39;Rb&#39;: 1.606,</span>
-<span class="sd">                &#39;A&#39;: 11.950286806883364,</span>
-<span class="sd">                &#39;zero-shift&#39;: 0.001</span>
-<span class="sd">            }</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -3668,8 +3879,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -3681,7 +3892,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.19.0.
 </p></div>
       
     </div>

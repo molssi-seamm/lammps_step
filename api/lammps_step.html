@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.3.26 documentation</title>
+    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.6.25 documentation</title>
   
   
   
@@ -27,8 +27,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -36,10 +36,10 @@
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=c224919a" />
   
   <!-- So that users can add custom icons -->
-  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
 
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -49,13 +49,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=1e06cea4"></script>
+    <script src="../_static/documentation_options.js?v=702088bc"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/lammps_step';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
 
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -63,21 +64,27 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="lammps_step" href="modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.3.26" />
+  <meta name="docsearch:version" content="2026.6.25" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -103,7 +110,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
@@ -233,11 +240,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -250,8 +264,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           
           
           
-          <a href="https://github.com/molssi-seamm/lammps_step" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/molssi-seamm/lammps_step" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -262,8 +275,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           
           
           
-          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">Twitter</span></a>
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
         </li>
 </ul></div>
       
@@ -380,11 +392,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -397,8 +416,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           
           
           
-          <a href="https://github.com/molssi-seamm/lammps_step" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/molssi-seamm/lammps_step" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -409,8 +427,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           
           
           
-          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">Twitter</span></a>
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
         </li>
 </ul></div>
         
@@ -419,7 +436,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </div>
   
     <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar"><svg class="pst-icon svg-inline--fa" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
         <div class="sidebar-primary-item">
+
 <nav class="bd-docs-nav bd-links"
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
@@ -641,7 +665,10 @@ method.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="lammps_step.energy.Energy.model">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#lammps_step.energy.Energy.model" title="Link to this definition">#</a></dt>
-<dd><p>The name of the forcefield.</p>
+<dd><p>The full <code class="docutils literal notranslate"><span class="pre">driver:task|level</span></code> provenance label for this operation.</p>
+<p>Composed from the parent’s model chemistry and this step’s <code class="docutils literal notranslate"><span class="pre">task</span></code> –
+e.g. <code class="docutils literal notranslate"><span class="pre">LAMMPS:MD|MOPAC:SQM&#64;PM6-ORG</span></code> – so results are labeled (and made
+comparable) by what was actually done.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -649,6 +676,11 @@ method.</p>
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">results</span></span><a class="headerlink" href="#lammps_step.energy.Energy.results" title="Link to this definition">#</a></dt>
 <dd><p>The storage for the results in the main LAMMPS step.</p>
 </dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lammps_step.energy.Energy.task">
+<span class="sig-name descname"><span class="pre">task</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SP'</span></span><a class="headerlink" href="#lammps_step.energy.Energy.task" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="lammps_step.energy.Energy.version">
@@ -893,7 +925,7 @@ current plugin,the values are dictionaries as outlined below.</p>
 <dl>
 <dt>parameters<span class="classifier">{str: {str: str}}</span></dt><dd><p>A dictionary containing the parameters for the current step.
 Each key of the dictionary is a dictionary that contains the
-the following keys:</p>
+the following keys</p>
 </dd>
 <dt>parameters[“default”] :</dt><dd><p>The default value of the parameter, used to reset it.</p>
 </dd>
@@ -903,10 +935,8 @@ the following keys:</p>
 enumerated custom values meaningful to the user. For instance, if the parameter
 is a convergence criterion for an optimizer, custom values like “normal”,
 “precise”, etc, might be adequate. In addition, any parameter can be set to a
-variable of expression, indicated by having “$” or “=” as the first character</p>
-<blockquote>
-<div><p>in the field. For example, $OPTIMIZER_CONV.</p>
-</div></blockquote>
+variable of expression, indicated by having “$” or “=” as the first character
+in the field. For example, $OPTIMIZER_CONV.</p>
 </dd>
 <dt>parameters[“default_units”]<span class="classifier">str</span></dt><dd><p>The default units, used for resetting the value.</p>
 </dd>
@@ -1028,6 +1058,18 @@ a step, and dimensions of the graphical node.</p></li>
 <dt class="sig sig-object py" id="lammps_step.initialization.Initialization">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">lammps_step.initialization.</span></span><span class="sig-name descname"><span class="pre">Initialization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flowchart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Initialization'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/initialization.html#Initialization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.initialization.Initialization" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Node</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.initialization.Initialization.MDI_QM_input">
+<span class="sig-name descname"><span class="pre">MDI_QM_input</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/initialization.html#Initialization.MDI_QM_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.initialization.Initialization.MDI_QM_input" title="Link to this definition">#</a></dt>
+<dd><p>Initialization input for QM-MD driven over MDI (e.g. MOPAC).</p>
+<p>The QM engine computes the energy and forces for the whole system, so
+LAMMPS needs no <code class="docutils literal notranslate"><span class="pre">pair_style</span></code> – only <code class="docutils literal notranslate"><span class="pre">fix</span> <span class="pre">mdi/qm</span></code>, which ships the
+atoms to the engine and receives the forces back, exactly as the MACE
+<code class="docutils literal notranslate"><span class="pre">.mace.pt</span></code> path does. The engine itself is launched by <code class="docutils literal notranslate"><span class="pre">lammps.py</span></code>;
+here we only write the input deck. See
+campaigns/2026-06-22/NOTES_C.rst.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="lammps_step.initialization.Initialization.OpenKIM_energy_expression">
 <span class="sig-name descname"><span class="pre">OpenKIM_energy_expression</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/initialization.html#Initialization.OpenKIM_energy_expression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.initialization.Initialization.OpenKIM_energy_expression" title="Link to this definition">#</a></dt>
@@ -1246,27 +1288,27 @@ default.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>key</strong> (<em>str</em>) – The name for this section in the file.</p></li>
-<li><p><strong>values</strong> (<em>{str: int</em><em>, </em><em>float</em><em>, or </em><em>str}</em>) – The dictionary of the constants for this angle term.</p></li>
+<li><p><strong>values</strong> (<em>{str: int</em><em>, </em><em>float</em><em>, or </em><em>str}</em>) – <p>The dictionary of the constants for this angle term. It looks like
+this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;reference&#39;</span><span class="p">:</span> <span class="s1">&#39;5&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Eqn&#39;</span><span class="p">:</span> <span class="s1">&#39;K/8*(1-cos(n*Theta)) + A/(2*Rb*sin(Theta/2))**12&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="mf">278.4416826003824</span><span class="p">,</span>
+    <span class="s1">&#39;n&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="s1">&#39;Rb&#39;</span><span class="p">:</span> <span class="mf">1.606</span><span class="p">,</span>
+    <span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="mf">11.950286806883364</span><span class="p">,</span>
+    <span class="s1">&#39;zero-shift&#39;</span><span class="p">:</span> <span class="mf">0.001</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul>
-<li><p><em>[str]</em> – A list of lines of the tabulated angle file.</p></li>
-<li><p><em>values looks like this::</em> –</p>
-<dl class="simple">
-<dt>{</dt><dd><p>‘reference’: ‘5’,
-‘Eqn’: ‘K/8*(1-cos(n*Theta)) + A/(2*Rb*sin(Theta/2))**12’,
-‘K’: 278.4416826003824,
-‘n’: 4,
-‘Rb’: 1.606,
-‘A’: 11.950286806883364,
-‘zero-shift’: 0.001</p>
+<dd class="field-even"><p>A list of lines of the tabulated angle file.</p>
 </dd>
-</dl>
-<p>}</p>
-</li>
-</ul>
-</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>[str]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1353,6 +1395,20 @@ be used as is.</p>
 <dt class="sig sig-object py" id="lammps_step.lammps.LAMMPS.have_dreiding_hbonds">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">have_dreiding_hbonds</span></span><a class="headerlink" href="#lammps_step.lammps.LAMMPS.have_dreiding_hbonds" title="Link to this definition">#</a></dt>
 <dd><p>Whether the system has Dreiding hydrogen bonds.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.lammps.LAMMPS.model_chemistry">
+<span class="sig-name descname"><span class="pre">model_chemistry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.model_chemistry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.model_chemistry" title="Link to this definition">#</a></dt>
+<dd><p>Compose the full <code class="docutils literal notranslate"><span class="pre">driver:task|level</span></code> provenance label for a task.</p>
+<p><code class="docutils literal notranslate"><span class="pre">task</span></code> is the LAMMPS operation – <code class="docutils literal notranslate"><span class="pre">&quot;SP&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;OPT&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;MD&quot;</span></code>. For a
+QM-MD-over-MDI run the level (owner/type/method/…) comes from the
+<code class="docutils literal notranslate"><span class="pre">_model_chemistry</span></code> variable, giving e.g.
+<code class="docutils literal notranslate"><span class="pre">&quot;LAMMPS:MD|MOPAC:SQM&#64;PM6-ORG&quot;</span></code> (or, classical, the owner collapses to
+<code class="docutils literal notranslate"><span class="pre">&quot;LAMMPS:MD|VFF&#64;OPLS-AA&quot;</span></code>). For classical / MLFF / OpenKIM runs the
+level is not yet classified into <code class="docutils literal notranslate"><span class="pre">type&#64;method</span></code>, so the legacy bare
+label (<code class="docutils literal notranslate"><span class="pre">self.model</span></code>) is returned unchanged. See
+<code class="docutils literal notranslate"><span class="pre">model_chemistry_naming.rst</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1575,6 +1631,11 @@ calculations, etc.</p>
 ‘fix npt’ or ‘fix berendsen’ or minimization in LAMMPS</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lammps_step.minimization.Minimization.task">
+<span class="sig-name descname"><span class="pre">task</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'OPT'</span></span><a class="headerlink" href="#lammps_step.minimization.Minimization.task" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 </section>
@@ -1754,6 +1815,11 @@ be used as is.</p>
 <dd><p>Get the input for an NVE dynamics run in LAMMPS</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lammps_step.nve.NVE.task">
+<span class="sig-name descname"><span class="pre">task</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'MD'</span></span><a class="headerlink" href="#lammps_step.nve.NVE.task" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="lammps_step.nve.NVE.timestep">
 <span class="sig-name descname"><span class="pre">timestep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve.html#NVE.timestep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.nve.NVE.timestep" title="Link to this definition">#</a></dt>
@@ -1814,7 +1880,7 @@ or one of ‘notmal’, ‘accurate but slow’, or ‘coarse but fast’</p>
 <p>The control parameters for NVE dynamics in LAMMPS</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lammps_step.nve_parameters.NVE_Parameters.parameters">
-<span class="sig-name descname"><span class="pre">parameters</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'control_properties':</span> <span class="pre">{'default':</span> <span class="pre">{},</span> <span class="pre">'default_units':</span> <span class="pre">None,</span> <span class="pre">'description':</span> <span class="pre">'Convergence</span> <span class="pre">properties',</span> <span class="pre">'enumeration':</span> <span class="pre">(),</span> <span class="pre">'format_string':</span> <span class="pre">'',</span> <span class="pre">'help_text':</span> <span class="pre">'The</span> <span class="pre">properties</span> <span class="pre">to</span> <span class="pre">converge</span> <span class="pre">when</span> <span class="pre">controlling</span> <span class="pre">the</span> <span class="pre">run</span> <span class="pre">automatically.',</span> <span class="pre">'kind':</span> <span class="pre">'special',</span> <span class="pre">'widget':</span> <span class="pre">'seamm_widgets.PropertyTable'},</span> <span class="pre">'maximum_time':</span> <span class="pre">{'default':</span> <span class="pre">1.0,</span> <span class="pre">'default_units':</span> <span class="pre">'ns',</span> <span class="pre">'description':</span> <span class="pre">'Maximum</span> <span class="pre">simulation</span> <span class="pre">time:',</span> <span class="pre">'format_string':</span> <span class="pre">'.1f',</span> <span class="pre">'help_text':</span> <span class="pre">'The</span> <span class="pre">maximum</span> <span class="pre">time</span> <span class="pre">to</span> <span class="pre">simulate</span> <span class="pre">when</span> <span class="pre">converging</span> <span class="pre">properties.',</span> <span class="pre">'kind':</span> <span class="pre">'float'},</span> <span class="pre">'run_control':</span> <span class="pre">{'default':</span> <span class="pre">'For</span> <span class="pre">a</span> <span class="pre">fixed</span> <span class="pre">length</span> <span class="pre">of</span> <span class="pre">simulated</span> <span class="pre">time.',</span> <span class="pre">'default_units':</span> <span class="pre">None,</span> <span class="pre">'description':</span> <span class="pre">'How</span> <span class="pre">long</span> <span class="pre">to</span> <span class="pre">run?</span> <span class="pre">',</span> <span class="pre">'enumeration':</span> <span class="pre">('Until</span> <span class="pre">properties</span> <span class="pre">converge</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">requested</span> <span class="pre">accuracy.',</span> <span class="pre">'For</span> <span class="pre">a</span> <span class="pre">fixed</span> <span class="pre">length</span> <span class="pre">of</span> <span class="pre">simulated</span> <span class="pre">time.'),</span> <span class="pre">'format_string':</span> <span class="pre">'',</span> <span class="pre">'help_text':</span> <span class="pre">'How</span> <span class="pre">to</span> <span class="pre">determine</span> <span class="pre">when</span> <span class="pre">to</span> <span class="pre">stop</span> <span class="pre">the</span> <span class="pre">simulation.</span> <span class="pre">You</span> <span class="pre">can</span> <span class="pre">give</span> <span class="pre">a</span> <span class="pre">fixed</span> <span class="pre">length</span> <span class="pre">of</span> <span class="pre">simulation</span> <span class="pre">time,</span> <span class="pre">e.g.</span> <span class="pre">15</span> <span class="pre">ps,</span> <span class="pre">or</span> <span class="pre">you</span> <span class="pre">can</span> <span class="pre">ask</span> <span class="pre">to</span> <span class="pre">run</span> <span class="pre">long</span> <span class="pre">enough</span> <span class="pre">to</span> <span class="pre">determine</span> <span class="pre">one</span> <span class="pre">or</span> <span class="pre">more</span> <span class="pre">properties</span> <span class="pre">to</span> <span class="pre">a</span> <span class="pre">given</span> <span class="pre">accuracy.',</span> <span class="pre">'kind':</span> <span class="pre">'enumeration'},</span> <span class="pre">'sampling':</span> <span class="pre">{'default':</span> <span class="pre">'50',</span> <span class="pre">'default_units':</span> <span class="pre">'fs',</span> <span class="pre">'description':</span> <span class="pre">'Sampling</span> <span class="pre">frequency:',</span> <span class="pre">'enumeration':</span> <span class="pre">('none',),</span> <span class="pre">'format_string':</span> <span class="pre">'.1f',</span> <span class="pre">'help_text':</span> <span class="pre">'How</span> <span class="pre">often</span> <span class="pre">to</span> <span class="pre">sample</span> <span class="pre">the</span> <span class="pre">energy,</span> <span class="pre">temperature,</span> <span class="pre">etc.</span> <span class="pre">during</span> <span class="pre">the</span> <span class="pre">dynamics</span> <span class="pre">run.</span> <span class="pre">This</span> <span class="pre">controls</span> <span class="pre">writing</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">trajectory</span> <span class="pre">files.</span> <span class="pre">Faster</span> <span class="pre">gives</span> <span class="pre">more</span> <span class="pre">fidelity</span> <span class="pre">to</span> <span class="pre">a</span> <span class="pre">point,</span> <span class="pre">but</span> <span class="pre">increases</span> <span class="pre">the</span> <span class="pre">file</span> <span class="pre">size</span> <span class="pre">and</span> <span class="pre">slows</span> <span class="pre">the</span> <span class="pre">calculation</span> <span class="pre">down.\nYou</span> <span class="pre">can</span> <span class="pre">ask</span> <span class="pre">for</span> <span class="pre">no</span> <span class="pre">sampling,</span> <span class="pre">give</span> <span class="pre">a</span> <span class="pre">specific</span> <span class="pre">interval,</span> <span class="pre">or</span> <span class="pre">allow</span> <span class="pre">the</span> <span class="pre">system</span> <span class="pre">the</span> <span class="pre">choose</span> <span class="pre">for</span> <span class="pre">you.',</span> <span class="pre">'kind':</span> <span class="pre">'float'},</span> <span class="pre">'time':</span> <span class="pre">{'default':</span> <span class="pre">100.0,</span> <span class="pre">'default_units':</span> <span class="pre">'ps',</span> <span class="pre">'description':</span> <span class="pre">'Simulation</span> <span class="pre">time:',</span> <span class="pre">'format_string':</span> <span class="pre">'.1f',</span> <span class="pre">'help_text':</span> <span class="pre">'The</span> <span class="pre">time</span> <span class="pre">to</span> <span class="pre">simulate</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">dynamics</span> <span class="pre">run.',</span> <span class="pre">'kind':</span> <span class="pre">'float'},</span> <span class="pre">'timestep':</span> <span class="pre">{'default':</span> <span class="pre">'normal',</span> <span class="pre">'default_units':</span> <span class="pre">'fs',</span> <span class="pre">'description':</span> <span class="pre">'Timestep:',</span> <span class="pre">'enumeration':</span> <span class="pre">('normal',</span> <span class="pre">'accurate</span> <span class="pre">but</span> <span class="pre">slow',</span> <span class="pre">'coarse</span> <span class="pre">but</span> <span class="pre">fast'),</span> <span class="pre">'format_string':</span> <span class="pre">'.1f',</span> <span class="pre">'help_text':</span> <span class="pre">'The</span> <span class="pre">time</span> <span class="pre">step</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">numerical</span> <span class="pre">integration</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">dynamics.</span> <span class="pre">1</span> <span class="pre">fs</span> <span class="pre">is</span> <span class="pre">safe</span> <span class="pre">for</span> <span class="pre">most</span> <span class="pre">systems,</span> <span class="pre">except</span> <span class="pre">perhaps</span> <span class="pre">at</span> <span class="pre">high</span> <span class="pre">temperatures.</span> <span class="pre">For</span> <span class="pre">systems</span> <span class="pre">without</span> <span class="pre">hydrogen,</span> <span class="pre">helium,</span> <span class="pre">lithium</span> <span class="pre">or</span> <span class="pre">other</span> <span class="pre">light</span> <span class="pre">elements,</span> <span class="pre">2-4</span> <span class="pre">fs</span> <span class="pre">steps</span> <span class="pre">are</span> <span class="pre">reasonable.</span> <span class="pre">The</span> <span class="pre">timestep</span> <span class="pre">needs</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">less</span> <span class="pre">than</span> <span class="pre">1/10</span> <span class="pre">the</span> <span class="pre">highest</span> <span class="pre">frequency.</span> <span class="pre">10^14</span> <span class="pre">Hz</span> <span class="pre">is</span> <span class="pre">a</span> <span class="pre">period</span> <span class="pre">if</span> <span class="pre">10</span> <span class="pre">fs,</span> <span class="pre">and</span> <span class="pre">corresponds</span> <span class="pre">to</span> <span class="pre">a</span> <span class="pre">frequency</span> <span class="pre">of</span> <span class="pre">3,300</span> <span class="pre">wavenumbers</span> <span class="pre">or</span> <span class="pre">a</span> <span class="pre">wavelength</span> <span class="pre">of</span> <span class="pre">3</span> <span class="pre">micrometers.\nYou</span> <span class="pre">can</span> <span class="pre">enter</span> <span class="pre">a</span> <span class="pre">value</span> <span class="pre">or</span> <span class="pre">use</span> <span class="pre">the</span> <span class="pre">choices,</span> <span class="pre">which</span> <span class="pre">pick</span> <span class="pre">a</span> <span class="pre">reasonable</span> <span class="pre">timestep</span> <span class="pre">based</span> <span class="pre">on</span> <span class="pre">the</span> <span class="pre">calculation.',</span> <span class="pre">'kind':</span> <span class="pre">'float'}}</span></span><a class="headerlink" href="#lammps_step.nve_parameters.NVE_Parameters.parameters" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">parameters</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'constrain</span> <span class="pre">X-H</span> <span class="pre">bonds':</span> <span class="pre">{'default':</span> <span class="pre">'no',</span> <span class="pre">'default_units':</span> <span class="pre">None,</span> <span class="pre">'description':</span> <span class="pre">'Constrain</span> <span class="pre">(shake)</span> <span class="pre">X-H</span> <span class="pre">bonds:',</span> <span class="pre">'enumeration':</span> <span class="pre">('yes',</span> <span class="pre">'no'),</span> <span class="pre">'format_string':</span> <span class="pre">'',</span> <span class="pre">'help_text':</span> <span class="pre">'Whether</span> <span class="pre">to</span> <span class="pre">fix</span> <span class="pre">the</span> <span class="pre">length</span> <span class="pre">of</span> <span class="pre">X-H</span> <span class="pre">bonds</span> <span class="pre">using</span> <span class="pre">SHAKE/RATTLE',</span> <span class="pre">'kind':</span> <span class="pre">'boolean'},</span> <span class="pre">'control_properties':</span> <span class="pre">{'default':</span> <span class="pre">{},</span> <span class="pre">'default_units':</span> <span class="pre">None,</span> <span class="pre">'description':</span> <span class="pre">'Convergence</span> <span class="pre">properties',</span> <span class="pre">'enumeration':</span> <span class="pre">(),</span> <span class="pre">'format_string':</span> <span class="pre">'',</span> <span class="pre">'help_text':</span> <span class="pre">'The</span> <span class="pre">properties</span> <span class="pre">to</span> <span class="pre">converge</span> <span class="pre">when</span> <span class="pre">controlling</span> <span class="pre">the</span> <span class="pre">run</span> <span class="pre">automatically.',</span> <span class="pre">'kind':</span> <span class="pre">'special',</span> <span class="pre">'widget':</span> <span class="pre">'seamm_widgets.PropertyTable'},</span> <span class="pre">'maximum_time':</span> <span class="pre">{'default':</span> <span class="pre">1.0,</span> <span class="pre">'default_units':</span> <span class="pre">'ns',</span> <span class="pre">'description':</span> <span class="pre">'Maximum</span> <span class="pre">simulation</span> <span class="pre">time:',</span> <span class="pre">'format_string':</span> <span class="pre">'.1f',</span> <span class="pre">'help_text':</span> <span class="pre">'The</span> <span class="pre">maximum</span> <span class="pre">time</span> <span class="pre">to</span> <span class="pre">simulate</span> <span class="pre">when</span> <span class="pre">converging</span> <span class="pre">properties.',</span> <span class="pre">'kind':</span> <span class="pre">'float'},</span> <span class="pre">'run_control':</span> <span class="pre">{'default':</span> <span class="pre">'For</span> <span class="pre">a</span> <span class="pre">fixed</span> <span class="pre">length</span> <span class="pre">of</span> <span class="pre">simulated</span> <span class="pre">time.',</span> <span class="pre">'default_units':</span> <span class="pre">None,</span> <span class="pre">'description':</span> <span class="pre">'How</span> <span class="pre">long</span> <span class="pre">to</span> <span class="pre">run?</span> <span class="pre">',</span> <span class="pre">'enumeration':</span> <span class="pre">('Until</span> <span class="pre">properties</span> <span class="pre">converge</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">requested</span> <span class="pre">accuracy.',</span> <span class="pre">'For</span> <span class="pre">a</span> <span class="pre">fixed</span> <span class="pre">length</span> <span class="pre">of</span> <span class="pre">simulated</span> <span class="pre">time.'),</span> <span class="pre">'format_string':</span> <span class="pre">'',</span> <span class="pre">'help_text':</span> <span class="pre">'How</span> <span class="pre">to</span> <span class="pre">determine</span> <span class="pre">when</span> <span class="pre">to</span> <span class="pre">stop</span> <span class="pre">the</span> <span class="pre">simulation.</span> <span class="pre">You</span> <span class="pre">can</span> <span class="pre">give</span> <span class="pre">a</span> <span class="pre">fixed</span> <span class="pre">length</span> <span class="pre">of</span> <span class="pre">simulation</span> <span class="pre">time,</span> <span class="pre">e.g.</span> <span class="pre">15</span> <span class="pre">ps,</span> <span class="pre">or</span> <span class="pre">you</span> <span class="pre">can</span> <span class="pre">ask</span> <span class="pre">to</span> <span class="pre">run</span> <span class="pre">long</span> <span class="pre">enough</span> <span class="pre">to</span> <span class="pre">determine</span> <span class="pre">one</span> <span class="pre">or</span> <span class="pre">more</span> <span class="pre">properties</span> <span class="pre">to</span> <span class="pre">a</span> <span class="pre">given</span> <span class="pre">accuracy.',</span> <span class="pre">'kind':</span> <span class="pre">'enumeration'},</span> <span class="pre">'sampling':</span> <span class="pre">{'default':</span> <span class="pre">'50',</span> <span class="pre">'default_units':</span> <span class="pre">'fs',</span> <span class="pre">'description':</span> <span class="pre">'Sampling</span> <span class="pre">frequency:',</span> <span class="pre">'enumeration':</span> <span class="pre">('none',),</span> <span class="pre">'format_string':</span> <span class="pre">'.1f',</span> <span class="pre">'help_text':</span> <span class="pre">'How</span> <span class="pre">often</span> <span class="pre">to</span> <span class="pre">sample</span> <span class="pre">the</span> <span class="pre">energy,</span> <span class="pre">temperature,</span> <span class="pre">etc.</span> <span class="pre">during</span> <span class="pre">the</span> <span class="pre">dynamics</span> <span class="pre">run.</span> <span class="pre">This</span> <span class="pre">controls</span> <span class="pre">writing</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">trajectory</span> <span class="pre">files.</span> <span class="pre">Faster</span> <span class="pre">gives</span> <span class="pre">more</span> <span class="pre">fidelity</span> <span class="pre">to</span> <span class="pre">a</span> <span class="pre">point,</span> <span class="pre">but</span> <span class="pre">increases</span> <span class="pre">the</span> <span class="pre">file</span> <span class="pre">size</span> <span class="pre">and</span> <span class="pre">slows</span> <span class="pre">the</span> <span class="pre">calculation</span> <span class="pre">down.\nYou</span> <span class="pre">can</span> <span class="pre">ask</span> <span class="pre">for</span> <span class="pre">no</span> <span class="pre">sampling,</span> <span class="pre">give</span> <span class="pre">a</span> <span class="pre">specific</span> <span class="pre">interval,</span> <span class="pre">or</span> <span class="pre">allow</span> <span class="pre">the</span> <span class="pre">system</span> <span class="pre">the</span> <span class="pre">choose</span> <span class="pre">for</span> <span class="pre">you.',</span> <span class="pre">'kind':</span> <span class="pre">'float'},</span> <span class="pre">'time':</span> <span class="pre">{'default':</span> <span class="pre">100.0,</span> <span class="pre">'default_units':</span> <span class="pre">'ps',</span> <span class="pre">'description':</span> <span class="pre">'Simulation</span> <span class="pre">time:',</span> <span class="pre">'format_string':</span> <span class="pre">'.1f',</span> <span class="pre">'help_text':</span> <span class="pre">'The</span> <span class="pre">time</span> <span class="pre">to</span> <span class="pre">simulate</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">dynamics</span> <span class="pre">run.',</span> <span class="pre">'kind':</span> <span class="pre">'float'},</span> <span class="pre">'timestep':</span> <span class="pre">{'default':</span> <span class="pre">'normal',</span> <span class="pre">'default_units':</span> <span class="pre">'fs',</span> <span class="pre">'description':</span> <span class="pre">'Timestep:',</span> <span class="pre">'enumeration':</span> <span class="pre">('normal',</span> <span class="pre">'accurate</span> <span class="pre">but</span> <span class="pre">slow',</span> <span class="pre">'coarse</span> <span class="pre">but</span> <span class="pre">fast'),</span> <span class="pre">'format_string':</span> <span class="pre">'.1f',</span> <span class="pre">'help_text':</span> <span class="pre">'The</span> <span class="pre">time</span> <span class="pre">step</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">numerical</span> <span class="pre">integration</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">dynamics.</span> <span class="pre">1</span> <span class="pre">fs</span> <span class="pre">is</span> <span class="pre">safe</span> <span class="pre">for</span> <span class="pre">most</span> <span class="pre">systems,</span> <span class="pre">except</span> <span class="pre">perhaps</span> <span class="pre">at</span> <span class="pre">high</span> <span class="pre">temperatures.</span> <span class="pre">For</span> <span class="pre">systems</span> <span class="pre">without</span> <span class="pre">hydrogen,</span> <span class="pre">helium,</span> <span class="pre">lithium</span> <span class="pre">or</span> <span class="pre">other</span> <span class="pre">light</span> <span class="pre">elements,</span> <span class="pre">2-4</span> <span class="pre">fs</span> <span class="pre">steps</span> <span class="pre">are</span> <span class="pre">reasonable.</span> <span class="pre">The</span> <span class="pre">timestep</span> <span class="pre">needs</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">less</span> <span class="pre">than</span> <span class="pre">1/10</span> <span class="pre">the</span> <span class="pre">highest</span> <span class="pre">frequency.</span> <span class="pre">10^14</span> <span class="pre">Hz</span> <span class="pre">is</span> <span class="pre">a</span> <span class="pre">period</span> <span class="pre">of</span> <span class="pre">10</span> <span class="pre">fs,</span> <span class="pre">and</span> <span class="pre">corresponds</span> <span class="pre">to</span> <span class="pre">a</span> <span class="pre">frequency</span> <span class="pre">of</span> <span class="pre">3,300</span> <span class="pre">wavenumbers</span> <span class="pre">or</span> <span class="pre">a</span> <span class="pre">wavelength</span> <span class="pre">of</span> <span class="pre">3</span> <span class="pre">micrometers.\nYou</span> <span class="pre">can</span> <span class="pre">enter</span> <span class="pre">a</span> <span class="pre">value</span> <span class="pre">or</span> <span class="pre">use</span> <span class="pre">the</span> <span class="pre">choices,</span> <span class="pre">which</span> <span class="pre">pick</span> <span class="pre">a</span> <span class="pre">reasonable</span> <span class="pre">timestep</span> <span class="pre">based</span> <span class="pre">on</span> <span class="pre">the</span> <span class="pre">calculation.',</span> <span class="pre">'kind':</span> <span class="pre">'float'}}</span></span><a class="headerlink" href="#lammps_step.nve_parameters.NVE_Parameters.parameters" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -2651,10 +2717,10 @@ A step for running molecular dynamics using LAMMPS.</p>
     class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> On this page
   </div>
-  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.custom">lammps_step.custom module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.custom">lammps_step.custom module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.custom.Custom"><code class="docutils literal notranslate"><span class="pre">Custom</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.custom.Custom.description_text"><code class="docutils literal notranslate"><span class="pre">Custom.description_text()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.custom.Custom.get_input"><code class="docutils literal notranslate"><span class="pre">Custom.get_input()</span></code></a></li>
@@ -2665,14 +2731,14 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.custom_parameters">lammps_step.custom_parameters module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.custom_parameters">lammps_step.custom_parameters module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.custom_parameters.CustomParameters"><code class="docutils literal notranslate"><span class="pre">CustomParameters</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.custom_parameters.CustomParameters.parameters"><code class="docutils literal notranslate"><span class="pre">CustomParameters.parameters</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.custom_step">lammps_step.custom_step module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.custom_step">lammps_step.custom_step module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.custom_step.CustomStep"><code class="docutils literal notranslate"><span class="pre">CustomStep</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.custom_step.CustomStep.create_node"><code class="docutils literal notranslate"><span class="pre">CustomStep.create_node()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.custom_step.CustomStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">CustomStep.create_tk_node()</span></code></a></li>
@@ -2682,7 +2748,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.energy">lammps_step.energy module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.energy">lammps_step.energy module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.energy.Energy"><code class="docutils literal notranslate"><span class="pre">Energy</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.energy.Energy.analyze"><code class="docutils literal notranslate"><span class="pre">Energy.analyze()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.energy.Energy.calculate_enthalpy_of_formation"><code class="docutils literal notranslate"><span class="pre">Energy.calculate_enthalpy_of_formation()</span></code></a></li>
@@ -2692,20 +2758,21 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.energy.Energy.header"><code class="docutils literal notranslate"><span class="pre">Energy.header</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.energy.Energy.model"><code class="docutils literal notranslate"><span class="pre">Energy.model</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.energy.Energy.results"><code class="docutils literal notranslate"><span class="pre">Energy.results</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.energy.Energy.task"><code class="docutils literal notranslate"><span class="pre">Energy.task</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.energy.Energy.version"><code class="docutils literal notranslate"><span class="pre">Energy.version</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.energy.subscript"><code class="docutils literal notranslate"><span class="pre">subscript()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.energy_parameters">lammps_step.energy_parameters module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.energy_parameters">lammps_step.energy_parameters module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.energy_parameters.EnergyParameters"><code class="docutils literal notranslate"><span class="pre">EnergyParameters</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.energy_parameters.EnergyParameters.parameters"><code class="docutils literal notranslate"><span class="pre">EnergyParameters.parameters</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.energy_step">lammps_step.energy_step module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.energy_step">lammps_step.energy_step module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.energy_step.EnergyStep"><code class="docutils literal notranslate"><span class="pre">EnergyStep</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.energy_step.EnergyStep.create_node"><code class="docutils literal notranslate"><span class="pre">EnergyStep.create_node()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.energy_step.EnergyStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">EnergyStep.create_tk_node()</span></code></a></li>
@@ -2715,13 +2782,13 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.gpu_memory_parser">lammps_step.gpu_memory_parser module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.gpu_memory_parser">lammps_step.gpu_memory_parser module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.gpu_memory_parser.parse_gpu_memory_log"><code class="docutils literal notranslate"><span class="pre">parse_gpu_memory_log()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.gpu_memory_parser.print_gpu_summary"><code class="docutils literal notranslate"><span class="pre">print_gpu_summary()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.gpu_memory_parser.print_multi_gpu_summary"><code class="docutils literal notranslate"><span class="pre">print_multi_gpu_summary()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.heat_flux">lammps_step.heat_flux module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.heat_flux">lammps_step.heat_flux module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.heat_flux.HeatFlux"><code class="docutils literal notranslate"><span class="pre">HeatFlux</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.heat_flux.HeatFlux.parser"><code class="docutils literal notranslate"><span class="pre">HeatFlux.parser</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.heat_flux.HeatFlux.options"><code class="docutils literal notranslate"><span class="pre">HeatFlux.options</span></code></a></li>
@@ -2736,14 +2803,14 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.heat_flux_parameters">lammps_step.heat_flux_parameters module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.heat_flux_parameters">lammps_step.heat_flux_parameters module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.heat_flux_parameters.HeatFluxParameters"><code class="docutils literal notranslate"><span class="pre">HeatFluxParameters</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.heat_flux_parameters.HeatFluxParameters.parameters"><code class="docutils literal notranslate"><span class="pre">HeatFluxParameters.parameters</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.heat_flux_step">lammps_step.heat_flux_step module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.heat_flux_step">lammps_step.heat_flux_step module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.heat_flux_step.HeatFluxStep"><code class="docutils literal notranslate"><span class="pre">HeatFluxStep</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.heat_flux_step.HeatFluxStep.create_node"><code class="docutils literal notranslate"><span class="pre">HeatFluxStep.create_node()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.heat_flux_step.HeatFluxStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">HeatFluxStep.create_tk_node()</span></code></a></li>
@@ -2753,8 +2820,9 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.initialization">lammps_step.initialization module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.initialization">lammps_step.initialization module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization.Initialization"><code class="docutils literal notranslate"><span class="pre">Initialization</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization.Initialization.MDI_QM_input"><code class="docutils literal notranslate"><span class="pre">Initialization.MDI_QM_input()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization.Initialization.OpenKIM_energy_expression"><code class="docutils literal notranslate"><span class="pre">Initialization.OpenKIM_energy_expression()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization.Initialization.OpenKIM_input"><code class="docutils literal notranslate"><span class="pre">Initialization.OpenKIM_input()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization.Initialization.PyTorch_energy_expression"><code class="docutils literal notranslate"><span class="pre">Initialization.PyTorch_energy_expression()</span></code></a></li>
@@ -2769,14 +2837,14 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.initialization_parameters">lammps_step.initialization_parameters module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.initialization_parameters">lammps_step.initialization_parameters module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization_parameters.InitializationParameters"><code class="docutils literal notranslate"><span class="pre">InitializationParameters</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization_parameters.InitializationParameters.parameters"><code class="docutils literal notranslate"><span class="pre">InitializationParameters.parameters</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.initialization_step">lammps_step.initialization_step module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.initialization_step">lammps_step.initialization_step module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization_step.InitializationStep"><code class="docutils literal notranslate"><span class="pre">InitializationStep</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization_step.InitializationStep.create_node"><code class="docutils literal notranslate"><span class="pre">InitializationStep.create_node()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.initialization_step.InitializationStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">InitializationStep.create_tk_node()</span></code></a></li>
@@ -2786,14 +2854,14 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.installer">lammps_step.installer module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.installer">lammps_step.installer module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.installer.Installer"><code class="docutils literal notranslate"><span class="pre">Installer</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.installer.Installer.exe_version"><code class="docutils literal notranslate"><span class="pre">Installer.exe_version()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.lammps">lammps_step.lammps module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.lammps">lammps_step.lammps module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS"><code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.analyze"><code class="docutils literal notranslate"><span class="pre">LAMMPS.analyze()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.analyze_trajectory"><code class="docutils literal notranslate"><span class="pre">LAMMPS.analyze_trajectory()</span></code></a></li>
@@ -2810,6 +2878,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.get_dump"><code class="docutils literal notranslate"><span class="pre">LAMMPS.get_dump()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.git_revision"><code class="docutils literal notranslate"><span class="pre">LAMMPS.git_revision</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.have_dreiding_hbonds"><code class="docutils literal notranslate"><span class="pre">LAMMPS.have_dreiding_hbonds</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.model_chemistry"><code class="docutils literal notranslate"><span class="pre">LAMMPS.model_chemistry()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.read_dump"><code class="docutils literal notranslate"><span class="pre">LAMMPS.read_dump()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.results"><code class="docutils literal notranslate"><span class="pre">LAMMPS.results</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.run"><code class="docutils literal notranslate"><span class="pre">LAMMPS.run()</span></code></a></li>
@@ -2824,7 +2893,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.pvalue"><code class="docutils literal notranslate"><span class="pre">pvalue()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.lammps_step">lammps_step.lammps_step module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.lammps_step">lammps_step.lammps_step module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps_step.LAMMPSStep"><code class="docutils literal notranslate"><span class="pre">LAMMPSStep</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps_step.LAMMPSStep.create_node"><code class="docutils literal notranslate"><span class="pre">LAMMPSStep.create_node()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps_step.LAMMPSStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">LAMMPSStep.create_tk_node()</span></code></a></li>
@@ -2834,7 +2903,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.lammps_units">lammps_step.lammps_units module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.lammps_units">lammps_step.lammps_units module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps_units.from_lammps_units"><code class="docutils literal notranslate"><span class="pre">from_lammps_units()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps_units.get_lammps_unit_system"><code class="docutils literal notranslate"><span class="pre">get_lammps_unit_system()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps_units.lammps_units"><code class="docutils literal notranslate"><span class="pre">lammps_units()</span></code></a></li>
@@ -2842,28 +2911,29 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps_units.to_lammps_units"><code class="docutils literal notranslate"><span class="pre">to_lammps_units()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.metadata">lammps_step.metadata module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.metadata">lammps_step.metadata module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.metadata.metadata"><code class="docutils literal notranslate"><span class="pre">metadata</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.minimization">lammps_step.minimization module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.minimization">lammps_step.minimization module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.minimization.Minimization"><code class="docutils literal notranslate"><span class="pre">Minimization</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.minimization.Minimization.analyze"><code class="docutils literal notranslate"><span class="pre">Minimization.analyze()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.minimization.Minimization.description_text"><code class="docutils literal notranslate"><span class="pre">Minimization.description_text()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.minimization.Minimization.get_input"><code class="docutils literal notranslate"><span class="pre">Minimization.get_input()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.minimization.Minimization.get_pressure_text"><code class="docutils literal notranslate"><span class="pre">Minimization.get_pressure_text()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.minimization.Minimization.task"><code class="docutils literal notranslate"><span class="pre">Minimization.task</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.minimization_parameters">lammps_step.minimization_parameters module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.minimization_parameters">lammps_step.minimization_parameters module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.minimization_parameters.MinimizationParameters"><code class="docutils literal notranslate"><span class="pre">MinimizationParameters</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.minimization_parameters.MinimizationParameters.parameters"><code class="docutils literal notranslate"><span class="pre">MinimizationParameters.parameters</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.minimization_step">lammps_step.minimization_step module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.minimization_step">lammps_step.minimization_step module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.minimization_step.MinimizationStep"><code class="docutils literal notranslate"><span class="pre">MinimizationStep</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.minimization_step.MinimizationStep.create_node"><code class="docutils literal notranslate"><span class="pre">MinimizationStep.create_node()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.minimization_step.MinimizationStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">MinimizationStep.create_tk_node()</span></code></a></li>
@@ -2873,7 +2943,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.npt">lammps_step.npt module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.npt">lammps_step.npt module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.npt.NPT"><code class="docutils literal notranslate"><span class="pre">NPT</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.npt.NPT.describe"><code class="docutils literal notranslate"><span class="pre">NPT.describe()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.npt.NPT.description_text"><code class="docutils literal notranslate"><span class="pre">NPT.description_text()</span></code></a></li>
@@ -2884,14 +2954,14 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.npt_parameters">lammps_step.npt_parameters module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.npt_parameters">lammps_step.npt_parameters module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.npt_parameters.NPT_Parameters"><code class="docutils literal notranslate"><span class="pre">NPT_Parameters</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.npt_parameters.NPT_Parameters.parameters"><code class="docutils literal notranslate"><span class="pre">NPT_Parameters.parameters</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.npt_step">lammps_step.npt_step module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.npt_step">lammps_step.npt_step module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.npt_step.NPTStep"><code class="docutils literal notranslate"><span class="pre">NPTStep</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.npt_step.NPTStep.create_node"><code class="docutils literal notranslate"><span class="pre">NPTStep.create_node()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.npt_step.NPTStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">NPTStep.create_tk_node()</span></code></a></li>
@@ -2901,18 +2971,19 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.nve">lammps_step.nve module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.nve">lammps_step.nve module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE"><code class="docutils literal notranslate"><span class="pre">NVE</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.analyze"><code class="docutils literal notranslate"><span class="pre">NVE.analyze()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.description_text"><code class="docutils literal notranslate"><span class="pre">NVE.description_text()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.get_input"><code class="docutils literal notranslate"><span class="pre">NVE.get_input()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.task"><code class="docutils literal notranslate"><span class="pre">NVE.task</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.timestep"><code class="docutils literal notranslate"><span class="pre">NVE.timestep()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.trajectory_input"><code class="docutils literal notranslate"><span class="pre">NVE.trajectory_input()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.nve_parameters">lammps_step.nve_parameters module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.nve_parameters">lammps_step.nve_parameters module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve_parameters.NVE_Parameters"><code class="docutils literal notranslate"><span class="pre">NVE_Parameters</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve_parameters.NVE_Parameters.parameters"><code class="docutils literal notranslate"><span class="pre">NVE_Parameters.parameters</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve_parameters.NVE_Parameters.trajectories"><code class="docutils literal notranslate"><span class="pre">NVE_Parameters.trajectories</span></code></a></li>
@@ -2920,7 +2991,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.nve_step">lammps_step.nve_step module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.nve_step">lammps_step.nve_step module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve_step.NVEStep"><code class="docutils literal notranslate"><span class="pre">NVEStep</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve_step.NVEStep.create_node"><code class="docutils literal notranslate"><span class="pre">NVEStep.create_node()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve_step.NVEStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">NVEStep.create_tk_node()</span></code></a></li>
@@ -2930,7 +3001,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.nvt">lammps_step.nvt module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.nvt">lammps_step.nvt module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nvt.NVT"><code class="docutils literal notranslate"><span class="pre">NVT</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nvt.NVT.describe"><code class="docutils literal notranslate"><span class="pre">NVT.describe()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nvt.NVT.description_text"><code class="docutils literal notranslate"><span class="pre">NVT.description_text()</span></code></a></li>
@@ -2939,14 +3010,14 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.nvt_parameters">lammps_step.nvt_parameters module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.nvt_parameters">lammps_step.nvt_parameters module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nvt_parameters.NVT_Parameters"><code class="docutils literal notranslate"><span class="pre">NVT_Parameters</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nvt_parameters.NVT_Parameters.parameters"><code class="docutils literal notranslate"><span class="pre">NVT_Parameters.parameters</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.nvt_step">lammps_step.nvt_step module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.nvt_step">lammps_step.nvt_step module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nvt_step.NVTStep"><code class="docutils literal notranslate"><span class="pre">NVTStep</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nvt_step.NVTStep.create_node"><code class="docutils literal notranslate"><span class="pre">NVTStep.create_node()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nvt_step.NVTStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">NVTStep.create_tk_node()</span></code></a></li>
@@ -2956,7 +3027,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_custom">lammps_step.tk_custom module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_custom">lammps_step.tk_custom module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_custom.TkCustom"><code class="docutils literal notranslate"><span class="pre">TkCustom</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_custom.TkCustom.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkCustom.create_dialog()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_custom.TkCustom.handle_dialog"><code class="docutils literal notranslate"><span class="pre">TkCustom.handle_dialog()</span></code></a></li>
@@ -2965,7 +3036,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_energy">lammps_step.tk_energy module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_energy">lammps_step.tk_energy module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_energy.TkEnergy"><code class="docutils literal notranslate"><span class="pre">TkEnergy</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_energy.TkEnergy.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkEnergy.create_dialog()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_energy.TkEnergy.right_click"><code class="docutils literal notranslate"><span class="pre">TkEnergy.right_click()</span></code></a></li>
@@ -2973,7 +3044,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_heat_flux">lammps_step.tk_heat_flux module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_heat_flux">lammps_step.tk_heat_flux module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_heat_flux.TkHeatFlux"><code class="docutils literal notranslate"><span class="pre">TkHeatFlux</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_heat_flux.TkHeatFlux.tk_flowchart"><code class="docutils literal notranslate"><span class="pre">TkHeatFlux.tk_flowchart</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_heat_flux.TkHeatFlux.node"><code class="docutils literal notranslate"><span class="pre">TkHeatFlux.node</span></code></a></li>
@@ -2991,7 +3062,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_initialization">lammps_step.tk_initialization module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_initialization">lammps_step.tk_initialization module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_initialization.TkInitialization"><code class="docutils literal notranslate"><span class="pre">TkInitialization</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_initialization.TkInitialization.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkInitialization.create_dialog()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_initialization.TkInitialization.general_cb"><code class="docutils literal notranslate"><span class="pre">TkInitialization.general_cb()</span></code></a></li>
@@ -3001,7 +3072,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_lammps">lammps_step.tk_lammps module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_lammps">lammps_step.tk_lammps module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_lammps.TkLAMMPS"><code class="docutils literal notranslate"><span class="pre">TkLAMMPS</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_lammps.TkLAMMPS.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkLAMMPS.create_dialog()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_lammps.TkLAMMPS.from_flowchart"><code class="docutils literal notranslate"><span class="pre">TkLAMMPS.from_flowchart()</span></code></a></li>
@@ -3012,7 +3083,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_minimization">lammps_step.tk_minimization module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_minimization">lammps_step.tk_minimization module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_minimization.TkMinimization"><code class="docutils literal notranslate"><span class="pre">TkMinimization</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_minimization.TkMinimization.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkMinimization.create_dialog()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_minimization.TkMinimization.reset_dialog"><code class="docutils literal notranslate"><span class="pre">TkMinimization.reset_dialog()</span></code></a></li>
@@ -3023,7 +3094,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_npt">lammps_step.tk_npt module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_npt">lammps_step.tk_npt module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_npt.TkNPT"><code class="docutils literal notranslate"><span class="pre">TkNPT</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_npt.TkNPT.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkNPT.create_dialog()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_npt.TkNPT.handle_dialog"><code class="docutils literal notranslate"><span class="pre">TkNPT.handle_dialog()</span></code></a></li>
@@ -3034,7 +3105,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_nve">lammps_step.tk_nve module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_nve">lammps_step.tk_nve module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_nve.TkNVE"><code class="docutils literal notranslate"><span class="pre">TkNVE</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_nve.TkNVE.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkNVE.create_dialog()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_nve.TkNVE.handle_dialog"><code class="docutils literal notranslate"><span class="pre">TkNVE.handle_dialog()</span></code></a></li>
@@ -3045,7 +3116,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_nvt">lammps_step.tk_nvt module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_nvt">lammps_step.tk_nvt module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_nvt.TkNVT"><code class="docutils literal notranslate"><span class="pre">TkNVT</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_nvt.TkNVT.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkNVT.create_dialog()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_nvt.TkNVT.handle_dialog"><code class="docutils literal notranslate"><span class="pre">TkNVT.handle_dialog()</span></code></a></li>
@@ -3055,7 +3126,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_velocities">lammps_step.tk_velocities module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.tk_velocities">lammps_step.tk_velocities module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_velocities.TkVelocities"><code class="docutils literal notranslate"><span class="pre">TkVelocities</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_velocities.TkVelocities.create_dialog"><code class="docutils literal notranslate"><span class="pre">TkVelocities.create_dialog()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.tk_velocities.TkVelocities.reset_dialog"><code class="docutils literal notranslate"><span class="pre">TkVelocities.reset_dialog()</span></code></a></li>
@@ -3064,7 +3135,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.velocities">lammps_step.velocities module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.velocities">lammps_step.velocities module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.velocities.Velocities"><code class="docutils literal notranslate"><span class="pre">Velocities</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.velocities.Velocities.description_text"><code class="docutils literal notranslate"><span class="pre">Velocities.description_text()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.velocities.Velocities.get_input"><code class="docutils literal notranslate"><span class="pre">Velocities.get_input()</span></code></a></li>
@@ -3075,14 +3146,14 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.velocities_parameters">lammps_step.velocities_parameters module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.velocities_parameters">lammps_step.velocities_parameters module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.velocities_parameters.VelocitiesParameters"><code class="docutils literal notranslate"><span class="pre">VelocitiesParameters</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.velocities_parameters.VelocitiesParameters.parameters"><code class="docutils literal notranslate"><span class="pre">VelocitiesParameters.parameters</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.velocities_step">lammps_step.velocities_step module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.velocities_step">lammps_step.velocities_step module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.velocities_step.VelocitiesStep"><code class="docutils literal notranslate"><span class="pre">VelocitiesStep</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.velocities_step.VelocitiesStep.create_node"><code class="docutils literal notranslate"><span class="pre">VelocitiesStep.create_node()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.velocities_step.VelocitiesStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">VelocitiesStep.create_tk_node()</span></code></a></li>
@@ -3097,13 +3168,13 @@ A step for running molecular dynamics using LAMMPS.</p>
   </nav></div>
 
   <div class="sidebar-secondary-item">
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/api/lammps_step.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div></div>
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/api/lammps_step.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
 
 </div></div>
               
@@ -3118,8 +3189,8 @@ A step for running molecular dynamics using LAMMPS.</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -3131,7 +3202,7 @@ A step for running molecular dynamics using LAMMPS.</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.19.0.
 </p></div>
       
     </div>
