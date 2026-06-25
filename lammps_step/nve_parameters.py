@@ -59,7 +59,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
                 "without hydrogen, helium, lithium or other light "
                 "elements, 2-4 fs steps are reasonable. The "
                 "timestep needs to be less than 1/10 the highest "
-                "frequency. 10^14 Hz is a period if 10 fs, and "
+                "frequency. 10^14 Hz is a period of 10 fs, and "
                 "corresponds to a frequency of 3,300 wavenumbers or "
                 "a wavelength of 3 micrometers.\n"
                 "You can enter a value or use the choices, which pick a "
@@ -94,6 +94,15 @@ class NVE_Parameters(lammps_step.EnergyParameters):
                 "\nYou can ask for no sampling, give a specific interval, "
                 "or allow the system the choose for you."
             ),
+        },
+        "constrain X-H bonds": {
+            "default": "no",
+            "kind": "boolean",
+            "default_units": None,
+            "enumeration": ("yes", "no"),
+            "format_string": "",
+            "description": "Constrain (shake) X-H bonds:",
+            "help_text": "Whether to fix the length of X-H bonds using SHAKE/RATTLE",
         },
     }
     trajectories = {

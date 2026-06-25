@@ -31,6 +31,9 @@ minimization_style = {
 
 
 class Minimization(lammps_step.Energy):
+    # Geometry optimization: the model-chemistry task for the provenance label.
+    task = "OPT"
+
     def __init__(self, flowchart=None, title="Minimization", extension=None):
         """Initialize the node"""
 
@@ -497,10 +500,11 @@ class Minimization(lammps_step.Energy):
 
         timestep = lammps_step.to_lammps_units(P["timestep"], quantity="time")
 
-        thermo_properties = (
-            "fmax fnorm press etotal ke pe ebond eangle edihed eimp evdwl etail ecoul "
-            "elong"
-        )
+        thermo_properties = "fmax fnorm press etotal ke pe"
+        # PyTorch (MACE) and MDI/QM get their energy from an external engine, so
+        # LAMMPS computes no bonded/pair terms -- those columns would be all zero.
+        if self.parent.ff_form() not in ("PyTorch", "MDI/QM"):
+            thermo_properties += " ebond eangle edihed eimp evdwl etail ecoul elong"
         if self.parent.have_dreiding_hbonds:
             thermo_properties += " v_N_hbond v_E_hbond"
 

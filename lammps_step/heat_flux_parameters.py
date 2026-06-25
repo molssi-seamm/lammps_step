@@ -37,7 +37,7 @@ class HeatFluxParameters(NVE_Parameters):
     parameters : {str: {str: str}}
         A dictionary containing the parameters for the current step.
         Each key of the dictionary is a dictionary that contains the
-        the following keys:
+        the following keys
 
     parameters["default"] :
         The default value of the parameter, used to reset it.
@@ -51,7 +51,7 @@ class HeatFluxParameters(NVE_Parameters):
         is a convergence criterion for an optimizer, custom values like "normal",
         "precise", etc, might be adequate. In addition, any parameter can be set to a
         variable of expression, indicated by having "$" or "=" as the first character
-         in the field. For example, $OPTIMIZER_CONV.
+        in the field. For example, $OPTIMIZER_CONV.
 
     parameters["default_units"] : str
         The default units, used for resetting the value.

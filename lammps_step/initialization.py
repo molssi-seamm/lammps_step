@@ -175,6 +175,8 @@ class Initialization(seamm.Node):
             return self.OpenKIM_input()
         if ff_form == "PyTorch":
             return self.PyTorch_input()
+        if ff_form == "MDI/QM":
+            return self.MDI_QM_input()
 
         # Valence forcefield...
         ff = self.get_variable("_forcefield")
@@ -817,6 +819,77 @@ class Initialization(seamm.Node):
             lines.append("pair_style          mace no_domain_decomposition")
             lines.append(
                 f"pair_coeff          * * {model} {' '.join(eex['atom types'])}"
+            )
+
+        # Set up standard variables
+        for variable in thermo_variables:
+            lines.append("variable            {var} equal {var}".format(var=variable))
+
+        if periodicity == 3:
+            # For convenience, stress
+            for d in ("xx", "yy", "zz", "xy", "xz", "yz"):
+                lines.append(f"variable            s{d} equal -p{d}")
+
+        self.description.append(__(string, indent=self.indent + 4 * " "))
+
+        return (lines, eex)
+
+    def MDI_QM_input(self):
+        """Initialization input for QM-MD driven over MDI (e.g. MOPAC).
+
+        The QM engine computes the energy and forces for the whole system, so
+        LAMMPS needs no ``pair_style`` -- only ``fix mdi/qm``, which ships the
+        atoms to the engine and receives the forces back, exactly as the MACE
+        ``.mace.pt`` path does. The engine itself is launched by ``lammps.py``;
+        here we only write the input deck. See
+        campaigns/2026-06-22/NOTES_C.rst.
+        """
+        # Get the configuration
+        system_db = self.get_variable("_system_db")
+        configuration = system_db.system.configuration
+
+        # Get the (simple) energy expression for these systems. It is generic
+        # (elements / coordinates / masses), so the PyTorch helper is reused.
+        eex = self.PyTorch_energy_expression()
+
+        lammps_step.set_lammps_unit_system("metal")
+
+        lines = []
+        lines.append("")
+        lines.append(f"# {self.header}")
+        lines.append("")
+        lines.append("units               metal")
+        lines.append("atom_style          atomic")
+        lines.append("atom_modify         map yes")
+        lines.append("newton              on")
+        lines.append("")
+
+        periodicity = configuration.periodicity
+        if periodicity == 0:
+            lines.append("boundary            s s s")
+            string = "Setup for a molecular (non-periodic) system."
+        elif periodicity == 3:
+            lines.append("boundary            p p p")
+            string = "Setup for a periodic (crystalline or fluid) system."
+        else:
+            raise RuntimeError(
+                "The LAMMPS step can only handle 0-"
+                " or 3-D periodicity at the moment!"
+            )
+        lines.append("")
+        lines.append("fix                 prop all property/atom mol")
+        lines.append("read_data           structure.dat fix prop NULL Molecules")
+        lines.append("")
+        lines.append("#    Drive the QM engine over MDI (no pair style needed)")
+        if periodicity == 0:
+            lines.append(
+                "fix                 mdi_fix all mdi/qm elements "
+                f"{' '.join(eex['atom types'])}"
+            )
+        else:
+            lines.append(
+                "fix                 mdi_fix all mdi/qm virial yes elements "
+                f"{' '.join(eex['atom types'])}"
             )
 
         # Set up standard variables
