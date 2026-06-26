@@ -766,6 +766,7 @@ class LAMMPS(seamm.Node):
             hostname="localhost",
             charge=configuration.charge,
             multiplicity=configuration.spin_multiplicity,
+            n_atoms=configuration.n_atoms,
         )
         return engine_argv, port
 

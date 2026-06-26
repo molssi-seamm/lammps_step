@@ -50,6 +50,7 @@ class _FakeStep:
         hostname="localhost",
         charge=0,
         multiplicity=1,
+        n_atoms=None,
     ):
         self.calls.append(
             {
@@ -60,6 +61,7 @@ class _FakeStep:
                 "hostname": hostname,
                 "charge": charge,
                 "multiplicity": multiplicity,
+                "n_atoms": n_atoms,
             }
         )
         return [*self._argv, "--port", str(port)]
@@ -162,7 +164,9 @@ def test_ff_form_classical_path_unchanged():
 def test_mdi_engine_launch_happy_path():
     step = _FakeStep(["conda", "run", "-n", "seamm-mopac", "python", "mopac_mdi.py"])
     me = _fake_self(mc=_mc(mdi_capable=True), step=step)
-    configuration = types.SimpleNamespace(periodicity=0, charge=-1, spin_multiplicity=2)
+    configuration = types.SimpleNamespace(
+        periodicity=0, charge=-1, spin_multiplicity=2, n_atoms=45
+    )
 
     engine_argv, port = LAMMPS._mdi_engine_launch(me, configuration)
 
@@ -193,7 +197,9 @@ def test_mdi_engine_launch_rejects_non_mdi_capable():
 def test_mdi_engine_launch_rejects_periodic_without_periodic_mdi():
     step = _FakeStep(["python", "engine.py"])
     me = _fake_self(mc=_mc(mdi_capable=True, periodic_mdi=False), step=step)
-    configuration = types.SimpleNamespace(periodicity=3, charge=0, spin_multiplicity=1)
+    configuration = types.SimpleNamespace(
+        periodicity=3, charge=0, spin_multiplicity=1, n_atoms=45
+    )
     with pytest.raises(ValueError, match="periodic"):
         LAMMPS._mdi_engine_launch(me, configuration)
     assert step.calls == []
@@ -202,7 +208,9 @@ def test_mdi_engine_launch_rejects_periodic_without_periodic_mdi():
 def test_mdi_engine_launch_allows_periodic_when_validated():
     step = _FakeStep(["python", "engine.py"])
     me = _fake_self(mc=_mc(mdi_capable=True, periodic_mdi=True), step=step)
-    configuration = types.SimpleNamespace(periodicity=3, charge=0, spin_multiplicity=1)
+    configuration = types.SimpleNamespace(
+        periodicity=3, charge=0, spin_multiplicity=1, n_atoms=45
+    )
     engine_argv, port = LAMMPS._mdi_engine_launch(me, configuration)
     assert len(step.calls) == 1
     assert engine_argv[-2:] == ["--port", str(port)]
