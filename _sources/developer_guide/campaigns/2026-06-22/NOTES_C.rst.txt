@@ -6,14 +6,19 @@ Phase C -- LAMMPS driver: read ``_model_chemistry``, launch the MDI engine
 
 :Author: Paul Saxe (with Claude)
 :Date: 2026-06-24
-:Status: MDI launch path verified end-to-end (2026-06-24). ``lammps.py`` +
-         ``initialization.py`` + unit tests (14 pass). A MOPAC PM6-ORG
-         minimization of a 45-atom C/O/H system ran via MDI: engine launched in
-         seamm-mopac, connected over TCP, drove LAMMPS, exited cleanly (energy
-         -266.7 -> -309.5 kcal/mol). Open: the CG min stopped at
-         "linesearch alpha is zero" (not converged) -- investigate QM
-         energy/force consistency, separate from the launch path. NOTE: reusing
-         the lammps.ini ``code`` key requires it to be a plain LAMMPS launcher
+:Status: Verified end-to-end (2026-06-25). MOPAC PM6-ORG drives LAMMPS via MDI
+         across minimization, NVT, and NPT (e.g. NPT on 20 cyclohexane
+         molecules, density ~0.89 g/mL): engine launched in seamm-mopac,
+         connected over TCP, exited cleanly. Results carry the proper
+         model-chemistry label ``LAMMPS:MD|MOPAC:SQM@PM6-ORG`` (``LAMMPS:OPT|...``
+         for minimization). ``lammps.py`` + ``initialization.py`` + unit tests
+         pass; single-core/thread and clean thermo refinements applied. Shipped
+         on ``dev``/``main``.
+
+         Notes carried forward: an early CG minimization stopped at "linesearch
+         alpha is zero" (not converged) -- a QM energy/force-consistency question
+         separate from the launch path, worth revisiting. And: reusing the
+         lammps.ini ``code`` key requires it to be a plain LAMMPS launcher
          (``mpirun -n {NTASKS} lmp``), NOT a MACE-style MDI/MPMD line -- that is
          what ``gpu-code`` is for.
 :Campaign: LAMMPS + MOPAC/xTB QM-MD via MDI
