@@ -766,6 +766,7 @@ class LAMMPS(seamm.Node):
             hostname="localhost",
             charge=configuration.charge,
             multiplicity=configuration.spin_multiplicity,
+            n_atoms=configuration.n_atoms,
         )
         return engine_argv, port
 
@@ -1340,9 +1341,31 @@ class LAMMPS(seamm.Node):
                         cmd.extend(config["cmd-args"].split())
                 cmd.extend(["-in", "input.dat"])
 
+            # Say what is producing the forces -- a model chemistry (QM via
+            # MDI) or a forcefield -- before reporting the parallelism.
+            if ff_form == "MDI/QM":
+                printer.important(
+                    __(
+                        f"Using the model chemistry '{self.model}', with the "
+                        "energy and forces evaluated by a QM engine via MDI.",
+                        indent=4 * " ",
+                    )
+                )
+            elif self.model:
+                printer.important(f"    Using the forcefield '{self.model}'.")
+
             if "NGPUS" in ce:
                 printer.important(
                     f"    LAMMPS running with {np} processes and {ce['NGPUS']} gpus."
+                )
+            elif ff_form == "MDI/QM":
+                printer.important(
+                    __(
+                        "LAMMPS is running on a single core: it only drives the "
+                        "dynamics and does very little work, while the QM engine "
+                        "(reached over MDI) computes the energy and forces.",
+                        indent=4 * " ",
+                    )
                 )
             else:
                 printer.important(f"    LAMMPS using MPI with {np} processes.")

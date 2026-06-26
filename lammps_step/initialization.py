@@ -877,6 +877,14 @@ class Initialization(seamm.Node):
                 " or 3-D periodicity at the moment!"
             )
         lines.append("")
+        # With no pair_style, LAMMPS has no cutoff to size its communication
+        # shell / neighbor bins from, so it warns ("Communication cutoff is
+        # 0.0 ... Atoms may get lost") and disables atom sorting. Give it a
+        # small communication cutoff so atom migration and ghost exchange work
+        # (essential for periodic and multi-processor runs); this is not a
+        # model interaction range -- the QM engine still gets the whole system.
+        lines.append("comm_modify         cutoff 2.0")
+        lines.append("")
         lines.append("fix                 prop all property/atom mol")
         lines.append("read_data           structure.dat fix prop NULL Molecules")
         lines.append("")
