@@ -1,6 +1,18 @@
 =======
 History
 =======
+2026.9.14.3 -- Say plainly when a GPU job has too few tasks
+    * A GPU command that drives an MDI engine runs the engine and LAMMPS as separate
+      MPI ranks, and those counts are written into the command rather than derived from
+      the allocation. A job given fewer tasks than the command asks for died inside
+      mpirun with "All nodes which are allocated for this job are already filled",
+      which mentions neither MDI, nor tasks, nor what to change -- and arrived wrapped
+      in a conda error, obscuring it further. The step now checks before launching and
+      says how many tasks the command needs, how many the job was given, and that an
+      MDI run needs one task for the engine and one for the driver.
+    * This is easy to hit now that queues can offer a GPU count at submission:
+      requesting one GPU and one task looks reasonable but cannot work.
+
 2026.9.14.2 -- Bugfix: could run on a GPU the scheduler had not allocated
     * When choosing GPUs the step asked GPUtil, which reads nvidia-smi and therefore
       reports physical GPU indices, knowing nothing about CUDA_VISIBLE_DEVICES. A

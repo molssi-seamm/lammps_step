@@ -68,6 +68,40 @@ def _get_script_version(text):
     return None, None
 
 
+def _required_mpi_slots(command):
+    """Total MPI ranks an mpirun command line asks for, or None if unknown.
+
+    An MDI run is MPMD -- ``mpirun -np 1 <engine> : -np 1 <driver>`` -- so what
+    it needs is the *sum* of the -np values across the colon-separated
+    segments, not the largest of them. Returns None when any count is a
+    template placeholder such as {NTASKS}, which is only resolved later and is
+    derived from the allocation anyway, or when there is no -np at all.
+    """
+    total = 0
+    found = False
+    tokens = command.replace(":", " : ").split()
+    for i, token in enumerate(tokens[:-1]):
+        if token in ("-np", "-n", "--np", "--n"):
+            try:
+                total += int(tokens[i + 1])
+            except ValueError:
+                return None
+            found = True
+    return total if found else None
+
+
+def _allocated_mpi_slots():
+    """MPI tasks the batch system allocated, or None if not under one."""
+    for variable in ("SLURM_NTASKS", "SLURM_NPROCS"):
+        value = os.environ.get(variable)
+        if value:
+            try:
+                return int(value)
+            except ValueError:
+                pass
+    return None
+
+
 def _cuda_visible_devices():
     """Parse CUDA_VISIBLE_DEVICES into the physical GPU indices it exposes.
 
@@ -1393,6 +1427,29 @@ class LAMMPS(seamm.Node):
                     # console script. An existing ~/SEAMM/bin/mace_mdi.py is
                     # left alone, so a configuration pointing at it keeps
                     # working -- on a copy that predates several fixes.
+                    # An MDI gpu-code launches the engine and the driver as
+                    # separate MPI ranks. Those counts are written into the
+                    # command, not derived from the allocation, so a job given
+                    # fewer tasks than the command asks for dies inside mpirun
+                    # with "All nodes which are allocated for this job are
+                    # already filled" -- which says nothing about MDI, ranks or
+                    # how to fix it. Say it plainly instead, before launching.
+                    needed = _required_mpi_slots(config.get("gpu-code", ""))
+                    allocated = _allocated_mpi_slots()
+                    if (
+                        needed is not None
+                        and allocated is not None
+                        and needed > allocated
+                    ):
+                        raise RuntimeError(
+                            f"The GPU command in lammps.ini needs {needed} MPI "
+                            f"tasks, but this job was allocated {allocated}. An "
+                            "MDI run needs one task for the engine and one for "
+                            "the LAMMPS driver, so asking for a single GPU is "
+                            "not enough on its own. Resubmit requesting at "
+                            f"least {needed} tasks (ntasks)."
+                        )
+
                     if "mace_mdi.py" in config.get("gpu-code", ""):
                         printer.important(
                             __(
