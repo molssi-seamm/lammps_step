@@ -22,6 +22,48 @@ will ensure both that it is installed and up-to-date.
 
 .. _SEAMM Installer: https://molssi-seamm.github.io/installation/index.html
 
+Machine-learned forcefields
+===========================
+Running a machine-learned forcefield (MACE and friends) needs more than the
+plug-in. LAMMPS does not evaluate the model itself: it drives a separate engine
+process over the `MolSSI Driver Interface`_ (MDI), and the engine does the work
+on the GPU. That requires a LAMMPS built with MDI support, which the
+conda-forge build does not provide -- with it, ``lmp -mdi ...`` is rejected on
+the command line and the run then hangs rather than failing. The environment
+created by::
+
+  lammps-step-installer install
+
+therefore takes LAMMPS from the ``paulsaxe`` channel and pins an OpenMPI build,
+so that LAMMPS and the Python engine share one MPI and one MDI library.
+
+That gives you LAMMPS, not the model. PyTorch and the MACE stack are installed
+separately, because the correct PyTorch build depends on your machine's NVIDIA
+driver and so cannot be pinned in advance. In the LAMMPS environment, run::
+
+  lammps-mdi install-ml
+
+which detects the driver, installs a matching PyTorch, then vesin,
+cuEquivariance and MACE. Add ``--dry-run`` first if you would like to see what
+it will do. Check the result at any time with ``lammps-mdi check``.
+
+Finally, tell SEAMM how to launch the pair by setting ``gpu-code`` in
+``~/SEAMM/lammps.ini``; the file ships with a commented example. A minimal
+version, which launches the MACE engine and the LAMMPS driver together::
+
+  gpu-code = mpirun \
+      -np 1 ~/SEAMM/bin/mdi_bind.sh \
+      mace-mdi -mdi "-role ENGINE -name MACE -method MPI" --dtype "float32" \
+      : -np 1 ~/SEAMM/bin/mdi_bind.sh \
+      lmp -mdi "-role DRIVER -name LAMMPS -method MPI"
+
+``mdi_bind.sh`` is installed into ``~/SEAMM/bin`` the first time the step runs.
+It is not replaced afterwards, since it is meant to be edited -- the CPU
+topology in it is machine-specific. If a newer version ships with the plug-in
+you will get a message saying so; delete the file to pick the new one up.
+
+.. _MolSSI Driver Interface: https://molssi-mdi.github.io/MDI_Library/
+
 Example of NPT dynamics
 =======================
 Here is a simple example that will run quickly on any machine, including your

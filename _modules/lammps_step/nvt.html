@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nvt &#8212; SEAMM LAMMPS Plug-in 2026.6.26 documentation</title>
+    <title>lammps_step.nvt &#8212; SEAMM LAMMPS Plug-in 2026.9.14 documentation</title>
   
   
   
@@ -26,8 +26,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -35,10 +35,10 @@
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=c224919a" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
 
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=47d802d6"></script>
+    <script src="../../_static/documentation_options.js?v=936b28ff"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.6.26" />
+  <meta name="docsearch:version" content="2026.9.14" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -488,7 +488,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <h1>Source code for lammps_step.nvt</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
-<span class="sd">&quot;&quot;&quot;NVT (canonical) dynamics in LAMMPS&quot;&quot;&quot;</span>
+<span class="sd">"""NVT (canonical) dynamics in LAMMPS"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 
@@ -502,32 +502,32 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 <span class="n">job</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">()</span>
-<span class="n">printer</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">(</span><span class="s2">&quot;lammps&quot;</span><span class="p">)</span>
+<span class="n">printer</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">(</span><span class="s2">"lammps"</span><span class="p">)</span>
 
 <span class="n">thermostat_metadata</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;Nose-Hoover&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;documentation&quot;</span><span class="p">:</span> <span class="s2">&quot;http://lammps.sandia.gov/doc/fix_nvt.html&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;references&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Shinoda&quot;</span><span class="p">,</span> <span class="s2">&quot;Tuckerman&quot;</span><span class="p">],</span>
+    <span class="s2">"Nose-Hoover"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"documentation"</span><span class="p">:</span> <span class="s2">"http://lammps.sandia.gov/doc/fix_nvt.html"</span><span class="p">,</span>
+        <span class="s2">"references"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"Shinoda"</span><span class="p">,</span> <span class="s2">"Tuckerman"</span><span class="p">],</span>
     <span class="p">},</span>
-    <span class="s2">&quot;Berendsen&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;documentation&quot;</span><span class="p">:</span> <span class="s2">&quot;http://lammps.sandia.gov/doc/fix_temp_berendsen.html&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;references&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Berendsen&quot;</span><span class="p">],</span>
+    <span class="s2">"Berendsen"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"documentation"</span><span class="p">:</span> <span class="s2">"http://lammps.sandia.gov/doc/fix_temp_berendsen.html"</span><span class="p">,</span>
+        <span class="s2">"references"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"Berendsen"</span><span class="p">],</span>
     <span class="p">},</span>
-    <span class="s2">&quot;canonical sampling, velocity rescaling (csvr)&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;documentation&quot;</span><span class="p">:</span> <span class="s2">&quot;http://lammps.sandia.gov/doc/fix_temp_csvr.html&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;references&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Bussi1&quot;</span><span class="p">],</span>
+    <span class="s2">"canonical sampling, velocity rescaling (csvr)"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"documentation"</span><span class="p">:</span> <span class="s2">"http://lammps.sandia.gov/doc/fix_temp_csvr.html"</span><span class="p">,</span>
+        <span class="s2">"references"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"Bussi1"</span><span class="p">],</span>
     <span class="p">},</span>
-    <span class="s2">&quot;canonical sampling, langevin dynamics (csld)&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;documentation&quot;</span><span class="p">:</span> <span class="s2">&quot;http://lammps.sandia.gov/doc/fix_temp_csvr.html&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;references&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Bussi2&quot;</span><span class="p">],</span>
+    <span class="s2">"canonical sampling, langevin dynamics (csld)"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"documentation"</span><span class="p">:</span> <span class="s2">"http://lammps.sandia.gov/doc/fix_temp_csvr.html"</span><span class="p">,</span>
+        <span class="s2">"references"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"Bussi2"</span><span class="p">],</span>
     <span class="p">},</span>
-    <span class="s2">&quot;velocity rescaling&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;documentation&quot;</span><span class="p">:</span> <span class="s2">&quot;http://lammps.sandia.gov/doc/fix_temp_rescale.html&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;references&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">"velocity rescaling"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"documentation"</span><span class="p">:</span> <span class="s2">"http://lammps.sandia.gov/doc/fix_temp_rescale.html"</span><span class="p">,</span>
+        <span class="s2">"references"</span><span class="p">:</span> <span class="p">[],</span>
     <span class="p">},</span>
-    <span class="s2">&quot;Langevin&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;documentation&quot;</span><span class="p">:</span> <span class="s2">&quot;http://lammps.sandia.gov/doc/fix_langevin.html&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;references&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Schneider&quot;</span><span class="p">,</span> <span class="s2">&quot;Dunweg&quot;</span><span class="p">],</span>
+    <span class="s2">"Langevin"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"documentation"</span><span class="p">:</span> <span class="s2">"http://lammps.sandia.gov/doc/fix_langevin.html"</span><span class="p">,</span>
+        <span class="s2">"references"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"Schneider"</span><span class="p">,</span> <span class="s2">"Dunweg"</span><span class="p">],</span>
     <span class="p">},</span>
 <span class="p">}</span>
 
@@ -538,13 +538,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">flowchart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;NVT dynamics&quot;</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">"NVT dynamics"</span><span class="p">,</span>
         <span class="n">extension</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the node&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Initialize the node"""</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating NVT </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Creating NVT </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">flowchart</span><span class="o">=</span><span class="n">flowchart</span><span class="p">,</span>
@@ -553,22 +553,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;NVT after super init, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"NVT after super init, </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;NVT dynamics step in LAMMPS&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s2">"NVT dynamics step in LAMMPS"</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;NVT.init() creating NVT_Parameters object&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"NVT.init() creating NVT_Parameters object"</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_calculation</span> <span class="o">=</span> <span class="s2">&quot;nvt&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calculation</span> <span class="o">=</span> <span class="s2">"nvt"</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">metadata</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">NVT_Parameters</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;NVT.init() completed&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"NVT.init() completed"</span><span class="p">)</span>
 
 <div class="viewcode-block" id="NVT.description_text">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nvt.NVT.description_text">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">description_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a short description of this step.</span>
+<span class="w">        </span><span class="sd">"""Return a short description of this step.</span>
 
 <span class="sd">        Return a nicely formatted string describing what this step will</span>
 <span class="sd">        do.</span>
@@ -577,7 +577,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">            P: a dictionary of parameter values, which may be variables</span>
 <span class="sd">                or final values. If None, then the parameters values will</span>
 <span class="sd">                be used as is.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">P</span><span class="p">:</span>
             <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values_to_dict</span><span class="p">()</span>
@@ -586,90 +586,90 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <span class="c1"># What will we do?</span>
 
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;T0&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;T1&quot;</span><span class="p">]:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{time}</span><span class="s2"> of canonical (NVT) dynamics at </span><span class="si">{T0}</span><span class="s2"> &quot;</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"T0"</span><span class="p">]</span> <span class="o">==</span> <span class="n">P</span><span class="p">[</span><span class="s2">"T1"</span><span class="p">]:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s2">"</span><span class="si">{time}</span><span class="s2"> of canonical (NVT) dynamics at </span><span class="si">{T0}</span><span class="s2"> "</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="s2">&quot;</span><span class="si">{time}</span><span class="s2"> of canonical (NVT) dynamics starting &quot;</span>
-                <span class="s2">&quot; at </span><span class="si">{T0}</span><span class="s2">, going to </span><span class="si">{T1}</span><span class="s2">, &quot;</span>
+                <span class="s2">"</span><span class="si">{time}</span><span class="s2"> of canonical (NVT) dynamics starting "</span>
+                <span class="s2">" at </span><span class="si">{T0}</span><span class="s2">, going to </span><span class="si">{T1}</span><span class="s2">, "</span>
             <span class="p">)</span>
-        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;using a timestep of </span><span class="si">{timestep}</span><span class="s2"> &quot;</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">"using a timestep of </span><span class="si">{timestep}</span><span class="s2"> "</span>
         <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;. The temperature will be controlled &quot;</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">". The temperature will be controlled "</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;using the </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2"> forcefield. The temperature will be controlled &quot;</span>
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Nose-Hoover&quot;</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;using  a Nose-Hoover thermostat.&quot;</span>
-            <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Tchain&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;3&quot;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Tloop&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;1&quot;</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"using the </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2"> forcefield. The temperature will be controlled "</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Nose-Hoover"</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">"using  a Nose-Hoover thermostat."</span>
+            <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"Tchain"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"3"</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"Tloop"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"1"</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
-                        <span class="s2">&quot; The thermostat will use a chain of </span><span class="si">{Tchain}</span><span class="s2"> &quot;</span>
-                        <span class="s2">&quot;thermostats with </span><span class="si">{Tloop}</span><span class="s2"> subcycles and a &quot;</span>
+                        <span class="s2">" The thermostat will use a chain of </span><span class="si">{Tchain}</span><span class="s2"> "</span>
+                        <span class="s2">"thermostats with </span><span class="si">{Tloop}</span><span class="s2"> subcycles and a "</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
-                        <span class="s2">&quot; The thermostat will use a chain of </span><span class="si">{Tchain}</span><span class="s2"> &quot;</span>
-                        <span class="s2">&quot;thermostats and a &quot;</span>
+                        <span class="s2">" The thermostat will use a chain of </span><span class="si">{Tchain}</span><span class="s2"> "</span>
+                        <span class="s2">"thermostats and a "</span>
                     <span class="p">)</span>
-            <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Tloop&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;1&quot;</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot; The thermostat will use </span><span class="si">{Tloop}</span><span class="s2"> subcycles and a &quot;</span>
+            <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"Tloop"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"1"</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">+=</span> <span class="s2">" The thermostat will use </span><span class="si">{Tloop}</span><span class="s2"> subcycles and a "</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot; The thermostat will use a &quot;</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;drag factor of </span><span class="si">{drag}</span><span class="s2">.&quot;</span>
-        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Berendsen&quot;</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;using a Berendsen thermostat with a damping time &quot;</span> <span class="s2">&quot;of </span><span class="si">{Tdamp}</span><span class="s2">&quot;</span>
-        <span class="k">elif</span> <span class="s2">&quot;csvr&quot;</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]:</span>
+                <span class="n">text</span> <span class="o">+=</span> <span class="s2">" The thermostat will use a "</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">"drag factor of </span><span class="si">{drag}</span><span class="s2">."</span>
+        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Berendsen"</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">"using a Berendsen thermostat with a damping time "</span> <span class="s2">"of </span><span class="si">{Tdamp}</span><span class="s2">"</span>
+        <span class="k">elif</span> <span class="s2">"csvr"</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]:</span>
             <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
-                <span class="s2">&quot;using a canonical sampling thermostat using velocity &quot;</span>
-                <span class="s2">&quot;rescaling (CSVR) with a damping time of </span><span class="si">{Tdamp}</span><span class="s2"> and &quot;</span>
-                <span class="s2">&quot;a </span><span class="si">{seed}</span><span class="s2">.&quot;</span>
+                <span class="s2">"using a canonical sampling thermostat using velocity "</span>
+                <span class="s2">"rescaling (CSVR) with a damping time of </span><span class="si">{Tdamp}</span><span class="s2"> and "</span>
+                <span class="s2">"a </span><span class="si">{seed}</span><span class="s2">."</span>
             <span class="p">)</span>
-        <span class="k">elif</span> <span class="s2">&quot;csld&quot;</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]:</span>
+        <span class="k">elif</span> <span class="s2">"csld"</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]:</span>
             <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
-                <span class="s2">&quot;using a canonical sampling thermostat using Langevin &quot;</span>
-                <span class="s2">&quot;dynamics (CSLD) with a damping time of </span><span class="si">{Tdamp}</span><span class="s2"> and &quot;</span>
-                <span class="s2">&quot;a </span><span class="si">{seed}</span><span class="s2">.&quot;</span>
+                <span class="s2">"using a canonical sampling thermostat using Langevin "</span>
+                <span class="s2">"dynamics (CSLD) with a damping time of </span><span class="si">{Tdamp}</span><span class="s2"> and "</span>
+                <span class="s2">"a </span><span class="si">{seed}</span><span class="s2">."</span>
             <span class="p">)</span>
-        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;velocity rescaling&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"velocity rescaling"</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
-                <span class="s2">&quot;using velocity rescaling every </span><span class="si">{frequency}</span><span class="s2"> with a &quot;</span>
-                <span class="s2">&quot;temperature window of </span><span class="si">{window}</span><span class="s2">.&quot;</span>
+                <span class="s2">"using velocity rescaling every </span><span class="si">{frequency}</span><span class="s2"> with a "</span>
+                <span class="s2">"temperature window of </span><span class="si">{window}</span><span class="s2">."</span>
             <span class="p">)</span>
-            <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;fraction&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"fraction"</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
-                    <span class="s2">&quot; The velocities will only be scaled a fraction &quot;</span>
-                    <span class="s2">&quot;(</span><span class="si">{fraction}</span><span class="s2">) of the amount needed to fully correct &quot;</span>
-                    <span class="s2">&quot;the temperature.&quot;</span>
+                    <span class="s2">" The velocities will only be scaled a fraction "</span>
+                    <span class="s2">"(</span><span class="si">{fraction}</span><span class="s2">) of the amount needed to fully correct "</span>
+                    <span class="s2">"the temperature."</span>
                 <span class="p">)</span>
-        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Langevin&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Langevin"</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
-                <span class="s2">&quot;using a Langevin thermostat with a damping time &quot;</span>
-                <span class="s2">&quot;of </span><span class="si">{Tdamp}</span><span class="s2"> and a </span><span class="si">{seed}</span><span class="s2">&quot;</span>
+                <span class="s2">"using a Langevin thermostat with a damping time "</span>
+                <span class="s2">"of </span><span class="si">{Tdamp}</span><span class="s2"> and a </span><span class="si">{seed}</span><span class="s2">"</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;using the thermostat given by </span><span class="si">{thermostat}</span><span class="s2">&quot;</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">"using the thermostat given by </span><span class="si">{thermostat}</span><span class="s2">"</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">P</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">P</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="NVT.describe">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nvt.NVT.describe">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">json_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write out information about what this node will do</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">json_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Write out information about what this node will do</span>
 <span class="sd">        If json_dict is passed in, add information to that dictionary</span>
 <span class="sd">        so that it can be written out by the controller as appropriate.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
-        <span class="c1"># Can&#39;t call super() because it will print too much</span>
+        <span class="c1"># Can't call super() because it will print too much</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">visited</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">job</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
+        <span class="n">job</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
         <span class="n">next_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
 
         <span class="c1"># Local copies of variables in a dictionary</span>
 
         <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values_to_dict</span><span class="p">()</span>
         <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">description_text</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
-        <span class="n">job</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="s2">&quot;    &quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">P</span><span class="p">))</span>
+        <span class="n">job</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="s2">"    "</span><span class="p">,</span> <span class="o">**</span><span class="n">P</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">next_node</span></div>
 
@@ -677,7 +677,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <div class="viewcode-block" id="NVT.get_input">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nvt.NVT.get_input">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the input for an NVT dynamics run in LAMMPS&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get the input for an NVT dynamics run in LAMMPS"""</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -687,164 +687,164 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">_</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">()</span>
 
         <span class="c1"># Fix variables with special cases</span>
-        <span class="n">timestep</span><span class="p">,</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestep</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">])</span>
+        <span class="n">timestep</span><span class="p">,</span> <span class="n">P</span><span class="p">[</span><span class="s2">"timestep"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestep</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"timestep"</span><span class="p">])</span>
 
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;seed&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;random&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"seed"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"random"</span><span class="p">:</span>
             <span class="c1"># Apparently the seed must be no larger than 900,000,000</span>
-            <span class="n">P</span><span class="p">[</span><span class="s2">&quot;seed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mi">899999999</span><span class="p">)</span>
+            <span class="n">P</span><span class="p">[</span><span class="s2">"seed"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mi">899999999</span><span class="p">)</span>
 
         <span class="c1"># Have to fix formatting for printing...</span>
         <span class="n">PP</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">PP</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">units_class</span><span class="p">):</span>
-                <span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;{:~P}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                <span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"{:~P}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="n">__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description_text</span><span class="p">(</span><span class="n">PP</span><span class="p">),</span> <span class="o">**</span><span class="n">PP</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+            <span class="n">__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description_text</span><span class="p">(</span><span class="n">PP</span><span class="p">),</span> <span class="o">**</span><span class="n">PP</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
         <span class="p">)</span>
 
-        <span class="n">time</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"time"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"time"</span><span class="p">)</span>
         <span class="n">nsteps</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">time</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">)</span>
 
-        <span class="n">T0</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;T0&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;temperature&quot;</span><span class="p">)</span>
-        <span class="n">T1</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;T1&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;temperature&quot;</span><span class="p">)</span>
-        <span class="n">Tdamp</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;Tdamp&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+        <span class="n">T0</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"T0"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"temperature"</span><span class="p">)</span>
+        <span class="n">T1</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"T1"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"temperature"</span><span class="p">)</span>
+        <span class="n">Tdamp</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"Tdamp"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"time"</span><span class="p">)</span>
 
         <span class="n">form</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">ff_form</span><span class="p">()</span>
-        <span class="n">thermo_properties</span> <span class="o">=</span> <span class="s2">&quot;time temp press etotal ke pe&quot;</span>
+        <span class="n">thermo_properties</span> <span class="o">=</span> <span class="s2">"time temp press etotal ke pe"</span>
         <span class="c1"># PyTorch (MACE) and MDI/QM get their energy from an external engine, so</span>
         <span class="c1"># LAMMPS computes no bonded/pair terms -- those columns would be all zero.</span>
-        <span class="k">if</span> <span class="n">form</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;PyTorch&quot;</span><span class="p">,</span> <span class="s2">&quot;MDI/QM&quot;</span><span class="p">):</span>
-            <span class="n">thermo_properties</span> <span class="o">+=</span> <span class="s2">&quot; ebond eangle edihed eimp evdwl etail ecoul elong&quot;</span>
-        <span class="n">properties</span> <span class="o">=</span> <span class="s2">&quot;v_time v_temp v_press v_etotal v_ke v_pe v_epair&quot;</span>
-        <span class="n">title2</span> <span class="o">=</span> <span class="s2">&quot;tstep t T P Etot Eke Epe Epair&quot;</span>
+        <span class="k">if</span> <span class="n">form</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"PyTorch"</span><span class="p">,</span> <span class="s2">"MDI/QM"</span><span class="p">):</span>
+            <span class="n">thermo_properties</span> <span class="o">+=</span> <span class="s2">" ebond eangle edihed eimp evdwl etail ecoul elong"</span>
+        <span class="n">properties</span> <span class="o">=</span> <span class="s2">"v_time v_temp v_press v_etotal v_ke v_pe v_epair"</span>
+        <span class="n">title2</span> <span class="o">=</span> <span class="s2">"tstep t T P Etot Eke Epe Epair"</span>
         <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">properties</span> <span class="o">+=</span> <span class="s2">&quot; v_sxx v_syy v_szz v_syz v_sxz v_sxy&quot;</span>
-            <span class="n">title2</span> <span class="o">+=</span> <span class="s2">&quot; Sxx Syy Szz Syz Sxz Sxy&quot;</span>
+            <span class="n">properties</span> <span class="o">+=</span> <span class="s2">" v_sxx v_syy v_szz v_syz v_sxz v_sxy"</span>
+            <span class="n">title2</span> <span class="o">+=</span> <span class="s2">" Sxx Syy Szz Syz Sxz Sxy"</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">have_dreiding_hbonds</span><span class="p">:</span>
-            <span class="n">thermo_properties</span> <span class="o">+=</span> <span class="s2">&quot; v_N_hbond v_E_hbond&quot;</span>
-            <span class="n">properties</span> <span class="o">+=</span> <span class="s2">&quot; v_N_hbond v_E_hbond&quot;</span>
-            <span class="n">title2</span> <span class="o">+=</span> <span class="s2">&quot; N_hbond E_hbond&quot;</span>
+            <span class="n">thermo_properties</span> <span class="o">+=</span> <span class="s2">" v_N_hbond v_E_hbond"</span>
+            <span class="n">properties</span> <span class="o">+=</span> <span class="s2">" v_N_hbond v_E_hbond"</span>
+            <span class="n">title2</span> <span class="o">+=</span> <span class="s2">" N_hbond E_hbond"</span>
 
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;reset_timestep      0&quot;</span><span class="p">)</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;timestep            </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">timestep</span><span class="p">))</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;thermo_style        custom </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">thermo_properties</span><span class="p">))</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;thermo              </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">nsteps</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"# </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"reset_timestep      0"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"timestep            </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">timestep</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"thermo_style        custom </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">thermo_properties</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"thermo              </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">nsteps</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)))</span>
 
         <span class="n">ncomputes</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">ndumps</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">nfixes</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Nose-Hoover&quot;</span><span class="p">:</span>
-            <span class="n">Tchain</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Tchain&quot;</span><span class="p">]</span>
-            <span class="n">Tloop</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;Tloop&quot;</span><span class="p">]</span>
-            <span class="n">drag</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;drag&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Nose-Hoover"</span><span class="p">:</span>
+            <span class="n">Tchain</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"Tchain"</span><span class="p">]</span>
+            <span class="n">Tloop</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"Tloop"</span><span class="p">]</span>
+            <span class="n">drag</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"drag"</span><span class="p">]</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> all nvt &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
-                <span class="o">+</span> <span class="s2">&quot;temp </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">Tdamp</span><span class="p">)</span>
-                <span class="o">+</span> <span class="s2">&quot;tchain </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Tchain</span><span class="p">)</span>
-                <span class="o">+</span> <span class="s2">&quot;tloop </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Tloop</span><span class="p">)</span>
-                <span class="o">+</span> <span class="s2">&quot;drag </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">drag</span><span class="p">)</span>
+                <span class="s2">"fix                 </span><span class="si">{}</span><span class="s2"> all nvt "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">"temp </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">Tdamp</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">"tchain </span><span class="si">{}</span><span class="s2"> "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Tchain</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">"tloop </span><span class="si">{}</span><span class="s2"> "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Tloop</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">"drag </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">drag</span><span class="p">)</span>
             <span class="p">)</span>
-        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Berendsen&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Berendsen"</span><span class="p">:</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
-                <span class="o">+</span> <span class="s2">&quot;all temp/berendsen &quot;</span>
-                <span class="o">+</span> <span class="s2">&quot; </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">Tdamp</span><span class="p">)</span>
+                <span class="s2">"fix                 </span><span class="si">{}</span><span class="s2"> "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">"all temp/berendsen "</span>
+                <span class="o">+</span> <span class="s2">" </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">Tdamp</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;all nve&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="s2">&quot;csvr&quot;</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]:</span>
-            <span class="n">seed</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;seed&quot;</span><span class="p">]</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"fix                 </span><span class="si">{}</span><span class="s2"> "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"all nve"</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">"csvr"</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]:</span>
+            <span class="n">seed</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"seed"</span><span class="p">]</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
-                <span class="o">+</span> <span class="s2">&quot;all temp/csvr &quot;</span>
-                <span class="o">+</span> <span class="s2">&quot; </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">Tdamp</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+                <span class="s2">"fix                 </span><span class="si">{}</span><span class="s2"> "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">"all temp/csvr "</span>
+                <span class="o">+</span> <span class="s2">" </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">Tdamp</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;all nve&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="s2">&quot;csld&quot;</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]:</span>
-            <span class="n">seed</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;seed&quot;</span><span class="p">]</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"fix                 </span><span class="si">{}</span><span class="s2"> "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"all nve"</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">"csld"</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]:</span>
+            <span class="n">seed</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"seed"</span><span class="p">]</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
-                <span class="o">+</span> <span class="s2">&quot;all temp/csld &quot;</span>
-                <span class="o">+</span> <span class="s2">&quot; </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">Tdamp</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+                <span class="s2">"fix                 </span><span class="si">{}</span><span class="s2"> "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">"all temp/csld "</span>
+                <span class="o">+</span> <span class="s2">" </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">Tdamp</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;all nve&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;velocity rescaling&quot;</span><span class="p">:</span>
-            <span class="n">frequency</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;frequency&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"fix                 </span><span class="si">{}</span><span class="s2"> "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"all nve"</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"velocity rescaling"</span><span class="p">:</span>
+            <span class="n">frequency</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"frequency"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"time"</span><span class="p">)</span>
 
             <span class="n">nevery</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">nsteps</span> <span class="o">/</span> <span class="p">(</span><span class="n">frequency</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">)))</span>
-            <span class="n">window</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;window&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;temperature&quot;</span><span class="p">)</span>
-            <span class="n">fraction</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;fraction&quot;</span><span class="p">]</span>
+            <span class="n">window</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"window"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"temperature"</span><span class="p">)</span>
+            <span class="n">fraction</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"fraction"</span><span class="p">]</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
-                <span class="o">+</span> <span class="s2">&quot;all temp/rescale &quot;</span>
-                <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nevery</span><span class="p">,</span> <span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">fraction</span><span class="p">)</span>
+                <span class="s2">"fix                 </span><span class="si">{}</span><span class="s2"> "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">"all temp/rescale "</span>
+                <span class="o">+</span> <span class="s2">"</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nevery</span><span class="p">,</span> <span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">fraction</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;all nve&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Langevin&quot;</span><span class="p">:</span>
-            <span class="n">seed</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;seed&quot;</span><span class="p">]</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"fix                 </span><span class="si">{}</span><span class="s2"> "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"all nve"</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Langevin"</span><span class="p">:</span>
+            <span class="n">seed</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"seed"</span><span class="p">]</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
-                <span class="o">+</span> <span class="s2">&quot;all langevin &quot;</span>
-                <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">Tdamp</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+                <span class="s2">"fix                 </span><span class="si">{}</span><span class="s2"> "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">"all langevin "</span>
+                <span class="o">+</span> <span class="s2">"</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">T0</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">Tdamp</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fix                 </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;all nve&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"fix                 </span><span class="si">{}</span><span class="s2"> "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"all nve"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="s2">&quot;Don&#39;t recognize temperature control &quot;</span> <span class="o">+</span> <span class="s2">&quot;&#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">])</span>
+                <span class="s2">"Don't recognize temperature control "</span> <span class="o">+</span> <span class="s2">"'</span><span class="si">{}</span><span class="s2">'"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">])</span>
             <span class="p">)</span>
 
         <span class="c1"># Add the citation for the thermostat</span>
-        <span class="k">for</span> <span class="n">citation</span> <span class="ow">in</span> <span class="n">thermostat_metadata</span><span class="p">[</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;thermostat&quot;</span><span class="p">]][</span><span class="s2">&quot;references&quot;</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">citation</span> <span class="ow">in</span> <span class="n">thermostat_metadata</span><span class="p">[</span><span class="n">P</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]][</span><span class="s2">"references"</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">references</span><span class="o">.</span><span class="n">cite</span><span class="p">(</span>
                 <span class="n">raw</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_bibliography</span><span class="p">[</span><span class="n">citation</span><span class="p">],</span>
                 <span class="n">alias</span><span class="o">=</span><span class="n">citation</span><span class="p">,</span>
-                <span class="n">module</span><span class="o">=</span><span class="s2">&quot;lammps_step&quot;</span><span class="p">,</span>
+                <span class="n">module</span><span class="o">=</span><span class="s2">"lammps_step"</span><span class="p">,</span>
                 <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                <span class="n">note</span><span class="o">=</span><span class="s2">&quot;Citation for thermostat.&quot;</span><span class="p">,</span>
+                <span class="n">note</span><span class="o">=</span><span class="s2">"Citation for thermostat."</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="c1"># For the heat flux, if requested, we need extra input</span>
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;heat flux&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;never&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"heat flux"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"never"</span><span class="p">:</span>
             <span class="c1"># Unit conversion factor</span>
-            <span class="k">if</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">get_lammps_unit_system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;metal&quot;</span><span class="p">:</span>
-                <span class="n">factor</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;eV/Å^2/ps&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">get_lammps_unit_system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"metal"</span><span class="p">:</span>
+                <span class="n">factor</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">"eV/Å^2/ps"</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">factor</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;kcal/Å^2/fs/mol&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;kJ&quot;</span><span class="p">)</span>
+                    <span class="n">Q_</span><span class="p">(</span><span class="s2">"kcal/Å^2/fs/mol"</span><span class="p">)</span> <span class="o">/</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">"kcal/mol"</span><span class="p">)</span> <span class="o">*</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">"kcal/mol"</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"kJ"</span><span class="p">)</span>
                 <span class="p">)</span>
-            <span class="n">factor</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;W/m^2&quot;</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">"W/m^2"</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">compute             KE all ke/atom</span>
 <span class="s2">compute             PE all pe/atom</span>
 
-<span class="s2">#          centroid doesn&#39;t work with kspace, so split into pair and non-pair parts</span>
+<span class="s2">#          centroid doesn't work with kspace, so split into pair and non-pair parts</span>
 
 <span class="s2">compute             S_p all stress/atom NULL pair kspace</span>
 <span class="s2">compute             S_b all centroid/stress/atom NULL bond angle dihedral improper</span>
 <span class="s2">compute             flux_p all heat/flux KE PE S_p</span>
 <span class="s2">compute             flux_b all heat/flux KE PE S_b</span>
 
-<span class="s2">#          Conversion from kcal/Å^2/fs/mol to W/m^2&quot;)</span>
+<span class="s2">#          Conversion from kcal/Å^2/fs/mol to W/m^2")</span>
 
 <span class="s2">variable            factor equal </span><span class="si">{</span><span class="n">factor</span><span class="si">}</span>
 <span class="s2">variable            Jx equal v_factor*(c_flux_p[1]+c_flux_b[1])/vol</span>
 <span class="s2">variable            Jy equal v_factor*(c_flux_p[2]+c_flux_b[2])/vol</span>
 <span class="s2">variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">"""</span><span class="p">)</span>
 
         <span class="c1"># summary output written 10 times during run so we can see progress</span>
         <span class="n">nevery</span> <span class="o">=</span> <span class="mi">10</span>
@@ -852,76 +852,76 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">nrepeat</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nfreq</span> <span class="o">/</span> <span class="n">nevery</span><span class="p">)</span>
         <span class="n">nfreq</span> <span class="o">=</span> <span class="n">nevery</span> <span class="o">*</span> <span class="n">nrepeat</span>
         <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+nvt_summary.trj&quot;</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+nvt_summary.trj"</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;fix                 </span><span class="si">{</span><span class="n">nfixes</span><span class="si">}</span><span class="s2"> all ave/time </span><span class="si">{</span><span class="n">nevery</span><span class="si">}</span><span class="s2"> 1 </span><span class="si">{</span><span class="n">nfreq</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;                       </span><span class="si">{</span><span class="n">properties</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="s2">&quot;                       off 2 &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;                       file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"fix                 </span><span class="si">{</span><span class="n">nfixes</span><span class="si">}</span><span class="s2"> all ave/time </span><span class="si">{</span><span class="n">nevery</span><span class="si">}</span><span class="s2"> 1 </span><span class="si">{</span><span class="n">nfreq</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="sa">f</span><span class="s2">"                       </span><span class="si">{</span><span class="n">properties</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="s2">"                       off 2 &amp;</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="sa">f</span><span class="s2">"                       file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
         <span class="c1"># instantaneous output written for averaging</span>
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;sampling&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"sampling"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"none"</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="n">__</span><span class="p">(</span>
-                    <span class="s2">&quot;The run will be </span><span class="si">{nsteps:n}</span><span class="s2"> steps of dynamics.&quot;</span><span class="p">,</span>
+                    <span class="s2">"The run will be </span><span class="si">{nsteps:n}</span><span class="s2"> steps of dynamics."</span><span class="p">,</span>
                     <span class="n">nsteps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span>
-                    <span class="n">indent</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                    <span class="n">indent</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">sampling</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;sampling&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+            <span class="n">sampling</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"sampling"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"time"</span><span class="p">)</span>
             <span class="n">nevery</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">sampling</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
             <span class="n">nrepeat</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="n">nfreq</span> <span class="o">=</span> <span class="n">nevery</span> <span class="o">*</span> <span class="n">nrepeat</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
 
-            <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">nevery</span> <span class="o">*</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">to_compact</span><span class="p">()</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">nevery</span> <span class="o">*</span> <span class="n">P</span><span class="p">[</span><span class="s2">"timestep"</span><span class="p">])</span><span class="o">.</span><span class="n">to_compact</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">T0</span> <span class="o">==</span> <span class="n">T1</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
                     <span class="p">{</span>
-                        <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;LAMMPS&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;NVT&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span>
-                        <span class="s2">&quot;tunits&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">u</span><span class="p">),</span>
-                        <span class="s2">&quot;nsteps&quot;</span><span class="p">:</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">nevery</span><span class="p">,</span>
-                        <span class="s2">&quot;T&quot;</span><span class="p">:</span> <span class="n">T0</span><span class="p">,</span>
-                        <span class="s2">&quot;Tunits&quot;</span><span class="p">:</span> <span class="s2">&quot;K&quot;</span><span class="p">,</span>
+                        <span class="s2">"code"</span><span class="p">:</span> <span class="s2">"LAMMPS"</span><span class="p">,</span>
+                        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"NVT"</span><span class="p">,</span>
+                        <span class="s2">"dt"</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span>
+                        <span class="s2">"tunits"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">u</span><span class="p">),</span>
+                        <span class="s2">"nsteps"</span><span class="p">:</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">nevery</span><span class="p">,</span>
+                        <span class="s2">"T"</span><span class="p">:</span> <span class="n">T0</span><span class="p">,</span>
+                        <span class="s2">"Tunits"</span><span class="p">:</span> <span class="s2">"K"</span><span class="p">,</span>
                     <span class="p">},</span>
-                    <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">),</span>
+                    <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">","</span><span class="p">,</span> <span class="s2">":"</span><span class="p">),</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
                     <span class="p">{</span>
-                        <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;LAMMPS&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;NVT&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span>
-                        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">u</span><span class="p">),</span>
-                        <span class="s2">&quot;nsteps&quot;</span><span class="p">:</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">nevery</span><span class="p">,</span>
-                        <span class="s2">&quot;T0&quot;</span><span class="p">:</span> <span class="n">T0</span><span class="p">,</span>
-                        <span class="s2">&quot;T1&quot;</span><span class="p">:</span> <span class="n">T1</span><span class="p">,</span>
-                        <span class="s2">&quot;Tunits&quot;</span><span class="p">:</span> <span class="s2">&quot;K&quot;</span><span class="p">,</span>
+                        <span class="s2">"code"</span><span class="p">:</span> <span class="s2">"LAMMPS"</span><span class="p">,</span>
+                        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"NVT"</span><span class="p">,</span>
+                        <span class="s2">"dt"</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span>
+                        <span class="s2">"units"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">u</span><span class="p">),</span>
+                        <span class="s2">"nsteps"</span><span class="p">:</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">nevery</span><span class="p">,</span>
+                        <span class="s2">"T0"</span><span class="p">:</span> <span class="n">T0</span><span class="p">,</span>
+                        <span class="s2">"T1"</span><span class="p">:</span> <span class="n">T1</span><span class="p">,</span>
+                        <span class="s2">"Tunits"</span><span class="p">:</span> <span class="s2">"K"</span><span class="p">,</span>
                     <span class="p">},</span>
-                    <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">),</span>
+                    <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">","</span><span class="p">,</span> <span class="s2">":"</span><span class="p">),</span>
                 <span class="p">)</span>
-            <span class="n">title1</span> <span class="o">=</span> <span class="s2">&quot;!MolSSI trajectory 2.0 &quot;</span> <span class="o">+</span> <span class="n">text</span>
-            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+nvt_state.trj&quot;</span>
+            <span class="n">title1</span> <span class="o">=</span> <span class="s2">"!MolSSI trajectory 2.0 "</span> <span class="o">+</span> <span class="n">text</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+nvt_state.trj"</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;fix                 </span><span class="si">{</span><span class="n">nfixes</span><span class="si">}</span><span class="s2"> all ave/time </span><span class="si">{</span><span class="n">nevery</span><span class="si">}</span><span class="s2"> 1 </span><span class="si">{</span><span class="n">nfreq</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;                       </span><span class="si">{</span><span class="n">properties</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="s2">&quot;                       off 2 &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;                       title1 &#39;</span><span class="si">{</span><span class="n">title1</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;                       title2 &#39;</span><span class="si">{</span><span class="n">title2</span><span class="si">}</span><span class="s2">&#39; &amp;</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;                       file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"fix                 </span><span class="si">{</span><span class="n">nfixes</span><span class="si">}</span><span class="s2"> all ave/time </span><span class="si">{</span><span class="n">nevery</span><span class="si">}</span><span class="s2"> 1 </span><span class="si">{</span><span class="n">nfreq</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="sa">f</span><span class="s2">"                       </span><span class="si">{</span><span class="n">properties</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="s2">"                       off 2 &amp;</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="sa">f</span><span class="s2">"                       title1 '</span><span class="si">{</span><span class="n">title1</span><span class="si">}</span><span class="s2">' &amp;</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="sa">f</span><span class="s2">"                       title2 '</span><span class="si">{</span><span class="n">title2</span><span class="si">}</span><span class="s2">' &amp;</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="sa">f</span><span class="s2">"                       file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="n">__</span><span class="p">(</span>
                     <span class="p">(</span>
-                        <span class="s2">&quot;The run will be </span><span class="si">{nsteps:,d}</span><span class="s2"> steps of dynamics &quot;</span>
-                        <span class="s2">&quot;sampled every </span><span class="si">{nevery:n}</span><span class="s2"> steps.&quot;</span>
+                        <span class="s2">"The run will be </span><span class="si">{nsteps:,d}</span><span class="s2"> steps of dynamics "</span>
+                        <span class="s2">"sampled every </span><span class="si">{nevery:n}</span><span class="s2"> steps."</span>
                     <span class="p">),</span>
                     <span class="n">nsteps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span>
                     <span class="n">nevery</span><span class="o">=</span><span class="n">nevery</span><span class="p">,</span>
-                    <span class="n">indent</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                    <span class="n">indent</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">)</span>
 
@@ -931,38 +931,38 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">extras</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;shake&quot;</span> <span class="ow">in</span> <span class="n">extras</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">extras</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">"shake"</span> <span class="ow">in</span> <span class="n">extras</span><span class="p">:</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extras</span><span class="p">[</span><span class="s2">&quot;shake&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">))</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extras</span><span class="p">[</span><span class="s2">"shake"</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">))</span>
 
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;run                 </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nsteps</span><span class="p">))</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+nvt.dump&quot;</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"run                 </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nsteps</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+nvt.dump"</span>
         <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;write_dump         all custom  </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> id xu yu zu vx vy vz&quot;</span>
-                <span class="s2">&quot; modify flush yes sort id&quot;</span>
+                <span class="sa">f</span><span class="s2">"write_dump         all custom  </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> id xu yu zu vx vy vz"</span>
+                <span class="s2">" modify flush yes sort id"</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;write_dump         all custom  </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> id xsu ysu zsu vx vy vz&quot;</span>
-                <span class="s2">&quot; modify flush yes sort id&quot;</span>
+                <span class="sa">f</span><span class="s2">"write_dump         all custom  </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> id xsu ysu zsu vx vy vz"</span>
+                <span class="s2">" modify flush yes sort id"</span>
             <span class="p">)</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ncomputes</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;uncompute           </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"uncompute           </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndumps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;undump              </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"undump              </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nfixes</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unfix               </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unfix               </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;script&quot;</span><span class="p">:</span> <span class="n">lines</span><span class="p">,</span>
-            <span class="s2">&quot;postscript&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="s2">&quot;use python&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">"script"</span><span class="p">:</span> <span class="n">lines</span><span class="p">,</span>
+            <span class="s2">"postscript"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"use python"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
         <span class="p">}</span></div>
 </div>
 
@@ -995,8 +995,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1008,7 +1008,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.19.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
 </p></div>
       
     </div>

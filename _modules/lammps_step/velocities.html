@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.velocities &#8212; SEAMM LAMMPS Plug-in 2026.6.26 documentation</title>
+    <title>lammps_step.velocities &#8212; SEAMM LAMMPS Plug-in 2026.9.14 documentation</title>
   
   
   
@@ -26,8 +26,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -35,10 +35,10 @@
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=c224919a" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
 
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=47d802d6"></script>
+    <script src="../../_static/documentation_options.js?v=936b28ff"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.6.26" />
+  <meta name="docsearch:version" content="2026.9.14" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -488,13 +488,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <h1>Source code for lammps_step.velocities</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
-<span class="sd">&quot;&quot;&quot;Set the velocities on the atoms</span>
+<span class="sd">"""Set the velocities on the atoms</span>
 
 <span class="sd">ToDo:</span>
-<span class="sd">    * This does not support groups other than &quot;all&quot; yet. Once it does, setting</span>
+<span class="sd">    * This does not support groups other than "all" yet. Once it does, setting</span>
 <span class="sd">        specific velocities would also be useful.</span>
 <span class="sd">    * Gaussian or normal distributions...</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">lammps_step</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -506,41 +506,41 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 <span class="n">job</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">()</span>
-<span class="n">printer</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">(</span><span class="s2">&quot;lammps&quot;</span><span class="p">)</span>
+<span class="n">printer</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">(</span><span class="s2">"lammps"</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="Velocities">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.velocities.Velocities">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Velocities</span><span class="p">(</span><span class="n">seamm</span><span class="o">.</span><span class="n">Node</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flowchart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Velocities&quot;</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the node&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flowchart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Velocities"</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Initialize the node"""</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating Velocities </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Creating Velocities </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">flowchart</span><span class="o">=</span><span class="n">flowchart</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;Set the initial velocities on the atoms&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s2">"Set the initial velocities on the atoms"</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">VelocitiesParameters</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">header</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A printable header for this section of output&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot;Step </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""A printable header for this section of output"""</span>
+        <span class="k">return</span> <span class="s2">"Step </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">"."</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The semantic version of this module.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""The semantic version of this module."""</span>
         <span class="k">return</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">__version__</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">git_revision</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The git version of this module.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""The git version of this module."""</span>
         <span class="k">return</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">__git_revision__</span>
 
 <div class="viewcode-block" id="Velocities.description_text">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.velocities.Velocities.description_text">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">description_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a short description of this step.</span>
+<span class="w">        </span><span class="sd">"""Return a short description of this step.</span>
 
 <span class="sd">        Return a nicely formatted string describing what this step will</span>
 <span class="sd">        do.</span>
@@ -549,114 +549,114 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">            P: a dictionary of parameter values, which may be variables</span>
 <span class="sd">                or final values. If None, then the parameters values will</span>
 <span class="sd">                be used as is.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">P</span><span class="p">:</span>
             <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values_to_dict</span><span class="p">()</span>
 
-        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;Set the velocities to give a temperature </span><span class="si">{T}</span><span class="s2"> &quot;</span> <span class="s2">&quot;by </span><span class="si">{method}</span><span class="s2">.&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">"Set the velocities to give a temperature </span><span class="si">{T}</span><span class="s2"> "</span> <span class="s2">"by </span><span class="si">{method}</span><span class="s2">."</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_expr</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;remove_momentum&quot;</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_expr</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"remove_momentum"</span><span class="p">]):</span>
             <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
-                <span class="s2">&quot; Whether to remove translational or rotational &quot;</span>
-                <span class="s2">&quot;momentum will be determined at runtime by &quot;</span>
-                <span class="s2">&quot;&#39;</span><span class="si">{remove_momentum}</span><span class="s2">&#39;&quot;</span>
+                <span class="s2">" Whether to remove translational or rotational "</span>
+                <span class="s2">"momentum will be determined at runtime by "</span>
+                <span class="s2">"'</span><span class="si">{remove_momentum}</span><span class="s2">'"</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot; LAMMPS will </span><span class="si">{remove_momentum}</span><span class="s2">&quot;</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">" LAMMPS will </span><span class="si">{remove_momentum}</span><span class="s2">"</span>
 
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;method&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;scaling current velocities&quot;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;seed&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;random&quot;</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot; The random number generator will be initialized randomly.&quot;</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"method"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"scaling current velocities"</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"seed"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"random"</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">+=</span> <span class="s2">" The random number generator will be initialized randomly."</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
-                    <span class="s2">&quot; The random number generator will be initialized &quot;</span>
-                    <span class="s2">&quot;with the seed &#39;</span><span class="si">{seed}</span><span class="s2">&#39;.&quot;</span>
+                    <span class="s2">" The random number generator will be initialized "</span>
+                    <span class="s2">"with the seed '</span><span class="si">{seed}</span><span class="s2">'."</span>
                 <span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">P</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">P</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="Velocities.get_input">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.velocities.Velocities.get_input">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the input for setting the velocities in LAMMPS&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get the input for setting the velocities in LAMMPS"""</span>
         <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">current_values_to_dict</span><span class="p">(</span>
             <span class="n">context</span><span class="o">=</span><span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">_data</span>
         <span class="p">)</span>
         <span class="c1"># Fix variables that need attention</span>
-        <span class="k">if</span> <span class="s2">&quot;default&quot;</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;remove_momentum&quot;</span><span class="p">]:</span>
-            <span class="n">system_db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_system_db&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"default"</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">"remove_momentum"</span><span class="p">]:</span>
+            <span class="n">system_db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"_system_db"</span><span class="p">)</span>
             <span class="n">configuration</span> <span class="o">=</span> <span class="n">system_db</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">configuration</span>
             <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-                <span class="n">P</span><span class="p">[</span><span class="s2">&quot;remove_momentum&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="s2">&quot;remove translational but not rotational momentum&quot;</span>
+                <span class="n">P</span><span class="p">[</span><span class="s2">"remove_momentum"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">"remove translational but not rotational momentum"</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">P</span><span class="p">[</span><span class="s2">&quot;remove_momentum&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="s2">&quot;remove both translational and rotational momentum&quot;</span>
+                <span class="n">P</span><span class="p">[</span><span class="s2">"remove_momentum"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">"remove both translational and rotational momentum"</span>
                 <span class="p">)</span>
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;seed&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;random&quot;</span><span class="p">:</span>
-            <span class="n">P</span><span class="p">[</span><span class="s2">&quot;seed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mi">2</span><span class="o">**</span><span class="mi">31</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"seed"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"random"</span><span class="p">:</span>
+            <span class="n">P</span><span class="p">[</span><span class="s2">"seed"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mi">2</span><span class="o">**</span><span class="mi">31</span><span class="p">)</span>
 
         <span class="c1"># Have to fix formatting for printing...</span>
         <span class="n">PP</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">PP</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">units_class</span><span class="p">):</span>
-                <span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;{:~P}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                <span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"{:~P}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description_text</span><span class="p">(</span><span class="n">PP</span><span class="p">),</span> <span class="o">**</span><span class="n">PP</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">))]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description_text</span><span class="p">(</span><span class="n">PP</span><span class="p">),</span> <span class="o">**</span><span class="n">PP</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">))]</span>
 
         <span class="c1"># Get the input lines</span>
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"# </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;remove_momentum&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;remove translational but not rotational momentum&quot;</span><span class="p">:</span>
-            <span class="n">remove_translations</span> <span class="o">=</span> <span class="s2">&quot;yes&quot;</span>
-            <span class="n">remove_rotations</span> <span class="o">=</span> <span class="s2">&quot;no&quot;</span>
-        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;remove_momentum&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;remove rotational but not translational momentum&quot;</span><span class="p">:</span>
-            <span class="n">remove_translations</span> <span class="o">=</span> <span class="s2">&quot;no&quot;</span>
-            <span class="n">remove_rotations</span> <span class="o">=</span> <span class="s2">&quot;yes&quot;</span>
-        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;remove_momentum&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span>
-            <span class="s2">&quot;remove both translational and rotational momentum&quot;</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"remove_momentum"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"remove translational but not rotational momentum"</span><span class="p">:</span>
+            <span class="n">remove_translations</span> <span class="o">=</span> <span class="s2">"yes"</span>
+            <span class="n">remove_rotations</span> <span class="o">=</span> <span class="s2">"no"</span>
+        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"remove_momentum"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"remove rotational but not translational momentum"</span><span class="p">:</span>
+            <span class="n">remove_translations</span> <span class="o">=</span> <span class="s2">"no"</span>
+            <span class="n">remove_rotations</span> <span class="o">=</span> <span class="s2">"yes"</span>
+        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"remove_momentum"</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span>
+            <span class="s2">"remove both translational and rotational momentum"</span>
         <span class="p">):</span>
-            <span class="n">remove_translations</span> <span class="o">=</span> <span class="s2">&quot;yes&quot;</span>
-            <span class="n">remove_rotations</span> <span class="o">=</span> <span class="s2">&quot;yes&quot;</span>
-        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;remove_momentum&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span>
-            <span class="s2">&quot;remove neither translational nor rotational momentum&quot;</span>
+            <span class="n">remove_translations</span> <span class="o">=</span> <span class="s2">"yes"</span>
+            <span class="n">remove_rotations</span> <span class="o">=</span> <span class="s2">"yes"</span>
+        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"remove_momentum"</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span>
+            <span class="s2">"remove neither translational nor rotational momentum"</span>
         <span class="p">):</span>
-            <span class="n">remove_translations</span> <span class="o">=</span> <span class="s2">&quot;no&quot;</span>
-            <span class="n">remove_rotations</span> <span class="o">=</span> <span class="s2">&quot;no&quot;</span>
+            <span class="n">remove_translations</span> <span class="o">=</span> <span class="s2">"no"</span>
+            <span class="n">remove_rotations</span> <span class="o">=</span> <span class="s2">"no"</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="s2">&quot;Don&#39;t recognize &#39;remove_momentum&#39; of &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;remove_momentum&quot;</span><span class="p">])</span>
+                <span class="s2">"Don't recognize 'remove_momentum' of '</span><span class="si">{}</span><span class="s2">'"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"remove_momentum"</span><span class="p">])</span>
             <span class="p">)</span>
 
-        <span class="n">T</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;T&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;K&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"T"</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"K"</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
 
-        <span class="k">if</span> <span class="s2">&quot;random&quot;</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;method&quot;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="s2">"random"</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">"method"</span><span class="p">]:</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="s2">&quot;velocity            all create </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> mom </span><span class="si">{}</span><span class="s2"> rot </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;seed&quot;</span><span class="p">],</span> <span class="n">remove_translations</span><span class="p">,</span> <span class="n">remove_rotations</span>
+                <span class="s2">"velocity            all create </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> mom </span><span class="si">{}</span><span class="s2"> rot </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="p">[</span><span class="s2">"seed"</span><span class="p">],</span> <span class="n">remove_translations</span><span class="p">,</span> <span class="n">remove_rotations</span>
                 <span class="p">)</span>
             <span class="p">)</span>
-        <span class="k">elif</span> <span class="s2">&quot;scaling&quot;</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;method&quot;</span><span class="p">]:</span>
+        <span class="k">elif</span> <span class="s2">"scaling"</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">"method"</span><span class="p">]:</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="s2">&quot;velocity            all scale </span><span class="si">{}</span><span class="s2"> mom </span><span class="si">{}</span><span class="s2"> rot </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="s2">"velocity            all scale </span><span class="si">{}</span><span class="s2"> mom </span><span class="si">{}</span><span class="s2"> rot </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                     <span class="n">T</span><span class="p">,</span> <span class="n">remove_translations</span><span class="p">,</span> <span class="n">remove_rotations</span>
                 <span class="p">)</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="s2">&quot;Velocity method &#39;</span><span class="si">{}</span><span class="s2">&#39; not supported yet&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;method&quot;</span><span class="p">])</span>
+                <span class="s2">"Velocity method '</span><span class="si">{}</span><span class="s2">' not supported yet"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"method"</span><span class="p">])</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;script&quot;</span><span class="p">:</span> <span class="n">lines</span><span class="p">,</span>
-            <span class="s2">&quot;postscript&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="s2">&quot;use python&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">"script"</span><span class="p">:</span> <span class="n">lines</span><span class="p">,</span>
+            <span class="s2">"postscript"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"use python"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
         <span class="p">}</span></div>
 </div>
 
@@ -689,8 +689,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -702,7 +702,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.19.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
 </p></div>
       
     </div>

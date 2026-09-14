@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.installer &#8212; SEAMM LAMMPS Plug-in 2026.6.26 documentation</title>
+    <title>lammps_step.installer &#8212; SEAMM LAMMPS Plug-in 2026.9.14 documentation</title>
   
   
   
@@ -26,8 +26,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -35,10 +35,10 @@
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=c224919a" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
 
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=47d802d6"></script>
+    <script src="../../_static/documentation_options.js?v=936b28ff"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.6.26" />
+  <meta name="docsearch:version" content="2026.9.14" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -488,11 +488,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <h1>Source code for lammps_step.installer</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
-<span class="sd">&quot;&quot;&quot;Installer for the LAMMPS plug-in.</span>
+<span class="sd">"""Installer for the LAMMPS plug-in.</span>
 
 <span class="sd">This handles any further installation needed after installing the Python</span>
 <span class="sd">package `lammps-step`.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -507,7 +507,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <div class="viewcode-block" id="Installer">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.installer.Installer">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Installer</span><span class="p">(</span><span class="n">seamm_installer</span><span class="o">.</span><span class="n">InstallerBase</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle further installation needed after installing lammps-step.</span>
+<span class="w">    </span><span class="sd">"""Handle further installation needed after installing lammps-step.</span>
 
 <span class="sd">    The Python package `lammps-step` should already be installed, using `pip`,</span>
 <span class="sd">    `conda`, or similar. This plug-in-specific installer then checks for the</span>
@@ -543,28 +543,28 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <span class="sd">        #. They can be installed in a separate environment, `seamm-lammps` by</span>
 <span class="sd">           default.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">):</span>
         <span class="c1"># Call the base class initialization, which sets up the commandline</span>
         <span class="c1"># parser, amongst other things.</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Initializing the LAMMPS installer object.&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Initializing the LAMMPS installer object."</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">environment</span> <span class="o">=</span> <span class="s2">&quot;seamm-lammps&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">section</span> <span class="o">=</span> <span class="s2">&quot;lammps-step&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">executables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lmp&quot;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">resource_path</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="s2">&quot;lammps_step&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">environment</span> <span class="o">=</span> <span class="s2">"seamm-lammps"</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">section</span> <span class="o">=</span> <span class="s2">"lammps-step"</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">executables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"lmp"</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_path</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="s2">"lammps_step"</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"data"</span>
 
         <span class="c1"># The environment.yaml file for Conda installations.</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;data directory: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">environment_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_path</span> <span class="o">/</span> <span class="s2">&quot;seamm-lammps.yml&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"data directory: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">environment_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_path</span> <span class="o">/</span> <span class="s2">"seamm-lammps.yml"</span>
 
 <div class="viewcode-block" id="Installer.exe_version">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.installer.Installer.exe_version">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">exe_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the version of the LAMMPS executable.</span>
+<span class="w">        </span><span class="sd">"""Get the version of the LAMMPS executable.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -573,19 +573,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        &quot;LAMMPS&quot;, str</span>
-<span class="sd">            The version reported by LAMMPS, or &#39;unknown&#39;.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">environment</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;conda-environment&quot;</span><span class="p">]</span>
-        <span class="n">conda</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;conda&quot;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">environment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;~&quot;</span><span class="p">:</span>
+<span class="sd">        "LAMMPS", str</span>
+<span class="sd">            The version reported by LAMMPS, or 'unknown'.</span>
+<span class="sd">        """</span>
+        <span class="n">environment</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"conda-environment"</span><span class="p">]</span>
+        <span class="n">conda</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"conda"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">environment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"~"</span><span class="p">:</span>
             <span class="n">environment</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">environment</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">())</span>
-            <span class="n">command</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">conda</span><span class="si">}</span><span class="s2">&#39; run --live-stream -p &#39;</span><span class="si">{</span><span class="n">environment</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">conda</span><span class="si">}</span><span class="s2">' run --live-stream -p '</span><span class="si">{</span><span class="n">environment</span><span class="si">}</span><span class="s2">'"</span>
         <span class="k">elif</span> <span class="n">Path</span><span class="p">(</span><span class="n">environment</span><span class="p">)</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
-            <span class="n">command</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">conda</span><span class="si">}</span><span class="s2">&#39; run --live-stream -p &#39;</span><span class="si">{</span><span class="n">environment</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">conda</span><span class="si">}</span><span class="s2">' run --live-stream -p '</span><span class="si">{</span><span class="n">environment</span><span class="si">}</span><span class="s2">'"</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">command</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">conda</span><span class="si">}</span><span class="s2">&#39; run --live-stream -n &#39;</span><span class="si">{</span><span class="n">environment</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
-        <span class="n">command</span> <span class="o">+=</span> <span class="s2">&quot; lmp -h&quot;</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">conda</span><span class="si">}</span><span class="s2">' run --live-stream -n '</span><span class="si">{</span><span class="n">environment</span><span class="si">}</span><span class="s2">'"</span>
+        <span class="n">command</span> <span class="o">+=</span> <span class="s2">" lmp -h"</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
                 <span class="n">command</span><span class="p">,</span>
@@ -595,15 +595,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;unknown&quot;</span>
+            <span class="n">version</span> <span class="o">=</span> <span class="s2">"unknown"</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;unknown&quot;</span>
+            <span class="n">version</span> <span class="o">=</span> <span class="s2">"unknown"</span>
             <span class="n">lines</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">line</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">version</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">6</span><span class="p">:])</span>
+                <span class="n">version</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">6</span><span class="p">:])</span>
 
-        <span class="k">return</span> <span class="s2">&quot;LAMMPS&quot;</span><span class="p">,</span> <span class="n">version</span></div>
+        <span class="k">return</span> <span class="s2">"LAMMPS"</span><span class="p">,</span> <span class="n">version</span></div>
 </div>
 
 </pre></div>
@@ -635,8 +635,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -648,7 +648,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.19.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
 </p></div>
       
     </div>
