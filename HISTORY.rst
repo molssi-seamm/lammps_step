@@ -1,6 +1,22 @@
 =======
 History
 =======
+2026.9.14 -- Bugfix: machine-learned forcefields could not run at all
+    * The conda environment asked for conda-forge's LAMMPS, which is built without
+      the MDI package. Since machine-learned forcefields are run by driving a separate
+      engine over MDI, they could not work: LAMMPS rejected the '-mdi' option and then
+      hung until the job hit its time limit rather than reporting the error. The
+      environment now uses an MDI-enabled LAMMPS, and OpenMPI, so that LAMMPS and the
+      engine share one MPI and one MDI library.
+    * PyTorch and the MACE stack are deliberately not part of that environment, as the
+      correct PyTorch build depends on the machine's NVIDIA driver. Install them with
+      'lammps-mdi install-ml', which works this out for you. The Getting Started guide
+      now covers setting up a machine-learned forcefield end to end.
+    * Fixed mdi_bind.sh reporting failure after a run that had in fact succeeded, which
+      made a completed MDI calculation look like a failed one. Note that an existing
+      ~/SEAMM/bin/mdi_bind.sh is not replaced automatically, since it is meant to be
+      edited; delete it to pick up the fixed version.
+
 2026.3.26 -- Bugfix: MDI stress not calculated and error catching
     * MDI requires an option in fix mdi/qm for it to request the virial; it is not
       automatic for e.g. NPT calculations. The code now adds the keywords for periodic
