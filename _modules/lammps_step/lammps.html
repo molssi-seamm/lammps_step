@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.9.14 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.9.14.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=936b28ff"></script>
+    <script src="../../_static/documentation_options.js?v=87736bd8"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.14" />
+  <meta name="docsearch:version" content="2026.9.14.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1736,7 +1736,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">helper_scripts</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="s2">"cpu_bind.sh"</span><span class="p">,</span>
                 <span class="s2">"gpu_bind.sh"</span><span class="p">,</span>
-                <span class="s2">"mace_mdi.py"</span><span class="p">,</span>
                 <span class="s2">"mdi_bind.sh"</span><span class="p">,</span>
                 <span class="s2">"mdi_monitor.sh"</span><span class="p">,</span>
             <span class="p">]</span>
@@ -1855,6 +1854,24 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">"--cmd-args"</span><span class="p">,</span> <span class="n">config</span><span class="p">[</span><span class="s2">"gpu-cmd-args"</span><span class="p">]])</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="s2">"NGPUS"</span> <span class="ow">in</span> <span class="n">ce</span><span class="p">:</span>
+                    <span class="c1"># This plug-in used to ship its own copy of the MACE MDI</span>
+                    <span class="c1"># engine as mace_mdi.py. It is now maintained once, in the</span>
+                    <span class="c1"># lammps-mdi package, and reached through its `mace-mdi`</span>
+                    <span class="c1"># console script. An existing ~/SEAMM/bin/mace_mdi.py is</span>
+                    <span class="c1"># left alone, so a configuration pointing at it keeps</span>
+                    <span class="c1"># working -- on a copy that predates several fixes.</span>
+                    <span class="k">if</span> <span class="s2">"mace_mdi.py"</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"gpu-code"</span><span class="p">,</span> <span class="s2">""</span><span class="p">):</span>
+                        <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
+                            <span class="n">__</span><span class="p">(</span>
+                                <span class="s2">"Warning: gpu-code in lammps.ini runs the bundled "</span>
+                                <span class="s2">"mace_mdi.py. That copy is no longer shipped or "</span>
+                                <span class="s2">"updated with this plug-in and is missing later "</span>
+                                <span class="s2">"fixes. Replace 'python ~/SEAMM/bin/mace_mdi.py' "</span>
+                                <span class="s2">"with 'mace-mdi', from the lammps-mdi package "</span>
+                                <span class="s2">"installed in the LAMMPS environment."</span><span class="p">,</span>
+                                <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">,</span>
+                            <span class="p">)</span>
+                        <span class="p">)</span>
                     <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"{gpu-code}"</span><span class="p">]</span>
                     <span class="k">if</span> <span class="s2">"gpu-cmd-args"</span> <span class="ow">in</span> <span class="n">config</span> <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">"gpu-cmd-args"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">""</span><span class="p">:</span>
                         <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">"gpu-cmd-args"</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM LAMMPS Plug-in 2026.9.14 documentation</title>
+    <title>Getting Started &#8212; SEAMM LAMMPS Plug-in 2026.9.14.1 documentation</title>
   
   
   
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=936b28ff"></script>
+    <script src="../_static/documentation_options.js?v=87736bd8"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="LAMMPS Step" href="../index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.14" />
+  <meta name="docsearch:version" content="2026.9.14.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -537,15 +537,25 @@ created by:</p>
 </div>
 <p>therefore takes LAMMPS from the <code class="docutils literal notranslate"><span class="pre">paulsaxe</span></code> channel and pins an OpenMPI build,
 so that LAMMPS and the Python engine share one MPI and one MDI library.</p>
-<p>That gives you LAMMPS, not the model. PyTorch and the MACE stack are installed
-separately, because the correct PyTorch build depends on your machine’s NVIDIA
-driver and so cannot be pinned in advance. In the LAMMPS environment, run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lammps</span><span class="o">-</span><span class="n">mdi</span> <span class="n">install</span><span class="o">-</span><span class="n">ml</span>
+<p>That gives you LAMMPS, not the model. The engine and the ML stack are
+installed separately, because the correct PyTorch build depends on your
+machine’s NVIDIA driver and so cannot be pinned in advance. In the LAMMPS
+environment – not the SEAMM one – run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">deps</span> <span class="n">lammps</span><span class="o">-</span><span class="n">mdi</span>
+<span class="n">lammps</span><span class="o">-</span><span class="n">mdi</span> <span class="n">install</span><span class="o">-</span><span class="n">ml</span>
 </pre></div>
 </div>
-<p>which detects the driver, installs a matching PyTorch, then vesin,
-cuEquivariance and MACE. Add <code class="docutils literal notranslate"><span class="pre">--dry-run</span></code> first if you would like to see what
-it will do. Check the result at any time with <code class="docutils literal notranslate"><span class="pre">lammps-mdi</span> <span class="pre">check</span></code>.</p>
+<p>The first command installs the engine alone; <code class="docutils literal notranslate"><span class="pre">--no-deps</span></code> matters, because its
+dependencies include PyTorch, and letting pip choose that is exactly what gets
+you a build your driver cannot run. The second detects the driver and installs
+a matching PyTorch, then vesin, cuEquivariance and MACE. Add <code class="docutils literal notranslate"><span class="pre">--dry-run</span></code> to
+see the plan first, and <code class="docutils literal notranslate"><span class="pre">--tag</span></code> if you need a specific wheel tag. Check the
+result at any time with <code class="docutils literal notranslate"><span class="pre">lammps-mdi</span> <span class="pre">check</span></code>.</p>
+<p>The engine is reached as <code class="docutils literal notranslate"><span class="pre">mace-mdi</span></code> in the <code class="docutils literal notranslate"><span class="pre">gpu-code</span></code> setting below.
+Earlier versions of this plug-in shipped their own copy of it as
+<code class="docutils literal notranslate"><span class="pre">~/SEAMM/bin/mace_mdi.py</span></code>. That copy is no longer shipped or updated – it is
+maintained once, in <code class="docutils literal notranslate"><span class="pre">lammps-mdi</span></code> – so if your <code class="docutils literal notranslate"><span class="pre">lammps.ini</span></code> still refers to
+it, switch to <code class="docutils literal notranslate"><span class="pre">mace-mdi</span></code>; the step will warn you if it does not.</p>
 <p>Finally, tell SEAMM how to launch the pair by setting <code class="docutils literal notranslate"><span class="pre">gpu-code</span></code> in
 <code class="docutils literal notranslate"><span class="pre">~/SEAMM/lammps.ini</span></code>; the file ships with a commented example. A minimal
 version, which launches the MACE engine and the LAMMPS driver together:</p>

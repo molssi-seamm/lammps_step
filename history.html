@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.9.14 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.9.14.1 documentation</title>
   
   
   
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=936b28ff"></script>
+    <script src="_static/documentation_options.js?v=87736bd8"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.14" />
+  <meta name="docsearch:version" content="2026.9.14.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,21 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.9.14.1 – Internal: the MACE MDI engine is no longer duplicated here</dt><dd><ul class="simple">
+<li><p>This plug-in shipped its own copy of the MACE MDI engine as mace_mdi.py and
+installed it into ~/SEAMM/bin. The same engine is maintained in the lammps-mdi
+package, and the two had drifted well apart: the bundled copy was missing, among
+other things, the fix for loading a GPU-saved model on a machine without a usable
+GPU. It has been removed, and the example configurations now use ‘mace-mdi’, the
+console script from lammps-mdi.</p></li>
+<li><p>An existing ~/SEAMM/bin/mace_mdi.py is left in place, so a configuration pointing
+at it keeps working. The step now warns when gpu-code still refers to it, since
+that copy no longer receives fixes.</p></li>
+<li><p>Note that lammps-mdi is deliberately NOT a dependency of this plug-in: it pulls in
+PyTorch and MACE, which belong in the LAMMPS environment rather than the SEAMM
+one. The Getting Started guide shows how to install it there.</p></li>
+</ul>
+</dd>
 <dt>2026.9.14 – Bugfix: machine-learned forcefields could not run at all</dt><dd><ul class="simple">
 <li><p>The conda environment asked for conda-forge’s LAMMPS, which is built without
 the MDI package. Since machine-learned forcefields are run by driving a separate
