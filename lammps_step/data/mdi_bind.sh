@@ -1,5 +1,5 @@
 #!/bin/bash
-#MolSSI lammps_step:mdi_bind 1.1
+#MolSSI lammps_step:mdi_bind 1.2
 # mdi_bind.sh — Resource binding for MACE MDI engine + LAMMPS driver
 #
 # Binds the MACE engine (rank 0) to the selected GPU and its NUMA-local CPUs,
@@ -59,17 +59,32 @@ if [ "$LOCAL_RANK" -eq 0 ]; then
         exit 1
     fi
 
-    export CUDA_VISIBLE_DEVICES="$GPU_ID"
+    # Leave an allocation the scheduler already made alone.  CUDA_VISIBLE_DEVICES
+    # is not composable: setting it again is interpreted against the machine's
+    # full set of devices, not against the allocation we were given, so
+    # re-exporting an index here is how a job ends up on a GPU it does not hold.
+    # When SLURM (or another scheduler) has set it, SEAMM_GPUS already counts
+    # within that allocation and there is nothing to add.
+    if [ -z "${CUDA_VISIBLE_DEVICES+set}" ]; then
+        export CUDA_VISIBLE_DEVICES="$GPU_ID"
+        MONITOR_GPU="$GPU_ID"
+    else
+        # nvidia-smi indexes physically and ignores CUDA_VISIBLE_DEVICES, so map
+        # our logical GPU back to a physical one just for the monitor.
+        MONITOR_GPU=$(echo "$CUDA_VISIBLE_DEVICES" | cut -d, -f$((GPU_ID + 1)))
+        [ -z "$MONITOR_GPU" ] && MONITOR_GPU="$GPU_ID"
+    fi
+
     export OMP_NUM_THREADS=1
     export TORCH_NUM_THREADS=4
     export MKL_NUM_THREADS=4
 
-    echo "Engine (rank $LOCAL_RANK) -> GPU $GPU_ID, CPUs $CPU_BIND" >&2
+    echo "Engine (rank $LOCAL_RANK) -> GPU $GPU_ID (physical $MONITOR_GPU), CPUs $CPU_BIND" >&2
 
     # Start GPU memory/utilization monitor
-    MEMORY_LOG="${SEAMM_MEMORY_LOG:-./gpu_${GPU_ID}_engine.log}"
+    MEMORY_LOG="${SEAMM_MEMORY_LOG:-./gpu_${MONITOR_GPU}_engine.log}"
     nvidia-smi --query-gpu=timestamp,memory.used,memory.free,utilization.gpu \
-               --format=csv -l 5 -i "$GPU_ID" > "$MEMORY_LOG" &
+               --format=csv -l 5 -i "$MONITOR_GPU" > "$MEMORY_LOG" &
     MONITOR_PID=$!
     echo "GPU monitor PID = $MONITOR_PID" >&2
     trap 'kill $MONITOR_PID 2>/dev/null || true; wait $MONITOR_PID 2>/dev/null || true' EXIT

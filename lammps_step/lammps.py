@@ -68,6 +68,58 @@ def _get_script_version(text):
     return None, None
 
 
+def _cuda_visible_devices():
+    """Parse CUDA_VISIBLE_DEVICES into the physical GPU indices it exposes.
+
+    Returns None when the variable is unset, meaning every GPU on the machine
+    is visible and a CUDA program's device *i* is physical GPU *i*. Otherwise
+    returns one entry per visible GPU, in order: the physical index, or None
+    for an entry given as a UUID rather than an index.
+
+    The ordering is the point. CUDA_VISIBLE_DEVICES renumbers devices, so with
+    CUDA_VISIBLE_DEVICES=1 the process sees exactly one GPU and it is device
+    *0*, not device 1. A scheduler sets this when it allocates a subset of a
+    node's GPUs.
+    """
+    raw = os.environ.get("CUDA_VISIBLE_DEVICES")
+    if raw is None:
+        return None
+
+    devices = []
+    for entry in (e.strip() for e in raw.split(",")):
+        if entry == "":
+            continue
+        try:
+            devices.append(int(entry))
+        except ValueError:
+            devices.append(None)
+    return devices
+
+
+def _usable_gpus(available, visible):
+    """GPUs this process may use, in the numbering CUDA itself uses.
+
+    ``available`` is what GPUtil reports, which comes from nvidia-smi and is
+    therefore *physical* indices -- GPUtil does not know about
+    CUDA_VISIBLE_DEVICES. ``visible`` is the parsed variable.
+
+    Without this, a job allocated GPU 1 by the scheduler would be told to use
+    GPU 0, because that is the physical index GPUtil reports as idle: it would
+    run on a GPU it was never given, alongside whoever actually holds it.
+    """
+    if visible is None:
+        return list(available)
+
+    if any(device is None for device in visible):
+        # UUID form: these cannot be lined up with GPUtil's indices, so treat
+        # the whole allocation as usable rather than silently discarding it.
+        return list(range(len(visible)))
+
+    return [
+        logical for logical, physical in enumerate(visible) if physical in available
+    ]
+
+
 def _free_tcp_port(hostname="localhost"):
     """Ask the OS for a free TCP port for the MDI rendezvous.
 
@@ -853,13 +905,17 @@ class LAMMPS(seamm.Node):
                 t_end = infinity
             else:
                 t_end = t0 + int(t)
+            visible = _cuda_visible_devices()
             while True:
-                gpus = GPUtil.getAvailable(
-                    order="first",
-                    limit=99,
-                    maxLoad=maxload,
-                    maxMemory=maxload,
-                    includeNan=False,
+                gpus = _usable_gpus(
+                    GPUtil.getAvailable(
+                        order="first",
+                        limit=99,
+                        maxLoad=maxload,
+                        maxMemory=maxload,
+                        includeNan=False,
+                    ),
+                    visible,
                 )
                 if len(gpus) > 0:
                     break

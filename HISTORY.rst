@@ -1,6 +1,22 @@
 =======
 History
 =======
+2026.9.14.2 -- Bugfix: could run on a GPU the scheduler had not allocated
+    * When choosing GPUs the step asked GPUtil, which reads nvidia-smi and therefore
+      reports physical GPU indices, knowing nothing about CUDA_VISIBLE_DEVICES. A
+      scheduler that allocates a subset of a node's GPUs sets that variable, which also
+      renumbers the devices: given physical GPU 1, a job's own device 0 is that GPU. The
+      step would report GPU 1, so the calculation could run on a card it had not been
+      given, alongside whichever job actually held it. GPUs are now selected in the
+      numbering CUDA itself uses, and a GPU outside the allocation is never chosen.
+    * mdi_bind.sh no longer overwrites CUDA_VISIBLE_DEVICES when a scheduler has
+      already set it. That variable is not composable -- setting it again is
+      interpreted against the machine's full set of devices, not against the
+      allocation -- so overwriting it was another way to land on the wrong GPU. The GPU
+      monitor still logs the physical card, mapped back for the purpose.
+    * Both only affected machines where a scheduler hands out individual GPUs. Where
+      every job sees every GPU the behaviour is unchanged.
+
 2026.9.14.1 -- Internal: the MACE MDI engine is no longer duplicated here
     * This plug-in shipped its own copy of the MACE MDI engine as mace_mdi.py and
       installed it into ~/SEAMM/bin. The same engine is maintained in the lammps-mdi
