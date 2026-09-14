@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.9.14.2 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.9.14.3 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=b08be1b2"></script>
+    <script src="../../_static/documentation_options.js?v=14f365ab"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.14.2" />
+  <meta name="docsearch:version" content="2026.9.14.3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -554,6 +554,40 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
     <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_required_mpi_slots</span><span class="p">(</span><span class="n">command</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Total MPI ranks an mpirun command line asks for, or None if unknown.</span>
+
+<span class="sd">    An MDI run is MPMD -- ``mpirun -np 1 &lt;engine&gt; : -np 1 &lt;driver&gt;`` -- so what</span>
+<span class="sd">    it needs is the *sum* of the -np values across the colon-separated</span>
+<span class="sd">    segments, not the largest of them. Returns None when any count is a</span>
+<span class="sd">    template placeholder such as {NTASKS}, which is only resolved later and is</span>
+<span class="sd">    derived from the allocation anyway, or when there is no -np at all.</span>
+<span class="sd">    """</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">":"</span><span class="p">,</span> <span class="s2">" : "</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">token</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tokens</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">token</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"-np"</span><span class="p">,</span> <span class="s2">"-n"</span><span class="p">,</span> <span class="s2">"--np"</span><span class="p">,</span> <span class="s2">"--n"</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">total</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">total</span> <span class="k">if</span> <span class="n">found</span> <span class="k">else</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_allocated_mpi_slots</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""MPI tasks the batch system allocated, or None if not under one."""</span>
+    <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"SLURM_NTASKS"</span><span class="p">,</span> <span class="s2">"SLURM_NPROCS"</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">pass</span>
+    <span class="k">return</span> <span class="kc">None</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_cuda_visible_devices</span><span class="p">():</span>
@@ -1916,6 +1950,29 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="c1"># console script. An existing ~/SEAMM/bin/mace_mdi.py is</span>
                     <span class="c1"># left alone, so a configuration pointing at it keeps</span>
                     <span class="c1"># working -- on a copy that predates several fixes.</span>
+                    <span class="c1"># An MDI gpu-code launches the engine and the driver as</span>
+                    <span class="c1"># separate MPI ranks. Those counts are written into the</span>
+                    <span class="c1"># command, not derived from the allocation, so a job given</span>
+                    <span class="c1"># fewer tasks than the command asks for dies inside mpirun</span>
+                    <span class="c1"># with "All nodes which are allocated for this job are</span>
+                    <span class="c1"># already filled" -- which says nothing about MDI, ranks or</span>
+                    <span class="c1"># how to fix it. Say it plainly instead, before launching.</span>
+                    <span class="n">needed</span> <span class="o">=</span> <span class="n">_required_mpi_slots</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"gpu-code"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+                    <span class="n">allocated</span> <span class="o">=</span> <span class="n">_allocated_mpi_slots</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="n">needed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                        <span class="ow">and</span> <span class="n">allocated</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                        <span class="ow">and</span> <span class="n">needed</span> <span class="o">&gt;</span> <span class="n">allocated</span>
+                    <span class="p">):</span>
+                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">"The GPU command in lammps.ini needs </span><span class="si">{</span><span class="n">needed</span><span class="si">}</span><span class="s2"> MPI "</span>
+                            <span class="sa">f</span><span class="s2">"tasks, but this job was allocated </span><span class="si">{</span><span class="n">allocated</span><span class="si">}</span><span class="s2">. An "</span>
+                            <span class="s2">"MDI run needs one task for the engine and one for "</span>
+                            <span class="s2">"the LAMMPS driver, so asking for a single GPU is "</span>
+                            <span class="s2">"not enough on its own. Resubmit requesting at "</span>
+                            <span class="sa">f</span><span class="s2">"least </span><span class="si">{</span><span class="n">needed</span><span class="si">}</span><span class="s2"> tasks (ntasks)."</span>
+                        <span class="p">)</span>
+
                     <span class="k">if</span> <span class="s2">"mace_mdi.py"</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"gpu-code"</span><span class="p">,</span> <span class="s2">""</span><span class="p">):</span>
                         <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
                             <span class="n">__</span><span class="p">(</span>

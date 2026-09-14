@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.9.14.2 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.9.14.3 documentation</title>
   
   
   
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=b08be1b2"></script>
+    <script src="_static/documentation_options.js?v=14f365ab"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.14.2" />
+  <meta name="docsearch:version" content="2026.9.14.3" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.9.14.3 – Say plainly when a GPU job has too few tasks</dt><dd><ul class="simple">
+<li><p>A GPU command that drives an MDI engine runs the engine and LAMMPS as separate
+MPI ranks, and those counts are written into the command rather than derived from
+the allocation. A job given fewer tasks than the command asks for died inside
+mpirun with “All nodes which are allocated for this job are already filled”,
+which mentions neither MDI, nor tasks, nor what to change – and arrived wrapped
+in a conda error, obscuring it further. The step now checks before launching and
+says how many tasks the command needs, how many the job was given, and that an
+MDI run needs one task for the engine and one for the driver.</p></li>
+<li><p>This is easy to hit now that queues can offer a GPU count at submission:
+requesting one GPU and one task looks reasonable but cannot work.</p></li>
+</ul>
+</dd>
 <dt>2026.9.14.2 – Bugfix: could run on a GPU the scheduler had not allocated</dt><dd><ul class="simple">
 <li><p>When choosing GPUs the step asked GPUtil, which reads nvidia-smi and therefore
 reports physical GPU indices, knowing nothing about CUDA_VISIBLE_DEVICES. A
