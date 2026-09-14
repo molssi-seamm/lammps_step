@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.9.14.1 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.9.14.2 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=87736bd8"></script>
+    <script src="../../_static/documentation_options.js?v=b08be1b2"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.14.1" />
+  <meta name="docsearch:version" content="2026.9.14.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -554,6 +554,58 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
     <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_cuda_visible_devices</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Parse CUDA_VISIBLE_DEVICES into the physical GPU indices it exposes.</span>
+
+<span class="sd">    Returns None when the variable is unset, meaning every GPU on the machine</span>
+<span class="sd">    is visible and a CUDA program's device *i* is physical GPU *i*. Otherwise</span>
+<span class="sd">    returns one entry per visible GPU, in order: the physical index, or None</span>
+<span class="sd">    for an entry given as a UUID rather than an index.</span>
+
+<span class="sd">    The ordering is the point. CUDA_VISIBLE_DEVICES renumbers devices, so with</span>
+<span class="sd">    CUDA_VISIBLE_DEVICES=1 the process sees exactly one GPU and it is device</span>
+<span class="sd">    *0*, not device 1. A scheduler sets this when it allocates a subset of a</span>
+<span class="sd">    node's GPUs.</span>
+<span class="sd">    """</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"CUDA_VISIBLE_DEVICES"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">raw</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">devices</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">raw</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">entry</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">devices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">entry</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">devices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">devices</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_usable_gpus</span><span class="p">(</span><span class="n">available</span><span class="p">,</span> <span class="n">visible</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""GPUs this process may use, in the numbering CUDA itself uses.</span>
+
+<span class="sd">    ``available`` is what GPUtil reports, which comes from nvidia-smi and is</span>
+<span class="sd">    therefore *physical* indices -- GPUtil does not know about</span>
+<span class="sd">    CUDA_VISIBLE_DEVICES. ``visible`` is the parsed variable.</span>
+
+<span class="sd">    Without this, a job allocated GPU 1 by the scheduler would be told to use</span>
+<span class="sd">    GPU 0, because that is the physical index GPUtil reports as idle: it would</span>
+<span class="sd">    run on a GPU it was never given, alongside whoever actually holds it.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">visible</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">available</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">device</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">visible</span><span class="p">):</span>
+        <span class="c1"># UUID form: these cannot be lined up with GPUtil's indices, so treat</span>
+        <span class="c1"># the whole allocation as usable rather than silently discarding it.</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">visible</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">logical</span> <span class="k">for</span> <span class="n">logical</span><span class="p">,</span> <span class="n">physical</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">visible</span><span class="p">)</span> <span class="k">if</span> <span class="n">physical</span> <span class="ow">in</span> <span class="n">available</span>
+    <span class="p">]</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_free_tcp_port</span><span class="p">(</span><span class="n">hostname</span><span class="o">=</span><span class="s2">"localhost"</span><span class="p">):</span>
@@ -1375,13 +1427,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">t_end</span> <span class="o">=</span> <span class="n">infinity</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">t_end</span> <span class="o">=</span> <span class="n">t0</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+            <span class="n">visible</span> <span class="o">=</span> <span class="n">_cuda_visible_devices</span><span class="p">()</span>
             <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="n">gpus</span> <span class="o">=</span> <span class="n">GPUtil</span><span class="o">.</span><span class="n">getAvailable</span><span class="p">(</span>
-                    <span class="n">order</span><span class="o">=</span><span class="s2">"first"</span><span class="p">,</span>
-                    <span class="n">limit</span><span class="o">=</span><span class="mi">99</span><span class="p">,</span>
-                    <span class="n">maxLoad</span><span class="o">=</span><span class="n">maxload</span><span class="p">,</span>
-                    <span class="n">maxMemory</span><span class="o">=</span><span class="n">maxload</span><span class="p">,</span>
-                    <span class="n">includeNan</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">gpus</span> <span class="o">=</span> <span class="n">_usable_gpus</span><span class="p">(</span>
+                    <span class="n">GPUtil</span><span class="o">.</span><span class="n">getAvailable</span><span class="p">(</span>
+                        <span class="n">order</span><span class="o">=</span><span class="s2">"first"</span><span class="p">,</span>
+                        <span class="n">limit</span><span class="o">=</span><span class="mi">99</span><span class="p">,</span>
+                        <span class="n">maxLoad</span><span class="o">=</span><span class="n">maxload</span><span class="p">,</span>
+                        <span class="n">maxMemory</span><span class="o">=</span><span class="n">maxload</span><span class="p">,</span>
+                        <span class="n">includeNan</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="p">),</span>
+                    <span class="n">visible</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gpus</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="k">break</span>

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.9.14.1 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.9.14.2 documentation</title>
   
   
   
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=87736bd8"></script>
+    <script src="_static/documentation_options.js?v=b08be1b2"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.14.1" />
+  <meta name="docsearch:version" content="2026.9.14.2" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.9.14.2 – Bugfix: could run on a GPU the scheduler had not allocated</dt><dd><ul class="simple">
+<li><p>When choosing GPUs the step asked GPUtil, which reads nvidia-smi and therefore
+reports physical GPU indices, knowing nothing about CUDA_VISIBLE_DEVICES. A
+scheduler that allocates a subset of a node’s GPUs sets that variable, which also
+renumbers the devices: given physical GPU 1, a job’s own device 0 is that GPU. The
+step would report GPU 1, so the calculation could run on a card it had not been
+given, alongside whichever job actually held it. GPUs are now selected in the
+numbering CUDA itself uses, and a GPU outside the allocation is never chosen.</p></li>
+<li><p>mdi_bind.sh no longer overwrites CUDA_VISIBLE_DEVICES when a scheduler has
+already set it. That variable is not composable – setting it again is
+interpreted against the machine’s full set of devices, not against the
+allocation – so overwriting it was another way to land on the wrong GPU. The GPU
+monitor still logs the physical card, mapped back for the purpose.</p></li>
+<li><p>Both only affected machines where a scheduler hands out individual GPUs. Where
+every job sees every GPU the behaviour is unchanged.</p></li>
+</ul>
+</dd>
 <dt>2026.9.14.1 – Internal: the MACE MDI engine is no longer duplicated here</dt><dd><ul class="simple">
 <li><p>This plug-in shipped its own copy of the MACE MDI engine as mace_mdi.py and
 installed it into ~/SEAMM/bin. The same engine is maintained in the lammps-mdi
