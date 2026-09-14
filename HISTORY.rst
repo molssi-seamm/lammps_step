@@ -1,6 +1,20 @@
 =======
 History
 =======
+2026.9.14.1 -- Internal: the MACE MDI engine is no longer duplicated here
+    * This plug-in shipped its own copy of the MACE MDI engine as mace_mdi.py and
+      installed it into ~/SEAMM/bin. The same engine is maintained in the lammps-mdi
+      package, and the two had drifted well apart: the bundled copy was missing, among
+      other things, the fix for loading a GPU-saved model on a machine without a usable
+      GPU. It has been removed, and the example configurations now use 'mace-mdi', the
+      console script from lammps-mdi.
+    * An existing ~/SEAMM/bin/mace_mdi.py is left in place, so a configuration pointing
+      at it keeps working. The step now warns when gpu-code still refers to it, since
+      that copy no longer receives fixes.
+    * Note that lammps-mdi is deliberately NOT a dependency of this plug-in: it pulls in
+      PyTorch and MACE, which belong in the LAMMPS environment rather than the SEAMM
+      one. The Getting Started guide shows how to install it there.
+
 2026.9.14 -- Bugfix: machine-learned forcefields could not run at all
     * The conda environment asked for conda-forge's LAMMPS, which is built without
       the MDI package. Since machine-learned forcefields are run by driving a separate

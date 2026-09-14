@@ -37,15 +37,26 @@ created by::
 therefore takes LAMMPS from the ``paulsaxe`` channel and pins an OpenMPI build,
 so that LAMMPS and the Python engine share one MPI and one MDI library.
 
-That gives you LAMMPS, not the model. PyTorch and the MACE stack are installed
-separately, because the correct PyTorch build depends on your machine's NVIDIA
-driver and so cannot be pinned in advance. In the LAMMPS environment, run::
+That gives you LAMMPS, not the model. The engine and the ML stack are
+installed separately, because the correct PyTorch build depends on your
+machine's NVIDIA driver and so cannot be pinned in advance. In the LAMMPS
+environment -- not the SEAMM one -- run::
 
+  pip install --no-deps lammps-mdi
   lammps-mdi install-ml
 
-which detects the driver, installs a matching PyTorch, then vesin,
-cuEquivariance and MACE. Add ``--dry-run`` first if you would like to see what
-it will do. Check the result at any time with ``lammps-mdi check``.
+The first command installs the engine alone; ``--no-deps`` matters, because its
+dependencies include PyTorch, and letting pip choose that is exactly what gets
+you a build your driver cannot run. The second detects the driver and installs
+a matching PyTorch, then vesin, cuEquivariance and MACE. Add ``--dry-run`` to
+see the plan first, and ``--tag`` if you need a specific wheel tag. Check the
+result at any time with ``lammps-mdi check``.
+
+The engine is reached as ``mace-mdi`` in the ``gpu-code`` setting below.
+Earlier versions of this plug-in shipped their own copy of it as
+``~/SEAMM/bin/mace_mdi.py``. That copy is no longer shipped or updated -- it is
+maintained once, in ``lammps-mdi`` -- so if your ``lammps.ini`` still refers to
+it, switch to ``mace-mdi``; the step will warn you if it does not.
 
 Finally, tell SEAMM how to launch the pair by setting ``gpu-code`` in
 ``~/SEAMM/lammps.ini``; the file ships with a commented example. A minimal

@@ -1213,7 +1213,6 @@ class LAMMPS(seamm.Node):
             helper_scripts = [
                 "cpu_bind.sh",
                 "gpu_bind.sh",
-                "mace_mdi.py",
                 "mdi_bind.sh",
                 "mdi_monitor.sh",
             ]
@@ -1332,6 +1331,24 @@ class LAMMPS(seamm.Node):
                     cmd.extend(["--cmd-args", config["gpu-cmd-args"]])
             else:
                 if "NGPUS" in ce:
+                    # This plug-in used to ship its own copy of the MACE MDI
+                    # engine as mace_mdi.py. It is now maintained once, in the
+                    # lammps-mdi package, and reached through its `mace-mdi`
+                    # console script. An existing ~/SEAMM/bin/mace_mdi.py is
+                    # left alone, so a configuration pointing at it keeps
+                    # working -- on a copy that predates several fixes.
+                    if "mace_mdi.py" in config.get("gpu-code", ""):
+                        printer.important(
+                            __(
+                                "Warning: gpu-code in lammps.ini runs the bundled "
+                                "mace_mdi.py. That copy is no longer shipped or "
+                                "updated with this plug-in and is missing later "
+                                "fixes. Replace 'python ~/SEAMM/bin/mace_mdi.py' "
+                                "with 'mace-mdi', from the lammps-mdi package "
+                                "installed in the LAMMPS environment.",
+                                indent=4 * " ",
+                            )
+                        )
                     cmd = ["{gpu-code}"]
                     if "gpu-cmd-args" in config and config["gpu-cmd-args"] != "":
                         cmd.extend(config["gpu-cmd-args"].split())
