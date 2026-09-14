@@ -1,5 +1,5 @@
 #!/bin/bash
-#MolSSI lammps_step:mdi_bind 1.0
+#MolSSI lammps_step:mdi_bind 1.1
 # mdi_bind.sh — Resource binding for MACE MDI engine + LAMMPS driver
 #
 # Binds the MACE engine (rank 0) to the selected GPU and its NUMA-local CPUs,
@@ -72,18 +72,24 @@ if [ "$LOCAL_RANK" -eq 0 ]; then
                --format=csv -l 5 -i "$GPU_ID" > "$MEMORY_LOG" &
     MONITOR_PID=$!
     echo "GPU monitor PID = $MONITOR_PID" >&2
-    trap "kill $MONITOR_PID 2>/dev/null; wait $MONITOR_PID 2>/dev/null" EXIT
+    trap 'kill $MONITOR_PID 2>/dev/null || true; wait $MONITOR_PID 2>/dev/null || true' EXIT
 
     echo "$@" > engine.cmd
     
-    # Run the engine
-    taskset -c "$CPU_BIND" "$@"
+    # Run the engine.  Keep its exit status: the cleanup below, and the EXIT
+    # trap, kill the nvidia-smi monitor on purpose, so those kill/wait calls
+    # necessarily report failure.  Left unguarded their status becomes this
+    # script's, which makes mpirun treat every successful engine run as a
+    # failure (rank 0 exited 1 even when the engine finished cleanly).
+    rc=0
+    taskset -c "$CPU_BIND" "$@" || rc=$?
 
     # Clean up monitor
-    kill "$MONITOR_PID" 2>/dev/null
-    wait "$MONITOR_PID" 2>/dev/null
+    kill "$MONITOR_PID" 2>/dev/null || true
+    wait "$MONITOR_PID" 2>/dev/null || true
     echo "Done!" >> "$MEMORY_LOG"
     echo "Engine finished." >&2
+    exit $rc
 
 else
     # ---- Driver process (LAMMPS) ----
@@ -103,7 +109,9 @@ else
     echo "$@" > driver.cmd
     
     # Run LAMMPS
-    taskset -c "$CPU_BIND" "$@"
+    rc=0
+    taskset -c "$CPU_BIND" "$@" || rc=$?
 
     echo "Driver finished." >&2
+    exit $rc
 fi

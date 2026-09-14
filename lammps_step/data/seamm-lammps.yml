@@ -1,9 +1,39 @@
+# Conda environment for the LAMMPS plug-in.
+#
+# LAMMPS comes from the `paulsaxe` channel, NOT conda-forge: the conda-forge
+# recipe does not enable PKG_MDI, so `lmp -mdi ...` fails with "Invalid
+# command-line argument" and then hangs in Error::universe_all's MPI_Barrier
+# waiting for a rank that never joins. Without MDI there is no way to drive a
+# machine-learned forcefield (MACE and friends) from LAMMPS.
+#
+# The build is pinned to an OpenMPI variant for two reasons:
+#   * pymdi must use the same MPI as LAMMPS.  This build links
+#     $PREFIX/lib/libmdi.so, which the pymdi package provides, so the driver
+#     and the Python engine share one MDI library.  Do NOT run
+#     `lammps-mdi install-mdi` in this environment -- that installs a second,
+#     conflicting libmdi into site-packages.
+#   * the resource-binding script mdi_bind.sh keys off
+#     OMPI_COMM_WORLD_LOCAL_RANK, which MPICH does not set; under MPICH every
+#     rank takes the rank-0 branch and binds to the same cores.
+#
+# The CPU build is deliberate.  Under MDI, LAMMPS is only the driver -- the ML
+# engine does the GPU work in its own process -- so LAMMPS needs no CUDA.  A
+# cuda* build of the same version also carries MDI if you want native GPU
+# LAMMPS (Kokkos/ML-IAP) for non-MDI work.
+#
+# NOT INSTALLED HERE: PyTorch and the MACE stack.  The right torch wheel
+# depends on the machine's NVIDIA driver, so it cannot be pinned portably --
+# run `lammps-mdi check` (or `install-torch`) in this environment afterwards
+# and follow what it prints.  See the plug-in documentation.
+
 name: seamm-lammps
 channels:
+  - paulsaxe
   - conda-forge
 dependencies:
-  - python
+  - python=3.12
     # Executables, etc.
-  - lammps * *mpi_mpich*
+  - lammps=2024.08.29=cpu_py312_*_mpi_openmpi_10
+  - pymdi=*=*mpi_openmpi*
   - kim-api
   - mpi4py
