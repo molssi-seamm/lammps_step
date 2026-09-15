@@ -68,6 +68,26 @@ def _get_script_version(text):
     return None, None
 
 
+def _gpu_code_is_usable(ff_form, gpu_code):
+    """Whether a forcefield can actually use the configured ``gpu-code``.
+
+    A GPU in the allocation is not on its own a reason to use ``gpu-code``.
+    ``NGPUS`` comes from the scheduler -- seamm_exec reads ``SLURM_JOB_GPUS``
+    -- so it is set for any job that asked for a GPU, whatever the forcefield.
+
+    ``gpu-code`` serves two unrelated purposes. A Kokkos command is how a
+    *classical* forcefield uses a GPU. An MDI command launches a
+    machine-learned engine alongside LAMMPS, and only a PyTorch forcefield has
+    a model for it to serve: run a classical one that way and the engine is
+    handed ``SEAMM_FF="Unknown"`` and dies with FileNotFoundError before
+    LAMMPS gets anything.
+
+    So the question is not "are there GPUs" but "does this command suit this
+    forcefield", which is decided by whether it drives MDI.
+    """
+    return ff_form == "PyTorch" or "-mdi" not in gpu_code
+
+
 def _required_mpi_slots(command):
     """Total MPI ranks an mpirun command line asks for, or None if unknown.
 
@@ -1395,6 +1415,40 @@ class LAMMPS(seamm.Node):
             # Setup the command lines
             cmd = []
 
+            # A GPU in the allocation is not on its own a reason to use
+            # gpu-code. NGPUS comes from the scheduler (seamm_exec reads
+            # SLURM_JOB_GPUS), so it is set for any job that asked for a
+            # GPU, whatever the forcefield. But an MDI gpu-code launches a
+            # machine-learned engine, which only makes sense for a PyTorch
+            # forcefield: run a classical one that way and the engine is
+            # handed SEAMM_FF="Unknown" and dies with FileNotFoundError.
+            # A Kokkos-style gpu-code has no such restriction -- that is
+            # how a classical forcefield is meant to use a GPU -- so key
+            # off whether the command drives MDI, not on GPUs alone.
+            gpu_code = config.get("gpu-code", "")
+            use_gpu_code = "NGPUS" in ce
+            # MDI/QM builds its own launch script below and never consults
+            # gpu-code, so it needs the decision but not the advice.
+            if (
+                use_gpu_code
+                and ff_form != "MDI/QM"
+                and not _gpu_code_is_usable(ff_form, gpu_code)
+            ):
+                printer.important(
+                    __(
+                        f"The '{ff_form}' forcefield cannot use the MDI "
+                        "engine that gpu-code in lammps.ini launches, which "
+                        "serves machine-learned potentials. Running on the "
+                        "CPU instead. To use a GPU for this forcefield, set "
+                        "gpu-code to a Kokkos command and gpu-cmd-args to "
+                        "the matching accelerator flags.",
+                        indent=4 * " ",
+                    )
+                )
+                use_gpu_code = False
+            elif use_gpu_code and not _gpu_code_is_usable(ff_form, gpu_code):
+                use_gpu_code = False
+
             if ff_form == "MDI/QM":
                 # QM-MD over MDI: launch the QM engine (the listener, in its own
                 # conda environment) and the LAMMPS driver together, rendezvousing
@@ -1408,19 +1462,19 @@ class LAMMPS(seamm.Node):
             elif "run_lammps" in files:
                 cmd = ["{python}", "run_lammps"]
                 if (
-                    "NGPUS" not in ce
+                    not use_gpu_code
                     and "cmd-args" in config
                     and config["cmd-args"] != ""
                 ):
                     cmd.extend(["--cmd-args", config["cmd-args"]])
                 if (
-                    "NGPUS" in ce
+                    use_gpu_code
                     and "gpu-cmd-args" in config
                     and config["gpu-cmd-args"] != ""
                 ):
                     cmd.extend(["--cmd-args", config["gpu-cmd-args"]])
             else:
-                if "NGPUS" in ce:
+                if use_gpu_code:
                     # This plug-in used to ship its own copy of the MACE MDI
                     # engine as mace_mdi.py. It is now maintained once, in the
                     # lammps-mdi package, and reached through its `mace-mdi`
@@ -1484,7 +1538,7 @@ class LAMMPS(seamm.Node):
             elif self.model:
                 printer.important(f"    Using the forcefield '{self.model}'.")
 
-            if "NGPUS" in ce:
+            if use_gpu_code:
                 printer.important(
                     f"    LAMMPS running with {np} processes and {ce['NGPUS']} gpus."
                 )
