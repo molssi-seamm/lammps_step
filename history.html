@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.9.15.1 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.9.15.2 documentation</title>
   
   
   
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=f6a62181"></script>
+    <script src="_static/documentation_options.js?v=c15eabeb"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.15.1" />
+  <meta name="docsearch:version" content="2026.9.15.2" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.9.15.2 – Bugfix: concurrent GPU jobs bound to the same cores</dt><dd><ul class="simple">
+<li><p>mdi_bind.sh chooses which cores to run the engine and the driver on from a map
+of the GPUs on the machine, so that each is near its card. It was looking that
+map up by the GPU’s index within the job’s own allocation, which is 0 for every
+job given a single GPU whichever card that is, so two jobs running at once both
+took the cores belonging to GPU 0 and shared them. It now looks up by the
+physical index, and jobs on different cards get different cores.</p></li>
+<li><p>Note that ~/SEAMM/bin/mdi_bind.sh is not replaced once it exists, since the core
+layout in it is specific to the machine and meant to be edited. Delete it to
+pick up this version.</p></li>
+</ul>
+</dd>
 <dt>2026.9.15.1 – Machine-learned forcefields are served by an engine, whichever one</dt><dd><ul class="simple">
 <li><p>Which engine evaluates a machine-learned forcefield is now set entirely by
 gpu-code in lammps.ini. The model file is offered to it two ways – as the

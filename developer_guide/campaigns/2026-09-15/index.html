@@ -2,13 +2,13 @@
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="../" >
+<html lang="en" data-content_root="../../../" >
 
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.9.15.2 documentation</title>
+    <title>Machine-learned forcefields: one engine, chosen by configuration &#8212; SEAMM LAMMPS Plug-in 2026.9.15.2 documentation</title>
   
   
   
@@ -27,19 +27,19 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=c224919a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=c224919a" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
 
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -49,27 +49,27 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=c15eabeb"></script>
-    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
-    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
-    <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/index';</script>
+    <script src="../../../_static/documentation_options.js?v=c15eabeb"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'developer_guide/campaigns/2026-09-15/index';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
 
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Developer Documentation" href="../developer_guide/index.html" />
-    <link rel="prev" title="Getting Started" href="../getting_started/index.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="NOTES A – How a model reaches its engine" href="NOTES_A_engine_selection.html" />
+    <link rel="prev" title="Phase C runbook – manual end-to-end verification of QM-MD via MDI" href="../2026-06-22/NOTES_C_runbook.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2026.9.15.2" />
   
     
-    <script src="../_static/searchtools.js"></script>
-    <script src="../_static/language_data.js"></script>
-    <script src="../searchindex.js"></script>
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
   
   </head>
   <body data-default-mode="">
@@ -89,7 +89,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <dialog id="pst-search-dialog">
     
 <form class="bd-search d-flex align-items-center"
-      action="../search.html"
+      action="../../../search.html"
       method="get">
   <i class="fa-solid fa-magnifying-glass"></i>
   <input type="search"
@@ -125,7 +125,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     
   
 
-<a class="navbar-brand logo" href="../index.html">
+<a class="navbar-brand logo" href="../../../index.html">
   
   
   
@@ -136,8 +136,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       
     
     
-    <img src="../_static/SEAMM logo.png" class="logo__image only-light" alt=""/>
-    <img src="../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark pst-js-only" alt=""/>
+    <img src="../../../_static/SEAMM logo.png" class="logo__image only-light" alt=""/>
+    <img src="../../../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark pst-js-only" alt=""/>
   
   
     <p class="title logo__title">LAMMPS Step</p>
@@ -155,28 +155,28 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../getting_started/index.html">
+  <a class="nav-link nav-internal" href="../../../getting_started/index.html">
     Getting Started
   </a>
 </li>
 
 
-<li class="nav-item current active">
-  <a class="nav-link nav-internal" href="#">
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
     User Guide
   </a>
 </li>
 
 
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../developer_guide/index.html">
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
     Developer Documentation
   </a>
 </li>
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../api/index.html">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
     API Documentation
   </a>
 </li>
@@ -190,14 +190,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <ul id="pst-nav-more-links" class="dropdown-menu">
                     
 <li class=" ">
-  <a class="nav-link dropdown-item nav-internal" href="../authors.html">
+  <a class="nav-link dropdown-item nav-internal" href="../../../authors.html">
     Development Team
   </a>
 </li>
 
 
 <li class=" ">
-  <a class="nav-link dropdown-item nav-internal" href="../history.html">
+  <a class="nav-link dropdown-item nav-internal" href="../../../history.html">
     History
   </a>
 </li>
@@ -326,42 +326,42 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../getting_started/index.html">
+  <a class="nav-link nav-internal" href="../../../getting_started/index.html">
     Getting Started
   </a>
 </li>
 
 
-<li class="nav-item current active">
-  <a class="nav-link nav-internal" href="#">
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
     User Guide
   </a>
 </li>
 
 
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../developer_guide/index.html">
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
     Developer Documentation
   </a>
 </li>
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../api/index.html">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
     API Documentation
   </a>
 </li>
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../authors.html">
+  <a class="nav-link nav-internal" href="../../../authors.html">
     Development Team
   </a>
 </li>
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../history.html">
+  <a class="nav-link nav-internal" href="../../../history.html">
     History
   </a>
 </li>
@@ -448,7 +448,26 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <nav class="bd-docs-nav bd-links"
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"></div>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Campaigns</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../2026-06-22/index.html">LAMMPS + MOPAC/xTB QM-MD via MDI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../2026-06-22/NOTES_C.html">Phase C – LAMMPS driver: read <code class="docutils literal notranslate"><span class="pre">_model_chemistry</span></code>, launch the MDI engine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../2026-06-22/NOTES_C_runbook.html">Phase C runbook – manual end-to-end verification of QM-MD via MDI</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">Machine-learned forcefields: one engine, chosen by configuration</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="NOTES_A_engine_selection.html">NOTES A – How a model reaches its engine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="NOTES_B_gpus_and_tasks.html">NOTES B – GPUs, tasks, and what the scheduler is telling us</a></li>
+<li class="toctree-l3"><a class="reference internal" href="NOTES_C_environment.html">NOTES C – The LAMMPS environment, and what belongs in it</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+</div>
 </nav></div>
     </div>
   
@@ -483,11 +502,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <ul class="bd-breadcrumbs">
     
     <li class="breadcrumb-item breadcrumb-home">
-      <a href="../index.html" class="nav-link" aria-label="Home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
         <i class="fa-solid fa-home"></i>
       </a>
     </li>
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">User Guide</span></li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Developer Documentation</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Campaigns</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Machine-learned forcefields: one engine, chosen by configuration</span></li>
   </ul>
 </nav>
 </div>
@@ -504,15 +529,44 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="user-guide">
-<span id="id1"></span><h1>User Guide<a class="headerlink" href="#user-guide" title="Link to this heading">#</a></h1>
-<p>The LAMMPS plug-in …</p>
-<section id="index">
-<h2>Index<a class="headerlink" href="#index" title="Link to this heading">#</a></h2>
-<ul class="simple">
-<li><p><a class="reference internal" href="../genindex.html"><span class="std std-ref">Index</span></a></p></li>
+  <section id="machine-learned-forcefields-one-engine-chosen-by-configuration">
+<h1>Machine-learned forcefields: one engine, chosen by configuration<a class="headerlink" href="#machine-learned-forcefields-one-engine-chosen-by-configuration" title="Link to this heading">#</a></h1>
+<p>Notes for the campaign that made a machine-learned forcefield run reach its
+engine without the plug-in knowing which engine that is, and that settled
+<code class="docutils literal notranslate"><span class="pre">xnns</span></code> as the single mechanism for them.</p>
+<p>The starting point was a job that hung for four hours and died on a
+<code class="docutils literal notranslate"><span class="pre">torch.load</span></code>. Getting from there to a working MLFF run turned up a chain of
+faults, most of which were only reachable because the one before it had been
+fixed. The notes below record the design that came out of it, and the reasoning
+that is not visible in the code.</p>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="NOTES_A_engine_selection.html">NOTES A – How a model reaches its engine</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="NOTES_A_engine_selection.html#the-question">The question</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NOTES_A_engine_selection.html#what-the-code-used-to-do">What the code used to do</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NOTES_A_engine_selection.html#what-it-does-now">What it does now</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NOTES_A_engine_selection.html#why-not-detect-the-model-type">Why not detect the model type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NOTES_A_engine_selection.html#the-decision-xnns-is-the-mechanism">The decision: <code class="docutils literal notranslate"><span class="pre">xnns</span></code> is the mechanism</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NOTES_A_engine_selection.html#what-this-leaves">What this leaves</a></li>
 </ul>
-</section>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="NOTES_B_gpus_and_tasks.html">NOTES B – GPUs, tasks, and what the scheduler is telling us</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="NOTES_B_gpus_and_tasks.html#a-gpu-in-the-allocation-is-not-a-reason-to-use-gpu-code">A GPU in the allocation is not a reason to use <code class="docutils literal notranslate"><span class="pre">gpu-code</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="NOTES_B_gpus_and_tasks.html#gpu-indices-are-not-the-scheduler-s-indices">GPU indices are not the scheduler’s indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NOTES_B_gpus_and_tasks.html#an-mdi-run-needs-two-tasks">An MDI run needs two tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NOTES_B_gpus_and_tasks.html#configuration-consequences">Configuration consequences</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="NOTES_C_environment.html">NOTES C – The LAMMPS environment, and what belongs in it</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="NOTES_C_environment.html#lammps-must-be-built-with-mdi">LAMMPS must be built with MDI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NOTES_C_environment.html#pytorch-is-not-in-the-environment-file">PyTorch is not in the environment file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NOTES_C_environment.html#what-does-not-belong-here">What does <strong>not</strong> belong here</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NOTES_C_environment.html#scripts-are-deployed-not-imported">Scripts are deployed, not imported</a></li>
+</ul>
+</li>
+</ul>
+</div>
 </section>
 
 
@@ -526,20 +580,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../getting_started/index.html"
+       href="../2026-06-22/NOTES_C_runbook.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Getting Started</p>
+        <p class="prev-next-title">Phase C runbook – manual end-to-end verification of QM-MD via MDI</p>
       </div>
     </a>
     <a class="right-next"
-       href="../developer_guide/index.html"
+       href="NOTES_A_engine_selection.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Developer Documentation</p>
+        <p class="prev-next-title">NOTES A – How a model reaches its engine</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -555,21 +609,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 
   <div class="sidebar-secondary-item">
-<div
-    id="pst-page-navigation-heading-2"
-    class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
-  </div>
-  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#index">Index</a></li>
-</ul>
-  </nav></div>
-
-  <div class="sidebar-secondary-item">
 
   <div class="tocsection sourcelink">
-    <a href="../_sources/user_guide/index.rst.txt">
+    <a href="../../../_sources/developer_guide/campaigns/2026-09-15/index.rst.txt">
       <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
   </div>
@@ -588,8 +630,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">

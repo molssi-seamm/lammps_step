@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>LAMMPS + MOPAC/xTB QM-MD via MDI &#8212; SEAMM LAMMPS Plug-in 2026.9.15.2 documentation</title>
+    <title>NOTES A – How a model reaches its engine &#8212; SEAMM LAMMPS Plug-in 2026.9.15.2 documentation</title>
   
   
   
@@ -55,13 +55,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'developer_guide/campaigns/2026-06-22/index';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'developer_guide/campaigns/2026-09-15/NOTES_A_engine_selection';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
 
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Phase C – LAMMPS driver: read _model_chemistry, launch the MDI engine" href="NOTES_C.html" />
-    <link rel="prev" title="Campaigns" href="../index.html" />
+    <link rel="next" title="NOTES B – GPUs, tasks, and what the scheduler is telling us" href="NOTES_B_gpus_and_tasks.html" />
+    <link rel="prev" title="Machine-learned forcefields: one engine, chosen by configuration" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2026.9.15.2" />
@@ -453,15 +453,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Campaigns</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">LAMMPS + MOPAC/xTB QM-MD via MDI</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="NOTES_C.html">Phase C – LAMMPS driver: read <code class="docutils literal notranslate"><span class="pre">_model_chemistry</span></code>, launch the MDI engine</a></li>
-<li class="toctree-l3"><a class="reference internal" href="NOTES_C_runbook.html">Phase C runbook – manual end-to-end verification of QM-MD via MDI</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../2026-06-22/index.html">LAMMPS + MOPAC/xTB QM-MD via MDI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../2026-06-22/NOTES_C.html">Phase C – LAMMPS driver: read <code class="docutils literal notranslate"><span class="pre">_model_chemistry</span></code>, launch the MDI engine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../2026-06-22/NOTES_C_runbook.html">Phase C runbook – manual end-to-end verification of QM-MD via MDI</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../2026-09-15/index.html">Machine-learned forcefields: one engine, chosen by configuration</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="../2026-09-15/NOTES_A_engine_selection.html">NOTES A – How a model reaches its engine</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../2026-09-15/NOTES_B_gpus_and_tasks.html">NOTES B – GPUs, tasks, and what the scheduler is telling us</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../2026-09-15/NOTES_C_environment.html">NOTES C – The LAMMPS environment, and what belongs in it</a></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">Machine-learned forcefields: one engine, chosen by configuration</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">NOTES A – How a model reaches its engine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="NOTES_B_gpus_and_tasks.html">NOTES B – GPUs, tasks, and what the scheduler is telling us</a></li>
+<li class="toctree-l3"><a class="reference internal" href="NOTES_C_environment.html">NOTES C – The LAMMPS environment, and what belongs in it</a></li>
 </ul>
 </details></li>
 </ul>
@@ -512,7 +512,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Campaigns</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">LAMMPS + MOPAC/xTB QM-MD via MDI</span></li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Machine-learned forcefields: one engine, chosen by configuration</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">NOTES A – How a model reaches its engine</span></li>
   </ul>
 </nav>
 </div>
@@ -529,39 +532,142 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="lammps-mopac-xtb-qm-md-via-mdi">
-<h1>LAMMPS + MOPAC/xTB QM-MD via MDI<a class="headerlink" href="#lammps-mopac-xtb-qm-md-via-mdi" title="Link to this heading">#</a></h1>
-<p>Driver-side (<code class="docutils literal notranslate"><span class="pre">lammps_step</span></code>) notes for the campaign that lets LAMMPS run MD
-with forces from a semiempirical QM engine (MOPAC, later xTB) over the MDI
-protocol.</p>
-<p>Contents:</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="NOTES_C.html">Phase C – LAMMPS driver: read <code class="docutils literal notranslate"><span class="pre">_model_chemistry</span></code>, launch the MDI engine</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="NOTES_C.html#phase-numbering">Phase numbering</a></li>
-<li class="toctree-l2"><a class="reference internal" href="NOTES_C.html#scope">Scope</a></li>
-<li class="toctree-l2"><a class="reference internal" href="NOTES_C.html#what-we-consume-the-phase-b-contract">What we consume (the Phase B contract)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="NOTES_C.html#the-existing-mace-path-and-why-mopac-is-a-new-path">The existing MACE path, and why MOPAC is a <em>new</em> path</a></li>
-<li class="toctree-l2"><a class="reference internal" href="NOTES_C.html#proposed-design">Proposed design</a></li>
-<li class="toctree-l2"><a class="reference internal" href="NOTES_C.html#decisions-resolved-2026-06-24">Decisions (resolved 2026-06-24)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="NOTES_C.html#post-verification-refinements-2026-06-24">Post-verification refinements (2026-06-24)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="NOTES_C.html#tests">Tests</a></li>
-<li class="toctree-l2"><a class="reference internal" href="NOTES_C.html#references">References</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="NOTES_C_runbook.html">Phase C runbook – manual end-to-end verification of QM-MD via MDI</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="NOTES_C_runbook.html#purpose">Purpose</a></li>
-<li class="toctree-l2"><a class="reference internal" href="NOTES_C_runbook.html#prerequisites">Prerequisites</a></li>
-<li class="toctree-l2"><a class="reference internal" href="NOTES_C_runbook.html#pre-flight-smoke-checks-cheap-isolate-failures-early">Pre-flight smoke checks (cheap, isolate failures early)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="NOTES_C_runbook.html#the-thin-line-run">The thin-line run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="NOTES_C_runbook.html#what-to-check">What to check</a></li>
-<li class="toctree-l2"><a class="reference internal" href="NOTES_C_runbook.html#troubleshooting">Troubleshooting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="NOTES_C_runbook.html#after-a-successful-run">After a successful run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="NOTES_C_runbook.html#references">References</a></li>
-</ul>
-</li>
-</ul>
+  <section id="notes-a-how-a-model-reaches-its-engine">
+<h1>NOTES A – How a model reaches its engine<a class="headerlink" href="#notes-a-how-a-model-reaches-its-engine" title="Link to this heading">#</a></h1>
+<section id="the-question">
+<h2>The question<a class="headerlink" href="#the-question" title="Link to this heading">#</a></h2>
+<p>A machine-learned forcefield is not evaluated by LAMMPS. LAMMPS drives a
+separate engine process over MDI, ships it the atoms, and takes back energy and
+forces. Three things therefore have to line up, and they belong to different
+owners:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>question</p></th>
+<th class="head"><p>owned by</p></th>
+<th class="head"><p>where it lives</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><em>which</em> model</p></td>
+<td><p>the flowchart</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">_pytorch_model</span></code> (a path)</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>which engine</em> serves it</p></td>
+<td><p>the model</p></td>
+<td><p>– nothing, before this campaign</p></td>
+</tr>
+<tr class="row-even"><td><p><em>how</em> to launch it here</p></td>
+<td><p>the machine</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">gpu-code</span></code> in <code class="docutils literal notranslate"><span class="pre">lammps.ini</span></code></p></td>
+</tr>
+</tbody>
+</table>
 </div>
+<p>The middle row was missing, and its absence was filled by guessing from the
+model’s file name.</p>
+</section>
+<section id="what-the-code-used-to-do">
+<h2>What the code used to do<a class="headerlink" href="#what-the-code-used-to-do" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">initialization.py</span></code> chose between an MDI run and a native pair style on the
+name of the model file:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="s2">"mliap"</span> <span class="ow">in</span> <span class="n">model</span><span class="p">:</span>
+    <span class="n">pair_style</span> <span class="n">mliap</span> <span class="o">...</span>
+<span class="k">elif</span> <span class="n">model</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">".mace.pt"</span><span class="p">):</span>
+    <span class="n">fix</span> <span class="n">mdi</span><span class="o">/</span><span class="n">qm</span> <span class="o">...</span>                 <span class="c1"># the MDI engine</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">pair_style</span> <span class="n">mace</span> <span class="o">...</span>            <span class="c1"># LAMMPS evaluates it itself</span>
+</pre></div>
+</div>
+<p>and <code class="docutils literal notranslate"><span class="pre">lammps.py</span></code> hard-coded one engine per machine, because <code class="docutils literal notranslate"><span class="pre">gpu-code</span></code> was a
+single template and <code class="docutils literal notranslate"><span class="pre">SEAMM_FF</span></code> – the variable <code class="docutils literal notranslate"><span class="pre">mace-mdi</span></code> reads – was the
+only way a model reached an engine.</p>
+<p>That works for exactly as long as there is one engine. A file name says nothing
+about how a model is evaluated: it is chosen by whoever trained it, and it
+changes when someone renames a file. An <code class="docutils literal notranslate"><span class="pre">xnns</span></code> checkpoint named for what it
+is, <code class="docutils literal notranslate"><span class="pre">2026-08-08.mace_les_xnns.pt</span></code>, does not end in <code class="docutils literal notranslate"><span class="pre">.mace.pt</span></code>, so it took
+the <code class="docutils literal notranslate"><span class="pre">else</span></code> branch and died with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ERROR</span><span class="p">:</span> <span class="n">Unrecognized</span> <span class="n">pair</span> <span class="n">style</span> <span class="s1">'mace'</span> <span class="p">(</span><span class="n">src</span><span class="o">/</span><span class="n">force</span><span class="o">.</span><span class="n">cpp</span><span class="p">:</span><span class="mi">275</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Reaching that pair style needs a LAMMPS built with a MACE pair style – which
+is the build the MDI route exists so as not to need. Nobody was using it.</p>
+<p>The same test also gated the <code class="docutils literal notranslate"><span class="pre">comm_modify</span></code> line that an MDI run needs, so it
+was missing from exactly the runs that had just been routed to MDI. That would
+have been the next failure.</p>
+</section>
+<section id="what-it-does-now">
+<h2>What it does now<a class="headerlink" href="#what-it-does-now" title="Link to this heading">#</a></h2>
+<p><strong>The plug-in decides whether a model goes to an engine, not which engine.</strong>
+Everything except an ML-IAP model – which LAMMPS really does evaluate itself
+– is served over MDI:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="s2">"mliap"</span> <span class="ow">in</span> <span class="n">model</span><span class="p">:</span>
+    <span class="n">pair_style</span> <span class="n">mliap</span> <span class="o">...</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">fix</span> <span class="n">mdi</span><span class="o">/</span><span class="n">qm</span> <span class="o">...</span>
+</pre></div>
+</div>
+<p><strong>The machine decides which engine.</strong> <code class="docutils literal notranslate"><span class="pre">gpu-code</span></code> is the only place that
+names one. To make that possible the model is offered both ways engines take
+it:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">SEAMM_FF</span></code></dt><dd><p>An environment variable. <code class="docutils literal notranslate"><span class="pre">mace-mdi</span></code> reads it.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">{MODEL}</span></code></dt><dd><p>Substituted into the command like <code class="docutils literal notranslate"><span class="pre">{NTASKS}</span></code>, by the executor’s existing
+mechanism (<code class="docutils literal notranslate"><span class="pre">command.format(**config,</span> <span class="pre">**ce)</span></code>). For engines taking the
+model as an argument: <code class="docutils literal notranslate"><span class="pre">xnns</span> <span class="pre">mdi</span> <span class="pre">--ckpt</span> <span class="pre">{MODEL}</span></code>.</p>
+</dd>
+</dl>
+<p>Both are always set, so nothing in <code class="docutils literal notranslate"><span class="pre">lammps_step</span></code> knows or needs to know which
+engine is configured. Adding a third engine is a <code class="docutils literal notranslate"><span class="pre">lammps.ini</span></code> edit.</p>
+</section>
+<section id="why-not-detect-the-model-type">
+<h2>Why not detect the model type<a class="headerlink" href="#why-not-detect-the-model-type" title="Link to this heading">#</a></h2>
+<p>Two alternatives were considered and rejected.</p>
+<p><em>Keep using the file name, but look for ``xnns`` in it.</em> It would have worked
+that day – the files are named that way – and it is one line. It was rejected
+because the failure mode is silent: rename a file and the run starts the wrong
+engine, which gives <code class="docutils literal notranslate"><span class="pre">KeyError:</span> <span class="pre">'hidden_irreps'</span></code> if you are lucky and wrong
+numbers if you are not.</p>
+<p><em>Identify the model by reading it.</em> This is feasible without torch, which the
+SEAMM environment does not have and must not have: a <code class="docutils literal notranslate"><span class="pre">.pt</span></code> file is a zip, and
+the pickled module references distinguish the formats. A prototype identified
+an <code class="docutils literal notranslate"><span class="pre">xnns</span></code> checkpoint, a <code class="docutils literal notranslate"><span class="pre">mace-torch</span></code> model and a deployed TorchScript
+archive correctly using only the standard library.</p>
+<p>It was rejected because it answers a question nobody needs answered. Detection
+matters only while more than one engine is in play, and the decision below
+means there is one.</p>
+</section>
+<section id="the-decision-xnns-is-the-mechanism">
+<h2>The decision: <code class="docutils literal notranslate"><span class="pre">xnns</span></code> is the mechanism<a class="headerlink" href="#the-decision-xnns-is-the-mechanism" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">xnns</span></code> serves every model family it knows – MACE, NequIP, Allegro, CACE,
+SchNet, ANI, PhysNet, HDNNP, BAMBOO – through one interface, and its MDI
+engine speaks the same protocol <code class="docutils literal notranslate"><span class="pre">lammps_step</span></code> already drives. It is therefore
+the single mechanism for machine-learned forcefields, and where it does not yet
+cover something, that is a gap to close in <code class="docutils literal notranslate"><span class="pre">xnns</span></code> rather than a reason to add
+a second path here.</p>
+<p>One consequence is worth recording, because it would otherwise look like an
+oversight: <code class="docutils literal notranslate"><span class="pre">xnns</span></code> cannot load a <code class="docutils literal notranslate"><span class="pre">mace-torch</span></code> model. <code class="docutils literal notranslate"><span class="pre">MDIEngine.from_checkpoint</span></code>
+expects the trainer’s <code class="docutils literal notranslate"><span class="pre">{&quot;model&quot;:</span> <span class="pre">...,</span> <span class="pre">&quot;cfg&quot;:</span> <span class="pre">...}</span></code> and raises
+<code class="docutils literal notranslate"><span class="pre">TypeError:</span> <span class="pre">'ScaleShiftMACE'</span> <span class="pre">object</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">subscriptable</span></code> on a bare model
+object. This did not need solving, because the older MACE models were being
+retrained – they carried a density error from the DFT functional used and were
+not scientifically meaningful. Had they been kept, the choice would have been
+between a transitional fallback to <code class="docutils literal notranslate"><span class="pre">mace-mdi</span></code> and asking for the loader to be
+generalised.</p>
+<p><code class="docutils literal notranslate"><span class="pre">mace-mdi</span></code> remains usable: it is a <code class="docutils literal notranslate"><span class="pre">gpu-code</span></code> line, and the shipped
+<code class="docutils literal notranslate"><span class="pre">lammps.ini</span></code> documents it as the MACE-specific alternative.</p>
+</section>
+<section id="what-this-leaves">
+<h2>What this leaves<a class="headerlink" href="#what-this-leaves" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>File names no longer decide behaviour anywhere in this path. Checkpoints can
+be named for what they are.</p></li>
+<li><p>A new engine is a configuration change, not a code change.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ff_form()</span></code> still returns <code class="docutils literal notranslate"><span class="pre">&quot;PyTorch&quot;</span></code>. The engine is a sub-distinction of
+it, and widening <code class="docutils literal notranslate"><span class="pre">ff_form</span></code> would have rippled into the classical/Kokkos/MDI
+logic for no gain.</p></li>
+</ul>
+</section>
 </section>
 
 
@@ -575,20 +681,20 @@ protocol.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../index.html"
+       href="index.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Campaigns</p>
+        <p class="prev-next-title">Machine-learned forcefields: one engine, chosen by configuration</p>
       </div>
     </a>
     <a class="right-next"
-       href="NOTES_C.html"
+       href="NOTES_B_gpus_and_tasks.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Phase C – LAMMPS driver: read <code class="docutils literal notranslate"><span class="pre">_model_chemistry</span></code>, launch the MDI engine</p>
+        <p class="prev-next-title">NOTES B – GPUs, tasks, and what the scheduler is telling us</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -604,9 +710,26 @@ protocol.</p>
 
 
   <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-question">The question</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-the-code-used-to-do">What the code used to do</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-it-does-now">What it does now</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-not-detect-the-model-type">Why not detect the model type</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-decision-xnns-is-the-mechanism">The decision: <code class="docutils literal notranslate"><span class="pre">xnns</span></code> is the mechanism</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-leaves">What this leaves</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
 
   <div class="tocsection sourcelink">
-    <a href="../../../_sources/developer_guide/campaigns/2026-06-22/index.rst.txt">
+    <a href="../../../_sources/developer_guide/campaigns/2026-09-15/NOTES_A_engine_selection.rst.txt">
       <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
   </div>
