@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.9.14.3 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.9.15 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=14f365ab"></script>
+    <script src="../../_static/documentation_options.js?v=3713ace6"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.14.3" />
+  <meta name="docsearch:version" content="2026.9.15" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -554,6 +554,26 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
     <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_gpu_code_is_usable</span><span class="p">(</span><span class="n">ff_form</span><span class="p">,</span> <span class="n">gpu_code</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Whether a forcefield can actually use the configured ``gpu-code``.</span>
+
+<span class="sd">    A GPU in the allocation is not on its own a reason to use ``gpu-code``.</span>
+<span class="sd">    ``NGPUS`` comes from the scheduler -- seamm_exec reads ``SLURM_JOB_GPUS``</span>
+<span class="sd">    -- so it is set for any job that asked for a GPU, whatever the forcefield.</span>
+
+<span class="sd">    ``gpu-code`` serves two unrelated purposes. A Kokkos command is how a</span>
+<span class="sd">    *classical* forcefield uses a GPU. An MDI command launches a</span>
+<span class="sd">    machine-learned engine alongside LAMMPS, and only a PyTorch forcefield has</span>
+<span class="sd">    a model for it to serve: run a classical one that way and the engine is</span>
+<span class="sd">    handed ``SEAMM_FF="Unknown"`` and dies with FileNotFoundError before</span>
+<span class="sd">    LAMMPS gets anything.</span>
+
+<span class="sd">    So the question is not "are there GPUs" but "does this command suit this</span>
+<span class="sd">    forcefield", which is decided by whether it drives MDI.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">"PyTorch"</span> <span class="ow">or</span> <span class="s2">"-mdi"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gpu_code</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_required_mpi_slots</span><span class="p">(</span><span class="n">command</span><span class="p">):</span>
@@ -1918,6 +1938,40 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="c1"># Setup the command lines</span>
             <span class="n">cmd</span> <span class="o">=</span> <span class="p">[]</span>
 
+            <span class="c1"># A GPU in the allocation is not on its own a reason to use</span>
+            <span class="c1"># gpu-code. NGPUS comes from the scheduler (seamm_exec reads</span>
+            <span class="c1"># SLURM_JOB_GPUS), so it is set for any job that asked for a</span>
+            <span class="c1"># GPU, whatever the forcefield. But an MDI gpu-code launches a</span>
+            <span class="c1"># machine-learned engine, which only makes sense for a PyTorch</span>
+            <span class="c1"># forcefield: run a classical one that way and the engine is</span>
+            <span class="c1"># handed SEAMM_FF="Unknown" and dies with FileNotFoundError.</span>
+            <span class="c1"># A Kokkos-style gpu-code has no such restriction -- that is</span>
+            <span class="c1"># how a classical forcefield is meant to use a GPU -- so key</span>
+            <span class="c1"># off whether the command drives MDI, not on GPUs alone.</span>
+            <span class="n">gpu_code</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"gpu-code"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+            <span class="n">use_gpu_code</span> <span class="o">=</span> <span class="s2">"NGPUS"</span> <span class="ow">in</span> <span class="n">ce</span>
+            <span class="c1"># MDI/QM builds its own launch script below and never consults</span>
+            <span class="c1"># gpu-code, so it needs the decision but not the advice.</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">use_gpu_code</span>
+                <span class="ow">and</span> <span class="n">ff_form</span> <span class="o">!=</span> <span class="s2">"MDI/QM"</span>
+                <span class="ow">and</span> <span class="ow">not</span> <span class="n">_gpu_code_is_usable</span><span class="p">(</span><span class="n">ff_form</span><span class="p">,</span> <span class="n">gpu_code</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
+                    <span class="n">__</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"The '</span><span class="si">{</span><span class="n">ff_form</span><span class="si">}</span><span class="s2">' forcefield cannot use the MDI "</span>
+                        <span class="s2">"engine that gpu-code in lammps.ini launches, which "</span>
+                        <span class="s2">"serves machine-learned potentials. Running on the "</span>
+                        <span class="s2">"CPU instead. To use a GPU for this forcefield, set "</span>
+                        <span class="s2">"gpu-code to a Kokkos command and gpu-cmd-args to "</span>
+                        <span class="s2">"the matching accelerator flags."</span><span class="p">,</span>
+                        <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">use_gpu_code</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="n">use_gpu_code</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_gpu_code_is_usable</span><span class="p">(</span><span class="n">ff_form</span><span class="p">,</span> <span class="n">gpu_code</span><span class="p">):</span>
+                <span class="n">use_gpu_code</span> <span class="o">=</span> <span class="kc">False</span>
+
             <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">"MDI/QM"</span><span class="p">:</span>
                 <span class="c1"># QM-MD over MDI: launch the QM engine (the listener, in its own</span>
                 <span class="c1"># conda environment) and the LAMMPS driver together, rendezvousing</span>
@@ -1931,19 +1985,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="k">elif</span> <span class="s2">"run_lammps"</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
                 <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"</span><span class="si">{python}</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"run_lammps"</span><span class="p">]</span>
                 <span class="k">if</span> <span class="p">(</span>
-                    <span class="s2">"NGPUS"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ce</span>
+                    <span class="ow">not</span> <span class="n">use_gpu_code</span>
                     <span class="ow">and</span> <span class="s2">"cmd-args"</span> <span class="ow">in</span> <span class="n">config</span>
                     <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">"cmd-args"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">""</span>
                 <span class="p">):</span>
                     <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">"--cmd-args"</span><span class="p">,</span> <span class="n">config</span><span class="p">[</span><span class="s2">"cmd-args"</span><span class="p">]])</span>
                 <span class="k">if</span> <span class="p">(</span>
-                    <span class="s2">"NGPUS"</span> <span class="ow">in</span> <span class="n">ce</span>
+                    <span class="n">use_gpu_code</span>
                     <span class="ow">and</span> <span class="s2">"gpu-cmd-args"</span> <span class="ow">in</span> <span class="n">config</span>
                     <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">"gpu-cmd-args"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">""</span>
                 <span class="p">):</span>
                     <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">"--cmd-args"</span><span class="p">,</span> <span class="n">config</span><span class="p">[</span><span class="s2">"gpu-cmd-args"</span><span class="p">]])</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="s2">"NGPUS"</span> <span class="ow">in</span> <span class="n">ce</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">use_gpu_code</span><span class="p">:</span>
                     <span class="c1"># This plug-in used to ship its own copy of the MACE MDI</span>
                     <span class="c1"># engine as mace_mdi.py. It is now maintained once, in the</span>
                     <span class="c1"># lammps-mdi package, and reached through its `mace-mdi`</span>
@@ -2007,7 +2061,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">:</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="sa">f</span><span class="s2">"    Using the forcefield '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="si">}</span><span class="s2">'."</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="s2">"NGPUS"</span> <span class="ow">in</span> <span class="n">ce</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">use_gpu_code</span><span class="p">:</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">"    LAMMPS running with </span><span class="si">{</span><span class="n">np</span><span class="si">}</span><span class="s2"> processes and </span><span class="si">{</span><span class="n">ce</span><span class="p">[</span><span class="s1">'NGPUS'</span><span class="p">]</span><span class="si">}</span><span class="s2"> gpus."</span>
                 <span class="p">)</span>

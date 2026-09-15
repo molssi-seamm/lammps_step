@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.9.14.3 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.9.15 documentation</title>
   
   
   
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=14f365ab"></script>
+    <script src="_static/documentation_options.js?v=3713ace6"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.14.3" />
+  <meta name="docsearch:version" content="2026.9.15" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.9.15 – Bugfix: a classical forcefield was sent to the machine-learning engine</dt><dd><ul class="simple">
+<li><p>Asking for a GPU made any LAMMPS job take the GPU command from lammps.ini,
+whatever the forcefield. Where that command launches an MDI engine – the usual
+setup for machine-learned potentials – a classical run such as OPLS-AA was
+handed to that engine, which has no model to serve and died with
+“FileNotFoundError: ‘Unknown’” before LAMMPS ran at all. The GPU count comes
+from the scheduler, so it says nothing about what the calculation needs; the
+choice now depends on whether the configured command suits the forcefield.
+A Kokkos GPU command, which is how a classical forcefield is meant to use a
+GPU, is unaffected.</p></li>
+<li><p>This only became reachable when queues began offering a GPU count at
+submission, so the first classical job submitted with one hit it.</p></li>
+</ul>
+</dd>
 <dt>2026.9.14.3 – Say plainly when a GPU job has too few tasks</dt><dd><ul class="simple">
 <li><p>A GPU command that drives an MDI engine runs the engine and LAMMPS as separate
 MPI ranks, and those counts are written into the command rather than derived from
