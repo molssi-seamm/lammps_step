@@ -1,6 +1,23 @@
 =======
 History
 =======
+2026.9.15.1 -- Machine-learned forcefields are served by an engine, whichever one
+    * Which engine evaluates a machine-learned forcefield is now set entirely by
+      gpu-code in lammps.ini. The model file is offered to it two ways -- as the
+      SEAMM_FF environment variable, and as {MODEL} for substitution into the command
+      -- so an engine taking the model as an argument, such as 'xnns mdi --ckpt
+      {MODEL}', works alongside one reading the environment, such as mace-mdi, with
+      nothing in the plug-in needing to know which is configured.
+    * Every PyTorch forcefield except an ML-IAP one now goes to that engine. The
+      choice used to depend on the model file being named '.mace.pt', with anything
+      else falling back to 'pair_style mace'. A file name says nothing about how a
+      model is evaluated, and reaching that pair style needs a LAMMPS built with it --
+      which is the build the MDI route exists to avoid needing. A checkpoint named for
+      what it was rather than for that convention failed with "Unrecognized pair style
+      'mace'". The pair style is no longer written.
+    * The comm_modify line an MDI run needs was applied on the same file-name test,
+      so it now applies to every MDI run.
+
 2026.9.15 -- Bugfix: a classical forcefield was sent to the machine-learning engine
     * Asking for a GPU made any LAMMPS job take the GPU command from lammps.ini,
       whatever the forcefield. Where that command launches an MDI engine -- the usual
