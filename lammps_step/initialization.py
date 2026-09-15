@@ -792,7 +792,9 @@ class Initialization(seamm.Node):
                 " or 3-D periodicity at the moment!"
             )
         lines.append("")
-        if model.endswith(".mace.pt"):
+        if "mliap" not in model:
+            # The MDI fix gathers the whole system on one rank, so LAMMPS's own
+            # ghost cutoff is unused and warns if it is left at zero.
             lines.append("comm_modify         cutoff 2.0  # To remove warnings")
             lines.append("")
         lines.append("fix                 prop all property/atom mol")
@@ -801,10 +803,22 @@ class Initialization(seamm.Node):
         lines.append("#    define the style for MACE")
 
         if "mliap" in model:
+            # A model LAMMPS evaluates itself, through the ML-IAP package.
             lines.append(f"pair_style          mliap unified {model} 0")
             lines.append(f"pair_coeff          * * {' '.join(eex['atom types'])}")
-        elif model.endswith(".mace.pt"):
-            # MDI setup: no pair style needed, but do need the fix
+        else:
+            # Everything else is served by an engine over MDI, so LAMMPS needs
+            # no pair style -- only the fix that ships the atoms out and takes
+            # the forces back. Which engine runs is decided by gpu-code in
+            # lammps.ini, not here.
+            #
+            # This used to depend on the model file being named '.mace.pt',
+            # falling back to `pair_style mace` otherwise. That name says
+            # nothing about how a model is evaluated: an xnns checkpoint named
+            # for what it is got the pair style instead and died with
+            # "Unrecognized pair style 'mace'", since reaching it needs a
+            # LAMMPS built with a MACE pair style -- which is the build the MDI
+            # route exists to avoid needing.
             if periodicity == 0:
                 lines.append(
                     "fix                 mdi_fix all mdi/qm elements "
@@ -815,11 +829,6 @@ class Initialization(seamm.Node):
                     "fix                 mdi_fix all mdi/qm virial yes elements "
                     f"{' '.join(eex['atom types'])}"
                 )
-        else:
-            lines.append("pair_style          mace no_domain_decomposition")
-            lines.append(
-                f"pair_coeff          * * {model} {' '.join(eex['atom types'])}"
-            )
 
         # Set up standard variables
         for variable in thermo_variables:
@@ -839,9 +848,9 @@ class Initialization(seamm.Node):
 
         The QM engine computes the energy and forces for the whole system, so
         LAMMPS needs no ``pair_style`` -- only ``fix mdi/qm``, which ships the
-        atoms to the engine and receives the forces back, exactly as the MACE
-        ``.mace.pt`` path does. The engine itself is launched by ``lammps.py``;
-        here we only write the input deck. See
+        atoms to the engine and receives the forces back, exactly as the
+        machine-learned forcefield path does. The engine itself is launched
+        by ``lammps.py``; here we only write the input deck. See
         campaigns/2026-06-22/NOTES_C.rst.
         """
         # Get the configuration
