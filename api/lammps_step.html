@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.9.15 documentation</title>
+    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.9.15.1 documentation</title>
   
   
   
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=3713ace6"></script>
+    <script src="../_static/documentation_options.js?v=f6a62181"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="lammps_step" href="modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.15" />
+  <meta name="docsearch:version" content="2026.9.15.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1065,9 +1065,9 @@ a step, and dimensions of the graphical node.</p></li>
 <dd><p>Initialization input for QM-MD driven over MDI (e.g. MOPAC).</p>
 <p>The QM engine computes the energy and forces for the whole system, so
 LAMMPS needs no <code class="docutils literal notranslate"><span class="pre">pair_style</span></code> – only <code class="docutils literal notranslate"><span class="pre">fix</span> <span class="pre">mdi/qm</span></code>, which ships the
-atoms to the engine and receives the forces back, exactly as the MACE
-<code class="docutils literal notranslate"><span class="pre">.mace.pt</span></code> path does. The engine itself is launched by <code class="docutils literal notranslate"><span class="pre">lammps.py</span></code>;
-here we only write the input deck. See
+atoms to the engine and receives the forces back, exactly as the
+machine-learned forcefield path does. The engine itself is launched
+by <code class="docutils literal notranslate"><span class="pre">lammps.py</span></code>; here we only write the input deck. See
 campaigns/2026-06-22/NOTES_C.rst.</p>
 </dd></dl>
 

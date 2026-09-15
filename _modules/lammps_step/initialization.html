@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.initialization &#8212; SEAMM LAMMPS Plug-in 2026.9.15 documentation</title>
+    <title>lammps_step.initialization &#8212; SEAMM LAMMPS Plug-in 2026.9.15.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=3713ace6"></script>
+    <script src="../../_static/documentation_options.js?v=f6a62181"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.15" />
+  <meta name="docsearch:version" content="2026.9.15.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1296,7 +1296,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="s2">" or 3-D periodicity at the moment!"</span>
             <span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">".mace.pt"</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">"mliap"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">model</span><span class="p">:</span>
+            <span class="c1"># The MDI fix gathers the whole system on one rank, so LAMMPS's own</span>
+            <span class="c1"># ghost cutoff is unused and warns if it is left at zero.</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"comm_modify         cutoff 2.0  # To remove warnings"</span><span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"fix                 prop all property/atom mol"</span><span class="p">)</span>
@@ -1305,10 +1307,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"#    define the style for MACE"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">"mliap"</span> <span class="ow">in</span> <span class="n">model</span><span class="p">:</span>
+            <span class="c1"># A model LAMMPS evaluates itself, through the ML-IAP package.</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"pair_style          mliap unified </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2"> 0"</span><span class="p">)</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"pair_coeff          * * </span><span class="si">{</span><span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s1">'atom types'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">model</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">".mace.pt"</span><span class="p">):</span>
-            <span class="c1"># MDI setup: no pair style needed, but do need the fix</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Everything else is served by an engine over MDI, so LAMMPS needs</span>
+            <span class="c1"># no pair style -- only the fix that ships the atoms out and takes</span>
+            <span class="c1"># the forces back. Which engine runs is decided by gpu-code in</span>
+            <span class="c1"># lammps.ini, not here.</span>
+            <span class="c1">#</span>
+            <span class="c1"># This used to depend on the model file being named '.mace.pt',</span>
+            <span class="c1"># falling back to `pair_style mace` otherwise. That name says</span>
+            <span class="c1"># nothing about how a model is evaluated: an xnns checkpoint named</span>
+            <span class="c1"># for what it is got the pair style instead and died with</span>
+            <span class="c1"># "Unrecognized pair style 'mace'", since reaching it needs a</span>
+            <span class="c1"># LAMMPS built with a MACE pair style -- which is the build the MDI</span>
+            <span class="c1"># route exists to avoid needing.</span>
             <span class="k">if</span> <span class="n">periodicity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                     <span class="s2">"fix                 mdi_fix all mdi/qm elements "</span>
@@ -1319,11 +1333,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="s2">"fix                 mdi_fix all mdi/qm virial yes elements "</span>
                     <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s1">'atom types'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"pair_style          mace no_domain_decomposition"</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"pair_coeff          * * </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s1">'atom types'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span>
-            <span class="p">)</span>
 
         <span class="c1"># Set up standard variables</span>
         <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">thermo_variables</span><span class="p">:</span>
@@ -1346,9 +1355,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <span class="sd">        The QM engine computes the energy and forces for the whole system, so</span>
 <span class="sd">        LAMMPS needs no ``pair_style`` -- only ``fix mdi/qm``, which ships the</span>
-<span class="sd">        atoms to the engine and receives the forces back, exactly as the MACE</span>
-<span class="sd">        ``.mace.pt`` path does. The engine itself is launched by ``lammps.py``;</span>
-<span class="sd">        here we only write the input deck. See</span>
+<span class="sd">        atoms to the engine and receives the forces back, exactly as the</span>
+<span class="sd">        machine-learned forcefield path does. The engine itself is launched</span>
+<span class="sd">        by ``lammps.py``; here we only write the input deck. See</span>
 <span class="sd">        campaigns/2026-06-22/NOTES_C.rst.</span>
 <span class="sd">        """</span>
         <span class="c1"># Get the configuration</span>

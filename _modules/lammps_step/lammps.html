@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.9.15 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.9.15.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=3713ace6"></script>
+    <script src="../../_static/documentation_options.js?v=f6a62181"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.15" />
+  <meta name="docsearch:version" content="2026.9.15.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1922,8 +1922,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
             <span class="c1"># The forcefield file for PyTorch/MDI runs (keyed off the forcefield</span>
             <span class="c1"># form, not the model label, which is now a grammar string).</span>
+            <span class="c1">#</span>
+            <span class="c1"># Two ways in, because engines differ in how they take the model.</span>
+            <span class="c1"># SEAMM_FF is the environment variable mace-mdi reads. {MODEL} is</span>
+            <span class="c1"># for engines that take it as an argument -- `xnns mdi --ckpt</span>
+            <span class="c1"># {MODEL}` -- and is substituted into the command by the executor</span>
+            <span class="c1"># along with {NTASKS} and the rest. Setting both leaves the choice</span>
+            <span class="c1"># of engine entirely to gpu-code in lammps.ini, with nothing here</span>
+            <span class="c1"># needing to know which one is configured.</span>
             <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">"PyTorch"</span><span class="p">:</span>
-                <span class="n">env</span><span class="p">[</span><span class="s2">"SEAMM_FF"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"_pytorch_model"</span><span class="p">)</span>
+                <span class="n">model_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"_pytorch_model"</span><span class="p">)</span>
+                <span class="n">env</span><span class="p">[</span><span class="s2">"SEAMM_FF"</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_path</span>
+                <span class="n">ce</span><span class="p">[</span><span class="s2">"MODEL"</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_path</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">env</span><span class="p">[</span><span class="s2">"SEAMM_FF"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"Unknown"</span>
 
