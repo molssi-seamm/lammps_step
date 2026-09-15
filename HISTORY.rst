@@ -1,6 +1,17 @@
 =======
 History
 =======
+2026.9.15.2 -- Bugfix: concurrent GPU jobs bound to the same cores
+    * mdi_bind.sh chooses which cores to run the engine and the driver on from a map
+      of the GPUs on the machine, so that each is near its card. It was looking that
+      map up by the GPU's index within the job's own allocation, which is 0 for every
+      job given a single GPU whichever card that is, so two jobs running at once both
+      took the cores belonging to GPU 0 and shared them. It now looks up by the
+      physical index, and jobs on different cards get different cores.
+    * Note that ~/SEAMM/bin/mdi_bind.sh is not replaced once it exists, since the core
+      layout in it is specific to the machine and meant to be edited. Delete it to
+      pick up this version.
+
 2026.9.15.1 -- Machine-learned forcefields are served by an engine, whichever one
     * Which engine evaluates a machine-learned forcefield is now set entirely by
       gpu-code in lammps.ini. The model file is offered to it two ways -- as the

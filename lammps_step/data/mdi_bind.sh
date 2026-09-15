@@ -1,5 +1,5 @@
 #!/bin/bash
-#MolSSI lammps_step:mdi_bind 1.2
+#MolSSI lammps_step:mdi_bind 1.3
 # mdi_bind.sh — Resource binding for MACE MDI engine + LAMMPS driver
 #
 # Binds the MACE engine (rank 0) to the selected GPU and its NUMA-local CPUs,
@@ -27,6 +27,18 @@ LOCAL_RANK="${OMPI_COMM_WORLD_LOCAL_RANK:-0}"
 IFS=',' read -ra GPU_ARRAY <<< "$SEAMM_GPUS"
 GPU_ID="${GPU_ARRAY[0]}"  # Use first GPU for this simulation
 
+# The physical index of that GPU, which is not the same number.  SEAMM_GPUS
+# counts within the allocation, so a job given one GPU always sees 0 whichever
+# card that is.  The CPU map below, and nvidia-smi, are both in the machine's
+# own numbering, so they need translating -- otherwise every concurrent job
+# picks the cores belonging to GPU 0 and they land on top of each other.
+if [ -n "${CUDA_VISIBLE_DEVICES+set}" ]; then
+    PHYSICAL_GPU=$(echo "$CUDA_VISIBLE_DEVICES" | cut -d, -f$((GPU_ID + 1)))
+    [ -z "$PHYSICAL_GPU" ] && PHYSICAL_GPU="$GPU_ID"
+else
+    PHYSICAL_GPU="$GPU_ID"
+fi
+
 # ---------------------------------------------------------------------------
 # Map GPU index to L3 cache groups for EPYC 7763
 # Each GPU gets two groups: one for the engine, one for the LAMMPS driver
@@ -52,7 +64,7 @@ export OMPI_MCA_mpi_wait_mode=1
 # ---------------------------------------------------------------------------
 if [ "$LOCAL_RANK" -eq 0 ]; then
     # ---- Engine process ----
-    CPU_BIND="${GPU_TO_ENGINE_CPU[$GPU_ID]}"
+    CPU_BIND="${GPU_TO_ENGINE_CPU[$PHYSICAL_GPU]}"
 
     if [ -z "$CPU_BIND" ]; then
         echo "Error: no CPU binding defined for GPU $GPU_ID" >&2
@@ -67,19 +79,14 @@ if [ "$LOCAL_RANK" -eq 0 ]; then
     # within that allocation and there is nothing to add.
     if [ -z "${CUDA_VISIBLE_DEVICES+set}" ]; then
         export CUDA_VISIBLE_DEVICES="$GPU_ID"
-        MONITOR_GPU="$GPU_ID"
-    else
-        # nvidia-smi indexes physically and ignores CUDA_VISIBLE_DEVICES, so map
-        # our logical GPU back to a physical one just for the monitor.
-        MONITOR_GPU=$(echo "$CUDA_VISIBLE_DEVICES" | cut -d, -f$((GPU_ID + 1)))
-        [ -z "$MONITOR_GPU" ] && MONITOR_GPU="$GPU_ID"
     fi
+    MONITOR_GPU="$PHYSICAL_GPU"   # nvidia-smi indexes physically
 
     export OMP_NUM_THREADS=1
     export TORCH_NUM_THREADS=4
     export MKL_NUM_THREADS=4
 
-    echo "Engine (rank $LOCAL_RANK) -> GPU $GPU_ID (physical $MONITOR_GPU), CPUs $CPU_BIND" >&2
+    echo "Engine (rank $LOCAL_RANK) -> GPU $GPU_ID (physical $PHYSICAL_GPU), CPUs $CPU_BIND" >&2
 
     # Start GPU memory/utilization monitor
     MEMORY_LOG="${SEAMM_MEMORY_LOG:-./gpu_${MONITOR_GPU}_engine.log}"
@@ -108,7 +115,7 @@ if [ "$LOCAL_RANK" -eq 0 ]; then
 
 else
     # ---- Driver process (LAMMPS) ----
-    CPU_BIND="${GPU_TO_DRIVER_CPU[$GPU_ID]}"
+    CPU_BIND="${GPU_TO_DRIVER_CPU[$PHYSICAL_GPU]}"
 
     if [ -z "$CPU_BIND" ]; then
         echo "Error: no CPU binding defined for driver with GPU $GPU_ID" >&2
@@ -119,7 +126,7 @@ else
     export CUDA_VISIBLE_DEVICES=""
     export OMP_NUM_THREADS=1
 
-    echo "Driver (rank $LOCAL_RANK) -> no GPU, CPUs $CPU_BIND" >&2
+    echo "Driver (rank $LOCAL_RANK) -> no GPU (GPU $PHYSICAL_GPU's group), CPUs $CPU_BIND" >&2
 
     echo "$@" > driver.cmd
     
