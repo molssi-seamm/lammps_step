@@ -1,6 +1,19 @@
 =======
 History
 =======
+2026.9.15 -- Bugfix: a classical forcefield was sent to the machine-learning engine
+    * Asking for a GPU made any LAMMPS job take the GPU command from lammps.ini,
+      whatever the forcefield. Where that command launches an MDI engine -- the usual
+      setup for machine-learned potentials -- a classical run such as OPLS-AA was
+      handed to that engine, which has no model to serve and died with
+      "FileNotFoundError: 'Unknown'" before LAMMPS ran at all. The GPU count comes
+      from the scheduler, so it says nothing about what the calculation needs; the
+      choice now depends on whether the configured command suits the forcefield.
+      A Kokkos GPU command, which is how a classical forcefield is meant to use a
+      GPU, is unaffected.
+    * This only became reachable when queues began offering a GPU count at
+      submission, so the first classical job submitted with one hit it.
+
 2026.9.14.3 -- Say plainly when a GPU job has too few tasks
     * A GPU command that drives an MDI engine runs the engine and LAMMPS as separate
       MPI ranks, and those counts are written into the command rather than derived from
