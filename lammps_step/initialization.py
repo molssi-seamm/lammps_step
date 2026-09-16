@@ -814,7 +814,7 @@ class Initialization(seamm.Node):
             #
             # This used to depend on the model file being named '.mace.pt',
             # falling back to `pair_style mace` otherwise. That name says
-            # nothing about how a model is evaluated: an xnns checkpoint named
+            # nothing about how a model is evaluated: an xnn checkpoint named
             # for what it is got the pair style instead and died with
             # "Unrecognized pair style 'mace'", since reaching it needs a
             # LAMMPS built with a MACE pair style -- which is the build the MDI
@@ -933,10 +933,11 @@ class Initialization(seamm.Node):
         n_atoms = configuration.n_atoms
         atoms = configuration.atoms
 
-        # The elements, used for e.g. dump statements
+        # The elements, used for e.g. dump statements. LAMMPS wants one
+        # element per atom *type*, not per atom, so this is filled in below
+        # as each new type is encountered.
         elements = atoms.symbols
         eex["elements"] = []
-        eex["elements"].extend(elements)
 
         # The periodicity & cell parameters
         periodicity = eex["periodicity"] = configuration.periodicity
@@ -952,6 +953,7 @@ class Initialization(seamm.Node):
             if element in atom_types:
                 index = atom_types.index(element) + 1
             else:
+                eex["elements"].append(element)
                 atom_types.append(element)
                 index = len(atom_types)
                 masses.append(

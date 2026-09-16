@@ -1402,7 +1402,7 @@ class LAMMPS(seamm.Node):
             #
             # Two ways in, because engines differ in how they take the model.
             # SEAMM_FF is the environment variable mace-mdi reads. {MODEL} is
-            # for engines that take it as an argument -- `xnns mdi --ckpt
+            # for engines that take it as an argument -- `xnn mdi --ckpt
             # {MODEL}` -- and is substituted into the command by the executor
             # along with {NTASKS} and the rest. Setting both leaves the choice
             # of engine entirely to gpu-code in lammps.ini, with nothing here

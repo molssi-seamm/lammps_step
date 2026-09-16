@@ -1,6 +1,18 @@
 =======
 History
 =======
+2026.9.16 -- Bugfix: trajectory output failed with machine-learned potentials
+    * Writing a trajectory (dump or extxyz) from a run using a PyTorch/MDI potential
+      such as MACE died in LAMMPS with "Unknown dump_modify keyword: H". The element
+      list given to LAMMPS had one entry per atom rather than one per atom type, so
+      for anything beyond a handful of atoms the surplus entries were read as
+      keywords. The list is now per type, as it already was for OpenKIM models.
+    * The Python engine for ML potentials has been renamed from xnns to xnn. The
+      examples in the default lammps.ini and comments now use the new name. If your
+      ~/SEAMM/lammps.ini has a gpu-code line using `xnns mdi`, change it to `xnn mdi`
+      and reinstall the engine, since checkpoints saved with the new package can only
+      be loaded by it.
+
 2026.9.15.2 -- Bugfix: concurrent GPU jobs bound to the same cores
     * mdi_bind.sh chooses which cores to run the engine and the driver on from a map
       of the GPUs on the machine, so that each is near its card. It was looking that
