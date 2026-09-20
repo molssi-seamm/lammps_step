@@ -1,6 +1,19 @@
 =======
 History
 =======
+2026.9.20 -- Bugfix: a large system could be given a net charge
+    * The charges were written to the structure file for LAMMPS with three
+      decimals, while a forcefield assigns four or more. For a small molecule the
+      rounding is harmless, but over a large system it accumulates: 500 molecules
+      of ethylene carbonate, 5000 atoms whose charges add up to zero, were handed
+      to LAMMPS as a system with a charge of -1. They are now written with six
+      decimals, which leaves the total as the forcefield set it.
+    * Warnings from assigning the forcefield -- in particular that the charges did
+      not add up and have been adjusted -- now appear in the step's output and the
+      job's output. They went only to the log, which for a job in a queue is the
+      queueing system's output file if it is kept at all, so a change to the
+      charges could pass unnoticed.
+
 2026.9.16 -- Bugfix: trajectory output failed with machine-learned potentials
     * Writing a trajectory (dump or extxyz) from a run using a PyTorch/MDI potential
       such as MACE died in LAMMPS with "Unknown dump_modify keyword: H". The element

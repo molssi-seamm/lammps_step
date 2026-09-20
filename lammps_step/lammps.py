@@ -1831,8 +1831,8 @@ class LAMMPS(seamm.Node):
                 ):
                     x, y, z, index = xyz_index
                     lines.append(
-                        f"{i:6d} {mol + 1:6d} {index:6d} {q:6.3f} {x:12.7f} {y:12.7f} "
-                        f"{z:12.7f}"
+                        f"{i:6d} {mol + 1:6d} {index:6d} {q:12.6f} {x:12.7f} "
+                        f"{y:12.7f} {z:12.7f}"
                     )
             else:
                 for i, xyz_index, q in zip(
@@ -1840,7 +1840,7 @@ class LAMMPS(seamm.Node):
                 ):
                     x, y, z, index = xyz_index
                     lines.append(
-                        f"{i:6d} {index:6d} {q:6.3f} {x:12.7f} {y:12.7f} {z:12.7f}"
+                        f"{i:6d} {index:6d} {q:12.6f} {x:12.7f} {y:12.7f} {z:12.7f}"
                     )
         else:
             for i, xyz_index in enumerate(eex["atoms"]):

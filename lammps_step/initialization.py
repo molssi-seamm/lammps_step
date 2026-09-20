@@ -186,12 +186,22 @@ class Initialization(seamm.Node):
         if ff_form != "reaxff":
             # And atom-type if necessary
             key = f"atom_types_{ffname}"
+            warnings = []
             if key not in configuration.atoms:
                 logger.debug("Atom typing")
-                ff.assign_forcefield(configuration)
+                warnings = ff.assign_forcefield(configuration)
             else:
                 if any(typ is None for typ in configuration.atoms[key]):
-                    ff.assign_forcefield(configuration)
+                    warnings = ff.assign_forcefield(configuration)
+
+            # Anything the forcefield needs to tell the user, such as having had to
+            # adjust the charges, belongs in the output where they will see it, not
+            # only in the log. A version of seamm_ff_util from before this returns
+            # None rather than a list.
+            for warning in warnings or []:
+                printer.important(__(warning, indent=self.indent + 4 * " "))
+            if warnings:
+                printer.important("")
 
         # Get the energy expression.
         style = (
