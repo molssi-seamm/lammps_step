@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.initialization &#8212; SEAMM LAMMPS Plug-in 2026.9.15.2 documentation</title>
+    <title>lammps_step.initialization &#8212; SEAMM LAMMPS Plug-in 2026.9.20 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=c15eabeb"></script>
+    <script src="../../_static/documentation_options.js?v=c24a4294"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.15.2" />
+  <meta name="docsearch:version" content="2026.9.20" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -681,12 +681,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">if</span> <span class="n">ff_form</span> <span class="o">!=</span> <span class="s2">"reaxff"</span><span class="p">:</span>
             <span class="c1"># And atom-type if necessary</span>
             <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"atom_types_</span><span class="si">{</span><span class="n">ffname</span><span class="si">}</span><span class="s2">"</span>
+            <span class="n">warnings</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Atom typing"</span><span class="p">)</span>
-                <span class="n">ff</span><span class="o">.</span><span class="n">assign_forcefield</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+                <span class="n">warnings</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">assign_forcefield</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">typ</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">typ</span> <span class="ow">in</span> <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">key</span><span class="p">]):</span>
-                    <span class="n">ff</span><span class="o">.</span><span class="n">assign_forcefield</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+                    <span class="n">warnings</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">assign_forcefield</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+
+            <span class="c1"># Anything the forcefield needs to tell the user, such as having had to</span>
+            <span class="c1"># adjust the charges, belongs in the output where they will see it, not</span>
+            <span class="c1"># only in the log. A version of seamm_ff_util from before this returns</span>
+            <span class="c1"># None rather than a list.</span>
+            <span class="k">for</span> <span class="n">warning</span> <span class="ow">in</span> <span class="n">warnings</span> <span class="ow">or</span> <span class="p">[]:</span>
+                <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">warning</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">warnings</span><span class="p">:</span>
+                <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 
         <span class="c1"># Get the energy expression.</span>
         <span class="n">style</span> <span class="o">=</span> <span class="p">(</span>
@@ -1318,7 +1328,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="c1">#</span>
             <span class="c1"># This used to depend on the model file being named '.mace.pt',</span>
             <span class="c1"># falling back to `pair_style mace` otherwise. That name says</span>
-            <span class="c1"># nothing about how a model is evaluated: an xnns checkpoint named</span>
+            <span class="c1"># nothing about how a model is evaluated: an xnn checkpoint named</span>
             <span class="c1"># for what it is got the pair style instead and died with</span>
             <span class="c1"># "Unrecognized pair style 'mace'", since reaching it needs a</span>
             <span class="c1"># LAMMPS built with a MACE pair style -- which is the build the MDI</span>
@@ -1443,10 +1453,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">n_atoms</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">n_atoms</span>
         <span class="n">atoms</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span>
 
-        <span class="c1"># The elements, used for e.g. dump statements</span>
+        <span class="c1"># The elements, used for e.g. dump statements. LAMMPS wants one</span>
+        <span class="c1"># element per atom *type*, not per atom, so this is filled in below</span>
+        <span class="c1"># as each new type is encountered.</span>
         <span class="n">elements</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">symbols</span>
         <span class="n">eex</span><span class="p">[</span><span class="s2">"elements"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">eex</span><span class="p">[</span><span class="s2">"elements"</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span>
 
         <span class="c1"># The periodicity &amp; cell parameters</span>
         <span class="n">periodicity</span> <span class="o">=</span> <span class="n">eex</span><span class="p">[</span><span class="s2">"periodicity"</span><span class="p">]</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span>
@@ -1462,6 +1473,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="k">if</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">atom_types</span><span class="p">:</span>
                 <span class="n">index</span> <span class="o">=</span> <span class="n">atom_types</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="k">else</span><span class="p">:</span>
+                <span class="n">eex</span><span class="p">[</span><span class="s2">"elements"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
                 <span class="n">atom_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
                 <span class="n">index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">atom_types</span><span class="p">)</span>
                 <span class="n">masses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
