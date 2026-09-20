@@ -10,6 +10,10 @@ dependencies:
   - pip
 
   # SEAMM
+  # seamm.Node still uses the bibtexparser 1.x API (loads), but reference-handler
+  # does not pin it, so conda is free to bring in 2.x and break every test that
+  # creates a node.
+  - bibtexparser<2
   - kim-query
   - py-cpuinfo
   - rdkit

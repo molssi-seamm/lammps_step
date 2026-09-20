@@ -13,6 +13,8 @@ History
       job's output. They went only to the log, which for a job in a queue is the
       queueing system's output file if it is kept at all, so a change to the
       charges could pass unnoticed.
+    * Internal: pinned bibtexparser to 1.x and added Pmw in the test environment,
+      both of which the tests need and neither of which was there.
 
 2026.9.16 -- Bugfix: trajectory output failed with machine-learned potentials
     * Writing a trajectory (dump or extxyz) from a run using a PyTorch/MDI potential
