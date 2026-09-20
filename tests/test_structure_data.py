@@ -5,6 +5,8 @@
 
 import types
 
+import pytest
+
 import lammps_step
 
 # The charges of the 500 ethylene carbonate molecules of a real job, assigned from
@@ -66,12 +68,15 @@ def test_charges_keep_the_system_neutral():
     more, so over a large system the roundings accumulated: these 5000 atoms sum
     to zero but were written as a system with a charge of -1.
     """
-    assert sum(EC_CHARGES) == 0.0
+    # Summing 5000 floats leaves a little noise, which varies with the platform.
+    # The tolerance is far below what this is about: the charges used to add up to
+    # a whole electron.
+    assert sum(EC_CHARGES) == pytest.approx(0.0, abs=1e-6)
 
     charges = _charges_in(_structure_data(EC_CHARGES))
 
     assert len(charges) == len(EC_CHARGES)
-    assert sum(charges) == 0.0
+    assert sum(charges) == pytest.approx(0.0, abs=1e-6)
 
 
 def test_charges_are_written_to_six_decimals():
@@ -109,4 +114,4 @@ def test_charges_without_molecules():
     start = lines.index("Atoms") + 2
     charges = [float(line.split()[2]) for line in lines[start : start + n_atoms]]
 
-    assert sum(charges) == 0.0
+    assert sum(charges) == pytest.approx(0.0, abs=1e-6)
