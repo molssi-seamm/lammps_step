@@ -1,6 +1,33 @@
 =======
 History
 =======
+2026.9.20 -- Bugfix: a large system could be given a net charge
+    * The charges were written to the structure file for LAMMPS with three
+      decimals, while a forcefield assigns four or more. For a small molecule the
+      rounding is harmless, but over a large system it accumulates: 500 molecules
+      of ethylene carbonate, 5000 atoms whose charges add up to zero, were handed
+      to LAMMPS as a system with a charge of -1. They are now written with six
+      decimals, which leaves the total as the forcefield set it.
+    * Warnings from assigning the forcefield -- in particular that the charges did
+      not add up and have been adjusted -- now appear in the step's output and the
+      job's output. They went only to the log, which for a job in a queue is the
+      queueing system's output file if it is kept at all, so a change to the
+      charges could pass unnoticed.
+    * Internal: pinned bibtexparser to 1.x and added Pmw in the test environment,
+      both of which the tests need and neither of which was there.
+
+2026.9.16 -- Bugfix: trajectory output failed with machine-learned potentials
+    * Writing a trajectory (dump or extxyz) from a run using a PyTorch/MDI potential
+      such as MACE died in LAMMPS with "Unknown dump_modify keyword: H". The element
+      list given to LAMMPS had one entry per atom rather than one per atom type, so
+      for anything beyond a handful of atoms the surplus entries were read as
+      keywords. The list is now per type, as it already was for OpenKIM models.
+    * The Python engine for ML potentials has been renamed from xnns to xnn. The
+      examples in the default lammps.ini and comments now use the new name. If your
+      ~/SEAMM/lammps.ini has a gpu-code line using `xnns mdi`, change it to `xnn mdi`
+      and reinstall the engine, since checkpoints saved with the new package can only
+      be loaded by it.
+
 2026.9.15.2 -- Bugfix: concurrent GPU jobs bound to the same cores
     * mdi_bind.sh chooses which cores to run the engine and the driver on from a map
       of the GPUs on the machine, so that each is near its card. It was looking that

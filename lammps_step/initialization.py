@@ -186,12 +186,22 @@ class Initialization(seamm.Node):
         if ff_form != "reaxff":
             # And atom-type if necessary
             key = f"atom_types_{ffname}"
+            warnings = []
             if key not in configuration.atoms:
                 logger.debug("Atom typing")
-                ff.assign_forcefield(configuration)
+                warnings = ff.assign_forcefield(configuration)
             else:
                 if any(typ is None for typ in configuration.atoms[key]):
-                    ff.assign_forcefield(configuration)
+                    warnings = ff.assign_forcefield(configuration)
+
+            # Anything the forcefield needs to tell the user, such as having had to
+            # adjust the charges, belongs in the output where they will see it, not
+            # only in the log. A version of seamm_ff_util from before this returns
+            # None rather than a list.
+            for warning in warnings or []:
+                printer.important(__(warning, indent=self.indent + 4 * " "))
+            if warnings:
+                printer.important("")
 
         # Get the energy expression.
         style = (
@@ -814,7 +824,7 @@ class Initialization(seamm.Node):
             #
             # This used to depend on the model file being named '.mace.pt',
             # falling back to `pair_style mace` otherwise. That name says
-            # nothing about how a model is evaluated: an xnns checkpoint named
+            # nothing about how a model is evaluated: an xnn checkpoint named
             # for what it is got the pair style instead and died with
             # "Unrecognized pair style 'mace'", since reaching it needs a
             # LAMMPS built with a MACE pair style -- which is the build the MDI
@@ -933,10 +943,11 @@ class Initialization(seamm.Node):
         n_atoms = configuration.n_atoms
         atoms = configuration.atoms
 
-        # The elements, used for e.g. dump statements
+        # The elements, used for e.g. dump statements. LAMMPS wants one
+        # element per atom *type*, not per atom, so this is filled in below
+        # as each new type is encountered.
         elements = atoms.symbols
         eex["elements"] = []
-        eex["elements"].extend(elements)
 
         # The periodicity & cell parameters
         periodicity = eex["periodicity"] = configuration.periodicity
@@ -952,6 +963,7 @@ class Initialization(seamm.Node):
             if element in atom_types:
                 index = atom_types.index(element) + 1
             else:
+                eex["elements"].append(element)
                 atom_types.append(element)
                 index = len(atom_types)
                 masses.append(
