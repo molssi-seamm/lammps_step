@@ -21,6 +21,7 @@ dependencies:
   - seamm-ff-util
   - seamm-installer
   - statsmodels
+  - scipy
   - tabulate
 
   # Testing
@@ -36,7 +37,6 @@ dependencies:
 
   # Pip-only installs
   - pip:
-    - gputil
     - model-chemistry-step
     - Pmw
     - pymbar>=4.0

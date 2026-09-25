@@ -20,6 +20,7 @@ import re
 import shlex
 import shutil
 import socket
+import subprocess
 import string
 import sys
 import textwrap
@@ -29,7 +30,6 @@ import warnings
 
 import bibtexparser
 from cpuinfo import get_cpu_info
-import GPUtil
 import numpy as np
 import pandas
 import statsmodels.tsa.stattools as stattools
@@ -122,6 +122,62 @@ def _allocated_mpi_slots():
     return None
 
 
+def _available_gpus(maxload, timeout=10):
+    """Physical indices of the NVIDIA GPUs whose load and memory use are at
+    or below ``maxload`` (a fraction, 0-1), as ``nvidia-smi`` reports them.
+
+    Replaces GPUtil, which is unmaintained and imports ``distutils``, so it no
+    longer imports on Python 3.12 outside a conda environment (conda ships
+    setuptools, which provides a shim; a plain venv does not). Returns an
+    empty list when ``nvidia-smi`` is missing, fails, or times out, i.e. when
+    there are no usable GPUs. A GPU whose numbers cannot be parsed is skipped,
+    as GPUtil did with ``includeNan=False``.
+    """
+    smi = shutil.which("nvidia-smi")
+    if smi is None:
+        return []
+    try:
+        result = subprocess.run(
+            [
+                smi,
+                "--query-gpu=index,utilization.gpu,memory.used,memory.total",
+                "--format=csv,noheader,nounits",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return []
+    if result.returncode != 0:
+        return []
+    return _parse_nvidia_smi(result.stdout, maxload)
+
+
+def _parse_nvidia_smi(text, maxload):
+    """Parse ``nvidia-smi --query-gpu=index,utilization.gpu,memory.used,
+    memory.total --format=csv,noheader,nounits`` output into the indices of
+    the GPUs at or below ``maxload`` in both utilization and memory use."""
+    gpus = []
+    for line in text.splitlines():
+        fields = [f.strip() for f in line.split(",")]
+        if len(fields) != 4:
+            continue
+        try:
+            index = int(fields[0])
+            load = float(fields[1]) / 100
+            used = float(fields[2])
+            total = float(fields[3])
+        except ValueError:
+            continue
+        if total <= 0:
+            continue
+        memory = used / total
+        if load <= maxload and memory <= maxload:
+            gpus.append(index)
+    return gpus
+
+
 def _cuda_visible_devices():
     """Parse CUDA_VISIBLE_DEVICES into the physical GPU indices it exposes.
 
@@ -153,19 +209,19 @@ def _cuda_visible_devices():
 def _usable_gpus(available, visible):
     """GPUs this process may use, in the numbering CUDA itself uses.
 
-    ``available`` is what GPUtil reports, which comes from nvidia-smi and is
-    therefore *physical* indices -- GPUtil does not know about
+    ``available`` is what ``nvidia-smi`` reports (via ``_available_gpus``),
+    which are *physical* indices -- nvidia-smi does not know about
     CUDA_VISIBLE_DEVICES. ``visible`` is the parsed variable.
 
     Without this, a job allocated GPU 1 by the scheduler would be told to use
-    GPU 0, because that is the physical index GPUtil reports as idle: it would
+    GPU 0, because that is the physical index nvidia-smi reports as idle: it would
     run on a GPU it was never given, alongside whoever actually holds it.
     """
     if visible is None:
         return list(available)
 
     if any(device is None for device in visible):
-        # UUID form: these cannot be lined up with GPUtil's indices, so treat
+        # UUID form: these cannot be lined up with nvidia-smi's indices, so treat
         # the whole allocation as usable rather than silently discarding it.
         return list(range(len(visible)))
 
@@ -961,16 +1017,7 @@ class LAMMPS(seamm.Node):
                 t_end = t0 + int(t)
             visible = _cuda_visible_devices()
             while True:
-                gpus = _usable_gpus(
-                    GPUtil.getAvailable(
-                        order="first",
-                        limit=99,
-                        maxLoad=maxload,
-                        maxMemory=maxload,
-                        includeNan=False,
-                    ),
-                    visible,
-                )
+                gpus = _usable_gpus(_available_gpus(maxload), visible)
                 if len(gpus) > 0:
                     break
                 if time.time() - t0 > t_end:

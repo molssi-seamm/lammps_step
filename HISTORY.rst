@@ -1,6 +1,15 @@
 =======
 History
 =======
+2026.9.25 -- Bugfix: the LAMMPS step failed to load on Python 3.12 outside conda
+    * The step used the GPUtil package to find idle GPUs. GPUtil is unmaintained and
+      imports ``distutils``, which was removed from Python 3.12, so in any
+      environment without setuptools (a plain venv, for example) the LAMMPS step
+      silently failed to load and was missing from the flowchart editor. It worked
+      in conda environments only because conda installs setuptools everywhere. GPU
+      detection now queries ``nvidia-smi`` directly and GPUtil is no longer a
+      dependency.
+
 2026.9.20 -- Bugfix: a large system could be given a net charge
     * The charges were written to the structure file for LAMMPS with three
       decimals, while a forcefield assigns four or more. For a small molecule the
