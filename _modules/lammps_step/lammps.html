@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 
@@ -7,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.9.20 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.9.25 documentation</title>
   
   
   
@@ -26,8 +25,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -35,10 +34,10 @@
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=c224919a" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -48,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=c24a4294"></script>
+    <script src="../../_static/documentation_options.js?v=9a43dc2a"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.20" />
+  <meta name="docsearch:version" content="2026.9.25" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -109,7 +108,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -227,7 +226,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <div class="navbar-item navbar-persistent--container">
           
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -238,15 +237,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <div class="navbar-item">
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
     <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
     <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
     <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
   </ul>
 </div></div>
       
@@ -283,7 +282,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   
     <div class="navbar-persistent--mobile">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -388,15 +387,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <div class="navbar-item">
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
     <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
     <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
     <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
   </ul>
 </div></div>
         
@@ -508,6 +507,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
@@ -517,7 +517,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">bibtexparser</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cpuinfo</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_cpu_info</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">GPUtil</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">statsmodels.tsa.stattools</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stattools</span>
@@ -610,6 +609,62 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="k">return</span> <span class="kc">None</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_available_gpus</span><span class="p">(</span><span class="n">maxload</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Physical indices of the NVIDIA GPUs whose load and memory use are at</span>
+<span class="sd">    or below ``maxload`` (a fraction, 0-1), as ``nvidia-smi`` reports them.</span>
+
+<span class="sd">    Replaces GPUtil, which is unmaintained and imports ``distutils``, so it no</span>
+<span class="sd">    longer imports on Python 3.12 outside a conda environment (conda ships</span>
+<span class="sd">    setuptools, which provides a shim; a plain venv does not). Returns an</span>
+<span class="sd">    empty list when ``nvidia-smi`` is missing, fails, or times out, i.e. when</span>
+<span class="sd">    there are no usable GPUs. A GPU whose numbers cannot be parsed is skipped,</span>
+<span class="sd">    as GPUtil did with ``includeNan=False``.</span>
+<span class="sd">    """</span>
+    <span class="n">smi</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">"nvidia-smi"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">smi</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">smi</span><span class="p">,</span>
+                <span class="s2">"--query-gpu=index,utilization.gpu,memory.used,memory.total"</span><span class="p">,</span>
+                <span class="s2">"--format=csv,noheader,nounits"</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">SubprocessError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">return</span> <span class="n">_parse_nvidia_smi</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">maxload</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_nvidia_smi</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">maxload</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Parse ``nvidia-smi --query-gpu=index,utilization.gpu,memory.used,</span>
+<span class="sd">    memory.total --format=csv,noheader,nounits`` output into the indices of</span>
+<span class="sd">    the GPUs at or below ``maxload`` in both utilization and memory use."""</span>
+    <span class="n">gpus</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">load</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">100</span>
+            <span class="n">used</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">total</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">total</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">memory</span> <span class="o">=</span> <span class="n">used</span> <span class="o">/</span> <span class="n">total</span>
+        <span class="k">if</span> <span class="n">load</span> <span class="o">&lt;=</span> <span class="n">maxload</span> <span class="ow">and</span> <span class="n">memory</span> <span class="o">&lt;=</span> <span class="n">maxload</span><span class="p">:</span>
+            <span class="n">gpus</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">gpus</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_cuda_visible_devices</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">"""Parse CUDA_VISIBLE_DEVICES into the physical GPU indices it exposes.</span>
 
@@ -641,19 +696,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="k">def</span><span class="w"> </span><span class="nf">_usable_gpus</span><span class="p">(</span><span class="n">available</span><span class="p">,</span> <span class="n">visible</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""GPUs this process may use, in the numbering CUDA itself uses.</span>
 
-<span class="sd">    ``available`` is what GPUtil reports, which comes from nvidia-smi and is</span>
-<span class="sd">    therefore *physical* indices -- GPUtil does not know about</span>
+<span class="sd">    ``available`` is what ``nvidia-smi`` reports (via ``_available_gpus``),</span>
+<span class="sd">    which are *physical* indices -- nvidia-smi does not know about</span>
 <span class="sd">    CUDA_VISIBLE_DEVICES. ``visible`` is the parsed variable.</span>
 
 <span class="sd">    Without this, a job allocated GPU 1 by the scheduler would be told to use</span>
-<span class="sd">    GPU 0, because that is the physical index GPUtil reports as idle: it would</span>
+<span class="sd">    GPU 0, because that is the physical index nvidia-smi reports as idle: it would</span>
 <span class="sd">    run on a GPU it was never given, alongside whoever actually holds it.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">visible</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">available</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">device</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">visible</span><span class="p">):</span>
-        <span class="c1"># UUID form: these cannot be lined up with GPUtil's indices, so treat</span>
+        <span class="c1"># UUID form: these cannot be lined up with nvidia-smi's indices, so treat</span>
         <span class="c1"># the whole allocation as usable rather than silently discarding it.</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">visible</span><span class="p">)))</span>
 
@@ -1483,16 +1538,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">t_end</span> <span class="o">=</span> <span class="n">t0</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
             <span class="n">visible</span> <span class="o">=</span> <span class="n">_cuda_visible_devices</span><span class="p">()</span>
             <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="n">gpus</span> <span class="o">=</span> <span class="n">_usable_gpus</span><span class="p">(</span>
-                    <span class="n">GPUtil</span><span class="o">.</span><span class="n">getAvailable</span><span class="p">(</span>
-                        <span class="n">order</span><span class="o">=</span><span class="s2">"first"</span><span class="p">,</span>
-                        <span class="n">limit</span><span class="o">=</span><span class="mi">99</span><span class="p">,</span>
-                        <span class="n">maxLoad</span><span class="o">=</span><span class="n">maxload</span><span class="p">,</span>
-                        <span class="n">maxMemory</span><span class="o">=</span><span class="n">maxload</span><span class="p">,</span>
-                        <span class="n">includeNan</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="p">),</span>
-                    <span class="n">visible</span><span class="p">,</span>
-                <span class="p">)</span>
+                <span class="n">gpus</span> <span class="o">=</span> <span class="n">_usable_gpus</span><span class="p">(</span><span class="n">_available_gpus</span><span class="p">(</span><span class="n">maxload</span><span class="p">),</span> <span class="n">visible</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gpus</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="k">break</span>
                 <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span> <span class="o">&gt;</span> <span class="n">t_end</span><span class="p">:</span>
@@ -4096,8 +4142,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -4109,7 +4155,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
 </p></div>
       
     </div>
