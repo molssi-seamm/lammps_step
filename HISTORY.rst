@@ -1,6 +1,32 @@
 =======
 History
 =======
+2026.9.29 -- Bugfix: the CPU/GPU binding scripts work on any machine
+    * ``mdi_bind.sh``, ``gpu_bind.sh`` and ``cpu_bind.sh`` bound the codes to fixed CPU
+      cores laid out for one machine (an AMD EPYC 7763 with two GPUs). Elsewhere they
+      failed: under SLURM or another scheduler, when the job's cores were not those
+      ("taskset: failed to set pid's affinity: Invalid argument"); on a third or
+      later GPU ("no CPU binding defined for GPU 2"); and on machines with fewer
+      cores. On other layouts they silently pinned to unrelated cores.
+    * Version 2.0 of the scripts works the binding out from the machine. Under a
+      scheduler (SLURM, PBS, LSF) it leaves the binding to the scheduler. Otherwise
+      it uses the CPUs next to the GPU, from ``nvidia-smi topo -m``, limited to the
+      CPUs the job may use; GPUs sharing those CPUs split them, and the engine and
+      LAMMPS take halves. If none of that can be determined the code runs unbound
+      rather than failing. ``SEAMM_BIND=none`` turns binding off, and
+      ``SEAMM_ENGINE_CPUS``/``SEAMM_DRIVER_CPUS`` (``SEAMM_CPUS`` for
+      ``cpu_bind.sh``) choose the CPUs by hand.
+    * The scripts also find the MPI rank under MPICH and srun, not only OpenMPI, and
+      ``gpu_bind.sh`` no longer overrides a GPU allocation the scheduler made.
+    * The warning that a newer version of a helper script is available never
+      appeared, because its version header was misread; it does now. The copies in
+      ``~/SEAMM/bin`` are not replaced automatically, since they may have been
+      edited: delete an older ``mdi_bind.sh``, ``gpu_bind.sh`` or ``cpu_bind.sh`` to
+      get version 2.0, unless you tuned it for your machine.
+    * The documentation and the ``lammps.ini`` examples now give the plain command
+      for an MDI engine (``mpirun --bind-to none -np 1 <engine> : -np 1 lmp``), which
+      works on workstations and clusters alike, with ``mdi_bind.sh`` as an option.
+
 2026.9.25 -- Bugfix: the LAMMPS step failed to load on Python 3.12 outside conda
     * The step used the GPUtil package to find idle GPUs. GPUtil is unmaintained and
       imports ``distutils``, which was removed from Python 3.12, so in any

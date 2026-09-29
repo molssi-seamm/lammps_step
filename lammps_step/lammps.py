@@ -51,7 +51,8 @@ logger = logging.getLogger("lammps")
 job = printing.getPrinter()
 printer = printing.getPrinter("lammps")
 
-VERSION_PATTERN = re.compile(r"^#\s?MolSSI\s+lammps_step\s+(\S+)\s+([\d.]+)")
+# The header of the helper scripts, e.g. "#MolSSI lammps_step:mdi_bind 2.0".
+VERSION_PATTERN = re.compile(r"^#\s?MolSSI\s+(lammps_step:\S+)\s+([\d.]+)")
 
 
 def _get_script_version(text):
