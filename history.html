@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.9.25 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.9.29 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=9a43dc2a"></script>
+    <script src="_static/documentation_options.js?v=45a1f582"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.25" />
+  <meta name="docsearch:version" content="2026.9.29" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -505,6 +505,33 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.9.29 – Bugfix: the CPU/GPU binding scripts work on any machine</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">mdi_bind.sh</span></code>, <code class="docutils literal notranslate"><span class="pre">gpu_bind.sh</span></code> and <code class="docutils literal notranslate"><span class="pre">cpu_bind.sh</span></code> bound the codes to fixed CPU
+cores laid out for one machine (an AMD EPYC 7763 with two GPUs). Elsewhere they
+failed: under SLURM or another scheduler, when the job’s cores were not those
+(“taskset: failed to set pid’s affinity: Invalid argument”); on a third or
+later GPU (“no CPU binding defined for GPU 2”); and on machines with fewer
+cores. On other layouts they silently pinned to unrelated cores.</p></li>
+<li><p>Version 2.0 of the scripts works the binding out from the machine. Under a
+scheduler (SLURM, PBS, LSF) it leaves the binding to the scheduler. Otherwise
+it uses the CPUs next to the GPU, from <code class="docutils literal notranslate"><span class="pre">nvidia-smi</span> <span class="pre">topo</span> <span class="pre">-m</span></code>, limited to the
+CPUs the job may use; GPUs sharing those CPUs split them, and the engine and
+LAMMPS take halves. If none of that can be determined the code runs unbound
+rather than failing. <code class="docutils literal notranslate"><span class="pre">SEAMM_BIND=none</span></code> turns binding off, and
+<code class="docutils literal notranslate"><span class="pre">SEAMM_ENGINE_CPUS</span></code>/<code class="docutils literal notranslate"><span class="pre">SEAMM_DRIVER_CPUS</span></code> (<code class="docutils literal notranslate"><span class="pre">SEAMM_CPUS</span></code> for
+<code class="docutils literal notranslate"><span class="pre">cpu_bind.sh</span></code>) choose the CPUs by hand.</p></li>
+<li><p>The scripts also find the MPI rank under MPICH and srun, not only OpenMPI, and
+<code class="docutils literal notranslate"><span class="pre">gpu_bind.sh</span></code> no longer overrides a GPU allocation the scheduler made.</p></li>
+<li><p>The warning that a newer version of a helper script is available never
+appeared, because its version header was misread; it does now. The copies in
+<code class="docutils literal notranslate"><span class="pre">~/SEAMM/bin</span></code> are not replaced automatically, since they may have been
+edited: delete an older <code class="docutils literal notranslate"><span class="pre">mdi_bind.sh</span></code>, <code class="docutils literal notranslate"><span class="pre">gpu_bind.sh</span></code> or <code class="docutils literal notranslate"><span class="pre">cpu_bind.sh</span></code> to
+get version 2.0, unless you tuned it for your machine.</p></li>
+<li><p>The documentation and the <code class="docutils literal notranslate"><span class="pre">lammps.ini</span></code> examples now give the plain command
+for an MDI engine (<code class="docutils literal notranslate"><span class="pre">mpirun</span> <span class="pre">--bind-to</span> <span class="pre">none</span> <span class="pre">-np</span> <span class="pre">1</span> <span class="pre">&lt;engine&gt;</span> <span class="pre">:</span> <span class="pre">-np</span> <span class="pre">1</span> <span class="pre">lmp</span></code>), which
+works on workstations and clusters alike, with <code class="docutils literal notranslate"><span class="pre">mdi_bind.sh</span></code> as an option.</p></li>
+</ul>
+</dd>
 <dt>2026.9.25 – Bugfix: the LAMMPS step failed to load on Python 3.12 outside conda</dt><dd><ul class="simple">
 <li><p>The step used the GPUtil package to find idle GPUs. GPUtil is unmaintained and
 imports <code class="docutils literal notranslate"><span class="pre">distutils</span></code>, which was removed from Python 3.12, so in any
