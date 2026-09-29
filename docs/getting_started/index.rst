@@ -59,19 +59,34 @@ maintained once, in ``lammps-mdi`` -- so if your ``lammps.ini`` still refers to
 it, switch to ``mace-mdi``; the step will warn you if it does not.
 
 Finally, tell SEAMM how to launch the pair by setting ``gpu-code`` in
-``~/SEAMM/lammps.ini``; the file ships with a commented example. A minimal
-version, which launches the MACE engine and the LAMMPS driver together::
+``~/SEAMM/lammps.ini``; the file ships with commented examples. A minimal
+version, which launches the MACE engine and the LAMMPS driver together, and works
+on a workstation and on a cluster alike::
 
-  gpu-code = mpirun \
-      -np 1 ~/SEAMM/bin/mdi_bind.sh \
-      mace-mdi -mdi "-role ENGINE -name MACE -method MPI" --dtype "float32" \
-      : -np 1 ~/SEAMM/bin/mdi_bind.sh \
-      lmp -mdi "-role DRIVER -name LAMMPS -method MPI"
+  gpu-code = mpirun --bind-to none \
+      -np 1 mace-mdi -mdi "-role ENGINE -name MACE -method MPI" --dtype "float32" \
+      : -np 1 lmp -mdi "-role DRIVER -name LAMMPS -method MPI"
 
-``mdi_bind.sh`` is installed into ``~/SEAMM/bin`` the first time the step runs.
-It is not replaced afterwards, since it is meant to be edited -- the CPU
-topology in it is machine-specific. If a newer version ships with the plug-in
-you will get a message saying so; delete the file to pick the new one up.
+On a cluster the scheduler gives each job its own GPU and cores, and on a
+workstation the operating system places the two processes sensibly, so no CPU
+binding is needed.
+
+Optionally, wrap each side in ``~/SEAMM/bin/mdi_bind.sh``
+(``-np 1 ~/SEAMM/bin/mdi_bind.sh mace-mdi ...``). It logs the GPU's memory and use
+to ``gpu_<n>_engine.log`` in the step's directory, and on a machine without a
+scheduler pins the engine and the driver to the CPUs next to their GPU, which it
+works out from ``nvidia-smi topo -m`` and the CPUs the job may use. Under SLURM,
+PBS or LSF it leaves the binding to the scheduler. To choose the CPUs yourself set
+``SEAMM_ENGINE_CPUS`` and ``SEAMM_DRIVER_CPUS`` (e.g. ``0-7`` and ``8-15``), or
+``SEAMM_BIND=none`` to turn binding off.
+
+``mdi_bind.sh`` and the other helper scripts are installed into ``~/SEAMM/bin`` the
+first time the step runs, and not replaced afterwards, so that you can edit them.
+When a newer version ships with the plug-in the step's log says so; delete the
+file to pick it up. Versions before 2.0 bound to fixed cores laid out for one
+particular machine (an AMD EPYC 7763), which fail elsewhere -- under a scheduler,
+with fewer cores, or on a third or later GPU -- so delete an older copy unless you
+edited it for your machine.
 
 .. _MolSSI Driver Interface: https://molssi-mdi.github.io/MDI_Library/
 
