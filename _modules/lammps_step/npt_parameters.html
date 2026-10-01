@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.npt_parameters &#8212; SEAMM LAMMPS Plug-in 2026.9.29 documentation</title>
+    <title>lammps_step.npt_parameters &#8212; SEAMM LAMMPS Plug-in 2026.10.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=45a1f582"></script>
+    <script src="../../_static/documentation_options.js?v=65cfade2"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.29" />
+  <meta name="docsearch:version" content="2026.10.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -489,6 +489,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">"""Control parameters for NPT (canonical) dynamics"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">lammps_step</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.minimization_parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">separate_yy</span><span class="p">,</span> <span class="n">separate_zz</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -533,14 +534,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"allow shear"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="c1"># LAMMPS's press/berendsen cannot control a triclinic (sheared) cell</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"system type"</span><span class="p">:</span> <span class="s2">"solid"</span><span class="p">,</span> <span class="s2">"barostat"</span><span class="p">:</span> <span class="s2">"Nose-Hoover"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"no"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
             <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">"s"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"no"</span><span class="p">,</span> <span class="s2">"yes"</span><span class="p">),</span>
             <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Allow the cell to shear"</span><span class="p">,</span>
-            <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"Whether the cell angles can change."</span><span class="p">,</span>
+            <span class="s2">"help_text"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">"Whether the cell angles can change. Only the Nose-Hoover barostat "</span>
+                <span class="s2">"can change them."</span>
+            <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"use_stress"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"system type"</span><span class="p">:</span> <span class="s2">"solid"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"isotropic pressure"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"enumeration"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"isotropic pressure"</span><span class="p">,</span> <span class="s2">"general stress"</span><span class="p">),</span>
@@ -553,6 +560,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"couple"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"system type"</span><span class="p">:</span> <span class="s2">"solid"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"x, y and z"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"enumeration"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"x, y and z"</span><span class="p">,</span> <span class="s2">"x and y"</span><span class="p">,</span> <span class="s2">"x and z"</span><span class="p">,</span> <span class="s2">"y and z"</span><span class="p">,</span> <span class="s2">"none"</span><span class="p">),</span>
@@ -574,6 +582,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"The initial pressure."</span><span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"Pfinal"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"Panneal"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"atm"</span><span class="p">,</span>
@@ -595,6 +604,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"Sxx,initial"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"fixed"</span><span class="p">,),</span>
@@ -604,6 +614,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The initial components of the stress tensor."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"Syy,initial"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">,</span> <span class="s2">"couple"</span><span class="p">:</span> <span class="n">separate_yy</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"fixed"</span><span class="p">,),</span>
@@ -613,6 +624,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The initial components of the stress tensor."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"Szz,initial"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">,</span> <span class="s2">"couple"</span><span class="p">:</span> <span class="n">separate_zz</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"fixed"</span><span class="p">,),</span>
@@ -622,6 +634,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The initial components of the stress tensor."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"Sxy,initial"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">,</span> <span class="s2">"allow shear"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"fixed"</span><span class="p">,),</span>
@@ -631,6 +644,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The initial components of the stress tensor."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"Sxz,initial"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">,</span> <span class="s2">"allow shear"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"fixed"</span><span class="p">,),</span>
@@ -640,6 +654,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The initial components of the stress tensor."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"Syz,initial"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">,</span> <span class="s2">"allow shear"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"fixed"</span><span class="p">,),</span>
@@ -649,6 +664,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The initial components of the stress tensor."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"Sxx,final"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">,</span> <span class="s2">"Panneal"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"fixed"</span><span class="p">,),</span>
@@ -658,6 +674,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The final components of the stress tensor."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"Syy,final"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">,</span>
+                <span class="s2">"couple"</span><span class="p">:</span> <span class="n">separate_yy</span><span class="p">,</span>
+                <span class="s2">"Panneal"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">,</span>
+            <span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"fixed"</span><span class="p">,),</span>
@@ -667,6 +688,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The final components of the stress tensor."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"Szz,final"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">,</span>
+                <span class="s2">"couple"</span><span class="p">:</span> <span class="n">separate_zz</span><span class="p">,</span>
+                <span class="s2">"Panneal"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">,</span>
+            <span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"fixed"</span><span class="p">,),</span>
@@ -676,6 +702,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The final components of the stress tensor."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"Sxy,final"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">,</span>
+                <span class="s2">"allow shear"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">,</span>
+                <span class="s2">"Panneal"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">,</span>
+            <span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"atm"</span><span class="p">,</span>
@@ -685,6 +716,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The final components of the stress tensor."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"Sxz,final"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">,</span>
+                <span class="s2">"allow shear"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">,</span>
+                <span class="s2">"Panneal"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">,</span>
+            <span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"fixed"</span><span class="p">,),</span>
@@ -694,6 +730,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The final components of the stress tensor."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"Syz,final"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">,</span>
+                <span class="s2">"allow shear"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">,</span>
+                <span class="s2">"Panneal"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">,</span>
+            <span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"fixed"</span><span class="p">,),</span>
@@ -703,6 +744,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The final components of the stress tensor."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"Sxx damp"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">1000.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"fs"</span><span class="p">,</span>
@@ -715,6 +757,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"Syy damp"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">,</span>
+                <span class="s2">"couple"</span><span class="p">:</span> <span class="n">separate_yy</span><span class="p">,</span>
+            <span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">1000.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"fs"</span><span class="p">,</span>
@@ -727,6 +773,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"Szz damp"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">,</span>
+                <span class="s2">"couple"</span><span class="p">:</span> <span class="n">separate_zz</span><span class="p">,</span>
+            <span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">1000.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"fs"</span><span class="p">,</span>
@@ -739,6 +789,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"Sxy damp"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">,</span>
+                <span class="s2">"allow shear"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">,</span>
+            <span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">1000.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"fs"</span><span class="p">,</span>
@@ -751,6 +805,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"Sxz damp"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">,</span>
+                <span class="s2">"allow shear"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">,</span>
+            <span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">1000.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"fs"</span><span class="p">,</span>
@@ -763,6 +821,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"Syz damp"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"use_stress"</span><span class="p">:</span> <span class="s2">"general stress"</span><span class="p">,</span>
+                <span class="s2">"allow shear"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">,</span>
+            <span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">1000.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"fs"</span><span class="p">,</span>
@@ -775,6 +837,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"nreset"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"barostat"</span><span class="p">:</span> <span class="s2">"Nose-Hoover"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"never"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
@@ -787,6 +850,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"mtk"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"barostat"</span><span class="p">:</span> <span class="s2">"Nose-Hoover"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
             <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">"s"</span><span class="p">,</span>
@@ -804,6 +868,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"modulus"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"barostat"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"not"</span><span class="p">:</span> <span class="s2">"Nose-Hoover"</span><span class="p">}},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">50.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"GPa"</span><span class="p">,</span>
@@ -818,6 +883,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
     <span class="p">}</span>
+
+    <span class="c1"># Rules shared by the dialog and the flowchart builder: see EnergyParameters.</span>
+    <span class="c1"># (Pfinal also needs 'Panneal'.)</span>
+    <span class="n">pressure_keys</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"Pinitial"</span><span class="p">,</span> <span class="s2">"Pfinal"</span><span class="p">,</span> <span class="s2">"Pdamp"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="p">{},</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Initialize the instance, by default from the default</span>

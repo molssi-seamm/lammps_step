@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.initialization &#8212; SEAMM LAMMPS Plug-in 2026.9.29 documentation</title>
+    <title>lammps_step.initialization &#8212; SEAMM LAMMPS Plug-in 2026.10.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=45a1f582"></script>
+    <script src="../../_static/documentation_options.js?v=65cfade2"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.29" />
+  <meta name="docsearch:version" content="2026.10.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -573,6 +573,43 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="p">]</span>
 
 
+<div class="viewcode-block" id="explicit_kspace">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.initialization.explicit_kspace">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">explicit_kspace</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">pair_style_base</span><span class="p">,</span> <span class="n">n_charged_atoms</span><span class="p">,</span> <span class="n">P</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The pair style and k-space style for an explicitly chosen k-space method.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    method : str</span>
+<span class="sd">        The k-space method, a key of lammps_step.kspace_methods.</span>
+<span class="sd">    pair_style_base : str</span>
+<span class="sd">        The van der Waals pair style, e.g. "lj/cut".</span>
+<span class="sd">    n_charged_atoms : int</span>
+<span class="sd">        The number of atoms with a charge above the 'small q' threshold.</span>
+<span class="sd">    P : dict</span>
+<span class="sd">        The step's parameter values (for the accuracy and 'small q').</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    (str, str)</span>
+<span class="sd">        The pair style, and the arguments of kspace_style ('' for none).</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">n_charged_atoms</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"none"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pair_style_base</span><span class="p">,</span> <span class="s2">""</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">kspace_methods</span><span class="p">[</span><span class="n">method</span><span class="p">]</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">P</span><span class="p">,</span> <span class="s2">"smallq"</span><span class="p">:</span> <span class="n">P</span><span class="p">[</span><span class="s2">"kspace_smallq"</span><span class="p">]}</span>
+    <span class="k">if</span> <span class="n">template</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"msm"</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">pair_style_base</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">msm_pair_styles</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The k-space method '</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">' cannot be used with the pair style "</span>
+                <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">pair_style_base</span><span class="si">}</span><span class="s2">': LAMMPS has no MSM version of it. Use a PPPM "</span>
+                <span class="s2">"or Ewald method, or 'automatic'."</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">pair_style_base</span> <span class="o">+</span> <span class="s2">"/coul/msm"</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">values</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pair_style_base</span> <span class="o">+</span> <span class="s2">"/coul/long"</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">values</span><span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="Initialization">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.initialization.Initialization">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Initialization</span><span class="p">(</span><span class="n">seamm</span><span class="o">.</span><span class="n">Node</span><span class="p">):</span>
@@ -937,14 +974,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">,</span> <span class="o">**</span><span class="n">P</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-                    <span class="n">kspace_style</span> <span class="o">=</span> <span class="s2">""</span>
-                    <span class="k">if</span> <span class="n">n_charged_atoms</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">P</span><span class="p">[</span><span class="s2">"kspace_style"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"none"</span><span class="p">:</span>
-                        <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span>
-                    <span class="k">elif</span> <span class="n">fraction_charged_atoms</span> <span class="o">&lt;</span> <span class="n">P</span><span class="p">[</span><span class="s2">"charged_atom_fraction_cutoff"</span><span class="p">]:</span>
-                        <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span> <span class="o">+</span> <span class="s2">"/coul/long"</span>
-                        <span class="n">kspace_style</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">kspace_methods</span><span class="p">[</span>
-                            <span class="n">P</span><span class="p">[</span><span class="s2">"kspace_method"</span><span class="p">]</span>
-                        <span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">P</span><span class="p">)</span>
+                    <span class="n">pair_style</span><span class="p">,</span> <span class="n">kspace_style</span> <span class="o">=</span> <span class="n">explicit_kspace</span><span class="p">(</span>
+                        <span class="n">P</span><span class="p">[</span><span class="s2">"kspace_method"</span><span class="p">],</span> <span class="n">pair_style_base</span><span class="p">,</span> <span class="n">n_charged_atoms</span><span class="p">,</span> <span class="n">P</span>
+                    <span class="p">)</span>
                     <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">hybrid</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pair_style</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">P</span><span class="p">[</span><span class="s1">'cutoff'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">mixing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
@@ -956,6 +988,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                             <span class="o">+</span> <span class="n">mixing</span>
                             <span class="o">+</span> <span class="s2">" tail </span><span class="si">{}</span><span class="s2"> shift </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tail_correction</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
                         <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">kspace_style</span> <span class="o">!=</span> <span class="s2">""</span><span class="p">:</span>
+                        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"kspace_style        "</span> <span class="o">+</span> <span class="n">kspace_style</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">n_charged_atoms</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="n">pair_style</span> <span class="o">=</span> <span class="n">pair_style_base</span>

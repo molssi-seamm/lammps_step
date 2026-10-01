@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nvt_parameters &#8212; SEAMM LAMMPS Plug-in 2026.9.29 documentation</title>
+    <title>lammps_step.nvt_parameters &#8212; SEAMM LAMMPS Plug-in 2026.10.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=45a1f582"></script>
+    <script src="../../_static/documentation_options.js?v=65cfade2"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.29" />
+  <meta name="docsearch:version" content="2026.10.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -494,6 +494,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
+<span class="c1"># The thermostats that use random numbers, and so a seed</span>
+<span class="n">random_thermostats</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"canonical sampling, velocity rescaling (csvr)"</span><span class="p">,</span>
+    <span class="s2">"canonical sampling, langevin dynamics (csld)"</span><span class="p">,</span>
+    <span class="s2">"Langevin"</span><span class="p">,</span>
+<span class="p">)</span>
+
 
 <div class="viewcode-block" id="NVT_Parameters">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nvt_parameters.NVT_Parameters">[docs]</a>
@@ -535,6 +542,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The final temperature for simulated annealing."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"Tdamp"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"thermostat"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"not"</span><span class="p">:</span> <span class="s2">"velocity rescaling"</span><span class="p">}},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"fs"</span><span class="p">,</span>
@@ -543,6 +551,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The damping time constant for thermostat"</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"Tchain"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"thermostat"</span><span class="p">:</span> <span class="s2">"Nose-Hoover"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
@@ -551,6 +560,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The number of thermostats in the chain."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"Tloop"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"thermostat"</span><span class="p">:</span> <span class="s2">"Nose-Hoover"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
@@ -559,6 +569,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"The number of sub-iterations for the thermostat."</span><span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"drag"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"thermostat"</span><span class="p">:</span> <span class="s2">"Nose-Hoover"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
@@ -571,6 +582,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"seed"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"thermostat"</span><span class="p">:</span> <span class="n">random_thermostats</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"random"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
@@ -584,6 +596,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"frequency"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"thermostat"</span><span class="p">:</span> <span class="s2">"velocity rescaling"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"fs"</span><span class="p">,</span>
@@ -594,6 +607,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"window"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"thermostat"</span><span class="p">:</span> <span class="s2">"velocity rescaling"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">20.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"K"</span><span class="p">,</span>
@@ -607,6 +621,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"fraction"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"thermostat"</span><span class="p">:</span> <span class="s2">"velocity rescaling"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>

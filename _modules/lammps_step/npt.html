@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.npt &#8212; SEAMM LAMMPS Plug-in 2026.9.29 documentation</title>
+    <title>lammps_step.npt &#8212; SEAMM LAMMPS Plug-in 2026.10.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=45a1f582"></script>
+    <script src="../../_static/documentation_options.js?v=65cfade2"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.29" />
+  <meta name="docsearch:version" content="2026.10.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -659,6 +659,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <span class="c1"># Fix variables with special cases</span>
         <span class="n">timestep</span><span class="p">,</span> <span class="n">P</span><span class="p">[</span><span class="s2">"timestep"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestep</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"timestep"</span><span class="p">])</span>
+        <span class="n">P</span><span class="p">[</span><span class="s2">"allow shear"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shear_allowed</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"seed"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"random"</span><span class="p">:</span>
             <span class="c1"># Apparently the seed must be no larger than 900,000,000</span>
@@ -684,6 +685,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">Tdamp</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"Tdamp"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"time"</span><span class="p">)</span>
 
         <span class="n">barostat</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"barostat"</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uses_berendsen</span> <span class="o">=</span> <span class="n">barostat</span> <span class="o">==</span> <span class="s2">"Berendsen"</span>
         <span class="k">if</span> <span class="n">barostat</span> <span class="o">==</span> <span class="s2">"Berendsen"</span><span class="p">:</span>
             <span class="n">modulus</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"modulus"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"pressure"</span><span class="p">)</span>
 
@@ -740,6 +742,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="o">+</span> <span class="s2">"tloop </span><span class="si">{}</span><span class="s2"> "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Tloop</span><span class="p">)</span>
                     <span class="o">+</span> <span class="s2">"drag </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">drag</span><span class="p">)</span>
                     <span class="o">+</span> <span class="n">ptext</span>
+                    <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nose_hoover_barostat_options</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
                 <span class="p">)</span>
 
                 <span class="k">for</span> <span class="n">citation</span> <span class="ow">in</span> <span class="n">NPT</span><span class="o">.</span><span class="n">methods</span><span class="p">[</span><span class="s2">"Nose-Hoover"</span><span class="p">][</span><span class="s2">"references"</span><span class="p">]:</span>
@@ -1001,6 +1004,35 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="p">}</span></div>
 
 
+<div class="viewcode-block" id="NPT.nose_hoover_barostat_options">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.npt.NPT.nose_hoover_barostat_options">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">nose_hoover_barostat_options</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The 'mtk' and 'nreset' keywords of fix npt for the Nose-Hoover barostat."""</span>
+        <span class="n">mtk</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"mtk"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mtk</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">mtk</span> <span class="o">=</span> <span class="n">mtk</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"yes"</span><span class="p">,</span> <span class="s2">"true"</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">" mtk yes"</span> <span class="k">if</span> <span class="n">mtk</span> <span class="k">else</span> <span class="s2">" mtk no"</span>
+        <span class="n">nreset</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"nreset"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">nreset</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">"never"</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">" nreset </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">nreset</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">return</span> <span class="n">text</span></div>
+
+
+<div class="viewcode-block" id="NPT.shear_allowed">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.npt.NPT.shear_allowed">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shear_allowed</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Whether the cell may shear: 'allow shear' applies only to a solid with</span>
+<span class="sd">        the Nose-Hoover barostat (press/berendsen cannot control a triclinic cell),</span>
+<span class="sd">        so it is ignored otherwise, as the dialog hides it."""</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="nb">bool</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"allow shear"</span><span class="p">])</span>
+            <span class="ow">and</span> <span class="n">P</span><span class="p">[</span><span class="s2">"system type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"solid"</span>
+            <span class="ow">and</span> <span class="n">P</span><span class="p">[</span><span class="s2">"barostat"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Nose-Hoover"</span>
+        <span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="NPT.get_pressure_text">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.npt.NPT.get_pressure_text">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_pressure_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_P</span><span class="p">):</span>
@@ -1073,9 +1105,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">Sxx1</span> <span class="o">=</span> <span class="n">Sxx0</span>
                 <span class="n">Syy1</span> <span class="o">=</span> <span class="n">Syy0</span>
                 <span class="n">Szz1</span> <span class="o">=</span> <span class="n">Szz0</span>
-            <span class="n">Dxx</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">_P</span><span class="p">[</span><span class="s2">"Sxx damp"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"pressure"</span><span class="p">)</span>
-            <span class="n">Dyy</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">_P</span><span class="p">[</span><span class="s2">"Syy damp"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"pressure"</span><span class="p">)</span>
-            <span class="n">Dzz</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">_P</span><span class="p">[</span><span class="s2">"Szz damp"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"pressure"</span><span class="p">)</span>
+            <span class="n">Dxx</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">_P</span><span class="p">[</span><span class="s2">"Sxx damp"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"time"</span><span class="p">)</span>
+            <span class="n">Dyy</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">_P</span><span class="p">[</span><span class="s2">"Syy damp"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"time"</span><span class="p">)</span>
+            <span class="n">Dzz</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">_P</span><span class="p">[</span><span class="s2">"Szz damp"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"time"</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">couple</span> <span class="o">==</span> <span class="s2">"x, y and z"</span><span class="p">:</span>
                 <span class="n">Syy0</span> <span class="o">=</span> <span class="n">Szz0</span> <span class="o">=</span> <span class="n">Sxx0</span>
@@ -1091,7 +1123,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">Dzz</span> <span class="o">=</span> <span class="n">Dxx</span>
             <span class="k">elif</span> <span class="n">couple</span> <span class="o">==</span> <span class="s2">"y and z"</span><span class="p">:</span>
                 <span class="n">Szz0</span> <span class="o">=</span> <span class="n">Syy0</span>
-                <span class="n">Szz1</span> <span class="o">=</span> <span class="n">Szz1</span>
+                <span class="n">Szz1</span> <span class="o">=</span> <span class="n">Syy1</span>
                 <span class="n">Dzz</span> <span class="o">=</span> <span class="n">Dyy</span>
 
             <span class="c1"># LAMMPS uses pressures = -stress, &amp; also format nicely</span>
@@ -1126,9 +1158,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="n">Syz1</span> <span class="o">=</span> <span class="n">Syz0</span>
                     <span class="n">Sxz1</span> <span class="o">=</span> <span class="n">Sxz0</span>
                     <span class="n">Sxy1</span> <span class="o">=</span> <span class="n">Sxy0</span>
-                <span class="n">Dyz</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">_P</span><span class="p">[</span><span class="s2">"Syz damp"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"pressure"</span><span class="p">)</span>
-                <span class="n">Dxz</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">_P</span><span class="p">[</span><span class="s2">"Sxz damp"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"pressure"</span><span class="p">)</span>
-                <span class="n">Dxy</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">_P</span><span class="p">[</span><span class="s2">"Sxy damp"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"pressure"</span><span class="p">)</span>
+                <span class="n">Dyz</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">_P</span><span class="p">[</span><span class="s2">"Syz damp"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"time"</span><span class="p">)</span>
+                <span class="n">Dxz</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">_P</span><span class="p">[</span><span class="s2">"Sxz damp"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"time"</span><span class="p">)</span>
+                <span class="n">Dxy</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">_P</span><span class="p">[</span><span class="s2">"Sxy damp"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"time"</span><span class="p">)</span>
 
                 <span class="c1"># LAMMPS uses pressures = -stress, &amp; also format nicely</span>
                 <span class="k">if</span> <span class="n">Syz0</span> <span class="o">!=</span> <span class="s2">"fixed"</span><span class="p">:</span>

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.9.29 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=45a1f582"></script>
+    <script src="_static/documentation_options.js?v=65cfade2"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.29" />
+  <meta name="docsearch:version" content="2026.10.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -505,6 +505,27 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.1 – Settings that depend on each other; LAMMPS errors reported</dt><dd><ul class="simple">
+<li><p>The dialogs show only the settings that apply with the current choices, and SEAMM’s
+flowchart tools use the same rules. Settings that were hidden but used now apply
+where they matter: the charged-atom threshold whenever there is a k-space method;
+the QEq settings for the forcefield’s default charges; the damping times for the
+Berendsen barostat too. Allow shear applies only to a solid with the Nose-Hoover
+barostat.</p></li>
+<li><p>A Berendsen NPT step whose box must be triclinic failed inside LAMMPS; it is now
+refused before LAMMPS starts, saying why.</p></li>
+<li><p>Bugfix: when LAMMPS itself stopped with an error, the step failed later with an
+unrelated IndexError. It now stops with LAMMPS’s message, the sub-step, the last
+command, advice for common errors, and where the log is.</p></li>
+<li><p>Bugfix: an explicitly chosen k-space method raised KeyError; Minimization read
+Sxy from Sxz; NPT’s stress damping times were converted as pressures, and with y
+and z coupled z’s final stress was wrong; NPT’s mtk and nreset were not used;
+Velocities’ default momentum choice was not one of its own choices.</p></li>
+<li><p>Documented in the user guide. Needs seamm 2026.10.1.</p></li>
+<li><p>Internal: CI now installs the package’s declared dependencies with uv rather than
+a conda test environment; model-chemistry-step, which it uses, is now declared.</p></li>
+</ul>
+</dd>
 <dt>2026.9.29 – Bugfix: the CPU/GPU binding scripts work on any machine</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">mdi_bind.sh</span></code>, <code class="docutils literal notranslate"><span class="pre">gpu_bind.sh</span></code> and <code class="docutils literal notranslate"><span class="pre">cpu_bind.sh</span></code> bound the codes to fixed CPU
 cores laid out for one machine (an AMD EPYC 7763 with two GPUs). Elsewhere they

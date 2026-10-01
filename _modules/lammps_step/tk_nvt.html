@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.tk_nvt &#8212; SEAMM LAMMPS Plug-in 2026.9.29 documentation</title>
+    <title>lammps_step.tk_nvt &#8212; SEAMM LAMMPS Plug-in 2026.10.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=45a1f582"></script>
+    <script src="../../_static/documentation_options.js?v=65cfade2"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.29" />
+  <meta name="docsearch:version" content="2026.10.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -612,9 +612,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_nvt.TkNVT.reset_temperature_frame">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reset_temperature_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Layout the widgets in the temperature frame</span>
-<span class="sd">        as needed for the current state"""</span>
+<span class="sd">        as needed for the current state.</span>
 
-        <span class="n">thermostat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="sd">        Which controls are shown comes from the parameters' rules</span>
+<span class="sd">        (lammps_step.NVT_Parameters), which the flowchart builder uses too.</span>
+<span class="sd">        """</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">parameters</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_widget_values</span><span class="p">()</span>
 
         <span class="n">t_frame</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"temperature_frame"</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">slave</span> <span class="ow">in</span> <span class="n">t_frame</span><span class="o">.</span><span class="n">grid_slaves</span><span class="p">():</span>
@@ -623,105 +627,31 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">row</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="c1"># Main controls</span>
-        <span class="bp">self</span><span class="p">[</span><span class="s2">"T0"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">columnspan</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
-        <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="bp">self</span><span class="p">[</span><span class="s2">"T1"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">columnspan</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
-        <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="bp">self</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">columnspan</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
-        <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"T0"</span><span class="p">,</span> <span class="s2">"T1"</span><span class="p">,</span> <span class="s2">"thermostat"</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">columnspan</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
+            <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="n">sw</span><span class="o">.</span><span class="n">align_labels</span><span class="p">((</span><span class="bp">self</span><span class="p">[</span><span class="s2">"T0"</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"T1"</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]),</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">E</span><span class="p">)</span>
 
-        <span class="c1"># and controls for specific thermostats</span>
-        <span class="k">if</span> <span class="n">thermostat</span> <span class="o">!=</span> <span class="s2">"velocity rescaling"</span><span class="p">:</span>
-            <span class="bp">self</span><span class="p">[</span><span class="s2">"Tdamp"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
-            <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="k">if</span> <span class="n">thermostat</span> <span class="o">==</span> <span class="s2">"Nose-Hoover"</span><span class="p">:</span>
-            <span class="bp">self</span><span class="p">[</span><span class="s2">"drag"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
-            <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
-
-            <span class="bp">self</span><span class="p">[</span><span class="s2">"Tchain"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
-            <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
-
-            <span class="bp">self</span><span class="p">[</span><span class="s2">"Tloop"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
-            <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
-
-            <span class="n">sw</span><span class="o">.</span><span class="n">align_labels</span><span class="p">(</span>
-                <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s2">"Tdamp"</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"Tchain"</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"Tloop"</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"drag"</span><span class="p">]),</span>
-                <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">E</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="k">elif</span> <span class="n">thermostat</span> <span class="o">==</span> <span class="s2">"Berendsen"</span><span class="p">:</span>
-            <span class="k">pass</span>
-        <span class="k">elif</span> <span class="s2">"csvr"</span> <span class="ow">in</span> <span class="n">thermostat</span> <span class="ow">or</span> <span class="s2">"csld"</span> <span class="ow">in</span> <span class="n">thermostat</span><span class="p">:</span>
-            <span class="bp">self</span><span class="p">[</span><span class="s2">"seed"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
-            <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">elif</span> <span class="n">thermostat</span> <span class="o">==</span> <span class="s2">"velocity rescaling"</span><span class="p">:</span>
-            <span class="bp">self</span><span class="p">[</span><span class="s2">"frequency"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
-            <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
-
-            <span class="bp">self</span><span class="p">[</span><span class="s2">"window"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
-            <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
-
-            <span class="bp">self</span><span class="p">[</span><span class="s2">"fraction"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
-            <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
-
-            <span class="n">sw</span><span class="o">.</span><span class="n">align_labels</span><span class="p">(</span>
-                <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s2">"frequency"</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"window"</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"fraction"</span><span class="p">]),</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">E</span>
-            <span class="p">)</span>
-        <span class="k">elif</span> <span class="n">thermostat</span> <span class="o">==</span> <span class="s2">"Langevin"</span><span class="p">:</span>
-            <span class="bp">self</span><span class="p">[</span><span class="s2">"seed"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
-            <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">sw</span><span class="o">.</span><span class="n">align_labels</span><span class="p">((</span><span class="bp">self</span><span class="p">[</span><span class="s2">"Tdamp"</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"seed"</span><span class="p">]),</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">E</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="s2">"Don't recognize thermostat "</span> <span class="o">+</span> <span class="s2">"'</span><span class="si">{}</span><span class="s2">'"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">thermostat</span><span class="p">)</span>
-            <span class="p">)</span>
+        <span class="c1"># and controls for specific thermostats, indented</span>
+        <span class="n">widgets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="s2">"Tdamp"</span><span class="p">,</span>
+            <span class="s2">"drag"</span><span class="p">,</span>
+            <span class="s2">"Tchain"</span><span class="p">,</span>
+            <span class="s2">"Tloop"</span><span class="p">,</span>
+            <span class="s2">"seed"</span><span class="p">,</span>
+            <span class="s2">"frequency"</span><span class="p">,</span>
+            <span class="s2">"window"</span><span class="p">,</span>
+            <span class="s2">"fraction"</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">P</span><span class="o">.</span><span class="n">applies</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+                <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
+                <span class="n">widgets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">sw</span><span class="o">.</span><span class="n">align_labels</span><span class="p">(</span><span class="n">widgets</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">E</span><span class="p">)</span>
 
         <span class="n">t_frame</span><span class="o">.</span><span class="n">columnconfigure</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">minsize</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="TkNVT.handle_dialog">
-<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_nvt.TkNVT.handle_dialog">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">handle_dialog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Handle the user cancelling, closing or OK'ing the dialog.</span>
-
-<span class="sd">        If the user cancels or closes the dialog with the x button,</span>
-<span class="sd">        revert the widgets to their previous state.</span>
-
-<span class="sd">        If the user clocks 'OK', save the changes to both the control</span>
-<span class="sd">        parameters and the results requested.</span>
-<span class="sd">        """</span>
-        <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="s2">"OK"</span><span class="p">:</span>
-            <span class="c1"># Shortcut for parameters</span>
-            <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">parameters</span>
-
-            <span class="n">thermostat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-
-            <span class="n">P</span><span class="p">[</span><span class="s2">"T0"</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s2">"T0"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
-            <span class="n">P</span><span class="p">[</span><span class="s2">"T1"</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s2">"T1"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
-            <span class="n">P</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">thermostat</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">thermostat</span> <span class="o">!=</span> <span class="s2">"velocity rescaling"</span><span class="p">:</span>
-                <span class="n">P</span><span class="p">[</span><span class="s2">"Tdamp"</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s2">"Tdamp"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
-
-            <span class="k">if</span> <span class="n">thermostat</span> <span class="o">==</span> <span class="s2">"Nose-Hoover"</span><span class="p">:</span>
-                <span class="n">P</span><span class="p">[</span><span class="s2">"Tchain"</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s2">"Tchain"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
-                <span class="n">P</span><span class="p">[</span><span class="s2">"Tloop"</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s2">"Tloop"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
-                <span class="n">P</span><span class="p">[</span><span class="s2">"drag"</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s2">"drag"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
-            <span class="k">elif</span> <span class="p">(</span>
-                <span class="s2">"csvr"</span> <span class="ow">in</span> <span class="n">thermostat</span> <span class="ow">or</span> <span class="s2">"csld"</span> <span class="ow">in</span> <span class="n">thermostat</span> <span class="ow">or</span> <span class="n">thermostat</span> <span class="o">==</span> <span class="s2">"Langevin"</span>
-            <span class="p">):</span>
-                <span class="n">P</span><span class="p">[</span><span class="s2">"seed"</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s2">"seed"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
-            <span class="k">elif</span> <span class="n">thermostat</span> <span class="o">==</span> <span class="s2">"velocity rescaling"</span><span class="p">:</span>
-                <span class="n">P</span><span class="p">[</span><span class="s2">"frequency"</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s2">"frequency"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
-                <span class="n">P</span><span class="p">[</span><span class="s2">"window"</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s2">"window"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
-                <span class="n">P</span><span class="p">[</span><span class="s2">"fraction"</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s2">"fraction"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
-
-        <span class="c1"># Let base classes reap their parameters</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">handle_dialog</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.9.29 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=45a1f582"></script>
+    <script src="../../_static/documentation_options.js?v=65cfade2"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.29" />
+  <meta name="docsearch:version" content="2026.10.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -540,6 +540,110 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <span class="c1"># The header of the helper scripts, e.g. "#MolSSI lammps_step:mdi_bind 2.0".</span>
 <span class="n">VERSION_PATTERN</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^#\s?MolSSI\s+(lammps_step:\S+)\s+([\d.]+)"</span><span class="p">)</span>
+
+
+<span class="c1"># Advice for common LAMMPS errors: (pattern in the message, advice)</span>
+<span class="n">_lammps_error_advice</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span>
+        <span class="s2">"Lost atoms"</span><span class="p">,</span>
+        <span class="s2">"Atoms moved too far in one timestep. This usually means a poor starting "</span>
+        <span class="s2">"structure, or too long a timestep: try minimizing the structure first, "</span>
+        <span class="s2">"or a shorter timestep."</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="p">(</span>
+        <span class="s2">"Out of range atoms"</span><span class="p">,</span>
+        <span class="s2">"Atoms moved too far for the k-space grid. This usually means a poor "</span>
+        <span class="s2">"starting structure, or too long a timestep: try minimizing the structure "</span>
+        <span class="s2">"first, or a shorter timestep."</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="p">(</span>
+        <span class="s2">"Bond atoms missing"</span><span class="p">,</span>
+        <span class="s2">"Bonded atoms moved too far apart. This usually means a poor starting "</span>
+        <span class="s2">"structure, or too long a timestep."</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="p">(</span>
+        <span class="s2">"Non-numeric"</span><span class="p">,</span>
+        <span class="s2">"The simulation blew up (the energy or pressure is not a number). Check "</span>
+        <span class="s2">"the starting structure and the timestep."</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="p">(</span>
+        <span class="s2">"triclinic"</span><span class="p">,</span>
+        <span class="s2">"The cell is triclinic (not orthorhombic), which this command cannot "</span>
+        <span class="s2">"handle."</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">_lammps_error_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^ERROR(?: on proc \d+)?: (.*?)(?: \(src/\S+\))?\s*$"</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="lammps_error">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.lammps_error">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">lammps_error</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">screen</span><span class="o">=</span><span class="s2">""</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Find the error, if any, in LAMMPS's log (log.lammps) or screen output.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    log : str</span>
+<span class="sd">        The text of log.lammps.</span>
+<span class="sd">    screen : str</span>
+<span class="sd">        The screen output (stdout), which has errors raised by processes other</span>
+<span class="sd">        than the first, which are not in the log.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict or None</span>
+<span class="sd">        The error "message", the "step" running (from the "# Step ..." comments</span>
+<span class="sd">        in the input), the "last command", and any "advice"; or None if there</span>
+<span class="sd">        was no error.</span>
+<span class="sd">    """</span>
+    <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">screen</span><span class="p">):</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">_lammps_error_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">match</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">last_command</span> <span class="o">=</span> <span class="s2">""</span>
+            <span class="k">for</span> <span class="n">line2</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]:</span>  <span class="c1"># noqa: E203</span>
+                <span class="k">if</span> <span class="n">line2</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"Last command:"</span><span class="p">):</span>
+                    <span class="n">last_command</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line2</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="s2">"Last command:"</span><span class="p">)</span> <span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+                    <span class="k">break</span>
+            <span class="n">step</span> <span class="o">=</span> <span class="s2">""</span>
+            <span class="k">for</span> <span class="n">line2</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">lines</span><span class="p">[:</span><span class="n">i</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">line2</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"# Step "</span><span class="p">):</span>
+                    <span class="n">step</span> <span class="o">=</span> <span class="n">line2</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                    <span class="k">break</span>
+            <span class="n">advice</span> <span class="o">=</span> <span class="s2">""</span>
+            <span class="k">for</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">text2</span> <span class="ow">in</span> <span class="n">_lammps_error_advice</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+                    <span class="n">advice</span> <span class="o">=</span> <span class="n">text2</span>
+                    <span class="k">break</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">"message"</span><span class="p">:</span> <span class="n">message</span><span class="p">,</span>
+                <span class="s2">"step"</span><span class="p">:</span> <span class="n">step</span><span class="p">,</span>
+                <span class="s2">"last command"</span><span class="p">:</span> <span class="n">last_command</span><span class="p">,</span>
+                <span class="s2">"advice"</span><span class="p">:</span> <span class="n">advice</span><span class="p">,</span>
+            <span class="p">}</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="lammps_error_message">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.lammps_error_message">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">lammps_error_message</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A readable message for an error found by lammps_error."""</span>
+    <span class="n">where</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">" in </span><span class="si">{</span><span class="n">error</span><span class="p">[</span><span class="s1">'step'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">error</span><span class="p">[</span><span class="s2">"step"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">""</span> <span class="k">else</span> <span class="s2">""</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"LAMMPS failed</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">error</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"."</span><span class="p">):</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">"."</span>
+    <span class="k">if</span> <span class="n">error</span><span class="p">[</span><span class="s2">"last command"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">""</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">" The last command was '</span><span class="si">{</span><span class="n">error</span><span class="p">[</span><span class="s1">'last command'</span><span class="p">]</span><span class="si">}</span><span class="s2">'."</span>
+    <span class="k">if</span> <span class="n">error</span><span class="p">[</span><span class="s2">"advice"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">""</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">" "</span> <span class="o">+</span> <span class="n">error</span><span class="p">[</span><span class="s2">"advice"</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">directory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">" See log.lammps in </span><span class="si">{</span><span class="n">directory</span><span class="si">}</span><span class="s2"> for details."</span>
+    <span class="k">return</span> <span class="n">text</span></div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_script_version</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
@@ -1035,6 +1139,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_energy_sum</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_eex</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_force_triclinic</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Whether to insist on a triclinic cell</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_triclinic_box</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Whether the box written is triclinic</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_results</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Storage for computational and timing results</span>
 
@@ -1698,6 +1803,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">structure_data</span><span class="p">()</span>
 
         <span class="n">files</span><span class="p">[</span><span class="s2">"structure.dat"</span><span class="p">]</span> <span class="o">=</span> <span class="n">structure_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_barostats</span><span class="p">(</span><span class="n">history_nodes</span><span class="p">)</span>
         <span class="k">if</span> <span class="s2">"forcefield"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">eex</span><span class="p">:</span>
             <span class="n">files</span><span class="p">[</span><span class="s2">"forcefield.dat"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eex</span><span class="p">[</span><span class="s2">"forcefield"</span><span class="p">]</span>
 
@@ -2197,6 +2303,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>
 
+            <span class="c1"># Did LAMMPS fail? Say why here, rather than failing later on missing</span>
+            <span class="c1"># output. (No success.dat is written, so a rerun runs LAMMPS again.)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_for_lammps_error</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
             <span class="c1"># f = os.path.join(self.directory, "stdout.txt")</span>
             <span class="c1"># with open(f, mode="w") as fd:</span>
             <span class="c1">#     fd.write(result["stdout"])</span>
@@ -2319,6 +2429,55 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="k">raise</span>
         <span class="k">return</span> <span class="n">ret</span>
 
+<div class="viewcode-block" id="LAMMPS.check_for_lammps_error">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.check_for_lammps_error">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_for_lammps_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Raise an error, with a readable message, if LAMMPS failed."""</span>
+        <span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">/</span> <span class="s2">"log.lammps"</span>
+        <span class="n">log</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">errors</span><span class="o">=</span><span class="s2">"replace"</span><span class="p">)</span> <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="k">else</span> <span class="s2">""</span>
+        <span class="n">screen</span> <span class="o">=</span> <span class="s2">""</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"stdout"</span><span class="p">),</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">screen</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">"stdout"</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">/</span> <span class="s2">"stdout.txt"</span>
+            <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">screen</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">errors</span><span class="o">=</span><span class="s2">"replace"</span><span class="p">)</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="n">lammps_error</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">screen</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">error</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">lammps_error_message</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+        <span class="c1"># FormattedText formats the text, so protect any braces in it</span>
+        <span class="n">safe</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"{"</span><span class="p">,</span> <span class="s2">"{{"</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"}"</span><span class="p">,</span> <span class="s2">"}}"</span><span class="p">)</span>
+        <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">safe</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">,</span> <span class="n">wrap</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">text</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LAMMPS.check_barostats">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.check_barostats">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_barostats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Check that the box suits the barostats, before running LAMMPS.</span>
+
+<span class="sd">        LAMMPS writes one box for all the steps, and press/berendsen cannot work</span>
+<span class="sd">        with a triclinic box, which a later step allowing shear or a cell that is</span>
+<span class="sd">        not orthorhombic requires.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_triclinic_box</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"uses_berendsen"</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">force_triclinic</span><span class="p">:</span>
+                    <span class="n">why</span> <span class="o">=</span> <span class="s2">"another step in this LAMMPS step allows the cell to shear"</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">why</span> <span class="o">=</span> <span class="s2">"the cell is not orthorhombic"</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">: the Berendsen barostat cannot be used with a "</span>
+                    <span class="sa">f</span><span class="s2">"triclinic cell, which is needed because </span><span class="si">{</span><span class="n">why</span><span class="si">}</span><span class="s2">. Use the "</span>
+                    <span class="s2">"Nose-Hoover barostat, or put the steps in separate LAMMPS steps."</span>
+                <span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="LAMMPS.structure_data">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.structure_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">structure_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2348,6 +2507,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"</span><span class="si">{:10d}</span><span class="s2"> improper types"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s2">"n_oop_types"</span><span class="p">]))</span>
 
         <span class="c1"># Find the box limits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_triclinic_box</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">periodicity</span> <span class="o">=</span> <span class="n">eex</span><span class="p">[</span><span class="s2">"periodicity"</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
             <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="n">eex</span><span class="p">[</span><span class="s2">"cell"</span><span class="p">]</span>
@@ -2361,7 +2521,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">xz</span> <span class="o">=</span> <span class="n">xz</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xz</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.0e-06</span> <span class="k">else</span> <span class="mf">0.0</span>
             <span class="n">yz</span> <span class="o">=</span> <span class="n">yz</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">yz</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.0e-06</span> <span class="k">else</span> <span class="mf">0.0</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">force_triclinic</span> <span class="ow">or</span> <span class="n">xy</span> <span class="o">!=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">xz</span> <span class="o">!=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">yz</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_triclinic_box</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">force_triclinic</span> <span class="ow">or</span> <span class="n">xy</span> <span class="o">!=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">xz</span> <span class="o">!=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">yz</span> <span class="o">!=</span> <span class="mf">0.0</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_triclinic_box</span><span class="p">:</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> xy xz yz"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="n">xz</span><span class="p">,</span> <span class="n">yz</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">eex</span><span class="p">[</span><span class="s2">"atoms"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>

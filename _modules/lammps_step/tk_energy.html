@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.tk_energy &#8212; SEAMM LAMMPS Plug-in 2026.9.29 documentation</title>
+    <title>lammps_step.tk_energy &#8212; SEAMM LAMMPS Plug-in 2026.10.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=45a1f582"></script>
+    <script src="../../_static/documentation_options.js?v=65cfade2"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.29" />
+  <meta name="docsearch:version" content="2026.10.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -571,7 +571,105 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="bp">self</span><span class="o">.</span><span class="n">setup_results</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">frame</span></div>
-</div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_widget_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The dialog's current values, {name: value}, for the parameters' rules."""</span>
+        <span class="k">return</span> <span class="n">widget_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_grid_stress_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Grid a table of stress (or damping) widgets into a frame.</span>
+
+<span class="sd">        The columns are the components that apply; the parameters' rules decide</span>
+<span class="sd">        which they are. Only the last widget in each row shows its units.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        frame : ttk.Frame</span>
+<span class="sd">            The frame for the table.</span>
+<span class="sd">        headers : [str]</span>
+<span class="sd">            The keys of the column labels, one per column.</span>
+<span class="sd">        rows : [(str, [str], str)]</span>
+<span class="sd">            For each row, the key of its label, the keys of its widgets, and the part</span>
+<span class="sd">            of the widgets to show ("combobox" or "entry") besides the units.</span>
+<span class="sd">        """</span>
+        <span class="k">for</span> <span class="n">slave</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">grid_slaves</span><span class="p">():</span>
+            <span class="n">slave</span><span class="o">.</span><span class="n">grid_forget</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">):</span>
+            <span class="n">frame</span><span class="o">.</span><span class="n">columnconfigure</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minsize</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">column</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">headers</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">column</span><span class="p">)</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">E</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">column</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+                <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">column</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">EW</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">column</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">"units"</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+            <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">headers</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">frame</span><span class="o">.</span><span class="n">columnconfigure</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">weight</span><span class="p">,</span> <span class="n">minsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="widget_values">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_energy.widget_values">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">widget_values</span><span class="p">(</span><span class="n">tk_node</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A dialog's current values, {name: value}, for the parameters' rules.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tk_node : seamm.TkNode</span>
+<span class="sd">        The graphical node with the dialog.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    {str: any}</span>
+<span class="sd">        The values of the parameters that have widgets, without units.</span>
+<span class="sd">    """</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">tk_node</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">"results"</span> <span class="ow">or</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tk_node</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">tk_node</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">values</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span>
+    <span class="k">return</span> <span class="n">values</span></div>
+
+
+
+<div class="viewcode-block" id="stress_headers">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_energy.stress_headers">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">stress_headers</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">couple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The column labels for the stress components that apply.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    keys : [str]</span>
+<span class="sd">        The stress components shown, as their parameters' names, e.g. 'Sxx,initial'.</span>
+<span class="sd">    couple : str</span>
+<span class="sd">        The directions that are coupled, e.g. 'x and y'.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    [str]</span>
+<span class="sd">        The keys of the column labels, e.g. 'XX+YY'.</span>
+<span class="sd">    """</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"x, y and z"</span><span class="p">:</span> <span class="s2">"XX+YY+ZZ"</span><span class="p">,</span> <span class="s2">"x and y"</span><span class="p">:</span> <span class="s2">"XX+YY"</span><span class="p">,</span> <span class="s2">"x and z"</span><span class="p">:</span> <span class="s2">"XX+ZZ"</span><span class="p">}</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"xx"</span><span class="p">:</span> <span class="n">xx</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">couple</span><span class="p">,</span> <span class="s2">"XX"</span><span class="p">),</span>
+        <span class="s2">"yy"</span><span class="p">:</span> <span class="s2">"YY+ZZ"</span> <span class="k">if</span> <span class="n">couple</span> <span class="o">==</span> <span class="s2">"y and z"</span> <span class="k">else</span> <span class="s2">"YY"</span><span class="p">,</span>
+        <span class="s2">"zz"</span><span class="p">:</span> <span class="s2">"ZZ"</span><span class="p">,</span>
+        <span class="s2">"xy"</span><span class="p">:</span> <span class="s2">"XY"</span><span class="p">,</span>
+        <span class="s2">"xz"</span><span class="p">:</span> <span class="s2">"XZ"</span><span class="p">,</span>
+        <span class="s2">"yz"</span><span class="p">:</span> <span class="s2">"YZ"</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]</span></div>
 
 </pre></div>
 

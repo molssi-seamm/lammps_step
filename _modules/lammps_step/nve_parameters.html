@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nve_parameters &#8212; SEAMM LAMMPS Plug-in 2026.9.29 documentation</title>
+    <title>lammps_step.nve_parameters &#8212; SEAMM LAMMPS Plug-in 2026.10.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=45a1f582"></script>
+    <script src="../../_static/documentation_options.js?v=65cfade2"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.29" />
+  <meta name="docsearch:version" content="2026.10.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -527,6 +527,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"The time to simulate in the dynamics run."</span><span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"maximum_time"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"run_control"</span><span class="p">:</span> <span class="s2">"Until properties converge to the requested accuracy."</span>
+            <span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"ns"</span><span class="p">,</span>
@@ -556,6 +559,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"control_properties"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"run_control"</span><span class="p">:</span> <span class="s2">"Until properties converge to the requested accuracy."</span>
+            <span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="p">{},</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"special"</span><span class="p">,</span>
             <span class="s2">"widget"</span><span class="p">:</span> <span class="s2">"seamm_widgets.PropertyTable"</span><span class="p">,</span>
@@ -607,6 +613,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"atomic positions rate"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"atomic positions"</span><span class="p">:</span> <span class="s2">"by time interval"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"fs"</span><span class="p">,</span>
@@ -616,6 +623,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"How often to sample the positions of the atoms"</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"atomic positions number of samples"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"atomic positions"</span><span class="p">:</span> <span class="s2">"by number of samples"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(),</span>
@@ -635,6 +643,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"com positions rate"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"com positions"</span><span class="p">:</span> <span class="s2">"by time interval"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"fs"</span><span class="p">,</span>
@@ -647,6 +656,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"com positions number of samples"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"com positions"</span><span class="p">:</span> <span class="s2">"by number of samples"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(),</span>
@@ -669,6 +679,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"atomic velocities rate"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"atomic velocities"</span><span class="p">:</span> <span class="s2">"by time interval"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"fs"</span><span class="p">,</span>
@@ -678,6 +689,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"How often to sample the velocities of the atoms"</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"atomic velocities number of samples"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"atomic velocities"</span><span class="p">:</span> <span class="s2">"by number of samples"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(),</span>
@@ -697,6 +709,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"com velocities rate"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"com velocities"</span><span class="p">:</span> <span class="s2">"by time interval"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"fs"</span><span class="p">,</span>
@@ -709,6 +722,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"com velocities number of samples"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"com velocities"</span><span class="p">:</span> <span class="s2">"by number of samples"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(),</span>
@@ -732,6 +746,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"heat flux rate"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"heat flux"</span><span class="p">:</span> <span class="s2">"by time interval"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"fs"</span><span class="p">,</span>
@@ -741,6 +756,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"How often to sample the heat flux"</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"heat flux number of samples"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"heat flux"</span><span class="p">:</span> <span class="s2">"by number of samples"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(),</span>
@@ -749,6 +765,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"How many samples of the heat flux to collect"</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"use centroid stress"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"heat flux"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"not"</span><span class="p">:</span> <span class="s2">"never"</span><span class="p">}},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
@@ -769,6 +786,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"shear stress rate"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"shear stress"</span><span class="p">:</span> <span class="s2">"by time interval"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"fs"</span><span class="p">,</span>
@@ -778,6 +796,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"How often to sample the shear stress"</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"shear stress number of samples"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"shear stress"</span><span class="p">:</span> <span class="s2">"by number of samples"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(),</span>
@@ -794,6 +813,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"How to sample the trajectory."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"trajectory rate"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"trajectory"</span><span class="p">:</span> <span class="s2">"by time interval"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"fs"</span><span class="p">,</span>
@@ -803,6 +823,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"How often to sample the trajectory"</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"trajectory number of samples"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"trajectory"</span><span class="p">:</span> <span class="s2">"by number of samples"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(),</span>
@@ -811,6 +832,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"How many samples of the trajectory to collect"</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"trajectory forces"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"trajectory"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"not"</span><span class="p">:</span> <span class="s2">"never"</span><span class="p">}},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"no"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
@@ -820,6 +842,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"Whether to include the forces in the trajectory"</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"trajectory velocities"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"trajectory"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"not"</span><span class="p">:</span> <span class="s2">"never"</span><span class="p">}},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"no"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
@@ -829,6 +852,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"Whether to include the velocities in the trajectory"</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"trajectory save"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"trajectory"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"not"</span><span class="p">:</span> <span class="s2">"never"</span><span class="p">}},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"no"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"yes"</span><span class="p">,</span> <span class="s2">"no"</span><span class="p">),</span>
@@ -837,6 +861,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"Whether to save the trajectory to a system."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"trajectory system name"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"trajectory save"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"trajectory"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"current"</span><span class="p">,),</span>
@@ -845,6 +870,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The name of the system for the trajectory"</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"make current"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"trajectory save"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"no"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"yes"</span><span class="p">,</span> <span class="s2">"no"</span><span class="p">),</span>
@@ -853,6 +879,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"Whether to make the system the current system."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"trajectory export"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"trajectory"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"not"</span><span class="p">:</span> <span class="s2">"never"</span><span class="p">}},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"no"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"yes"</span><span class="p">,</span> <span class="s2">"no"</span><span class="p">),</span>
@@ -861,6 +888,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"Whether to export the trajectory in other formats."</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"trajectory extxyz"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"trajectory export"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"no"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"yes"</span><span class="p">,</span> <span class="s2">"no"</span><span class="p">),</span>
@@ -869,6 +897,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"Write the trajectory in the ASE extended xyz format"</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"trajectory extxyz filename"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"trajectory export"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"trajectory.extxyz.gz"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(),</span>
@@ -877,6 +906,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"File for the extended xyz trajectory"</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"trajectory extxyz append"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"trajectory export"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"no"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"yes"</span><span class="p">,</span> <span class="s2">"no"</span><span class="p">),</span>
@@ -885,6 +915,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"Append to the extended xyz file"</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"trajectory extxyz skip frames"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"trajectory export"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"0"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(),</span>
@@ -893,6 +924,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The number of frames to ignore"</span><span class="p">,</span>
         <span class="p">},</span>
     <span class="p">}</span>
+
+    <span class="c1"># Running until properties converge is not implemented yet: the run is always</span>
+    <span class="c1"># for a fixed length of simulated time.</span>
+    <span class="n">not_implemented</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"run_control"</span><span class="p">,</span> <span class="s2">"maximum_time"</span><span class="p">,</span> <span class="s2">"control_properties"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="p">{},</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Initialize the instance, by default from the default</span>

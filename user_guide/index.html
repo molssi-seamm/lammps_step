@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.9.29 documentation</title>
+    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=45a1f582"></script>
+    <script src="../_static/documentation_options.js?v=65cfade2"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="Getting Started" href="../getting_started/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.29" />
+  <meta name="docsearch:version" content="2026.10.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -506,6 +506,29 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="user-guide">
 <span id="id1"></span><h1>User Guide<a class="headerlink" href="#user-guide" title="Link to this heading">#</a></h1>
 <p>The LAMMPS plug-in …</p>
+<section id="settings-that-depend-on-each-other">
+<h2>Settings that depend on each other<a class="headerlink" href="#settings-that-depend-on-each-other" title="Link to this heading">#</a></h2>
+<p>Which settings apply depends on others: the k-space settings only with a k-space method,
+the charge-equilibration settings only for methods that equilibrate charges (including a
+forcefield’s default, usually QEq for ReaxFF), and the cell’s shear only for a solid.
+The step’s dialogs show only the settings that apply with the current choices, and the
+same rules are used when a flowchart is built or edited without the editor
+(<code class="docutils literal notranslate"><span class="pre">seamm-flowchart</span></code> or SEAMM’s MCP server): a setting that would have no effect is
+refused, with the reason, and a value that contradicts another is refused too. See
+“Flowcharts without the editor” in SEAMM’s user guide.</p>
+<ul class="simple">
+<li><p>The damping times (<code class="docutils literal notranslate"><span class="pre">Pdamp</span></code> and the stress damping times) apply to both barostats:
+LAMMPS’s Berendsen barostat needs them too.</p></li>
+<li><p><strong>Allow shear</strong> applies only to a solid with the Nose-Hoover barostat, since the
+Berendsen barostat cannot control a sheared (triclinic) cell. LAMMPS uses one box for
+all the sub-steps in a LAMMPS step, so a Berendsen NPT step is refused before LAMMPS
+starts if the box must be triclinic (a later sub-step allows shear, or the cell is not
+orthorhombic); put such steps in separate LAMMPS steps.</p></li>
+<li><p>When LAMMPS itself stops with an error (for example “Lost atoms”), the step stops
+with a message giving the sub-step, LAMMPS’s message, the last command, advice for
+common errors, and where <code class="docutils literal notranslate"><span class="pre">log.lammps</span></code> is.</p></li>
+</ul>
+</section>
 <section id="index">
 <h2>Index<a class="headerlink" href="#index" title="Link to this heading">#</a></h2>
 <ul class="simple">
@@ -561,6 +584,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#settings-that-depend-on-each-other">Settings that depend on each other</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#index">Index</a></li>
 </ul>
   </nav></div>
