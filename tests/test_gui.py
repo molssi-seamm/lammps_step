@@ -150,6 +150,14 @@ def test_layouts_follow_the_rules(root, substep):
         assert not P.applies("tail_correction", values)
         set_and_check(tk_node, {"kspace_method": "MSM method for few charged atoms"})
         assert shown(tk_node["kspace_smallq"])
+        # The forcefield's default charges (ReaxFF's QEq) and the automatic method
+        # use these too
+        set_and_check(
+            tk_node,
+            {"atomic charges": "default for forcefield", "kspace_method": "automatic"},
+        )
+        for key in ("qeq convergence", "qeq iterations", "kspace_smallq"):
+            assert shown(tk_node[key])
     elif substep == "Velocities":
         for choice in P["method"].enumeration:
             set_and_check(tk_node, {"method": choice})
@@ -215,6 +223,16 @@ def test_layouts_follow_the_rules(root, substep):
             set_and_check(tk_node, {"system type": "fluid"})
             assert shown(tk_node["Pinitial"])
             assert not shown(tk_node["Sxx,initial"])
+            # The Berendsen barostat takes the damping time, but cannot shear
+            set_and_check(tk_node, {"barostat": "Berendsen"})
+            assert shown(tk_node["Pdamp"])
+            set_and_check(
+                tk_node,
+                {"system type": "solid", "use_stress": "general stress"},
+            )
+            assert shown(tk_node["Sxx damp"])
+            assert not shown(tk_node["allow shear"])
+            assert not shown(tk_node["Sxy,initial"])
 
 
 def test_variables_show_the_controls_they_might_need(root):

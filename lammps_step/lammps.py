@@ -537,6 +537,7 @@ class LAMMPS(seamm.Node):
         self._atomic_energy_sum = 0.0
         self._eex = None
         self._force_triclinic = False  # Whether to insist on a triclinic cell
+        self._triclinic_box = False  # Whether the box written is triclinic
 
         self._results = {}  # Storage for computational and timing results
 
@@ -1177,6 +1178,7 @@ class LAMMPS(seamm.Node):
         ) = self.structure_data()
 
         files["structure.dat"] = structure_data
+        self.check_barostats(history_nodes)
         if "forcefield" in self.eex:
             files["forcefield.dat"] = self.eex["forcefield"]
 
@@ -1797,6 +1799,27 @@ class LAMMPS(seamm.Node):
             raise
         return ret
 
+    def check_barostats(self, nodes):
+        """Check that the box suits the barostats, before running LAMMPS.
+
+        LAMMPS writes one box for all the steps, and press/berendsen cannot work
+        with a triclinic box, which a later step allowing shear or a cell that is
+        not orthorhombic requires.
+        """
+        if not self._triclinic_box:
+            return
+        for node in nodes:
+            if getattr(node, "uses_berendsen", False):
+                if self.force_triclinic:
+                    why = "another step in this LAMMPS step allows the cell to shear"
+                else:
+                    why = "the cell is not orthorhombic"
+                raise RuntimeError(
+                    f"{node.title}: the Berendsen barostat cannot be used with a "
+                    f"triclinic cell, which is needed because {why}. Use the "
+                    "Nose-Hoover barostat, or put the steps in separate LAMMPS steps."
+                )
+
     def structure_data(self):
         """Create the LAMMPS structure file from the energy expression"""
         lines = []
@@ -1824,6 +1847,7 @@ class LAMMPS(seamm.Node):
             lines.append("{:10d} improper types".format(eex["n_oop_types"]))
 
         # Find the box limits
+        self._triclinic_box = False
         periodicity = eex["periodicity"]
         if periodicity == 3:
             a, b, c, alpha, beta, gamma = eex["cell"]
@@ -1837,7 +1861,10 @@ class LAMMPS(seamm.Node):
             xz = xz if abs(xz) > 1.0e-06 else 0.0
             yz = yz if abs(yz) > 1.0e-06 else 0.0
 
-            if self.force_triclinic or xy != 0.0 or xz != 0.0 or yz != 0.0:
+            self._triclinic_box = (
+                self.force_triclinic or xy != 0.0 or xz != 0.0 or yz != 0.0
+            )
+            if self._triclinic_box:
                 lines.append("{} {} {} xy xz yz".format(xy, xz, yz))
         else:
             x, y, z, index = eex["atoms"][0]

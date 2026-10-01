@@ -45,13 +45,17 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             ),
         },
         "allow shear": {
-            "applies_when": {"system type": "solid"},
+            # LAMMPS's press/berendsen cannot control a triclinic (sheared) cell
+            "applies_when": {"system type": "solid", "barostat": "Nose-Hoover"},
             "default": "no",
             "kind": "boolean",
             "format_string": "s",
             "enumeration": ("no", "yes"),
             "description": "Allow the cell to shear",
-            "help_text": "Whether the cell angles can change.",
+            "help_text": (
+                "Whether the cell angles can change. Only the Nose-Hoover barostat "
+                "can change them."
+            ),
         },
         "use_stress": {
             "applies_when": {"system type": "solid"},
@@ -99,7 +103,6 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": ("The final pressure."),
         },
         "Pdamp": {
-            "applies_when": {"barostat": "Nose-Hoover"},
             "default": 1000.0,
             "kind": "float",
             "default_units": "fs",
@@ -252,7 +255,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": "The final components of the stress tensor.",
         },
         "Sxx damp": {
-            "applies_when": {"use_stress": "general stress", "barostat": "Nose-Hoover"},
+            "applies_when": {"use_stress": "general stress"},
             "default": 1000.0,
             "kind": "float",
             "default_units": "fs",
@@ -268,7 +271,6 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "applies_when": {
                 "use_stress": "general stress",
                 "couple": separate_yy,
-                "barostat": "Nose-Hoover",
             },
             "default": 1000.0,
             "kind": "float",
@@ -285,7 +287,6 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "applies_when": {
                 "use_stress": "general stress",
                 "couple": separate_zz,
-                "barostat": "Nose-Hoover",
             },
             "default": 1000.0,
             "kind": "float",
@@ -302,7 +303,6 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "applies_when": {
                 "use_stress": "general stress",
                 "allow shear": "yes",
-                "barostat": "Nose-Hoover",
             },
             "default": 1000.0,
             "kind": "float",
@@ -319,7 +319,6 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "applies_when": {
                 "use_stress": "general stress",
                 "allow shear": "yes",
-                "barostat": "Nose-Hoover",
             },
             "default": 1000.0,
             "kind": "float",
@@ -336,7 +335,6 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "applies_when": {
                 "use_stress": "general stress",
                 "allow shear": "yes",
-                "barostat": "Nose-Hoover",
             },
             "default": 1000.0,
             "kind": "float",
@@ -398,7 +396,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
     }
 
     # Rules shared by the dialog and the flowchart builder: see EnergyParameters.
-    # (Pfinal and Pdamp also need 'Panneal' and the Nose-Hoover barostat.)
+    # (Pfinal also needs 'Panneal'.)
     pressure_keys = ("Pinitial", "Pfinal", "Pdamp")
 
     def __init__(self, defaults={}, data=None):

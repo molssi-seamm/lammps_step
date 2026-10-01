@@ -28,9 +28,22 @@ def node_for(substep):
         ),
         (
             "Initialization",
-            {"qeq iterations": 200},
+            {"atomic charges": "no charges", "qeq iterations": 200},
             "qeq iterations",
-            "it applies when 'atomic charges' is 'charge equilibration",
+            "it applies when 'atomic charges' is 'default for forcefield' or "
+            "'charge equilibration",
+        ),
+        (
+            "Initialization",
+            {"kspace_method": "none", "kspace_smallq": 1.0e-4},
+            "kspace_smallq",
+            "it applies when 'kspace_method' is not 'none'",
+        ),
+        (
+            "NPT",
+            {"system type": "solid", "barostat": "Berendsen", "allow shear": "yes"},
+            "allow shear",
+            "'barostat' is 'Nose-Hoover'",
         ),
         (
             "Initialization",
@@ -209,6 +222,24 @@ def test_refused_with_reason(substep, settings, refused, reason):
             },
         ),
         ("NPT", {"Panneal": "yes", "Pfinal": 100.0, "barostat": "Berendsen"}),
+        # The damping times apply to the Berendsen barostat too (press/berendsen
+        # needs them)
+        ("NPT", {"barostat": "Berendsen", "Pdamp": 500.0}),
+        (
+            "NPT",
+            {
+                "barostat": "Berendsen",
+                "system type": "solid",
+                "use_stress": "general stress",
+                "couple": "none",
+                "Sxx damp": 500.0,
+                "Szz damp": 700.0,
+            },
+        ),
+        # The forcefield's default charges (e.g. ReaxFF's QEq) and the automatic
+        # k-space method use these
+        ("Initialization", {"qeq iterations": 200, "qeq convergence": 1.0e-7}),
+        ("Initialization", {"kspace_method": "automatic", "kspace_smallq": 1.0e-4}),
         ("HeatFlux", {"use centroid stress": "no"}),
     ],
 )

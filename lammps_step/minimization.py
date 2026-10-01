@@ -457,6 +457,7 @@ class Minimization(lammps_step.Energy):
         nAtoms = configuration.n_atoms  # noqa: F841
 
         # May need to force a triclinic cell
+        P["allow shear"] = self.shear_allowed(P)
         if P["allow shear"]:
             self.parent.force_triclinic = True
 
@@ -573,6 +574,16 @@ class Minimization(lammps_step.Energy):
             "postscript": None,
             "use python": False,
         }
+
+    @staticmethod
+    def shear_allowed(P):
+        """Whether the cell may shear: 'allow shear' applies only when optimizing
+        the cell of a solid, so it is ignored otherwise, as the dialog hides it."""
+        return (
+            bool(P["allow shear"])
+            and bool(P["optimize cell"])
+            and P["system type"] == "solid"
+        )
 
     def get_pressure_text(self, _P):
         """Work out and return the pressure/stress part of the

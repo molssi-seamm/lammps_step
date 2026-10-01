@@ -129,3 +129,69 @@ def test_remove_momentum_default_is_a_choice():
         data={"remove_momentum": {"value": old, "units": None}}
     )
     assert P["remove_momentum"].value in P["remove_momentum"].enumeration
+
+
+@pytest.mark.parametrize(
+    "system_type, barostat, expected",
+    [
+        ("solid", "Nose-Hoover", True),
+        ("solid", "Berendsen", False),
+        ("fluid", "Nose-Hoover", False),
+    ],
+)
+def test_npt_shear_allowed(system_type, barostat, expected):
+    """'allow shear' applies only to a solid with the Nose-Hoover barostat."""
+    values = {"allow shear": True, "system type": system_type, "barostat": barostat}
+    assert lammps_step.NPT.shear_allowed(values) is expected
+
+
+def test_berendsen_takes_the_damping_time_but_no_shear():
+    """press/berendsen needs the damping time, and cannot control the tilt."""
+    node, values = npt_values("none", barostat="Berendsen", **{"allow shear": True})
+    values["allow shear"] = node.shear_allowed(values)
+    text = node.get_pressure_text(values)
+    assert " x -1.000 -1.000 1000.000 " in text
+    assert "xy" not in text and "xz" not in text and "yz" not in text
+
+
+@pytest.mark.parametrize(
+    "optimize_cell, system_type, expected",
+    [("yes", "solid", True), ("no", "solid", False), ("yes", "fluid", False)],
+)
+def test_minimization_shear_allowed(optimize_cell, system_type, expected):
+    """'allow shear' applies only when optimizing the cell of a solid."""
+    values = {
+        "allow shear": True,
+        "optimize cell": optimize_cell == "yes",
+        "system type": system_type,
+    }
+    assert lammps_step.Minimization.shear_allowed(values) is expected
+
+
+class _Node:
+    def __init__(self, title, uses_berendsen):
+        self.title = title
+        self.uses_berendsen = uses_berendsen
+
+
+@pytest.mark.parametrize(
+    "forced, triclinic, berendsen, message",
+    [
+        (True, True, True, "another step in this LAMMPS step allows the cell"),
+        (False, True, True, "the cell is not orthorhombic"),
+        (False, False, True, None),
+        (True, True, False, None),
+    ],
+)
+def test_berendsen_needs_an_orthogonal_box(forced, triclinic, berendsen, message):
+    """LAMMPS writes one box for all the steps, and press/berendsen fails with a
+    triclinic box; say so before running, not after LAMMPS fails."""
+    lammps = lammps_step.LAMMPS()
+    lammps.force_triclinic = forced
+    lammps._triclinic_box = triclinic
+    nodes = [_Node("NPT dynamics", berendsen)]
+    if message is None:
+        lammps.check_barostats(nodes)
+    else:
+        with pytest.raises(RuntimeError, match=message):
+            lammps.check_barostats(nodes)

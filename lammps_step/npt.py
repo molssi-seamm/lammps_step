@@ -162,6 +162,7 @@ class NPT(lammps_step.NVT):
 
         # Fix variables with special cases
         timestep, P["timestep"] = self.timestep(P["timestep"])
+        P["allow shear"] = self.shear_allowed(P)
 
         if P["seed"] == "random":
             # Apparently the seed must be no larger than 900,000,000
@@ -187,6 +188,7 @@ class NPT(lammps_step.NVT):
         Tdamp = lammps_step.to_lammps_units(P["Tdamp"], quantity="time")
 
         barostat = P["barostat"]
+        self.uses_berendsen = barostat == "Berendsen"
         if barostat == "Berendsen":
             modulus = lammps_step.to_lammps_units(P["modulus"], quantity="pressure")
 
@@ -515,6 +517,17 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
         if str(nreset) != "never":
             text += f" nreset {int(nreset)}"
         return text
+
+    @staticmethod
+    def shear_allowed(P):
+        """Whether the cell may shear: 'allow shear' applies only to a solid with
+        the Nose-Hoover barostat (press/berendsen cannot control a triclinic cell),
+        so it is ignored otherwise, as the dialog hides it."""
+        return (
+            bool(P["allow shear"])
+            and P["system type"] == "solid"
+            and P["barostat"] == "Nose-Hoover"
+        )
 
     def get_pressure_text(self, _P):
         """Work out and return the pressure/stress part of the
