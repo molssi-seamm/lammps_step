@@ -30,7 +30,6 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             ),
         },
         "time": {
-            "applies_when": {"run_control": "For a fixed length of simulated time."},
             "default": 100.0,
             "kind": "float",
             "default_units": "ps",
@@ -86,7 +85,6 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             ),
         },
         "sampling": {
-            "applies_when": {"run_control": "For a fixed length of simulated time."},
             "default": "50",
             "kind": "float",
             "default_units": "fs",
@@ -437,6 +435,10 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "The number of frames to ignore",
         },
     }
+
+    # Running until properties converge is not implemented yet: the run is always
+    # for a fixed length of simulated time.
+    not_implemented = ("run_control", "maximum_time", "control_properties")
 
     def __init__(self, defaults={}, data=None):
         """Initialize the instance, by default from the default

@@ -593,7 +593,7 @@ class Minimization(lammps_step.Energy):
         Szz = _P["Szz"]
         Syz = _P["Syz"]
         Sxz = _P["Sxz"]
-        Sxy = _P["Sxz"]
+        Sxy = _P["Sxy"]
 
         if use_stress:
             if couple == "x, y and z":

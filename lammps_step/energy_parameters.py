@@ -44,6 +44,9 @@ class EnergyParameters(seamm.Parameters):
     """The parameters for the (isotropic) pressure, which apply only when a pressure
     rather than a general stress is applied."""
 
+    not_implemented = ()
+    """Parameters that are defined but not yet implemented, so never apply."""
+
     def _isotropic(self, values):
         """Whether a pressure, rather than a general stress, is applied."""
         system_type = values.get("system type", self["system type"].value)
@@ -57,6 +60,8 @@ class EnergyParameters(seamm.Parameters):
         pressure, not a general stress, is applied."""
         if values is None:
             values = self.current_values()
+        if key in self.not_implemented:
+            return False
         if not super().applies(key, values, _seen):
             return False
         if key in self.pressure_keys:
@@ -67,6 +72,8 @@ class EnergyParameters(seamm.Parameters):
         """Why a parameter does not apply, for the builder's messages."""
         if values is None:
             values = self.current_values()
+        if key in self.not_implemented:
+            return "it is not implemented yet"
         reason = super().not_applicable_reason(key, values)
         if reason:
             return reason

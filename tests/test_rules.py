@@ -89,7 +89,7 @@ def node_for(substep):
             "NVE",
             {"maximum_time": 2.0},
             "maximum_time",
-            "it applies when 'run_control' is 'Until properties converge",
+            "it is not implemented yet",
         ),
         (
             "NVT",

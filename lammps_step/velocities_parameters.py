@@ -51,7 +51,7 @@ class VelocitiesParameters(seamm.Parameters):
         "remove_momentum": {
             "default": (
                 "remove any translational and, for molecular systems, "
-                "rotational momentum (default)."
+                "rotational momentum (default)"
             ),
             "kind": "enumeration",
             "format_string": "s",
@@ -76,6 +76,14 @@ class VelocitiesParameters(seamm.Parameters):
     def __init__(self, defaults={}, data=None):
         """Initialize the instance, by default from the default
         parameters given in the class"""
+
+        # The default used to end in a period, so it was not one of the choices;
+        # flowcharts saved then hold that spelling.
+        if data is not None and "remove_momentum" in data:
+            entry = data["remove_momentum"]
+            if isinstance(entry, dict) and isinstance(entry.get("value"), str):
+                if entry["value"].endswith("(default)."):
+                    entry["value"] = entry["value"][:-1]
 
         super().__init__(
             defaults={**VelocitiesParameters.parameters, **defaults}, data=data
