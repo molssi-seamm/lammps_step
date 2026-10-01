@@ -77,3 +77,95 @@ class TkEnergy(seamm.TkNode):
         self.setup_results()
 
         return frame
+
+    def _widget_values(self):
+        """The dialog's current values, {name: value}, for the parameters' rules."""
+        return widget_values(self)
+
+    def _grid_stress_table(self, frame, headers, rows, weight=1):
+        """Grid a table of stress (or damping) widgets into a frame.
+
+        The columns are the components that apply; the parameters' rules decide
+        which they are. Only the last widget in each row shows its units.
+
+        Parameters
+        ----------
+        frame : ttk.Frame
+            The frame for the table.
+        headers : [str]
+            The keys of the column labels, one per column.
+        rows : [(str, [str], str)]
+            For each row, the key of its label, the keys of its widgets, and the part
+            of the widgets to show ("combobox" or "entry") besides the units.
+        """
+        for slave in frame.grid_slaves():
+            slave.grid_forget()
+        for column in range(1, 7):
+            frame.columnconfigure(column, weight=0, minsize=0)
+
+        for column, key in enumerate(headers, start=1):
+            self[key].grid(row=0, column=column)
+        row = 1
+        for label, keys, part in rows:
+            self[label].grid(row=row, column=0, sticky=tk.E)
+            for column, key in enumerate(keys, start=1):
+                self[key].grid(row=row, column=column, sticky=tk.EW)
+                if column == len(keys):
+                    self[key].show(part, "units")
+                else:
+                    self[key].show(part)
+            row += 1
+        for column in range(1, len(headers) + 1):
+            frame.columnconfigure(column, weight=weight, minsize=10)
+
+
+def widget_values(tk_node):
+    """A dialog's current values, {name: value}, for the parameters' rules.
+
+    Parameters
+    ----------
+    tk_node : seamm.TkNode
+        The graphical node with the dialog.
+
+    Returns
+    -------
+    {str: any}
+        The values of the parameters that have widgets, without units.
+    """
+    values = {}
+    for key in tk_node.node.parameters:
+        if key == "results" or key not in tk_node:
+            continue
+        try:
+            value = tk_node[key].get()
+        except Exception:
+            continue
+        values[key] = value[0] if isinstance(value, tuple) else value
+    return values
+
+
+def stress_headers(keys, couple):
+    """The column labels for the stress components that apply.
+
+    Parameters
+    ----------
+    keys : [str]
+        The stress components shown, as their parameters' names, e.g. 'Sxx,initial'.
+    couple : str
+        The directions that are coupled, e.g. 'x and y'.
+
+    Returns
+    -------
+    [str]
+        The keys of the column labels, e.g. 'XX+YY'.
+    """
+    xx = {"x, y and z": "XX+YY+ZZ", "x and y": "XX+YY", "x and z": "XX+ZZ"}
+    labels = {
+        "xx": xx.get(couple, "XX"),
+        "yy": "YY+ZZ" if couple == "y and z" else "YY",
+        "zz": "ZZ",
+        "xy": "XY",
+        "xz": "XZ",
+        "yz": "YZ",
+    }
+    return [labels[key[1:3].lower()] for key in keys]

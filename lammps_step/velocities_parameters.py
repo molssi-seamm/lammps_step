@@ -34,6 +34,8 @@ class VelocitiesParameters(seamm.Parameters):
             "help_text": "The temperature corresponding to the velocities.",
         },
         "seed": {
+            # Only a random distribution uses random numbers
+            "applies_when": {"method": "using a random distribution"},
             "default": "random",
             "kind": "integer",
             "default_units": None,

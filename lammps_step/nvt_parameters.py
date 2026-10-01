@@ -7,6 +7,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# The thermostats that use random numbers, and so a seed
+random_thermostats = (
+    "canonical sampling, velocity rescaling (csvr)",
+    "canonical sampling, langevin dynamics (csld)",
+    "Langevin",
+)
+
 
 class NVT_Parameters(lammps_step.NVE_Parameters):
     """The control parameters for NVT dynamics in LAMMPS"""
@@ -46,6 +53,7 @@ class NVT_Parameters(lammps_step.NVE_Parameters):
             "help_text": "The final temperature for simulated annealing.",
         },
         "Tdamp": {
+            "applies_when": {"thermostat": {"not": "velocity rescaling"}},
             "default": 100.0,
             "kind": "float",
             "default_units": "fs",
@@ -54,6 +62,7 @@ class NVT_Parameters(lammps_step.NVE_Parameters):
             "help_text": "The damping time constant for thermostat",
         },
         "Tchain": {
+            "applies_when": {"thermostat": "Nose-Hoover"},
             "default": 3,
             "kind": "integer",
             "default_units": None,
@@ -62,6 +71,7 @@ class NVT_Parameters(lammps_step.NVE_Parameters):
             "help_text": "The number of thermostats in the chain.",
         },
         "Tloop": {
+            "applies_when": {"thermostat": "Nose-Hoover"},
             "default": 1,
             "kind": "integer",
             "default_units": None,
@@ -70,6 +80,7 @@ class NVT_Parameters(lammps_step.NVE_Parameters):
             "help_text": ("The number of sub-iterations for the thermostat."),
         },
         "drag": {
+            "applies_when": {"thermostat": "Nose-Hoover"},
             "default": 0.0,
             "kind": "float",
             "default_units": None,
@@ -82,6 +93,7 @@ class NVT_Parameters(lammps_step.NVE_Parameters):
             ),
         },
         "seed": {
+            "applies_when": {"thermostat": random_thermostats},
             "default": "random",
             "kind": "integer",
             "default_units": None,
@@ -95,6 +107,7 @@ class NVT_Parameters(lammps_step.NVE_Parameters):
             ),
         },
         "frequency": {
+            "applies_when": {"thermostat": "velocity rescaling"},
             "default": 100.0,
             "kind": "float",
             "default_units": "fs",
@@ -105,6 +118,7 @@ class NVT_Parameters(lammps_step.NVE_Parameters):
             ),
         },
         "window": {
+            "applies_when": {"thermostat": "velocity rescaling"},
             "default": 20.0,
             "kind": "float",
             "default_units": "K",
@@ -118,6 +132,7 @@ class NVT_Parameters(lammps_step.NVE_Parameters):
             ),
         },
         "fraction": {
+            "applies_when": {"thermostat": "velocity rescaling"},
             "default": 1.0,
             "kind": "float",
             "default_units": None,

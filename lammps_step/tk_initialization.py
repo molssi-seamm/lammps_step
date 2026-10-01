@@ -9,6 +9,8 @@ import tkinter.ttk as ttk
 import seamm
 import seamm_widgets as sw
 
+from .tk_energy import widget_values
+
 logger = logging.getLogger(__name__)
 
 
@@ -107,15 +109,27 @@ class TkInitialization(seamm.TkNode):
         self["general"].grid(row=0, column=0, sticky=tk.EW, pady=10)
 
         self["periodic"].grid(row=1, column=0, sticky=tk.EW, pady=10)
+        self.reset_dialog()
+
+    def reset_dialog(self, widget=None):
+        """Lay out both parts of the dialog for the current values."""
         self.general_cb()
         self.kspace_method_cb()
+
+    def _widget_values(self):
+        """The dialog's current values, {name: value}, for the parameters' rules."""
+        return widget_values(self)
 
     def general_cb(self, event=None):
         """Grid the widgets into the dialog, depending on the current values
         of key variables. This provides a dyamic presentation to the user.
+
+        Which controls are shown comes from the parameters' rules
+        (lammps_step.InitializationParameters), which the flowchart builder uses too.
         """
+        P = self.node.parameters
+        values = self._widget_values()
         frame = self["general"]
-        charge_method = self["atomic charges"].get()
 
         # Remove any widgets previously packed
         for slave in frame.grid_slaves():
@@ -129,8 +143,9 @@ class TkInitialization(seamm.TkNode):
             widgets.append(self[key])
             row += 1
 
-        if charge_method.startswith("charge "):
-            for key in ("qeq convergence", "qeq iterations"):
+        # The controls for charge equilibration, indented
+        for key in ("qeq convergence", "qeq iterations"):
+            if P.applies(key, values):
                 self[key].grid(row=row, column=1, sticky=tk.EW)
                 widgets2.append(self[key])
                 row += 1
@@ -144,24 +159,20 @@ class TkInitialization(seamm.TkNode):
         """Grid the widgets into the dialog, depending on the current values
         of key variables. This provides a dyamic presentation to the user.
         """
+        P = self.node.parameters
+        values = self._widget_values()
 
         # Remove any widgets previously packed
         for slave in self["periodic"].grid_slaves():
             slave.grid_forget()
 
         row = 0
-        self["kspace_method"].grid(row=row, column=0, sticky=tk.W)
-        row += 1
-
-        method = self["kspace_method"].get()
-        if method != "none":
-            self["kspace_accuracy"].grid(row=row, column=0, sticky=tk.W)
-            row += 1
-
-            if "few charged" in method or self.is_expr(method[0]):
-                self["kspace_smallq"].grid(row=row, column=0, sticky=tk.W)
+        for key in (
+            "kspace_method",
+            "kspace_accuracy",
+            "kspace_smallq",
+            "tail_correction",
+        ):
+            if P.applies(key, values):
+                self[key].grid(row=row, column=0, sticky=tk.W)
                 row += 1
-
-        if self.is_expr(method) or "dispersion" not in method:
-            self["tail_correction"].grid(row=row, column=0, sticky=tk.W)
-            row += 1

@@ -40,6 +40,9 @@ class TkHeatFlux(lammps_step.TkNVE):
     HeatFluxParameters,
     """
 
+    # The heat flux and its sampling are in the main dialog, not the trajectory tab
+    trajectory_skip = ("heat flux", "heat flux number of samples", "heat flux rate")
+
     def __init__(
         self,
         tk_flowchart=None,
@@ -151,17 +154,25 @@ class TkHeatFlux(lammps_step.TkNVE):
         # Shortcut for parameters
         P = self.node.parameters
 
+        # Which controls to show comes from the parameters' rules
+        # (lammps_step.HeatFluxParameters), which the flowchart builder uses too.
+        values = self._widget_values()
+
         # keep track of the row in a variable, so that the layout is flexible
         # if e.g. rows are skipped to control such as "method" here
         row = 0
         widgets = []
         for key in ("time", "timestep", "heat flux", "use centroid stress", "sampling"):
-            self[key].grid(row=row, column=0, sticky=tk.EW)
-            widgets.append(self[key])
-            row += 1
+            if P.applies(key, values):
+                self[key].grid(row=row, column=0, sticky=tk.EW)
+                widgets.append(self[key])
+                row += 1
 
         # Align the labels
         sw.align_labels(widgets, sticky=tk.E)
+
+        # and the trajectory tab
+        self.reset_trajectory_frame()
 
         # And how to handle the structure
         if self.node.calculation == "Heat Flux":

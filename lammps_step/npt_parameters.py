@@ -2,6 +2,7 @@
 """Control parameters for NPT (canonical) dynamics"""
 
 import lammps_step
+from .minimization_parameters import separate_yy, separate_zz
 import logging
 
 logger = logging.getLogger(__name__)
@@ -44,6 +45,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             ),
         },
         "allow shear": {
+            "applies_when": {"system type": "solid"},
             "default": "no",
             "kind": "boolean",
             "format_string": "s",
@@ -52,6 +54,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": "Whether the cell angles can change.",
         },
         "use_stress": {
+            "applies_when": {"system type": "solid"},
             "default": "isotropic pressure",
             "kind": "enumeration",
             "enumeration": ("isotropic pressure", "general stress"),
@@ -64,6 +67,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             ),
         },
         "couple": {
+            "applies_when": {"system type": "solid"},
             "default": "x, y and z",
             "kind": "enumeration",
             "enumeration": ("x, y and z", "x and y", "x and z", "y and z", "none"),
@@ -85,6 +89,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": ("The initial pressure."),
         },
         "Pfinal": {
+            "applies_when": {"Panneal": "yes"},
             "default": 1.0,
             "kind": "float",
             "default_units": "atm",
@@ -94,6 +99,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": ("The final pressure."),
         },
         "Pdamp": {
+            "applies_when": {"barostat": "Nose-Hoover"},
             "default": 1000.0,
             "kind": "float",
             "default_units": "fs",
@@ -106,6 +112,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             ),
         },
         "Sxx,initial": {
+            "applies_when": {"use_stress": "general stress"},
             "default": -1.0,
             "kind": "float",
             "enumeration": ("fixed",),
@@ -115,6 +122,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": "The initial components of the stress tensor.",
         },
         "Syy,initial": {
+            "applies_when": {"use_stress": "general stress", "couple": separate_yy},
             "default": -1.0,
             "kind": "float",
             "enumeration": ("fixed",),
@@ -124,6 +132,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": "The initial components of the stress tensor.",
         },
         "Szz,initial": {
+            "applies_when": {"use_stress": "general stress", "couple": separate_zz},
             "default": -1.0,
             "kind": "float",
             "enumeration": ("fixed",),
@@ -133,6 +142,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": "The initial components of the stress tensor.",
         },
         "Sxy,initial": {
+            "applies_when": {"use_stress": "general stress", "allow shear": "yes"},
             "default": 0.0,
             "kind": "float",
             "enumeration": ("fixed",),
@@ -142,6 +152,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": "The initial components of the stress tensor.",
         },
         "Sxz,initial": {
+            "applies_when": {"use_stress": "general stress", "allow shear": "yes"},
             "default": 0.0,
             "kind": "float",
             "enumeration": ("fixed",),
@@ -151,6 +162,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": "The initial components of the stress tensor.",
         },
         "Syz,initial": {
+            "applies_when": {"use_stress": "general stress", "allow shear": "yes"},
             "default": 0.0,
             "kind": "float",
             "enumeration": ("fixed",),
@@ -160,6 +172,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": "The initial components of the stress tensor.",
         },
         "Sxx,final": {
+            "applies_when": {"use_stress": "general stress", "Panneal": "yes"},
             "default": -1.0,
             "kind": "float",
             "enumeration": ("fixed",),
@@ -169,6 +182,11 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": "The final components of the stress tensor.",
         },
         "Syy,final": {
+            "applies_when": {
+                "use_stress": "general stress",
+                "couple": separate_yy,
+                "Panneal": "yes",
+            },
             "default": -1.0,
             "kind": "float",
             "enumeration": ("fixed",),
@@ -178,6 +196,11 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": "The final components of the stress tensor.",
         },
         "Szz,final": {
+            "applies_when": {
+                "use_stress": "general stress",
+                "couple": separate_zz,
+                "Panneal": "yes",
+            },
             "default": -1.0,
             "kind": "float",
             "enumeration": ("fixed",),
@@ -187,6 +210,11 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": "The final components of the stress tensor.",
         },
         "Sxy,final": {
+            "applies_when": {
+                "use_stress": "general stress",
+                "allow shear": "yes",
+                "Panneal": "yes",
+            },
             "default": 0.0,
             "kind": "float",
             "default_units": "atm",
@@ -196,6 +224,11 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": "The final components of the stress tensor.",
         },
         "Sxz,final": {
+            "applies_when": {
+                "use_stress": "general stress",
+                "allow shear": "yes",
+                "Panneal": "yes",
+            },
             "default": 0.0,
             "kind": "float",
             "enumeration": ("fixed",),
@@ -205,6 +238,11 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": "The final components of the stress tensor.",
         },
         "Syz,final": {
+            "applies_when": {
+                "use_stress": "general stress",
+                "allow shear": "yes",
+                "Panneal": "yes",
+            },
             "default": 0.0,
             "kind": "float",
             "enumeration": ("fixed",),
@@ -214,6 +252,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             "help_text": "The final components of the stress tensor.",
         },
         "Sxx damp": {
+            "applies_when": {"use_stress": "general stress", "barostat": "Nose-Hoover"},
             "default": 1000.0,
             "kind": "float",
             "default_units": "fs",
@@ -226,6 +265,11 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             ),
         },
         "Syy damp": {
+            "applies_when": {
+                "use_stress": "general stress",
+                "couple": separate_yy,
+                "barostat": "Nose-Hoover",
+            },
             "default": 1000.0,
             "kind": "float",
             "default_units": "fs",
@@ -238,6 +282,11 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             ),
         },
         "Szz damp": {
+            "applies_when": {
+                "use_stress": "general stress",
+                "couple": separate_zz,
+                "barostat": "Nose-Hoover",
+            },
             "default": 1000.0,
             "kind": "float",
             "default_units": "fs",
@@ -250,6 +299,11 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             ),
         },
         "Sxy damp": {
+            "applies_when": {
+                "use_stress": "general stress",
+                "allow shear": "yes",
+                "barostat": "Nose-Hoover",
+            },
             "default": 1000.0,
             "kind": "float",
             "default_units": "fs",
@@ -262,6 +316,11 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             ),
         },
         "Sxz damp": {
+            "applies_when": {
+                "use_stress": "general stress",
+                "allow shear": "yes",
+                "barostat": "Nose-Hoover",
+            },
             "default": 1000.0,
             "kind": "float",
             "default_units": "fs",
@@ -274,6 +333,11 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             ),
         },
         "Syz damp": {
+            "applies_when": {
+                "use_stress": "general stress",
+                "allow shear": "yes",
+                "barostat": "Nose-Hoover",
+            },
             "default": 1000.0,
             "kind": "float",
             "default_units": "fs",
@@ -286,6 +350,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             ),
         },
         "nreset": {
+            "applies_when": {"barostat": "Nose-Hoover"},
             "default": "never",
             "kind": "integer",
             "default_units": None,
@@ -298,6 +363,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             ),
         },
         "mtk": {
+            "applies_when": {"barostat": "Nose-Hoover"},
             "default": "yes",
             "kind": "boolean",
             "format_string": "s",
@@ -315,6 +381,7 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             ),
         },
         "modulus": {
+            "applies_when": {"barostat": {"not": "Nose-Hoover"}},
             "default": 50.0,
             "kind": "float",
             "default_units": "GPa",
@@ -329,6 +396,10 @@ class NPT_Parameters(lammps_step.NVT_Parameters):
             ),
         },
     }
+
+    # Rules shared by the dialog and the flowchart builder: see EnergyParameters.
+    # (Pfinal and Pdamp also need 'Panneal' and the Nose-Hoover barostat.)
+    pressure_keys = ("Pinitial", "Pfinal", "Pdamp")
 
     def __init__(self, defaults={}, data=None):
         """Initialize the instance, by default from the default

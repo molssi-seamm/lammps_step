@@ -30,6 +30,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             ),
         },
         "time": {
+            "applies_when": {"run_control": "For a fixed length of simulated time."},
             "default": 100.0,
             "kind": "float",
             "default_units": "ps",
@@ -38,6 +39,9 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": ("The time to simulate in the dynamics run."),
         },
         "maximum_time": {
+            "applies_when": {
+                "run_control": "Until properties converge to the requested accuracy."
+            },
             "default": 1.0,
             "kind": "float",
             "default_units": "ns",
@@ -67,6 +71,9 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             ),
         },
         "control_properties": {
+            "applies_when": {
+                "run_control": "Until properties converge to the requested accuracy."
+            },
             "default": {},
             "kind": "special",
             "widget": "seamm_widgets.PropertyTable",
@@ -79,6 +86,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             ),
         },
         "sampling": {
+            "applies_when": {"run_control": "For a fixed length of simulated time."},
             "default": "50",
             "kind": "float",
             "default_units": "fs",
@@ -118,6 +126,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             ),
         },
         "atomic positions rate": {
+            "applies_when": {"atomic positions": "by time interval"},
             "default": 100,
             "kind": "float",
             "default_units": "fs",
@@ -127,6 +136,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "How often to sample the positions of the atoms",
         },
         "atomic positions number of samples": {
+            "applies_when": {"atomic positions": "by number of samples"},
             "default": 1000,
             "kind": "integer",
             "enumeration": tuple(),
@@ -146,6 +156,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             ),
         },
         "com positions rate": {
+            "applies_when": {"com positions": "by time interval"},
             "default": 100,
             "kind": "float",
             "default_units": "fs",
@@ -158,6 +169,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             ),
         },
         "com positions number of samples": {
+            "applies_when": {"com positions": "by number of samples"},
             "default": 1000,
             "kind": "integer",
             "enumeration": tuple(),
@@ -180,6 +192,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             ),
         },
         "atomic velocities rate": {
+            "applies_when": {"atomic velocities": "by time interval"},
             "default": 100,
             "kind": "float",
             "default_units": "fs",
@@ -189,6 +202,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "How often to sample the velocities of the atoms",
         },
         "atomic velocities number of samples": {
+            "applies_when": {"atomic velocities": "by number of samples"},
             "default": 1000,
             "kind": "integer",
             "enumeration": tuple(),
@@ -208,6 +222,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             ),
         },
         "com velocities rate": {
+            "applies_when": {"com velocities": "by time interval"},
             "default": 100,
             "kind": "float",
             "default_units": "fs",
@@ -220,6 +235,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             ),
         },
         "com velocities number of samples": {
+            "applies_when": {"com velocities": "by number of samples"},
             "default": 1000,
             "kind": "integer",
             "enumeration": tuple(),
@@ -243,6 +259,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             ),
         },
         "heat flux rate": {
+            "applies_when": {"heat flux": "by time interval"},
             "default": 100,
             "kind": "float",
             "default_units": "fs",
@@ -252,6 +269,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "How often to sample the heat flux",
         },
         "heat flux number of samples": {
+            "applies_when": {"heat flux": "by number of samples"},
             "default": 1000,
             "kind": "integer",
             "enumeration": tuple(),
@@ -260,6 +278,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "How many samples of the heat flux to collect",
         },
         "use centroid stress": {
+            "applies_when": {"heat flux": {"not": "never"}},
             "default": "yes",
             "kind": "boolean",
             "default_units": None,
@@ -280,6 +299,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             ),
         },
         "shear stress rate": {
+            "applies_when": {"shear stress": "by time interval"},
             "default": 100,
             "kind": "float",
             "default_units": "fs",
@@ -289,6 +309,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "How often to sample the shear stress",
         },
         "shear stress number of samples": {
+            "applies_when": {"shear stress": "by number of samples"},
             "default": 1000,
             "kind": "integer",
             "enumeration": tuple(),
@@ -305,6 +326,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "How to sample the trajectory.",
         },
         "trajectory rate": {
+            "applies_when": {"trajectory": "by time interval"},
             "default": 100,
             "kind": "float",
             "default_units": "fs",
@@ -314,6 +336,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "How often to sample the trajectory",
         },
         "trajectory number of samples": {
+            "applies_when": {"trajectory": "by number of samples"},
             "default": 1000,
             "kind": "integer",
             "enumeration": tuple(),
@@ -322,6 +345,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "How many samples of the trajectory to collect",
         },
         "trajectory forces": {
+            "applies_when": {"trajectory": {"not": "never"}},
             "default": "no",
             "kind": "boolean",
             "default_units": None,
@@ -331,6 +355,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "Whether to include the forces in the trajectory",
         },
         "trajectory velocities": {
+            "applies_when": {"trajectory": {"not": "never"}},
             "default": "no",
             "kind": "boolean",
             "default_units": None,
@@ -340,6 +365,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "Whether to include the velocities in the trajectory",
         },
         "trajectory save": {
+            "applies_when": {"trajectory": {"not": "never"}},
             "default": "no",
             "kind": "boolean",
             "enumeration": ("yes", "no"),
@@ -348,6 +374,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "Whether to save the trajectory to a system.",
         },
         "trajectory system name": {
+            "applies_when": {"trajectory save": "yes"},
             "default": "trajectory",
             "kind": "string",
             "enumeration": ("current",),
@@ -356,6 +383,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "The name of the system for the trajectory",
         },
         "make current": {
+            "applies_when": {"trajectory save": "yes"},
             "default": "no",
             "kind": "boolean",
             "enumeration": ("yes", "no"),
@@ -364,6 +392,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "Whether to make the system the current system.",
         },
         "trajectory export": {
+            "applies_when": {"trajectory": {"not": "never"}},
             "default": "no",
             "kind": "boolean",
             "enumeration": ("yes", "no"),
@@ -372,6 +401,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "Whether to export the trajectory in other formats.",
         },
         "trajectory extxyz": {
+            "applies_when": {"trajectory export": "yes"},
             "default": "no",
             "kind": "string",
             "enumeration": ("yes", "no"),
@@ -380,6 +410,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "Write the trajectory in the ASE extended xyz format",
         },
         "trajectory extxyz filename": {
+            "applies_when": {"trajectory export": "yes"},
             "default": "trajectory.extxyz.gz",
             "kind": "string",
             "enumeration": tuple(),
@@ -388,6 +419,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "File for the extended xyz trajectory",
         },
         "trajectory extxyz append": {
+            "applies_when": {"trajectory export": "yes"},
             "default": "no",
             "kind": "string",
             "enumeration": ("yes", "no"),
@@ -396,6 +428,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "help_text": "Append to the extended xyz file",
         },
         "trajectory extxyz skip frames": {
+            "applies_when": {"trajectory export": "yes"},
             "default": "0",
             "kind": "integer",
             "enumeration": tuple(),
