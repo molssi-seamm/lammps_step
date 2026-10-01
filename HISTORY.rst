@@ -1,6 +1,26 @@
 =======
 History
 =======
+2026.10.1 -- Settings that depend on each other; LAMMPS errors reported
+    * The dialogs show only the settings that apply with the current choices, and SEAMM's
+      flowchart tools use the same rules. Settings that were hidden but used now apply
+      where they matter: the charged-atom threshold whenever there is a k-space method;
+      the QEq settings for the forcefield's default charges; the damping times for the
+      Berendsen barostat too. Allow shear applies only to a solid with the Nose-Hoover
+      barostat.
+    * A Berendsen NPT step whose box must be triclinic failed inside LAMMPS; it is now
+      refused before LAMMPS starts, saying why.
+    * Bugfix: when LAMMPS itself stopped with an error, the step failed later with an
+      unrelated IndexError. It now stops with LAMMPS's message, the sub-step, the last
+      command, advice for common errors, and where the log is.
+    * Bugfix: an explicitly chosen k-space method raised KeyError; Minimization read
+      Sxy from Sxz; NPT's stress damping times were converted as pressures, and with y
+      and z coupled z's final stress was wrong; NPT's mtk and nreset were not used;
+      Velocities' default momentum choice was not one of its own choices.
+    * Documented in the user guide. Needs seamm 2026.10.1.
+    * Internal: CI now installs the package's declared dependencies with uv rather than
+      a conda test environment; model-chemistry-step, which it uses, is now declared.
+
 2026.9.29 -- Bugfix: the CPU/GPU binding scripts work on any machine
     * ``mdi_bind.sh``, ``gpu_bind.sh`` and ``cpu_bind.sh`` bound the codes to fixed CPU
       cores laid out for one machine (an AMD EPYC 7763 with two GPUs). Elsewhere they

@@ -162,6 +162,7 @@ class NPT(lammps_step.NVT):
 
         # Fix variables with special cases
         timestep, P["timestep"] = self.timestep(P["timestep"])
+        P["allow shear"] = self.shear_allowed(P)
 
         if P["seed"] == "random":
             # Apparently the seed must be no larger than 900,000,000
@@ -187,6 +188,7 @@ class NPT(lammps_step.NVT):
         Tdamp = lammps_step.to_lammps_units(P["Tdamp"], quantity="time")
 
         barostat = P["barostat"]
+        self.uses_berendsen = barostat == "Berendsen"
         if barostat == "Berendsen":
             modulus = lammps_step.to_lammps_units(P["modulus"], quantity="pressure")
 
@@ -243,6 +245,7 @@ class NPT(lammps_step.NVT):
                     + "tloop {} ".format(Tloop)
                     + "drag {}".format(drag)
                     + ptext
+                    + self.nose_hoover_barostat_options(P)
                 )
 
                 for citation in NPT.methods["Nose-Hoover"]["references"]:
@@ -503,6 +506,29 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
             "use python": False,
         }
 
+    @staticmethod
+    def nose_hoover_barostat_options(P):
+        """The 'mtk' and 'nreset' keywords of fix npt for the Nose-Hoover barostat."""
+        mtk = P["mtk"]
+        if isinstance(mtk, str):
+            mtk = mtk.lower() in ("yes", "true")
+        text = " mtk yes" if mtk else " mtk no"
+        nreset = P["nreset"]
+        if str(nreset) != "never":
+            text += f" nreset {int(nreset)}"
+        return text
+
+    @staticmethod
+    def shear_allowed(P):
+        """Whether the cell may shear: 'allow shear' applies only to a solid with
+        the Nose-Hoover barostat (press/berendsen cannot control a triclinic cell),
+        so it is ignored otherwise, as the dialog hides it."""
+        return (
+            bool(P["allow shear"])
+            and P["system type"] == "solid"
+            and P["barostat"] == "Nose-Hoover"
+        )
+
     def get_pressure_text(self, _P):
         """Work out and return the pressure/stress part of the
         'fix npt' or 'fix berendsen' in LAMMPS
@@ -573,9 +599,9 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
                 Sxx1 = Sxx0
                 Syy1 = Syy0
                 Szz1 = Szz0
-            Dxx = lammps_step.to_lammps_units(_P["Sxx damp"], quantity="pressure")
-            Dyy = lammps_step.to_lammps_units(_P["Syy damp"], quantity="pressure")
-            Dzz = lammps_step.to_lammps_units(_P["Szz damp"], quantity="pressure")
+            Dxx = lammps_step.to_lammps_units(_P["Sxx damp"], quantity="time")
+            Dyy = lammps_step.to_lammps_units(_P["Syy damp"], quantity="time")
+            Dzz = lammps_step.to_lammps_units(_P["Szz damp"], quantity="time")
 
             if couple == "x, y and z":
                 Syy0 = Szz0 = Sxx0
@@ -591,7 +617,7 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
                 Dzz = Dxx
             elif couple == "y and z":
                 Szz0 = Syy0
-                Szz1 = Szz1
+                Szz1 = Syy1
                 Dzz = Dyy
 
             # LAMMPS uses pressures = -stress, & also format nicely
@@ -626,9 +652,9 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
                     Syz1 = Syz0
                     Sxz1 = Sxz0
                     Sxy1 = Sxy0
-                Dyz = lammps_step.to_lammps_units(_P["Syz damp"], quantity="pressure")
-                Dxz = lammps_step.to_lammps_units(_P["Sxz damp"], quantity="pressure")
-                Dxy = lammps_step.to_lammps_units(_P["Sxy damp"], quantity="pressure")
+                Dyz = lammps_step.to_lammps_units(_P["Syz damp"], quantity="time")
+                Dxz = lammps_step.to_lammps_units(_P["Sxz damp"], quantity="time")
+                Dxy = lammps_step.to_lammps_units(_P["Sxy damp"], quantity="time")
 
                 # LAMMPS uses pressures = -stress, & also format nicely
                 if Syz0 != "fixed":

@@ -18,6 +18,12 @@ kspace_methods = {
     "MSM method for few charged atoms": "msm/cg {kspace_accuracy} {smallq}",
 }
 
+# The methods that a few charged atoms ("smallq") makes sense for
+few_charges_kspace_methods = (
+    "PPPM method for few charged atoms",
+    "MSM method for few charged atoms",
+)
+
 charge_methods = {
     "default for forcefield": "default",
     "no charges": "none",
@@ -27,6 +33,13 @@ charge_methods = {
     "charge equilibration with atom-condensed Kohn–Sham DFT (ACKS2)": "acks2/reaxff",
     "charge transfer with polarization current equilibration (QTPIE)": "qtpie/reaxff",
 }
+
+# The charge methods that equilibrate the charges, which take a convergence criterion
+# and maximum number of iterations
+qeq_charge_methods = tuple(k for k in charge_methods if k.startswith("charge "))
+# The forcefield's default (e.g. ReaxFF's) is usually charge equilibration, but which
+# method it is is known only at run time, so its settings apply to the default too.
+qeq_default_charge_methods = ("default for forcefield", *qeq_charge_methods)
 
 
 class InitializationParameters(seamm.Parameters):
@@ -54,6 +67,7 @@ class InitializationParameters(seamm.Parameters):
             "help_text": "The method for handling long-range interactions.",
         },
         "kspace_accuracy": {
+            "applies_when": {"kspace_method": {"not": "none"}},
             "default": 1.0e-05,
             "kind": "float",
             "default_units": "",
@@ -63,6 +77,9 @@ class InitializationParameters(seamm.Parameters):
             "help_text": "The target accuracy for the k-space method.",
         },
         "kspace_smallq": {
+            # Always the threshold for an atom to count as charged, which decides
+            # whether k-space is needed; also the cutoff of the few-charges methods
+            "applies_when": {"kspace_method": {"not": "none"}},
             "default": 1.0e-05,
             "kind": "float",
             "default_units": "",
@@ -70,7 +87,9 @@ class InitializationParameters(seamm.Parameters):
             "format_string": ".1e",
             "description": "K-space negligable charge:",
             "help_text": (
-                "The cutoff for the charge on an atom to be considered not zero."
+                "The cutoff for the charge on an atom to be considered not zero. "
+                "It decides whether there are charges needing a long-range "
+                "method, and is the cutoff for the methods for few charged atoms."
             ),
         },
         "atomic charges": {
@@ -83,15 +102,20 @@ class InitializationParameters(seamm.Parameters):
             "help_text": "The method for handling atomic charges.",
         },
         "qeq convergence": {
+            "applies_when": {"atomic charges": qeq_default_charge_methods},
             "default": 1.0e-06,
             "kind": "float",
             "default_units": "",
             "enumeration": tuple(),
             "format_string": ".2e",
             "description": "QEq convergence:",
-            "help_text": "The covergence goal for the charge equilibration.",
+            "help_text": (
+                "The covergence goal for the charge equilibration, including the "
+                "forcefield's default method if it equilibrates the charges."
+            ),
         },
         "qeq iterations": {
+            "applies_when": {"atomic charges": qeq_default_charge_methods},
             "default": 100,
             "kind": "integer",
             "default_units": "",
@@ -139,6 +163,10 @@ class InitializationParameters(seamm.Parameters):
             ),
         },
         "tail_correction": {
+            # The PPPM method with dispersion handles the long-range dispersion itself
+            "applies_when": {
+                "kspace_method": {"not": "PPPM method including dispersion terms"}
+            },
             "default": "yes",
             "kind": "boolean",
             "format_string": "s",

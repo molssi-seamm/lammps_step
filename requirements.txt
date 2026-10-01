@@ -5,8 +5,9 @@ Pmw
 py-cpuinfo
 scipy
 pymbar>=4.0
-seamm
+seamm>=2026.10.1
 seamm-exec
 seamm-ff-util
 statsmodels
 tabulate
+model-chemistry-step

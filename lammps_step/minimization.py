@@ -457,6 +457,7 @@ class Minimization(lammps_step.Energy):
         nAtoms = configuration.n_atoms  # noqa: F841
 
         # May need to force a triclinic cell
+        P["allow shear"] = self.shear_allowed(P)
         if P["allow shear"]:
             self.parent.force_triclinic = True
 
@@ -574,6 +575,16 @@ class Minimization(lammps_step.Energy):
             "use python": False,
         }
 
+    @staticmethod
+    def shear_allowed(P):
+        """Whether the cell may shear: 'allow shear' applies only when optimizing
+        the cell of a solid, so it is ignored otherwise, as the dialog hides it."""
+        return (
+            bool(P["allow shear"])
+            and bool(P["optimize cell"])
+            and P["system type"] == "solid"
+        )
+
     def get_pressure_text(self, _P):
         """Work out and return the pressure/stress part of the
         'fix npt' or 'fix berendsen' or minimization in LAMMPS
@@ -593,7 +604,7 @@ class Minimization(lammps_step.Energy):
         Szz = _P["Szz"]
         Syz = _P["Syz"]
         Sxz = _P["Sxz"]
-        Sxy = _P["Sxz"]
+        Sxy = _P["Sxy"]
 
         if use_stress:
             if couple == "x, y and z":

@@ -6,6 +6,8 @@ import lammps_step
 import seamm_widgets as sw
 import tkinter.ttk as ttk
 
+from .tk_energy import stress_headers
+
 
 class TkMinimization(lammps_step.TkEnergy):
     def __init__(
@@ -157,19 +159,28 @@ class TkMinimization(lammps_step.TkEnergy):
         ):
             self[key].units.set(units)
 
+    # The keys in the pressure frame, which applies only when optimizing the cell
+    pressure_frame_keys = ("system type", "P", "allow shear", "use_stress", "couple")
+    stress_keys = ("Sxx", "Syy", "Szz", "Syz", "Sxz", "Sxy")
+
     def reset_dialog(self, widget=None):
-        """Layout the widgets as needed for the current state"""
-        optimize_cell = self["optimize cell"].get() != "no"
+        """Layout the widgets as needed for the current state.
+
+        Which controls are shown comes from the parameters' rules
+        (lammps_step.MinimizationParameters), which the flowchart builder uses too.
+        """
+        P = self.node.parameters
+        values = self._widget_values()
 
         frame = self["frame"]
         for slave in frame.grid_slaves():
             slave.grid_forget()
 
         row = 0
-        if optimize_cell:
-            keys = ("optimization", "pressure frame", "structure")
-        else:
-            keys = ("optimization", "structure")
+        keys = ["optimization"]
+        if any(P.applies(key, values) for key in self.pressure_frame_keys):
+            keys.append("pressure frame")
+        keys.append("structure")
         for key in keys:
             self[key].grid(row=row, column=0, sticky="new")
             row += 1
@@ -180,8 +191,8 @@ class TkMinimization(lammps_step.TkEnergy):
         return row
 
     def reset_optimization(self, widget=None):
-        convergence = self["convergence"].get()
-        minimizer = self["minimizer"].get()
+        P = self.node.parameters
+        values = self._widget_values()
 
         frame = self["optimization"]
         for slave in frame.grid_slaves():
@@ -191,31 +202,25 @@ class TkMinimization(lammps_step.TkEnergy):
         widgets2 = []
         row = 0
 
-        for key in ("minimizer", "convergence"):
-            self[key].grid(row=row, column=0, columnspan=2, sticky="ew")
-            widgets.append(self[key])
-            row += 1
-
-        if convergence == "custom":
-            for key in ("etol", "ftol"):
+        # Full-width controls, with the custom convergence criteria indented
+        for key, indented in (
+            ("minimizer", False),
+            ("convergence", False),
+            ("etol", True),
+            ("ftol", True),
+            ("nsteps", False),
+            ("nevaluations", False),
+            ("timestep", False),
+            ("optimize cell", False),
+        ):
+            if not P.applies(key, values):
+                continue
+            if indented:
                 self[key].grid(row=row, column=1, sticky="ew")
                 widgets2.append(self[key])
-                row += 1
-
-        for key in ("nsteps", "nevaluations"):
-            self[key].grid(row=row, column=0, columnspan=2, sticky="ew")
-            widgets.append(self[key])
-            row += 1
-
-        if minimizer in ("Fire", "QuickMin"):
-            for key in ("timestep",):
+            else:
                 self[key].grid(row=row, column=0, columnspan=2, sticky="ew")
                 widgets.append(self[key])
-                row += 1
-
-        for key in ("optimize cell",):
-            self[key].grid(row=row, column=0, columnspan=2, sticky="ew")
-            widgets.append(self[key])
             row += 1
 
         width1 = sw.align_labels(widgets, sticky="e")
@@ -225,10 +230,8 @@ class TkMinimization(lammps_step.TkEnergy):
     def reset_pressure_frame(self, widget=None):
         """Layout the widgets for the pressure/stress control
         as needed for the current state"""
-
-        # Get the values that control the layout
-        system_type = self["system type"].get()
-        use_stress = "pressure" not in self["use_stress"].get()
+        P = self.node.parameters
+        values = self._widget_values()
 
         # Remove all the current widgets
         p_frame = self["pressure frame"]
@@ -238,33 +241,24 @@ class TkMinimization(lammps_step.TkEnergy):
         row = 0
         widgets = []
         # and place the needed ones back in
-        self["system type"].grid(row=row, column=0, sticky="w")
-        widgets.append(self["system type"])
-        row += 1
-
-        if system_type == "fluid":
-            self["P"].grid(row=row, column=0, sticky="w")
-            widgets.append(self["P"])
-            row += 1
-        else:
-            for key in ("use_stress", "allow shear", "couple"):
+        for key in ("system type", "use_stress", "allow shear", "couple"):
+            if P.applies(key, values):
                 self[key].grid(row=row, column=0, sticky="w")
                 widgets.append(self[key])
                 row += 1
 
-            if use_stress:
-                self["stress_frame"].grid(row=row, column=0, sticky="w")
-                row += 1
-                # and lay out the stress terms
-                self.reset_stress_frame()
-            else:
-                self["P"].grid(row=row, column=0, sticky="w")
-                widgets.append(self["P"])
-                row += 1
+        # A general stress, or a pressure
+        if any(P.applies(key, values) for key in self.stress_keys):
+            self["stress_frame"].grid(row=row, column=0, sticky="w")
+            row += 1
+            # and lay out the stress terms
+            self.reset_stress_frame()
 
-        self["nreset"].grid(row=row, column=0, sticky="w")
-        widgets.append(self["nreset"])
-        row += 1
+        for key in ("P", "nreset"):
+            if P.applies(key, values):
+                self[key].grid(row=row, column=0, sticky="w")
+                widgets.append(self[key])
+                row += 1
 
         sw.align_labels(widgets, sticky="e")
 
@@ -272,190 +266,16 @@ class TkMinimization(lammps_step.TkEnergy):
         """Layout the widgets for the pressure/stress
         as needed for the current state.
 
-        We use labels across the top and left side of the
-        table of stresses, then hide the labels and units
-        of all the entries, except for the last entry in the
-        row, which displays the units too.
-
-        It is a bit tricky getting the column labels to lign
-        up for the last item in the row because it is wider
-        with the units displaying. The weird stuff with the
-        columnspan=3 and setting the 'uniform' attribute of
-        the columns does this. There might be better ways, but
-        this works ... just be careful changing it :-).
+        We use labels across the top and left side of the table of stresses, then
+        hide the labels and units of all the entries, except for the last entry in
+        the row, which displays the units too. The components shown are those that
+        apply, given the coupling and whether the cell may shear.
         """
+        P = self.node.parameters
+        values = self._widget_values()
 
-        # Get the values that control the layout
-        couple = self["couple"].get()
-        allow_shear = self["allow shear"].get() != "no"
-
-        # Remove all the current widgets
-        frame = self["stress_frame"]
-        for slave in frame.grid_slaves():
-            slave.grid_forget()
-
-        frame.columnconfigure(1, weight=0)
-        frame.columnconfigure(2, weight=0)
-        frame.columnconfigure(3, weight=0)
-        frame.columnconfigure(4, weight=0)
-        frame.columnconfigure(5, weight=0)
-        frame.columnconfigure(6, weight=0)
-
-        row = 0
-        # and place the needed ones back in
-        if couple == "x, y and z":
-            # all stresses
-            self["XX+YY+ZZ"].grid(row=row, column=1)
-            if allow_shear:
-                self["YZ"].grid(row=row, column=2)
-                self["XZ"].grid(row=row, column=3)
-                self["XY"].grid(row=row, column=4)
-            row += 1
-            self["stress"].grid(row=row, column=0, sticky="e")
-            self["Sxx"].grid(row=row, column=1, sticky="ew")
-            if not allow_shear:
-                self["Sxx"].show("combobox", "units")
-                frame.columnconfigure(1, weight=1, uniform="b")
-            else:
-                self["Sxx"].show("combobox")
-                self["Syz"].grid(row=row, column=2, sticky="ew")
-                self["Sxz"].grid(row=row, column=3, sticky="ew")
-                self["Sxy"].grid(row=row, column=4, sticky="ew")
-                self["Syz"].show("combobox")
-                self["Sxz"].show("combobox")
-                self["Sxy"].show("combobox", "units")
-                frame.columnconfigure(1, weight=1)
-                frame.columnconfigure(2, weight=1)
-                frame.columnconfigure(3, weight=1)
-                frame.columnconfigure(4, weight=1)
-            row += 1
-        elif couple == "x and y":
-            # couple xx and yy
-            self["XX+YY"].grid(row=row, column=1)
-            self["ZZ"].grid(row=row, column=2)
-            if allow_shear:
-                self["YZ"].grid(row=row, column=3)
-                self["XZ"].grid(row=row, column=4)
-                self["XY"].grid(row=row, column=5)
-            row += 1
-            self["stress"].grid(row=row, column=0, sticky="e")
-            self["Sxx"].grid(row=row, column=1, sticky="ew")
-            self["Sxx"].show("combobox")
-            self["Szz"].grid(row=row, column=2, sticky="ew")
-            if not allow_shear:
-                self["Szz"].show("combobox", "units")
-                frame.columnconfigure(1, weight=1)
-                frame.columnconfigure(2, weight=1)
-            else:
-                self["Szz"].show("combobox")
-                self["Syz"].grid(row=row, column=3, sticky="ew")
-                self["Sxz"].grid(row=row, column=4, sticky="ew")
-                self["Sxy"].grid(row=row, column=5, sticky="ew")
-                self["Syz"].show("combobox")
-                self["Sxz"].show("combobox")
-                self["Sxy"].show("combobox", "units")
-                frame.columnconfigure(1, weight=1)
-                frame.columnconfigure(2, weight=1)
-                frame.columnconfigure(3, weight=1)
-                frame.columnconfigure(4, weight=1)
-                frame.columnconfigure(5, weight=1)
-            row += 1
-        elif couple == "x and z":
-            # couple xx and zz
-            self["XX+ZZ"].grid(row=row, column=1)
-            self["YY"].grid(row=row, column=2)
-            if allow_shear:
-                self["YZ"].grid(row=row, column=3)
-                self["XZ"].grid(row=row, column=4)
-                self["XY"].grid(row=row, column=5)
-            row += 1
-            self["stress"].grid(row=row, column=0, sticky="e")
-            self["Sxx"].grid(row=row, column=1, sticky="ew")
-            self["Syy"].grid(row=row, column=2, sticky="ew")
-            self["Sxx"].show("combobox")
-            if not allow_shear:
-                self["Syy"].show("combobox", "units")
-                frame.columnconfigure(1, weight=1)
-                frame.columnconfigure(2, weight=1)
-            else:
-                self["Syy"].show("combobox")
-                self["Syz"].grid(row=row, column=3, sticky="ew")
-                self["Sxz"].grid(row=row, column=4, sticky="ew")
-                self["Sxy"].grid(row=row, column=5, sticky="ew")
-                self["Syz"].show("combobox")
-                self["Sxz"].show("combobox", "units")
-                self["Sxy"].show("combobox")
-                frame.columnconfigure(1, weight=1)
-                frame.columnconfigure(2, weight=1)
-                frame.columnconfigure(3, weight=1)
-                frame.columnconfigure(4, weight=1)
-                frame.columnconfigure(5, weight=1)
-            row += 1
-        elif couple == "y and z":
-            # couple yy and zz
-            self["XX"].grid(row=row, column=1)
-            self["YY+ZZ"].grid(row=row, column=2)
-            if allow_shear:
-                self["YZ"].grid(row=row, column=3)
-                self["XZ"].grid(row=row, column=4)
-                self["XY"].grid(row=row, column=5)
-            row += 1
-            self["stress"].grid(row=row, column=0, sticky="e")
-            self["Sxx"].grid(row=row, column=1, sticky="ew")
-            self["Syy"].grid(row=row, column=2, sticky="ew")
-            self["Sxx"].show("combobox")
-            if not allow_shear:
-                self["Syy"].show("combobox", "units")
-                frame.columnconfigure(1, weight=1)
-                frame.columnconfigure(2, weight=1)
-            else:
-                self["Syy"].show("combobox")
-                self["Syz"].grid(row=row, column=3, sticky="ew")
-                self["Sxz"].grid(row=row, column=4, sticky="ew")
-                self["Sxy"].grid(row=row, column=5, sticky="ew")
-                self["Syz"].show("combobox")
-                self["Sxz"].show("combobox")
-                self["Sxy"].show("combobox", "units")
-                frame.columnconfigure(1, weight=1)
-                frame.columnconfigure(2, weight=1)
-                frame.columnconfigure(3, weight=1)
-                frame.columnconfigure(4, weight=1)
-                frame.columnconfigure(5, weight=1)
-            row += 1
-        else:
-            # if couple == 'none':
-            # all stresses
-            self["XX"].grid(row=row, column=1)
-            self["YY"].grid(row=row, column=2)
-            self["ZZ"].grid(row=row, column=3)
-            if allow_shear:
-                self["YZ"].grid(row=row, column=4)
-                self["XZ"].grid(row=row, column=5)
-                self["XY"].grid(row=row, column=6)
-            row += 1
-            self["stress"].grid(row=row, column=0, sticky="e")
-            self["Sxx"].grid(row=row, column=1, sticky="ew")
-            self["Sxx"].show("combobox")
-            self["Syy"].grid(row=row, column=2, sticky="ew")
-            self["Syy"].show("combobox")
-            self["Szz"].grid(row=row, column=3, sticky="ew")
-            if not allow_shear:
-                self["Szz"].show("combobox", "units")
-                frame.columnconfigure(1, weight=1)
-                frame.columnconfigure(2, weight=1)
-                frame.columnconfigure(3, weight=1)
-            else:
-                self["Szz"].show("combobox")
-                self["Syz"].grid(row=row, column=4, sticky="ew")
-                self["Sxz"].grid(row=row, column=5, sticky="ew")
-                self["Sxy"].grid(row=row, column=6, sticky="ew")
-                self["Syz"].show("combobox")
-                self["Sxz"].show("combobox")
-                self["Sxy"].show("combobox", "units")
-                frame.columnconfigure(1, weight=1)
-                frame.columnconfigure(2, weight=1)
-                frame.columnconfigure(3, weight=1)
-                frame.columnconfigure(4, weight=1)
-                frame.columnconfigure(5, weight=1)
-                frame.columnconfigure(6, weight=1)
-            row += 1
+        keys = [key for key in self.stress_keys if P.applies(key, values)]
+        headers = stress_headers(keys, values.get("couple"))
+        self._grid_stress_table(
+            self["stress_frame"], headers, [("stress", keys, "combobox")]
+        )

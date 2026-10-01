@@ -55,6 +55,104 @@ printer = printing.getPrinter("lammps")
 VERSION_PATTERN = re.compile(r"^#\s?MolSSI\s+(lammps_step:\S+)\s+([\d.]+)")
 
 
+# Advice for common LAMMPS errors: (pattern in the message, advice)
+_lammps_error_advice = (
+    (
+        "Lost atoms",
+        "Atoms moved too far in one timestep. This usually means a poor starting "
+        "structure, or too long a timestep: try minimizing the structure first, "
+        "or a shorter timestep.",
+    ),
+    (
+        "Out of range atoms",
+        "Atoms moved too far for the k-space grid. This usually means a poor "
+        "starting structure, or too long a timestep: try minimizing the structure "
+        "first, or a shorter timestep.",
+    ),
+    (
+        "Bond atoms missing",
+        "Bonded atoms moved too far apart. This usually means a poor starting "
+        "structure, or too long a timestep.",
+    ),
+    (
+        "Non-numeric",
+        "The simulation blew up (the energy or pressure is not a number). Check "
+        "the starting structure and the timestep.",
+    ),
+    (
+        "triclinic",
+        "The cell is triclinic (not orthorhombic), which this command cannot "
+        "handle.",
+    ),
+)
+
+_lammps_error_re = re.compile(r"^ERROR(?: on proc \d+)?: (.*?)(?: \(src/\S+\))?\s*$")
+
+
+def lammps_error(log, screen=""):
+    """Find the error, if any, in LAMMPS's log (log.lammps) or screen output.
+
+    Parameters
+    ----------
+    log : str
+        The text of log.lammps.
+    screen : str
+        The screen output (stdout), which has errors raised by processes other
+        than the first, which are not in the log.
+
+    Returns
+    -------
+    dict or None
+        The error "message", the "step" running (from the "# Step ..." comments
+        in the input), the "last command", and any "advice"; or None if there
+        was no error.
+    """
+    for text in (log, screen):
+        lines = text.splitlines()
+        for i, line in enumerate(lines):
+            match = _lammps_error_re.match(line)
+            if match is None:
+                continue
+            message = match.group(1).strip()
+            last_command = ""
+            for line2 in lines[i + 1 : i + 3]:  # noqa: E203
+                if line2.startswith("Last command:"):
+                    last_command = " ".join(line2[len("Last command:") :].split())
+                    break
+            step = ""
+            for line2 in reversed(lines[:i]):
+                if line2.startswith("# Step "):
+                    step = line2[2:].strip()
+                    break
+            advice = ""
+            for pattern, text2 in _lammps_error_advice:
+                if pattern in message:
+                    advice = text2
+                    break
+            return {
+                "message": message,
+                "step": step,
+                "last command": last_command,
+                "advice": advice,
+            }
+    return None
+
+
+def lammps_error_message(error, directory=None):
+    """A readable message for an error found by lammps_error."""
+    where = f" in {error['step']}" if error["step"] != "" else ""
+    text = f"LAMMPS failed{where}: {error['message']}"
+    if not text.endswith("."):
+        text += "."
+    if error["last command"] != "":
+        text += f" The last command was '{error['last command']}'."
+    if error["advice"] != "":
+        text += " " + error["advice"]
+    if directory is not None:
+        text += f" See log.lammps in {directory} for details."
+    return text
+
+
 def _get_script_version(text):
     """Extract file type and version from a MolSSI header line.
 
@@ -537,6 +635,7 @@ class LAMMPS(seamm.Node):
         self._atomic_energy_sum = 0.0
         self._eex = None
         self._force_triclinic = False  # Whether to insist on a triclinic cell
+        self._triclinic_box = False  # Whether the box written is triclinic
 
         self._results = {}  # Storage for computational and timing results
 
@@ -1177,6 +1276,7 @@ class LAMMPS(seamm.Node):
         ) = self.structure_data()
 
         files["structure.dat"] = structure_data
+        self.check_barostats(history_nodes)
         if "forcefield" in self.eex:
             files["forcefield.dat"] = self.eex["forcefield"]
 
@@ -1675,6 +1775,10 @@ class LAMMPS(seamm.Node):
 
             self.logger.debug("\n" + pprint.pformat(result))
 
+            # Did LAMMPS fail? Say why here, rather than failing later on missing
+            # output. (No success.dat is written, so a rerun runs LAMMPS again.)
+            self.check_for_lammps_error(result)
+
             # f = os.path.join(self.directory, "stdout.txt")
             # with open(f, mode="w") as fd:
             #     fd.write(result["stdout"])
@@ -1797,6 +1901,49 @@ class LAMMPS(seamm.Node):
             raise
         return ret
 
+    def check_for_lammps_error(self, result=None):
+        """Raise an error, with a readable message, if LAMMPS failed."""
+        directory = Path(self.directory)
+        path = directory / "log.lammps"
+        log = path.read_text(errors="replace") if path.exists() else ""
+        screen = ""
+        if result is not None and isinstance(result.get("stdout"), str):
+            screen = result["stdout"]
+        else:
+            path = directory / "stdout.txt"
+            if path.exists():
+                screen = path.read_text(errors="replace")
+        error = lammps_error(log, screen)
+        if error is None:
+            return
+        text = lammps_error_message(error, directory)
+        # FormattedText formats the text, so protect any braces in it
+        safe = text.replace("{", "{{").replace("}", "}}")
+        printer.important(__(safe, indent=self.indent + 4 * " ", wrap=True))
+        printer.important("")
+        raise RuntimeError(text)
+
+    def check_barostats(self, nodes):
+        """Check that the box suits the barostats, before running LAMMPS.
+
+        LAMMPS writes one box for all the steps, and press/berendsen cannot work
+        with a triclinic box, which a later step allowing shear or a cell that is
+        not orthorhombic requires.
+        """
+        if not self._triclinic_box:
+            return
+        for node in nodes:
+            if getattr(node, "uses_berendsen", False):
+                if self.force_triclinic:
+                    why = "another step in this LAMMPS step allows the cell to shear"
+                else:
+                    why = "the cell is not orthorhombic"
+                raise RuntimeError(
+                    f"{node.title}: the Berendsen barostat cannot be used with a "
+                    f"triclinic cell, which is needed because {why}. Use the "
+                    "Nose-Hoover barostat, or put the steps in separate LAMMPS steps."
+                )
+
     def structure_data(self):
         """Create the LAMMPS structure file from the energy expression"""
         lines = []
@@ -1824,6 +1971,7 @@ class LAMMPS(seamm.Node):
             lines.append("{:10d} improper types".format(eex["n_oop_types"]))
 
         # Find the box limits
+        self._triclinic_box = False
         periodicity = eex["periodicity"]
         if periodicity == 3:
             a, b, c, alpha, beta, gamma = eex["cell"]
@@ -1837,7 +1985,10 @@ class LAMMPS(seamm.Node):
             xz = xz if abs(xz) > 1.0e-06 else 0.0
             yz = yz if abs(yz) > 1.0e-06 else 0.0
 
-            if self.force_triclinic or xy != 0.0 or xz != 0.0 or yz != 0.0:
+            self._triclinic_box = (
+                self.force_triclinic or xy != 0.0 or xz != 0.0 or yz != 0.0
+            )
+            if self._triclinic_box:
                 lines.append("{} {} {} xy xz yz".format(xy, xz, yz))
         else:
             x, y, z, index = eex["atoms"][0]

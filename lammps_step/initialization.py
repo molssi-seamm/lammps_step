@@ -86,6 +86,40 @@ thermo_variables = [
 ]
 
 
+def explicit_kspace(method, pair_style_base, n_charged_atoms, P):
+    """The pair style and k-space style for an explicitly chosen k-space method.
+
+    Parameters
+    ----------
+    method : str
+        The k-space method, a key of lammps_step.kspace_methods.
+    pair_style_base : str
+        The van der Waals pair style, e.g. "lj/cut".
+    n_charged_atoms : int
+        The number of atoms with a charge above the 'small q' threshold.
+    P : dict
+        The step's parameter values (for the accuracy and 'small q').
+
+    Returns
+    -------
+    (str, str)
+        The pair style, and the arguments of kspace_style ('' for none).
+    """
+    if n_charged_atoms == 0 or method == "none":
+        return pair_style_base, ""
+    template = lammps_step.kspace_methods[method]
+    values = {**P, "smallq": P["kspace_smallq"]}
+    if template.startswith("msm"):
+        if pair_style_base not in msm_pair_styles:
+            raise RuntimeError(
+                f"The k-space method '{method}' cannot be used with the pair style "
+                f"'{pair_style_base}': LAMMPS has no MSM version of it. Use a PPPM "
+                "or Ewald method, or 'automatic'."
+            )
+        return pair_style_base + "/coul/msm", template.format(**values)
+    return pair_style_base + "/coul/long", template.format(**values)
+
+
 class Initialization(seamm.Node):
     def __init__(self, flowchart=None, title="Initialization", extension=None):
         """Initialize the node"""
@@ -443,14 +477,9 @@ class Initialization(seamm.Node):
                 self.description.append(__(string, indent=7 * " ", **P))
             else:
                 if periodicity == 3:
-                    kspace_style = ""
-                    if n_charged_atoms == 0 or P["kspace_style"] == "none":
-                        pair_style = pair_style_base
-                    elif fraction_charged_atoms < P["charged_atom_fraction_cutoff"]:
-                        pair_style = pair_style_base + "/coul/long"
-                        kspace_style = lammps_step.kspace_methods[
-                            P["kspace_method"]
-                        ].format(**P)
+                    pair_style, kspace_style = explicit_kspace(
+                        P["kspace_method"], pair_style_base, n_charged_atoms, P
+                    )
                     lines.append(f"{hybrid} {pair_style} {P['cutoff']}")
                     if mixing is None:
                         lines.append(
@@ -462,6 +491,8 @@ class Initialization(seamm.Node):
                             + mixing
                             + " tail {} shift {}".format(tail_correction, shift)
                         )
+                    if kspace_style != "":
+                        lines.append("kspace_style        " + kspace_style)
                 else:
                     if n_charged_atoms == 0:
                         pair_style = pair_style_base

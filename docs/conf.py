@@ -50,6 +50,10 @@ extensions = [
     'sphinx.ext.todo',
 ]
 
+# The plug-in's installer imports seamm_installer, which SEAMM's manager provides in an
+# installation; the documentation does not need it.
+autodoc_mock_imports = ["seamm_installer"]
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

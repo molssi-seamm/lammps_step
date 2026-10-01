@@ -8,6 +8,10 @@ from .energy_parameters import EnergyParameters
 
 logger = logging.getLogger(__name__)
 
+# The couplings for which the yy and zz stresses are given separately from xx
+separate_yy = ("x and z", "y and z", "none")
+separate_zz = ("x and y", "none")
+
 
 class MinimizationParameters(EnergyParameters):
     """The control parameters for minimization in LAMMPS"""
@@ -28,6 +32,7 @@ class MinimizationParameters(EnergyParameters):
             "help_text": "The convergence criterion for the minimization.",
         },
         "etol": {
+            "applies_when": {"convergence": "custom"},
             "default": 0.0,
             "kind": "float",
             "default_units": "kcal/mol",
@@ -36,6 +41,7 @@ class MinimizationParameters(EnergyParameters):
             "help_text": "Converged when the change in energy is less than this.",
         },
         "ftol": {
+            "applies_when": {"convergence": "custom"},
             "default": 0.1,
             "kind": "float",
             "default_units": "kcal/mol/Å",
@@ -72,6 +78,7 @@ class MinimizationParameters(EnergyParameters):
             "help_text": "Which minimizer to use",
         },
         "timestep": {
+            "applies_when": {"minimizer": ["Fire", "QuickMin"]},
             "default": "10",
             "kind": "float",
             "default_units": "fs",
@@ -92,6 +99,7 @@ class MinimizationParameters(EnergyParameters):
             "help_text": "Whether to optimize the unit cell.",
         },
         "system type": {
+            "applies_when": {"optimize cell": "yes"},
             "default": "fluid",
             "kind": "string",
             "format_string": "s",
@@ -105,6 +113,7 @@ class MinimizationParameters(EnergyParameters):
             ),
         },
         "allow shear": {
+            "applies_when": {"system type": "solid"},
             "default": "no",
             "kind": "boolean",
             "format_string": "s",
@@ -113,6 +122,7 @@ class MinimizationParameters(EnergyParameters):
             "help_text": "Whether the cell angles can change.",
         },
         "use_stress": {
+            "applies_when": {"system type": "solid"},
             "default": "isotropic pressure",
             "kind": "enumeration",
             "enumeration": ("isotropic pressure", "general stress"),
@@ -125,6 +135,7 @@ class MinimizationParameters(EnergyParameters):
             ),
         },
         "couple": {
+            "applies_when": {"system type": "solid"},
             "default": "x, y and z",
             "kind": "enumeration",
             "enumeration": ("x, y and z", "x and y", "x and z", "y and z", "none"),
@@ -137,6 +148,7 @@ class MinimizationParameters(EnergyParameters):
             ),
         },
         "P": {
+            "applies_when": {"optimize cell": "yes"},
             "default": 1.0,
             "kind": "float",
             "default_units": "atm",
@@ -146,6 +158,7 @@ class MinimizationParameters(EnergyParameters):
             "help_text": "The applied pressure.",
         },
         "Sxx": {
+            "applies_when": {"use_stress": "general stress"},
             "default": -1.0,
             "kind": "float",
             "enumeration": ("fixed",),
@@ -155,6 +168,7 @@ class MinimizationParameters(EnergyParameters):
             "help_text": "The components of the stress tensor.",
         },
         "Syy": {
+            "applies_when": {"use_stress": "general stress", "couple": separate_yy},
             "default": -1.0,
             "kind": "float",
             "enumeration": ("fixed",),
@@ -164,6 +178,7 @@ class MinimizationParameters(EnergyParameters):
             "help_text": "The components of the stress tensor.",
         },
         "Szz": {
+            "applies_when": {"use_stress": "general stress", "couple": separate_zz},
             "default": -1.0,
             "kind": "float",
             "enumeration": ("fixed",),
@@ -173,6 +188,7 @@ class MinimizationParameters(EnergyParameters):
             "help_text": "The components of the stress tensor.",
         },
         "Syz": {
+            "applies_when": {"use_stress": "general stress", "allow shear": "yes"},
             "default": "fixed",
             "kind": "float",
             "enumeration": ("fixed",),
@@ -182,6 +198,7 @@ class MinimizationParameters(EnergyParameters):
             "help_text": "The components of the stress tensor.",
         },
         "Sxz": {
+            "applies_when": {"use_stress": "general stress", "allow shear": "yes"},
             "default": "fixed",
             "kind": "float",
             "enumeration": ("fixed",),
@@ -191,6 +208,7 @@ class MinimizationParameters(EnergyParameters):
             "help_text": "The components of the stress tensor.",
         },
         "Sxy": {
+            "applies_when": {"use_stress": "general stress", "allow shear": "yes"},
             "default": "fixed",
             "kind": "float",
             "enumeration": ("fixed",),
@@ -200,6 +218,7 @@ class MinimizationParameters(EnergyParameters):
             "help_text": "The components of the stress tensor.",
         },
         "nreset": {
+            "applies_when": {"optimize cell": "yes"},
             "default": "never",
             "kind": "integer",
             "default_units": None,
@@ -212,6 +231,9 @@ class MinimizationParameters(EnergyParameters):
             ),
         },
     }
+
+    # Rules shared by the dialog and the flowchart builder: see EnergyParameters.
+    pressure_keys = ("P",)
 
     def __init__(self, defaults={}, data=None):
         """Initialize the instance, by default from the default

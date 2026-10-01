@@ -7,6 +7,8 @@ import tkinter as tk
 import seamm
 import seamm_widgets as sw
 
+from .tk_energy import widget_values
+
 
 class TkVelocities(seamm.TkNode):
     def __init__(
@@ -46,8 +48,13 @@ class TkVelocities(seamm.TkNode):
         self.reset_dialog()
 
     def reset_dialog(self, widget=None):
-        """Lay out the widgets given the current state"""
-        method = self["method"].get()
+        """Lay out the widgets given the current state.
+
+        Which controls are shown comes from the parameters' rules
+        (lammps_step.VelocitiesParameters), which the flowchart builder uses too.
+        """
+        P = self.node.parameters
+        values = widget_values(self)
 
         frame = self["frame"]
         for slave in frame.grid_slaves():
@@ -55,14 +62,9 @@ class TkVelocities(seamm.TkNode):
 
         row = 0
         widgets = []
-        for key in ("method", "T", "remove_momentum"):
-            self[key].grid(row=row, column=0, sticky=tk.EW)
-            widgets.append(self[key])
-            row += 1
-
-        if "scaling" not in method:
-            self["seed"].grid(row=row, column=0, sticky=tk.EW)
-            widgets.append(self["seed"])
-            row += 1
-
-            sw.align_labels(widgets, sticky=tk.E)
+        for key in ("method", "T", "remove_momentum", "seed"):
+            if P.applies(key, values):
+                self[key].grid(row=row, column=0, sticky=tk.EW)
+                widgets.append(self[key])
+                row += 1
+        sw.align_labels(widgets, sticky=tk.E)
