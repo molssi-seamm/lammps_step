@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.1 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.3 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=65cfade2"></script>
+    <script src="_static/documentation_options.js?v=f64fa391"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.1" />
+  <meta name="docsearch:version" content="2026.10.3" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -505,6 +505,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.3 – Bugfix: QM/MD over MDI used the program’s method name and default basis</dt><dd><ul class="simple">
+<li><p>The MDI engine for a QM-driven LAMMPS run was launched with the model
+chemistry’s method name alone, so ORCA ran def2-SVP whatever basis was
+chosen, and a functional whose name the Model Chemistry step had to alter
+was not recognized. It now gets the program’s own keyword and the chosen
+basis (with model_chemistry_step 2026.10.3).</p></li>
+</ul>
+</dd>
 <dt>2026.10.1 – Settings that depend on each other; LAMMPS errors reported</dt><dd><ul class="simple">
 <li><p>The dialogs show only the settings that apply with the current choices, and SEAMM’s
 flowchart tools use the same rules. Settings that were hidden but used now apply
