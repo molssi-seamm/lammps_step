@@ -1020,15 +1020,22 @@ class LAMMPS(seamm.Node):
 
         port = _free_tcp_port()
         step = self.flowchart.plugin_manager.get(mc["step"])
+        # The engine's real keyword (an ORCA functional's alias undone) and the
+        # user's basis, for programs that take one; MOPAC, xTB and MLFFs take
+        # a method alone.
+        kwargs = {}
+        if options.get("mdi_basis_arg") is not None:
+            kwargs["basis"] = options["mdi_basis_arg"]
         engine_argv = step.get_mdi_engine_command(
             self.flowchart.executor,
             self.global_options,
-            method=mc["method"],
+            method=options.get("mdi_method_arg") or mc["method"],
             port=port,
             hostname="localhost",
             charge=configuration.charge,
             multiplicity=configuration.spin_multiplicity,
             n_atoms=configuration.n_atoms,
+            **kwargs,
         )
         return engine_argv, port
 

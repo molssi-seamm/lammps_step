@@ -299,3 +299,39 @@ def test_launch_script_custom_hostname():
         ["engine"], 7000, {"code": "lmp"}, {"NTASKS": 1}, hostname="node07"
     )
     assert "-hostname node07" in script
+
+
+class _FakeOrcaStep(_FakeStep):
+    """An ORCA-like provider whose engine command takes a basis."""
+
+    def get_mdi_engine_command(self, executor, seamm_options, *, basis, **kwargs):
+        argv = super().get_mdi_engine_command(executor, seamm_options, **kwargs)
+        self.calls[-1]["basis"] = basis
+        return argv
+
+
+def test_mdi_engine_launch_uses_the_engine_keyword_and_users_basis():
+    """ORCA: the un-aliased keyword and the user's basis, not the method name
+    alone (which ran def2-SVP whatever basis was chosen)."""
+    step = _FakeOrcaStep(["python", "orca_mdi.py"])
+    mc = {
+        "level": "ORCA:DFT@wB97X-D3/def2-TZVP",
+        "owner": "ORCA",
+        "type": "DFT",
+        "method": "wB97X-D3",
+        "basis": "def2-TZVP",
+        "cutoff": None,
+        "step": "orca-step",
+        "options": {
+            "mdi_capable": True,
+            "mdi_method_arg": "WB97X-D3",
+            "mdi_basis_arg": "def2-TZVP",
+        },
+    }
+    me = _fake_self(mc=mc, step=step)
+    configuration = types.SimpleNamespace(
+        periodicity=0, charge=0, spin_multiplicity=1, n_atoms=3
+    )
+    LAMMPS._mdi_engine_launch(me, configuration)
+    assert step.calls[0]["method"] == "WB97X-D3"
+    assert step.calls[0]["basis"] == "def2-TZVP"

@@ -1,6 +1,13 @@
 =======
 History
 =======
+2026.10.3 -- Bugfix: QM/MD over MDI used the program's method name and default basis
+    * The MDI engine for a QM-driven LAMMPS run was launched with the model
+      chemistry's method name alone, so ORCA ran def2-SVP whatever basis was
+      chosen, and a functional whose name the Model Chemistry step had to alter
+      was not recognized. It now gets the program's own keyword and the chosen
+      basis (with model_chemistry_step 2026.10.3).
+
 2026.10.1 -- Settings that depend on each other; LAMMPS errors reported
     * The dialogs show only the settings that apply with the current choices, and SEAMM's
       flowchart tools use the same rules. Settings that were hidden but used now apply
