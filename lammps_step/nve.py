@@ -482,7 +482,7 @@ class NVE(lammps_step.Energy):
 
         filename = P["trajectory extxyz filename"].strip()
         if filename.startswith("/"):
-            path = Path(self.flowchart.root_directory) / filename[1:]
+            path = self.job_path / filename[1:]
         else:
             path = self.wd / Path(filename)
 

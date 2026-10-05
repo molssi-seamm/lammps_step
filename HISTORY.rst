@@ -1,6 +1,11 @@
 =======
 History
 =======
+2026.10.5 -- Job-level files for parallel loops
+    * Files named ``/name`` are written to the job's own directory (``Node.job_path``)
+      and read from it or, in an iteration of a parallel loop (loop_step 2026.10.5),
+      from the enclosing iterations and the job. Nothing changes for other jobs.
+    * Requires seamm 2026.10.5.
 2026.10.3 -- Bugfix: QM/MD over MDI used the program's method name and default basis
     * The MDI engine for a QM-driven LAMMPS run was launched with the model
       chemistry's method name alone, so ORCA ran def2-SVP whatever basis was
