@@ -3,7 +3,7 @@ History
 =======
 2026.10.7 -- The step declares what its cost model is made of
     * ``lammps.TIMING_SPEC`` -- atoms as the size variable, MD steps as the unit -- is passed when a run is
-      recorded (seamm-exec 2026.10.7 writes it beside the records), so the cost
+      recorded (seamm-exec 2026.10.6.1 writes it beside the records), so the cost
       model is fitted from the step's own description rather than a table in
       seamm-exec.
 
