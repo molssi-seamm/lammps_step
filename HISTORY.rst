@@ -1,6 +1,13 @@
 =======
 History
 =======
+2026.10.6 -- Timing records that a cost model can be fitted to
+    * Each LAMMPS run appends a record to ``~/.seamm.d/timing/lammps.csv`` through
+      ``seamm_exec.timing``: the machine class, processes, wall time and outcome, and
+      the descriptors of the calculation: the sub-steps run, the structure, and from the log the ``Loop time`` lines: MD steps, atoms, processes and LAMMPS's own time (steps times atoms is the unit of cost). This replaces the step's own CSV
+      (SMILES, formula and the whole parameter dictionary as JSON), which grew
+      without bound. See seamm_exec's campaign of 2026-10-05.
+    * Requires seamm-exec 2026.10.6.
 2026.10.5 -- Job-level files for parallel loops
     * Files named ``/name`` are written to the job's own directory (``Node.job_path``)
       and read from it or, in an iteration of a parallel loop (loop_step 2026.10.5),

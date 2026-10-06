@@ -5,8 +5,6 @@
 import configparser
 from contextlib import contextmanager
 import copy
-import csv
-from datetime import datetime, timezone
 import importlib
 import json
 import logging
@@ -29,7 +27,6 @@ import traceback
 import warnings
 
 import bibtexparser
-from cpuinfo import get_cpu_info
 import numpy as np
 import pandas
 import statsmodels.tsa.stattools as stattools
@@ -546,6 +543,55 @@ def pline(
     return line
 
 
+def _output_text(directory, names):
+    """The text of the first of ``names`` found in ``directory``, or None."""
+    for name in names:
+        path = Path(directory) / name
+        if path.exists():
+            try:
+                return path.read_text(errors="replace")
+            except OSError:
+                return None
+    return None
+
+
+def timing_descriptors(control, log_text=None, configuration=None):
+    """The descriptors of a LAMMPS run for its timing record (seamm_exec's
+    campaign of 2026-10-05): the structure, the kinds of calculation in the
+    run (the sub-steps' names), and from the log the ``Loop time`` lines --
+    MD steps, atoms, processes and LAMMPS's own time summed over the runs --
+    whose product of steps and atoms is the unit of cost.
+    """
+    d = {}
+    names = []
+    for item in control or ():
+        try:
+            names.append(str(item[0]) if isinstance(item, (list, tuple)) else str(item))
+        except Exception:
+            pass
+    d["calculations"] = " + ".join(names)[:200]
+    d["n_calculations"] = len(names)
+    if configuration is not None:
+        d.update(seamm_exec.structure_descriptors(configuration))
+    if log_text:
+        loops = re.findall(
+            r"Loop time of ([\d.eE+-]+) on (\d+) procs for (\d+) steps"
+            r" with (\d+) atoms",
+            log_text,
+        )
+        d["n_runs"] = len(loops)
+        d["md_steps"] = sum(int(x[2]) for x in loops) if loops else None
+        d["code_seconds"] = sum(float(x[0]) for x in loops) if loops else None
+        d["procs"] = int(loops[0][1]) if loops else None
+        m = re.search(r"Total wall time:\s+(\d+):(\d+):(\d+)", log_text)
+        if m:
+            d["total_wall"] = (
+                int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3))
+            )
+        d["terminated_normally"] = "Total wall time" in log_text
+    return d
+
+
 class LAMMPS(seamm.Node):
     display_units = {
         "T": "K",
@@ -642,47 +688,6 @@ class LAMMPS(seamm.Node):
         super().__init__(
             flowchart=flowchart, title="LAMMPS", extension=extension, logger=logger
         )
-
-        # Set up the timing information
-        self._timing_data = []
-        self._timing_path = Path("~/.seamm.d/timing/lammps.csv").expanduser()
-        self._timing_header = [
-            "node",  # 0
-            "cpu",  # 1
-            "cpu_version",  # 2
-            "cpu_count",  # 3
-            "cpu_speed",  # 4
-            "date",  # 5
-            "H_SMILES",  # 6
-            "ISOMERIC_SMILES",  # 7
-            "formula",  # 8
-            "net_charge",  # 9
-            "spin_multiplicity",  # 10
-            "keywords",  # 11
-            "nproc",  # 12
-            "time",  # 13
-        ]
-        try:
-            self._timing_path.parent.mkdir(parents=True, exist_ok=True)
-
-            self._timing_data = 14 * [""]
-            self._timing_data[0] = platform.node()
-            tmp = get_cpu_info()
-            if "arch" in tmp:
-                self._timing_data[1] = tmp["arch"]
-            if "cpuinfo_version_string" in tmp:
-                self._timing_data[2] = tmp["cpuinfo_version_string"]
-            if "count" in tmp:
-                self._timing_data[3] = str(tmp["count"])
-            if "hz_advertized_friendly" in tmp:
-                self._timing_data[4] = tmp["hz_advertized_friendly"]
-
-            if not self._timing_path.exists():
-                with self._timing_path.open("w", newline="") as fd:
-                    writer = csv.writer(fd)
-                    writer.writerow(self._timing_header)
-        except Exception:
-            self._timing_data = None
 
     @property
     def version(self):
@@ -1297,7 +1302,7 @@ class LAMMPS(seamm.Node):
         self.logger.debug("structure.dat:\n" + files["structure.dat"])
 
         # And run
-        self._timing_data[11] = json.dumps(control)
+        self._timing_control = list(control)
         control = []
 
         files = self._execute_single_sim(
@@ -1725,32 +1730,6 @@ class LAMMPS(seamm.Node):
 
             cmd.extend([">", "stdout.txt", "2>", "stderr.txt"])
 
-            if self._timing_data is not None:
-                _, configuration = self.get_system_configuration()
-                try:
-                    self._timing_data[6] = configuration.to_smiles(
-                        canonical=True, hydrogens=True
-                    )
-                except Exception:
-                    self._timing_data[6] = ""
-                try:
-                    self._timing_data[7] = configuration.isomeric_smiles
-                except Exception:
-                    self._timing_data[7] = ""
-                try:
-                    self._timing_data[8] = configuration.formula[0]
-                except Exception:
-                    self._timing_data[7] = ""
-                try:
-                    self._timing_data[9] = str(configuration.charge)
-                except Exception:
-                    self._timing_data[9] = ""
-                try:
-                    self._timing_data[10] = str(configuration.spin_multiplicity)
-                except Exception:
-                    self._timing_data[10] = ""
-                self._timing_data[5] = datetime.now(timezone.utc).isoformat()
-
             t0 = time.time_ns()
 
             result = executor.run(
@@ -1766,15 +1745,7 @@ class LAMMPS(seamm.Node):
             )
 
             t = (time.time_ns() - t0) / 1.0e9
-            if self._timing_data is not None:
-                self._timing_data[13] = f"{t:.3f}"
-                self._timing_data[12] = str(ce["NTASKS"])
-                try:
-                    with self._timing_path.open("a", newline="") as fd:
-                        writer = csv.writer(fd)
-                        writer.writerow(self._timing_data)
-                except Exception:
-                    pass
+            self.record_timing(configuration, ce, t, result)
 
             if not result:
                 self.logger.error("There was an error running LAMMPS")
@@ -2657,6 +2628,28 @@ class LAMMPS(seamm.Node):
             "\n".join(angle_table),
             "\n".join(dihedral_table),
         )
+
+    def record_timing(self, configuration, ce, wall, result):
+        """Append this run's timing record (``~/.seamm.d/timing/lammps.csv``)
+        with :func:`timing_descriptors`; never raises."""
+        try:
+            text = _output_text(
+                self.directory, ("lammps.out", "log.lammps", "stdout.txt", "output.txt")
+            )
+            descriptors = timing_descriptors(
+                getattr(self, "_timing_control", None), text, configuration
+            )
+            seamm_exec.record_timing(
+                "lammps",
+                wall,
+                descriptors,
+                ntasks=ce.get("NTASKS"),
+                ngpus=ce.get("NGPUS", 0) or 0,
+                state="finished" if result else "failed",
+                in_situ=True,
+            )
+        except Exception as e:  # pragma: no cover - must never stop the step
+            self.logger.warning(f"Could not record the timing of the LAMMPS run: {e}")
 
     def analyze(self, indent="", nodes=None, values={}, **kwargs):
         """Analyze the output of the calculation"""
