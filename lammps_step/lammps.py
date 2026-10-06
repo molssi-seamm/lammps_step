@@ -1745,7 +1745,10 @@ class LAMMPS(seamm.Node):
             )
 
             t = (time.time_ns() - t0) / 1.0e9
-            self.record_timing(configuration, ce, t, result)
+            # The record must not depend on this function's locals: the
+            # configuration is only bound in the MDI branch above (2026.10.6
+            # raised UnboundLocalError here for every forcefield run).
+            self.record_timing(ce, t, result)
 
             if not result:
                 self.logger.error("There was an error running LAMMPS")
@@ -2629,10 +2632,11 @@ class LAMMPS(seamm.Node):
             "\n".join(dihedral_table),
         )
 
-    def record_timing(self, configuration, ce, wall, result):
+    def record_timing(self, ce, wall, result):
         """Append this run's timing record (``~/.seamm.d/timing/lammps.csv``)
         with :func:`timing_descriptors`; never raises."""
         try:
+            _, configuration = self.get_system_configuration()
             text = _output_text(
                 self.directory, ("lammps.out", "log.lammps", "stdout.txt", "output.txt")
             )
