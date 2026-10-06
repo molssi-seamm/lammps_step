@@ -6,6 +6,7 @@ History
       every ordinary forcefield run raised ``UnboundLocalError`` once LAMMPS had
       finished and its results were never analyzed (ChemAI jobs 5177-5188). The
       record now takes only what every run has.
+
 2026.10.6 -- Timing records that a cost model can be fitted to
     * Each LAMMPS run appends a record to ``~/.seamm.d/timing/lammps.csv`` through
       ``seamm_exec.timing``: the machine class, processes, wall time and outcome, and
