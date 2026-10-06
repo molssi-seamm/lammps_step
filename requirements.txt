@@ -6,7 +6,7 @@ py-cpuinfo
 scipy
 pymbar>=4.0
 seamm>=2026.10.5
-seamm-exec
+seamm-exec>=2026.10.6
 seamm-ff-util
 statsmodels
 tabulate
