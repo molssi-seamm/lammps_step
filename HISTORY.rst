@@ -6,6 +6,8 @@ History
       recorded (seamm-exec 2026.10.6.1 writes it beside the records), so the cost
       model is fitted from the step's own description rather than a table in
       seamm-exec.
+    * Removed the Docker image (and its recipe and release job) and the Docker settings
+      in the default lammps.ini, which were no longer used or maintained.
 
 2026.10.6.1 -- Bugfix: forcefield runs failed after LAMMPS finished
     * 2026.10.6's timing record used a variable bound only for QM-MD over MDI, so

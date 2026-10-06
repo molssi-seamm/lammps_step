@@ -1557,8 +1557,6 @@ class LAMMPS(seamm.Node):
                     full_config.set(executor_type, "code", str(path))
 
             config = dict(full_config.items(executor_type))
-            # Use the matching version of the seamm-mopac image by default.
-            config["version"] = self.version
 
             # Environment variables
             env = {}
