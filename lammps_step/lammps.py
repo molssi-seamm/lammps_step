@@ -555,6 +555,24 @@ def _output_text(directory, names):
     return None
 
 
+#: What the cost model is made of (seamm_exec.timing_model.Spec as plain data): atoms
+#: as the size variable, MD steps as the unit. Written beside the records when a run is
+#: recorded.
+TIMING_SPEC = {
+    "size": ["n_atoms"],
+    "klass": [],
+    "task": None,
+    "units": "md_steps",
+    "multiplier": None,
+    "default_alpha": 0.8,
+}
+
+
+def _record_kwargs():
+    """``spec=`` for seamm-exec releases that take it (2026.10.7 on)."""
+    return {"spec": TIMING_SPEC} if hasattr(seamm_exec, "TimingSpec") else {}
+
+
 def timing_descriptors(control, log_text=None, configuration=None):
     """The descriptors of a LAMMPS run for its timing record (seamm_exec's
     campaign of 2026-10-05): the structure, the kinds of calculation in the
@@ -2651,6 +2669,7 @@ class LAMMPS(seamm.Node):
                 ngpus=ce.get("NGPUS", 0) or 0,
                 state="finished" if result else "failed",
                 in_situ=True,
+                **_record_kwargs(),
             )
         except Exception as e:  # pragma: no cover - must never stop the step
             self.logger.warning(f"Could not record the timing of the LAMMPS run: {e}")

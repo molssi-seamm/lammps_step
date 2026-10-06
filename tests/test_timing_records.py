@@ -66,3 +66,9 @@ def test_record_timing_needs_no_run_locals(monkeypatch):
     node.record_timing({"NTASKS": 2, "NGPUS": 0}, 1.5, True)
     assert recorded["program"] == "lammps" and recorded["wall"] == 1.5
     assert recorded["descriptors"]["n_atoms"] == 3 and recorded["ntasks"] == 2
+
+
+def test_timing_spec():
+    from lammps_step import lammps
+
+    assert lammps.TIMING_SPEC["units"] == "md_steps"
