@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.11 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.11.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=912780bd"></script>
+    <script src="_static/documentation_options.js?v=9d316fc9"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.11" />
+  <meta name="docsearch:version" content="2026.10.11.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.11.1 – Bugfix: a failed LAMMPS run no longer leaves its MDI engine holding the GPU</dt><dd><ul class="simple">
+<li><p>In an MDI pair (e.g. a machine-learned potential driving LAMMPS) a LAMMPS error
+left the engine waiting for its driver forever: the job held its GPU and stayed
+RUNNING until cancelled. mdi_bind.sh (version 2.1) now stops the engine when the
+driver fails, and the driver when the engine fails; after a normal finish the
+engine has SEAMM_ENGINE_GRACE seconds (default 120) to exit.</p></li>
+<li><p>Installing the step does not replace an existing ~/SEAMM/bin/mdi_bind.sh; the
+step warns that a newer version is available. Replace it by writing the new file
+beside it and renaming it over the old one, so that running jobs keep their copy.</p></li>
+</ul>
+</dd>
 <dt>2026.10.11 – The step declares what its cost model is made of</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">lammps.TIMING_SPEC</span></code> – atoms as the size variable, the forcefield as the class,
 and MD steps as the unit – is passed with each timing record (seamm-exec
