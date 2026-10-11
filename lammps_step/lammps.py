@@ -555,6 +555,42 @@ def _output_text(directory, names):
     return None
 
 
+#: What the cost model is made of (seamm_exec.timing_model.Spec as plain data): atoms
+#: as the size variable, MD steps as the unit, and the forcefield as the class -- its
+#: form (PyTorch, OpenKIM, MDI/QM, or a classical form) and the model itself, since an
+#: MLFF and a classical forcefield differ by orders of magnitude per atom-step. Written
+#: beside the records when a run is recorded.
+TIMING_SPEC = {
+    "size": ["n_atoms"],
+    "klass": ["ff_form", "model"],
+    "task": None,
+    "units": "md_steps",
+    "multiplier": None,
+    "default_alpha": 0.8,
+}
+
+
+def _record_kwargs():
+    """``spec=`` for seamm-exec releases that take it (2026.10.6.1 on)."""
+    return {"spec": TIMING_SPEC} if hasattr(seamm_exec, "TimingSpec") else {}
+
+
+def _gpu_model():
+    """The model of this node's first GPU (e.g. "NVIDIA A100-SXM4-80GB"), so that the
+    timing records tell an A30 from an A100; None if it cannot be found."""
+    try:
+        out = subprocess.run(
+            ["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except Exception:
+        return None
+    lines = [x.strip() for x in out.stdout.splitlines() if x.strip()]
+    return lines[0] if out.returncode == 0 and lines else None
+
+
 def timing_descriptors(control, log_text=None, configuration=None):
     """The descriptors of a LAMMPS run for its timing record (seamm_exec's
     campaign of 2026-10-05): the structure, the kinds of calculation in the
@@ -1539,8 +1575,6 @@ class LAMMPS(seamm.Node):
                     full_config.set(executor_type, "code", str(path))
 
             config = dict(full_config.items(executor_type))
-            # Use the matching version of the seamm-mopac image by default.
-            config["version"] = self.version
 
             # Environment variables
             env = {}
@@ -2643,14 +2677,23 @@ class LAMMPS(seamm.Node):
             descriptors = timing_descriptors(
                 getattr(self, "_timing_control", None), text, configuration
             )
+            # What the run computed with: the class of its cost
+            try:
+                descriptors["ff_form"] = str(self.ff_form() or "")
+            except Exception:
+                descriptors["ff_form"] = ""
+            descriptors["model"] = str(getattr(self, "model", None) or "")
+            ngpus = ce.get("NGPUS", 0) or 0
             seamm_exec.record_timing(
                 "lammps",
                 wall,
                 descriptors,
                 ntasks=ce.get("NTASKS"),
-                ngpus=ce.get("NGPUS", 0) or 0,
+                ngpus=ngpus,
+                gpu_model=_gpu_model() if ngpus else None,
                 state="finished" if result else "failed",
                 in_situ=True,
+                **_record_kwargs(),
             )
         except Exception as e:  # pragma: no cover - must never stop the step
             self.logger.warning(f"Could not record the timing of the LAMMPS run: {e}")
