@@ -1,13 +1,18 @@
 =======
 History
 =======
-2026.10.7 -- The step declares what its cost model is made of
-    * ``lammps.TIMING_SPEC`` -- atoms as the size variable, MD steps as the unit -- is passed when a run is
-      recorded (seamm-exec 2026.10.6.1 writes it beside the records), so the cost
-      model is fitted from the step's own description rather than a table in
-      seamm-exec.
+2026.10.11 -- The step declares what its cost model is made of
+    * ``lammps.TIMING_SPEC`` -- atoms as the size variable, the forcefield as the class,
+      and MD steps as the unit -- is passed with each timing record (seamm-exec
+      2026.10.6.1 and later write it beside the records), so the cost model is fitted
+      from the step's own description.
+    * Each timing record names the forcefield (its form -- PyTorch, OpenKIM, MDI/QM or
+      a classical form -- and the model or checkpoint), so that machine-learned and
+      classical forcefields, orders of magnitude apart in cost, are fitted
+      separately; a run on a GPU also records the GPU's model.
     * Removed the Docker image (and its recipe and release job) and the Docker settings
       in the default lammps.ini, which were no longer used or maintained.
+    * Requires Python 3.12 or later.
 
 2026.10.6.1 -- Bugfix: forcefield runs failed after LAMMPS finished
     * 2026.10.6's timing record used a variable bound only for QM-MD over MDI, so

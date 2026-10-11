@@ -52,6 +52,7 @@ setup(
 
     # Required packages, pulls from pip if needed; do not use for Conda
     # deployment
+    python_requires='>=3.12',
     install_requires=requirements,
 
     test_suite='tests',
@@ -75,8 +76,7 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.12',
     ],
     entry_points={
         'console_scripts': [
