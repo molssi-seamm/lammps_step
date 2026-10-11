@@ -1,6 +1,18 @@
 =======
 History
 =======
+2026.10.11.2 -- Bugfix: mdi_bind.sh 2.2 really stops a failed MDI pair
+    * 2.1 did not end a failed MLFF run. LAMMPS does not exit after an error in an MDI
+      pair -- it waits in MPI_Finalize for the engine -- so neither side ever exited;
+      and stopping a partner stopped only the shell around it, leaving the program
+      running. 2.2 starts each program with exec, so that stopping it stops the
+      program, and watches a copy of LAMMPS's output for ERROR lines: if LAMMPS has
+      not exited SEAMM_ERROR_GRACE seconds (default 30) after one, it is stopped, and
+      with it the engine. Tested on TinkerCliffs with LAMMPS and an xnn model: a
+      failed run now ends within a minute instead of holding its GPU until cancelled.
+    * The driver's output passes through unchanged, and line-buffered as it is on
+      mpirun's terminal, so a hung LAMMPS no longer loses its output.
+
 2026.10.11.1 -- Bugfix: a failed LAMMPS run no longer leaves its MDI engine holding the GPU
     * In an MDI pair (e.g. a machine-learned potential driving LAMMPS) a LAMMPS error
       left the engine waiting for its driver forever: the job held its GPU and stayed

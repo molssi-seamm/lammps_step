@@ -151,9 +151,10 @@ def test_cpu_bind_leaves_binding_to_the_scheduler(tmp_path):
     assert "not bound" in result.stderr
 
 
-def start_pair(tmp_path, engine, driver, **env):
+def start_pair(tmp_path, engine, driver, namespace="test-pair", path=None, **env):
     """Start the engine (rank 0) and driver (rank 1) of one MDI pair, as mpirun would,
-    sharing a working directory and the launch's namespace."""
+    sharing a working directory and the launch's namespace (each mpirun has its
+    own)."""
     procs = []
     for rank, cmd in (("0", engine), ("1", driver)):
         environ = {k: v for k, v in os.environ.items() if k not in SCHEDULER}
@@ -161,9 +162,11 @@ def start_pair(tmp_path, engine, driver, **env):
         environ.update(
             SEAMM_BIND="none",
             OMPI_COMM_WORLD_LOCAL_RANK=rank,
-            PMIX_NAMESPACE="test-pair",
+            PMIX_NAMESPACE=namespace,
             **env,
         )
+        if path:
+            environ["PATH"] = f"{path}:{environ['PATH']}"
         procs.append(
             subprocess.Popen(
                 ["bash", str(DATA / "mdi_bind.sh"), *cmd],
@@ -224,3 +227,127 @@ def test_a_normal_pair_is_untouched(tmp_path):
     )
     (e_rc, d_rc), seconds = finish([engine, driver])
     assert (e_rc, d_rc) == (0, 0)
+
+
+def alive(pattern):
+    """Whether a process whose full command line is `pattern` is running."""
+    return (
+        subprocess.run(["pgrep", "-f", "-x", pattern], capture_output=True).returncode
+        == 0
+    )
+
+
+def test_the_partners_program_is_stopped_not_just_its_wrapper(tmp_path):
+    """2.1 recorded the PID of a shell around the program, so the engine itself
+    survived the stop (an orphan holding the GPU)."""
+    engine, driver = start_pair(
+        tmp_path, ["sleep", "303"], ["bash", "-c", "sleep 1; exit 1"]
+    )
+    (e_rc, d_rc), seconds = finish([engine, driver])
+    assert d_rc == 1 and seconds < 20
+    assert not alive("sleep 303")
+
+
+def test_lammps_hanging_after_an_error_is_stopped(tmp_path):
+    """LAMMPS in an MDI pair prints its ERROR and then waits in MPI_Finalize for
+    the engine, so neither side ever exits (TinkerCliffs 7944053)."""
+    engine, driver = start_pair(
+        tmp_path,
+        ["sleep", "304"],
+        ["bash", "-c", 'echo "ERROR: Unknown command: bogus (src/input.cpp:314)"; '
+                       "exec sleep 305"],  # fmt: skip
+        SEAMM_ERROR_GRACE="2",
+    )
+    (e_rc, d_rc), seconds = finish([engine, driver])
+    assert d_rc != 0 and e_rc != 0
+    assert seconds < 30
+    assert not alive("sleep 304") and not alive("sleep 305")
+    out = driver.stdout.read()
+    assert "ERROR: Unknown command" in out  # the output still gets through
+
+
+def test_output_without_errors_is_untouched(tmp_path):
+    engine, driver = start_pair(
+        tmp_path,
+        ["bash", "-c", "sleep 1; exit 0"],
+        ["bash", "-c", "echo line one; echo WARNING: fine; echo line three; exit 0"],
+    )
+    (e_rc, d_rc), seconds = finish([engine, driver])
+    assert (e_rc, d_rc) == (0, 0)
+    assert driver.stdout.read().splitlines() == [
+        "line one",
+        "WARNING: fine",
+        "line three",
+    ]
+
+
+def test_an_error_on_stderr_is_caught(tmp_path):
+    engine, driver = start_pair(
+        tmp_path,
+        ["sleep", "307"],
+        ["bash", "-c", 'echo "ERROR: on stderr" >&2; exec sleep 308'],
+        SEAMM_ERROR_GRACE="2",
+    )
+    (e_rc, d_rc), seconds = finish([engine, driver])
+    assert seconds < 30
+    assert not alive("sleep 307") and not alive("sleep 308")
+    assert "ERROR: on stderr" in driver.stderr.read()
+
+
+def test_the_driver_output_is_byte_for_byte(tmp_path):
+    """mlff parses thermo blocks from the job's stdout: nothing may change."""
+    text = "Step Temp\n  1  300.5\ttab\\slash\r\nno final newline"
+    script = f"printf '%s' '{text}'; printf 'warn\\nend' >&2"
+    engine, driver = start_pair(
+        tmp_path, ["bash", "-c", "sleep 1"], ["bash", "-c", script]
+    )
+    finish([engine, driver])
+    out = driver.stdout.read()
+    err = driver.stderr.read()
+    assert (
+        out
+        == subprocess.run(
+            ["bash", "-c", f"printf '%s' '{text}'"], capture_output=True, text=True
+        ).stdout
+    )
+    # The wrapper adds its own status lines to stderr; the program's bytes are intact
+    assert "warn\nend" in err
+
+
+def test_the_gpu_monitor_is_cleaned_up(tmp_path):
+    """The engine side's nvidia-smi monitor must not outlive the engine."""
+    fake = tmp_path / "bin"
+    fake.mkdir()
+    (fake / "nvidia-smi").write_text(
+        "#!/bin/bash\n"
+        'case "$*" in *--query-gpu=timestamp*) exec sleep 309;; esac\n'
+        "exit 0\n"
+    )
+    (fake / "nvidia-smi").chmod(0o755)
+    for driver in (["bash", "-c", "sleep 1; exit 1"], ["bash", "-c", "sleep 1"]):
+        engine, drv = start_pair(
+            tmp_path, ["sleep", "310"], driver, path=str(fake), SEAMM_ENGINE_GRACE="2"
+        )
+        finish([engine, drv])
+        assert not alive("sleep 309") and not alive("sleep 310")
+
+
+def test_two_pairs_in_one_directory_keep_apart(tmp_path):
+    """md2.slurm runs two mpiruns on GPU 0 in one step: one pair's failure must not
+    stop the other's engine."""
+    failing = start_pair(
+        tmp_path,
+        ["sleep", "311"],
+        ["bash", "-c", "sleep 1; exit 1"],
+        namespace="prterun-node-1001_1",
+    )
+    healthy = start_pair(
+        tmp_path,
+        ["bash", "-c", "sleep 4; exit 0"],
+        ["bash", "-c", "sleep 5; exit 0"],
+        namespace="prterun-node-1002_1",
+    )
+    codes, _ = finish(failing)
+    assert codes[1] == 1 and not alive("sleep 311")
+    codes, _ = finish(healthy)
+    assert codes == [0, 0]  # not stopped by the other pair
