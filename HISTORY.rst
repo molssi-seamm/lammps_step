@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.10.11.1 -- Bugfix: a failed LAMMPS run no longer leaves its MDI engine holding the GPU
+    * In an MDI pair (e.g. a machine-learned potential driving LAMMPS) a LAMMPS error
+      left the engine waiting for its driver forever: the job held its GPU and stayed
+      RUNNING until cancelled. mdi_bind.sh (version 2.1) now stops the engine when the
+      driver fails, and the driver when the engine fails; after a normal finish the
+      engine has SEAMM_ENGINE_GRACE seconds (default 120) to exit.
+    * Installing the step does not replace an existing ~/SEAMM/bin/mdi_bind.sh; the
+      step warns that a newer version is available. Replace it by writing the new file
+      beside it and renaming it over the old one, so that running jobs keep their copy.
+
 2026.10.11 -- The step declares what its cost model is made of
     * ``lammps.TIMING_SPEC`` -- atoms as the size variable, the forcefield as the class,
       and MD steps as the unit -- is passed with each timing record (seamm-exec
