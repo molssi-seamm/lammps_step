@@ -1,7 +1,12 @@
 The plan
 ========
 
-Status: **proposed** (2026-10-11). Nothing is implemented yet.
+Status: **agreed** (2026-10-11): naming and the MLFF launch decided (see
+*Decisions*). Nothing is implemented yet.
+
+This builds on the June sketch, *Phase D -- Forcefield handling folded into
+Model Chemistry* (``molssi-seamm.github.io``, campaign ``2026-06-22``,
+``NOTES_D``), which it supersedes.
 
 Where things stand
 ------------------
@@ -38,10 +43,10 @@ The design
 1. **Classical forcefields become model chemistries, offered by
    forcefield_step.** It advertises one model chemistry per forcefield in each
    ``.frc`` file it can find -- the package's and the local and personal ones --
-   e.g. ``FF@OPLS-AA``, ``FF@PCFF``, ``ReaxFF@<file>`` (naming to be decided,
-   below). It also provides the helpers the consumers need: build the
-   ``seamm_ff_util`` forcefield for a model chemistry, and assign its atom
-   types to a configuration.
+   e.g. ``FF@OPLS-AA``, ``FF@PCFF``, ``ReaxFF@<parameter set>``. It also
+   provides the helpers the consumers need: build the ``seamm_ff_util``
+   forcefield for a model chemistry, and assign its atom types to a
+   configuration (see *Atom types*).
 
    forcefield_step stays a package **that must be installed** wherever LAMMPS
    or Packmol is: ``lammps_step`` and ``packmol_step`` require it. Like
@@ -69,9 +74,9 @@ The design
      ``--dispersion "{regime: large}"``, ``--eeq-reuse``), which must never be
      global in ``gpu-code``.
 
-   The MPI pair stays the launch for MLFFs (today's fast path: 88 ms/step for
-   1,554 atoms on an A100); QM-MD keeps MDI over TCP. A performance check
-   confirms the new path matches the old.
+   **Decided:** the MPI pair stays the launch for MLFFs (today's fast path:
+   88 ms/step for 1,554 atoms on an A100); QM-MD keeps MDI over TCP. A
+   performance check confirms the new path matches the old.
 
 4. **LAMMPS takes its path from the model chemistry's type:** FF and ReaxFF
    as today (CPU, or Kokkos through ``gpu-cmd-args``); IP through
@@ -90,6 +95,41 @@ The design
    and shows the MLFF options (checkpoint path, engine options) only for an
    MLFF. The run-time checks stay as the backstop.
 
+Type names
+----------
+
+Decided 2026-10-11, and recorded on the site's model-chemistry naming page
+(``docs/background/model_chemistry_naming.rst``):
+
+* ``SQM`` -- semiempirical (``MOPAC:SQM@PM7``, ``xTB:SQM@GFN2-xTB``);
+* ``DFT`` -- Kohn-Sham DFT, including double hybrids;
+* ``QC`` -- wavefunction methods: ``QC@HF``, ``QC@MP2``, CCSD(T), DLPNO;
+* ``FF`` -- classical (valence) forcefields: ``FF@OPLS-AA``, ``FF@PCFF``;
+* ``ReaxFF`` -- reactive forcefields, the method being the parameter set;
+* ``IP`` -- interatomic potentials (OpenKIM): ``IP@<OpenKIM ID>``;
+* ``MLFF`` -- machine-learned forcefields: ``xnn:MLFF@<model>``.
+
+There is no catch-all type. The earlier names -- ``VFF``, ``rxnFF`` /
+``ReactiveFF``, ``ML`` -- are not used. One change reaches existing code:
+**orca_step advertises its wavefunction methods as ``HF@...`` and ``MP2@...``
+today and must change to ``QC@HF`` / ``QC@MP2``.** Model-chemistry strings in
+existing flowcharts (``ORCA:HF@...``, ``ORCA:MP2@...``) are rewritten by the
+converter below, and orca_step accepts the old form, with a warning, until the
+conversions are done.
+
+Atom types
+----------
+
+The June sketch left open when atom types are assigned, since typing changes the
+configuration and has no QM analogue. The answer: **the consumer types the
+atoms when it needs them**, through forcefield_step's helper -- LAMMPS while
+writing its input, Packmol for each molecule before packing -- with the same
+rule the consumers already use: type the structure if it has no types for this
+forcefield (``atom_types_<forcefield>``), keep existing ones otherwise, so that
+re-running is harmless and hand-assigned types survive. Choosing a model
+chemistry types nothing by itself, and the Forcefield step's separate "assign
+forcefield to structure" task is no longer needed.
+
 Retiring the step
 -----------------
 
@@ -102,7 +142,8 @@ old flowchart with a Forcefield step could still be *run* headless, but not
    interface still in place, the Forcefield step's description marking it
    deprecated and the step warning when it runs.
 2. Release a flowchart converter (as for the ``1-end`` index syntax) that
-   rewrites a Forcefield step as a Model Chemistry step, and run it over the
+   rewrites a Forcefield step as a Model Chemistry step, and ``HF@`` /
+   ``MP2@`` model chemistries as ``QC@HF`` / ``QC@MP2``, and run it over the
    flowcharts we know of: the installations' (``~/SEAMM``, ``~/SEAMM_DEV``,
    ChemAI, ARC, MolSSI10), Dropbox and the production directories on ARC and
    ChemAI.
@@ -137,15 +178,21 @@ Tests
 * The converter: every Forcefield variant in, a valid Model Chemistry
   flowchart out; ``seamm-flowchart validate`` on all converted flowcharts.
 
-Decisions for Paul
-------------------
+Decisions
+---------
 
-1. **Naming** of the new model chemistries, e.g. ``FF@OPLS-AA`` versus
-   ``forcefield:FF@oplsaa.frc/oplsaa+`` -- settle before anything is released.
-2. **The MLFF launch:** the MPI pair through ``mdi_bind.sh`` (recommended) or
-   MDI over TCP like QM-MD.
-3. **When the Tk registration goes**, i.e. how long after the converter.
-4. **When the compatibility code goes.**
+Made by Paul on 2026-10-11:
+
+1. **Naming:** ``FF@OPLS-AA`` style, and the type vocabulary above (``ReaxFF``,
+   ``MLFF``, ``QC``).
+2. **The MLFF launch:** the MPI pair through ``mdi_bind.sh``.
+3. **The provider:** forcefield_step, installed and headless-only like
+   ``xnn_step``, its Tk registration removed after the conversions.
+
+Still open:
+
+4. **When the Tk registration goes**, i.e. how long after the converter.
+5. **When the compatibility code goes.**
 
 Related
 -------
