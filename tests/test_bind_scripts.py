@@ -149,3 +149,78 @@ def test_cpu_bind_leaves_binding_to_the_scheduler(tmp_path):
     assert result.returncode == 0
     assert result.stdout.strip() == "ran"
     assert "not bound" in result.stderr
+
+
+def start_pair(tmp_path, engine, driver, **env):
+    """Start the engine (rank 0) and driver (rank 1) of one MDI pair, as mpirun would,
+    sharing a working directory and the launch's namespace."""
+    procs = []
+    for rank, cmd in (("0", engine), ("1", driver)):
+        environ = {k: v for k, v in os.environ.items() if k not in SCHEDULER}
+        environ.pop("CUDA_VISIBLE_DEVICES", None)
+        environ.update(
+            SEAMM_BIND="none",
+            OMPI_COMM_WORLD_LOCAL_RANK=rank,
+            PMIX_NAMESPACE="test-pair",
+            **env,
+        )
+        procs.append(
+            subprocess.Popen(
+                ["bash", str(DATA / "mdi_bind.sh"), *cmd],
+                cwd=tmp_path,
+                env=environ,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+        )
+    return procs
+
+
+def finish(procs, timeout=40):
+    import time
+
+    start = time.monotonic()
+    codes = [p.wait(timeout=timeout) for p in procs]
+    return codes, time.monotonic() - start
+
+
+def test_a_failed_driver_stops_the_engine(tmp_path):
+    """A LAMMPS error must not leave the engine holding the GPU (mlff, ChemAI 11977)."""
+    engine, driver = start_pair(
+        tmp_path, ["sleep", "300"], ["bash", "-c", "sleep 1; exit 1"]
+    )
+    (e_rc, d_rc), seconds = finish([engine, driver])
+    assert d_rc == 1 and e_rc != 0
+    assert seconds < 20  # not the engine's 300 s
+    assert not list(tmp_path.glob(".mdi_bind.*.pid"))
+
+
+def test_a_lingering_engine_is_stopped_after_the_grace(tmp_path):
+    """After a normal finish the engine gets SEAMM_ENGINE_GRACE seconds to exit."""
+    engine, driver = start_pair(
+        tmp_path,
+        ["sleep", "300"],
+        ["bash", "-c", "sleep 1; exit 0"],
+        SEAMM_ENGINE_GRACE="2",
+    )
+    (e_rc, d_rc), seconds = finish([engine, driver])
+    assert d_rc == 0 and e_rc != 0
+    assert 2 <= seconds < 20
+
+
+def test_a_failed_engine_stops_the_driver(tmp_path):
+    engine, driver = start_pair(
+        tmp_path, ["bash", "-c", "sleep 1; exit 3"], ["sleep", "300"]
+    )
+    (e_rc, d_rc), seconds = finish([engine, driver])
+    assert e_rc == 3 and d_rc != 0
+    assert seconds < 20
+
+
+def test_a_normal_pair_is_untouched(tmp_path):
+    engine, driver = start_pair(
+        tmp_path, ["bash", "-c", "sleep 1; exit 0"], ["bash", "-c", "sleep 2; exit 0"]
+    )
+    (e_rc, d_rc), seconds = finish([engine, driver])
+    assert (e_rc, d_rc) == (0, 0)

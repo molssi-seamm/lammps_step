@@ -1,5 +1,5 @@
 #!/bin/bash
-#MolSSI lammps_step:mdi_bind 2.0
+#MolSSI lammps_step:mdi_bind 2.1
 # mdi_bind.sh — Resource binding for an MDI engine (e.g. an ML potential) + LAMMPS
 #
 # Runs one rank of an MPMD pair: the engine (rank 0) on the selected GPU, and the
@@ -20,6 +20,13 @@
 #   SEAMM_BIND          "none" to never bind CPUs
 #   SEAMM_ENGINE_CPUS   CPUs for the engine, e.g. "0-7" (overrides the choice)
 #   SEAMM_DRIVER_CPUS   CPUs for the LAMMPS driver, e.g. "8-15"
+#   SEAMM_ENGINE_GRACE  Seconds the engine may take to exit after the driver
+#                       finishes normally before it is stopped (default 120)
+#
+# Each side stops the other when it fails: a LAMMPS error otherwise leaves the
+# engine waiting for its driver forever, holding the GPU while the job sits in
+# the queue as RUNNING. The two record their programs' PIDs in files named for
+# the pair (the MPI launch and the GPU), so pairs sharing a directory keep apart.
 #
 # Usage:
 #   mpirun --bind-to none \
@@ -164,6 +171,52 @@ export OMPI_MCA_mpi_yield_when_idle=1
 export OMPI_MCA_mpi_wait_mode=1
 
 # ---------------------------------------------------------------------------
+# Each side's program runs as a child, so that the other side can stop it
+# ---------------------------------------------------------------------------
+PAIR_KEY="$(printf '%s' "${PMIX_NAMESPACE:-${OMPI_MCA_ess_base_jobid:-${SLURM_JOB_ID:-local}.${SLURM_STEP_ID:-0}}}" | tr -c 'A-Za-z0-9._-' '_')_gpu${GPU_ID}"
+ENGINE_PID_FILE=".mdi_bind.${PAIR_KEY}.engine.pid"
+DRIVER_PID_FILE=".mdi_bind.${PAIR_KEY}.driver.pid"
+CHILD_PID=""
+
+# Pass a scancel (or mpirun's TERM) on to the program
+trap '[ -n "$CHILD_PID" ] && kill -TERM "$CHILD_PID" 2>/dev/null' TERM INT
+
+# Stop the other side's program, if it is still running: TERM, then KILL.
+stop_partner() {
+    local pid_file="$1" grace="$2" pid i
+    [ -f "$pid_file" ] || return 0
+    pid="$(cat "$pid_file" 2>/dev/null)"
+    [ -n "$pid" ] || return 0
+    for (( i=0; i<grace; i++ )); do
+        kill -0 "$pid" 2>/dev/null || return 0
+        sleep 1
+    done
+    echo "Stopping the partner process $pid." >&2
+    kill -TERM "$pid" 2>/dev/null || return 0
+    for (( i=0; i<10; i++ )); do
+        kill -0 "$pid" 2>/dev/null || return 0
+        sleep 1
+    done
+    kill -KILL "$pid" 2>/dev/null || true
+}
+
+# Run the program in the background, record its PID, and wait for it.
+run_child() {
+    local pid_file="$1" cpus="$2"; shift 2
+    run_bound "$cpus" "$@" &
+    CHILD_PID=$!
+    echo "$CHILD_PID" > "$pid_file"
+    local status=0
+    wait "$CHILD_PID" || status=$?
+    # A trapped signal interrupts wait: wait again for the program itself
+    while kill -0 "$CHILD_PID" 2>/dev/null; do
+        wait "$CHILD_PID" || status=$?
+    done
+    rm -f "$pid_file"
+    return $status
+}
+
+# ---------------------------------------------------------------------------
 # Rank 0 = engine (gets the GPU + monitoring)
 # Rank 1 = LAMMPS driver (no GPU)
 # ---------------------------------------------------------------------------
@@ -207,7 +260,9 @@ if [ "$LOCAL_RANK" -eq 0 ]; then
     # script's, which makes mpirun treat every successful engine run as a
     # failure (rank 0 exited 1 even when the engine finished cleanly).
     rc=0
-    run_bound "$CPU_BIND" "$@" || rc=$?
+    run_child "$ENGINE_PID_FILE" "$CPU_BIND" "$@" || rc=$?
+    # A failed engine leaves the driver waiting for it
+    [ "$rc" -ne 0 ] && stop_partner "$DRIVER_PID_FILE" 0
 
     # Clean up monitor
     if [ -n "$MONITOR_PID" ]; then
@@ -232,7 +287,14 @@ else
 
     # Run LAMMPS
     rc=0
-    run_bound "$CPU_BIND" "$@" || rc=$?
+    run_child "$DRIVER_PID_FILE" "$CPU_BIND" "$@" || rc=$?
+    # A failed driver leaves the engine waiting for it, holding the GPU. After a
+    # normal finish the engine has been told to exit; give it time to.
+    if [ "$rc" -ne 0 ]; then
+        stop_partner "$ENGINE_PID_FILE" 0
+    else
+        stop_partner "$ENGINE_PID_FILE" "${SEAMM_ENGINE_GRACE:-120}"
+    fi
 
     echo "Driver finished." >&2
     exit $rc
