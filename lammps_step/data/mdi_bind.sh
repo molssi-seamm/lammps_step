@@ -1,5 +1,5 @@
 #!/bin/bash
-#MolSSI lammps_step:mdi_bind 2.1
+#MolSSI lammps_step:mdi_bind 2.2
 # mdi_bind.sh — Resource binding for an MDI engine (e.g. an ML potential) + LAMMPS
 #
 # Runs one rank of an MPMD pair: the engine (rank 0) on the selected GPU, and the
@@ -22,11 +22,18 @@
 #   SEAMM_DRIVER_CPUS   CPUs for the LAMMPS driver, e.g. "8-15"
 #   SEAMM_ENGINE_GRACE  Seconds the engine may take to exit after the driver
 #                       finishes normally before it is stopped (default 120)
+#   SEAMM_ERROR_GRACE   Seconds LAMMPS may take to exit after printing an ERROR
+#                       before it is stopped (default 30)
 #
 # Each side stops the other when it fails: a LAMMPS error otherwise leaves the
 # engine waiting for its driver forever, holding the GPU while the job sits in
-# the queue as RUNNING. The two record their programs' PIDs in files named for
-# the pair (the MPI launch and the GPU), so pairs sharing a directory keep apart.
+# the queue as RUNNING. LAMMPS itself does not exit after an error in an MDI pair
+# -- it waits in MPI_Finalize for the engine -- so a copy of the driver's stdout
+# and stderr is watched for "ERROR" lines (the output itself passes through tee
+# unchanged), and LAMMPS is stopped if it has not exited a little later. The two
+# record their programs' PIDs in files named for the pair (the MPI launch's
+# namespace, which each mpirun has its own of, and the GPU), so pairs sharing a
+# directory keep apart.
 #
 # Usage:
 #   mpirun --bind-to none \
@@ -156,13 +163,15 @@ choose_cpus() {
     echo "${chosen[*]}"
 }
 
-# Run the command, bound to the CPUs if any were chosen.
-run_bound() {
+# Become the command, bound to the CPUs if any were chosen. Run in a background
+# subshell, so that the PID recorded for it is the program's own: stopping it then
+# stops the program, not just a shell around it.
+exec_bound() {
     local cpus="$1"; shift
     if [ -n "$cpus" ]; then
-        taskset -c "$cpus" "$@"
+        exec taskset -c "$cpus" "$@"
     else
-        "$@"
+        exec "$@"
     fi
 }
 
@@ -200,10 +209,51 @@ stop_partner() {
     kill -KILL "$pid" 2>/dev/null || true
 }
 
-# Run the program in the background, record its PID, and wait for it.
+# Read a copy of the driver's output; if LAMMPS reports an error but does not
+# exit (it waits in MPI_Finalize for the engine), stop it after a grace period.
+# It reads to the end whatever it finds, so that tee never writes to a closed pipe.
+scan_for_errors() {
+    local line stopping=""
+    while IFS= read -r line || [ -n "$line" ]; do
+        if [ -z "$stopping" ] && [[ $line == ERROR* ]]; then
+            stopping=yes
+            (
+                sleep "${SEAMM_ERROR_GRACE:-30}"
+                pid="$(cat "$DRIVER_PID_FILE" 2>/dev/null)"
+                if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+                    echo "LAMMPS reported an error and has not exited; stopping it." >&2
+                    kill -TERM "$pid" 2>/dev/null
+                    sleep 10
+                    kill -KILL "$pid" 2>/dev/null || true
+                fi
+            ) &
+        fi
+    done
+}
+
+# Run the program in the background, record its PID, and wait for it. With
+# "watch" as the first argument, copies of the program's stdout and stderr are
+# scanned for errors by scan_for_errors.
 run_child() {
+    local watch=""
+    if [ "$1" = watch ]; then
+        watch=yes; shift
+    fi
     local pid_file="$1" cpus="$2"; shift 2
-    run_bound "$cpus" "$@" &
+    if [ -n "$watch" ]; then
+        # The output goes on unchanged (tee copies bytes); the scanners read a copy.
+        # Writing to a pipe rather than mpirun's terminal, the program would buffer
+        # its output in blocks -- and a LAMMPS hung after an error would never
+        # write its ERROR line at all -- so it is made line-buffered, as on a
+        # terminal, where stdbuf exists.
+        local line_buffered=()
+        command -v stdbuf > /dev/null 2>&1 && line_buffered=(stdbuf -oL -eL)
+        exec_bound "$cpus" ${line_buffered[@]+"${line_buffered[@]}"} "$@" \
+            > >(tee >(scan_for_errors)) \
+            2> >(tee >(scan_for_errors) >&2) &
+    else
+        exec_bound "$cpus" "$@" &
+    fi
     CHILD_PID=$!
     echo "$CHILD_PID" > "$pid_file"
     local status=0
@@ -287,7 +337,7 @@ else
 
     # Run LAMMPS
     rc=0
-    run_child "$DRIVER_PID_FILE" "$CPU_BIND" "$@" || rc=$?
+    run_child watch "$DRIVER_PID_FILE" "$CPU_BIND" "$@" || rc=$?
     # A failed driver leaves the engine waiting for it, holding the GPU. After a
     # normal finish the engine has been told to exit; give it time to.
     if [ "$rc" -ne 0 ]; then
