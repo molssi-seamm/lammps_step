@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.12 documentation</title>
+    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.12.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=a6df0ad7"></script>
+    <script src="../_static/documentation_options.js?v=0f4eb122"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.12" />
+  <meta name="docsearch:version" content="2026.10.12.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -514,6 +514,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <li><p>a <strong>Model Chemistry</strong> step with a forcefield – <code class="docutils literal notranslate"><span class="pre">FF&#64;oplsaa</span></code>, <code class="docutils literal notranslate"><span class="pre">FF&#64;pcff</span></code>,
 <code class="docutils literal notranslate"><span class="pre">ReaxFF&#64;CHO_cho_2008</span></code> and the others the Forcefield plug-in offers. LAMMPS builds the
 forcefield and types the atoms that do not yet have types for it;</p></li>
+<li><p>a <strong>Model Chemistry</strong> step with a machine-learned forcefield, <code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;&lt;model&gt;</span></code>:
+its engine and LAMMPS run as an MPI pair on a GPU, each through <code class="docutils literal notranslate"><span class="pre">mdi_bind.sh</span></code>, with
+the Model Chemistry step’s checkpoint and engine options. <code class="docutils literal notranslate"><span class="pre">gpu-code</span></code> in
+<code class="docutils literal notranslate"><span class="pre">lammps.ini</span></code> is not used; <code class="docutils literal notranslate"><span class="pre">mlff-code</span></code> can change the launch (see the comments in
+<code class="docutils literal notranslate"><span class="pre">lammps.ini</span></code>). The job needs a GPU and two MPI tasks;</p></li>
 <li><p>a <strong>Model Chemistry</strong> step with a quantum method, such as <code class="docutils literal notranslate"><span class="pre">MOPAC:SQM&#64;PM6-ORG</span></code>:
 LAMMPS runs the dynamics and the program computes the energy and forces over MDI;</p></li>
 <li><p>or a <strong>Forcefield</strong> step, as before.</p></li>

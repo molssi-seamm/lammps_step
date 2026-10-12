@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.12 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.12.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=a6df0ad7"></script>
+    <script src="../../_static/documentation_options.js?v=0f4eb122"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.12" />
+  <meta name="docsearch:version" content="2026.10.12.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -837,6 +837,31 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">s</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 
+<span class="c1">#: The launch of an MLFF engine and the LAMMPS driver as an MPI pair. {bind} is</span>
+<span class="c1">#: mdi_bind.sh and {engine} the engine's command; "-in input.dat" is appended.</span>
+<span class="c1">#: lammps.ini's "mlff-code" replaces it, e.g. to give mpirun other options.</span>
+<span class="n">MLFF_PAIR</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"mpirun --bind-to none -np 1 </span><span class="si">{bind}</span><span class="s2"> </span><span class="si">{engine}</span><span class="s2"> "</span>
+    <span class="s1">': -np 1 </span><span class="si">{bind}</span><span class="s1"> lmp -mdi "-role DRIVER -name LAMMPS -method MPI"'</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_mlff_pair_script</span><span class="p">(</span><span class="n">engine_argv</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">bind</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The bash script launching an MLFF engine and LAMMPS as an MPI pair.</span>
+
+<span class="sd">    The template is ``mlff-code`` from lammps.ini, else :data:`MLFF_PAIR`; its</span>
+<span class="sd">    ``{bind}`` and ``{engine}`` are filled in here, so the engine's options may</span>
+<span class="sd">    contain braces (``--dispersion "{regime: large}"``), which the executor's</span>
+<span class="sd">    substitution in a command line would take for placeholders. An ini value on</span>
+<span class="sd">    several lines is joined into one.</span>
+<span class="sd">    """</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mlff-code"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="n">MLFF_PAIR</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[ \t]*</span><span class="se">\\</span><span class="s2">?[ \t]*\n[ \t]*"</span><span class="p">,</span> <span class="s2">" "</span><span class="p">,</span> <span class="n">template</span><span class="p">)</span>
+    <span class="n">line</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="si">{bind}</span><span class="s2">"</span><span class="p">,</span> <span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">bind</span><span class="p">)))</span>
+    <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="si">{engine}</span><span class="s2">"</span><span class="p">,</span> <span class="n">shlex</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">engine_argv</span><span class="p">))</span>
+    <span class="k">return</span> <span class="s2">"#!/bin/bash</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="n">line</span> <span class="o">+</span> <span class="s2">" -in input.dat</span><span class="se">\n</span><span class="s2">"</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_mdi_launch_script</span><span class="p">(</span><span class="n">engine_argv</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">ce</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="s2">"localhost"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Compose the bash launch script for QM-MD over MDI.</span>
 
@@ -1564,15 +1589,41 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">return</span> <span class="n">cached</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
 
 
+<div class="viewcode-block" id="LAMMPS.mlff_model_chemistry">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.mlff_model_chemistry">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mlff_model_chemistry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The model chemistry, if it is a machine-learned forcefield (MLFF),</span>
+<span class="sd">        else None."""</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_exists</span><span class="p">(</span><span class="s2">"_model_chemistry"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">mc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"_model_chemistry"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mc</span> <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"type"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"MLFF"</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="LAMMPS.pytorch_model">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.pytorch_model">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pytorch_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The machine-learned forcefield's checkpoint: an MLFF model</span>
+<span class="sd">        chemistry's, else the Forcefield step's ``_pytorch_model``."""</span>
+        <span class="n">mc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlff_model_chemistry</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">mc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"options"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"path"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"_pytorch_model"</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="LAMMPS.ff_form">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.ff_form">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">ff_form</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Return the form of the forcefield."""</span>
-        <span class="c1"># A forcefield model chemistry is evaluated by LAMMPS itself; any other</span>
-        <span class="c1"># model chemistry is QM driven over MDI. A QM-MD flowchart has no</span>
-        <span class="c1"># Forcefield step, so check this *before* "_forcefield", which would not</span>
-        <span class="c1"># exist. See campaigns/2026-06-22/NOTES_C.rst (D1).</span>
+        <span class="c1"># A forcefield model chemistry is evaluated by LAMMPS itself, and an MLFF</span>
+        <span class="c1"># by its engine run with LAMMPS as an MPI pair, as the Forcefield step's</span>
+        <span class="c1"># PyTorch models are; any other model chemistry is QM driven over MDI. A</span>
+        <span class="c1"># QM-MD flowchart has no Forcefield step, so check this *before*</span>
+        <span class="c1"># "_forcefield", which would not exist. See campaigns/2026-06-22/NOTES_C.rst</span>
+        <span class="c1"># (D1) and campaigns/2026-10-11.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_exists</span><span class="p">(</span><span class="s2">"_model_chemistry"</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlff_model_chemistry</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">"PyTorch"</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">forcefield_model_chemistry</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span> <span class="s2">"MDI/QM"</span>
         <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forcefield</span><span class="p">()</span>
@@ -1645,6 +1696,48 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">engine_argv</span><span class="p">,</span> <span class="n">port</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_mlff_launch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">bin_dir</span><span class="p">,</span> <span class="n">gpus</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The launch script for an MLFF model chemistry: its MDI engine and the</span>
+<span class="sd">        LAMMPS driver as an MPI pair, each through ``mdi_bind.sh``.</span>
+
+<span class="sd">        The engine's argv comes from the step offering the model chemistry</span>
+<span class="sd">        (``get_mdi_engine_command(..., mdi_method="MPI")``): the checkpoint, the</span>
+<span class="sd">        device -- ``cuda:0``, the GPU that mdi_bind.sh makes visible from</span>
+<span class="sd">        ``SEAMM_GPUS``, if one was chosen -- and the run's engine options.</span>
+<span class="sd">        """</span>
+        <span class="n">mc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlff_model_chemistry</span><span class="p">()</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"options"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">()</span>
+        <span class="n">allocated</span> <span class="o">=</span> <span class="n">_allocated_mpi_slots</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">allocated</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">allocated</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">"A machine-learned forcefield runs its engine and LAMMPS as two MPI "</span>
+                <span class="sa">f</span><span class="s2">"tasks, but this job was allocated </span><span class="si">{</span><span class="n">allocated</span><span class="si">}</span><span class="s2">. Resubmit asking "</span>
+                <span class="s2">"for at least 2 tasks (ntasks)."</span>
+            <span class="p">)</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">plugin_manager</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mc</span><span class="p">[</span><span class="s2">"step"</span><span class="p">])</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">get_mdi_engine_command</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">executor</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">global_options</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mdi_method_arg"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">mc</span><span class="p">[</span><span class="s2">"method"</span><span class="p">],</span>
+            <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">charge</span><span class="o">=</span><span class="n">configuration</span><span class="o">.</span><span class="n">charge</span><span class="p">,</span>
+            <span class="n">multiplicity</span><span class="o">=</span><span class="n">configuration</span><span class="o">.</span><span class="n">spin_multiplicity</span><span class="p">,</span>
+            <span class="n">n_atoms</span><span class="o">=</span><span class="n">configuration</span><span class="o">.</span><span class="n">n_atoms</span><span class="p">,</span>
+            <span class="n">mdi_method</span><span class="o">=</span><span class="s2">"MPI"</span><span class="p">,</span>
+            <span class="n">checkpoint</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"path"</span><span class="p">),</span>
+            <span class="n">device</span><span class="o">=</span><span class="s2">"cuda:0"</span> <span class="k">if</span> <span class="n">gpus</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">extra_args</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"engine_args"</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
+            <span class="n">__</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The engine for '</span><span class="si">{</span><span class="n">mc</span><span class="p">[</span><span class="s1">'level'</span><span class="p">]</span><span class="si">}</span><span class="s2">' runs with LAMMPS as an MPI pair"</span>
+                <span class="o">+</span> <span class="p">(</span><span class="sa">f</span><span class="s2">" on GPU </span><span class="si">{</span><span class="n">gpus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">."</span> <span class="k">if</span> <span class="n">gpus</span> <span class="k">else</span> <span class="s2">" without a GPU."</span><span class="p">),</span>
+                <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">_mlff_pair_script</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">bin_dir</span> <span class="o">/</span> <span class="s2">"mdi_bind.sh"</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LAMMPS.model_chemistry">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.model_chemistry">[docs]</a>
@@ -2174,7 +2267,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="c1"># of engine entirely to gpu-code in lammps.ini, with nothing here</span>
             <span class="c1"># needing to know which one is configured.</span>
             <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">"PyTorch"</span><span class="p">:</span>
-                <span class="n">model_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"_pytorch_model"</span><span class="p">)</span>
+                <span class="n">model_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pytorch_model</span><span class="p">()</span>
                 <span class="n">env</span><span class="p">[</span><span class="s2">"SEAMM_FF"</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_path</span>
                 <span class="n">ce</span><span class="p">[</span><span class="s2">"MODEL"</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_path</span>
             <span class="k">else</span><span class="p">:</span>
@@ -2234,6 +2327,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">files</span><span class="p">[</span><span class="s2">"mdi_launch.sh"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_mdi_launch_script</span><span class="p">(</span>
                     <span class="n">engine_argv</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">ce</span>
                 <span class="p">)</span>
+                <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"bash"</span><span class="p">,</span> <span class="s2">"mdi_launch.sh"</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlff_model_chemistry</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># An MLFF from the Model Chemistry step: its engine and LAMMPS run</span>
+                <span class="c1"># as an MPI pair, launched as lammps.ini's gpu-code used to.</span>
+                <span class="n">files</span><span class="p">[</span><span class="s2">"mdi_launch.sh"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mlff_launch</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">bin_dir</span><span class="p">,</span> <span class="n">gpus</span><span class="p">)</span>
                 <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"bash"</span><span class="p">,</span> <span class="s2">"mdi_launch.sh"</span><span class="p">]</span>
             <span class="k">elif</span> <span class="s2">"run_lammps"</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
                 <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"</span><span class="si">{python}</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"run_lammps"</span><span class="p">]</span>
