@@ -245,7 +245,7 @@ class HeatFlux(NVE):
     def get_input(self, extras=None):
         """Get the input for a heat flux run in LAMMPS"""
         # See what type of forcefield we have and handle it
-        ff = self.get_variable("_forcefield")
+        ff = self.parent.forcefield()
         if ff == "OpenKIM":
             ffname = ""
         else:
