@@ -104,6 +104,7 @@ def _fake_self(mc=None, variables=None, step=None):
     me.FORCEFIELD_TYPES = LAMMPS.FORCEFIELD_TYPES
     me.forcefield_model_chemistry = lambda: LAMMPS.forcefield_model_chemistry(me)
     me.forcefield = lambda: LAMMPS.forcefield(me)
+    me.mlff_model_chemistry = lambda: LAMMPS.mlff_model_chemistry(me)
     return me
 
 
@@ -387,3 +388,91 @@ def test_mdi_engine_launch_uses_the_engine_keyword_and_users_basis():
     LAMMPS._mdi_engine_launch(me, configuration)
     assert step.calls[0]["method"] == "WB97X-D3"
     assert step.calls[0]["basis"] == "def2-TZVP"
+
+
+# ---------------------------------------------------------------------------
+# MLFF model chemistries: the engine and LAMMPS as an MPI pair
+# ---------------------------------------------------------------------------
+def _mlff_mc(engine_args=None):
+    options = {
+        "mdi_capable": True,
+        "periodic_mdi": True,
+        "mdi_method_arg": "water",
+        "path": "/models/water.pt",
+    }
+    if engine_args is not None:
+        options["engine_args"] = engine_args
+    return {
+        "level": "xnn:MLFF@water",
+        "owner": "xnn",
+        "type": "MLFF",
+        "method": "water",
+        "basis": None,
+        "cutoff": None,
+        "step": "xnn",
+        "options": options,
+    }
+
+
+def test_an_mlff_model_chemistry_runs_as_pytorch():
+    """Not MDI/QM over TCP: the PyTorch path (GPUs, the MDI fix), with the model
+    chemistry's checkpoint."""
+    me = _fake_self(mc=_mlff_mc())
+    assert LAMMPS.ff_form(me) == "PyTorch"
+    assert LAMMPS.pytorch_model(me) == "/models/water.pt"
+    me = _fake_self(variables={"_forcefield": "PyTorch", "_pytorch_model": "/a.pt"})
+    assert LAMMPS.ff_form(me) == "PyTorch"
+    assert LAMMPS.pytorch_model(me) == "/a.pt"
+
+
+class _FakeXnn:
+    def __init__(self):
+        self.kwargs = None
+
+    def get_mdi_engine_command(self, executor, seamm_options, **kwargs):
+        self.kwargs = kwargs
+        return ["xnn", "mdi", "--ckpt", kwargs["checkpoint"], "-mdi", "-role ENGINE"]
+
+
+def test_the_mlff_launch(tmp_path, monkeypatch):
+    import lammps_step.lammps as lammps_module
+
+    monkeypatch.setattr(lammps_module, "_allocated_mpi_slots", lambda: 2)
+    xnn = _FakeXnn()
+    me = _fake_self(mc=_mlff_mc(["--eeq-reuse"]), step=xnn)
+    configuration = types.SimpleNamespace(
+        periodicity=3, charge=0, spin_multiplicity=1, n_atoms=1554
+    )
+    me.get_system_configuration = lambda: (None, configuration)
+    script = LAMMPS._mlff_launch(me, {}, tmp_path / "bin", gpus=[3])
+    assert xnn.kwargs["mdi_method"] == "MPI"
+    assert xnn.kwargs["checkpoint"] == "/models/water.pt"
+    assert xnn.kwargs["device"] == "cuda:0"  # the one mdi_bind.sh makes visible
+    assert xnn.kwargs["extra_args"] == ["--eeq-reuse"]
+    bind = str(tmp_path / "bin" / "mdi_bind.sh")
+    assert script.splitlines()[1] == (
+        f"mpirun --bind-to none -np 1 {bind} xnn mdi --ckpt /models/water.pt "
+        f"-mdi '-role ENGINE' : -np 1 {bind} lmp "
+        '-mdi "-role DRIVER -name LAMMPS -method MPI" -in input.dat'
+    )
+    # Without a GPU the engine uses the device in its own configuration
+    LAMMPS._mlff_launch(me, {}, tmp_path / "bin", gpus=[])
+    assert xnn.kwargs["device"] is None
+    # The pair needs two MPI tasks
+    monkeypatch.setattr(lammps_module, "_allocated_mpi_slots", lambda: 1)
+    with pytest.raises(RuntimeError, match="two MPI"):
+        LAMMPS._mlff_launch(me, {}, tmp_path / "bin", gpus=[0])
+
+
+def test_the_mlff_pair_template_from_lammps_ini():
+    from lammps_step.lammps import _mlff_pair_script
+
+    config = {
+        "mlff-code": "mpirun --mca btl ^openib \\\n  -np 1 {bind} {engine}\n"
+        "  : -np 1 {bind} lmp_mpi -mdi '-role DRIVER -name LAMMPS -method MPI'"
+    }
+    script = _mlff_pair_script(["xnn", "--dispersion", "{regime: large}"], config, "b")
+    assert script.splitlines()[1] == (
+        "mpirun --mca btl ^openib -np 1 b xnn --dispersion '{regime: large}' : "
+        "-np 1 b lmp_mpi -mdi '-role DRIVER -name LAMMPS -method MPI' -in input.dat"
+    )

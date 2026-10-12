@@ -10,5 +10,6 @@ seamm-exec>=2026.10.6
 seamm-ff-util
 statsmodels
 tabulate
-model-chemistry-step>=2026.10.12
+model-chemistry-step>=2026.10.12.1
 forcefield-step>=2026.10.12.1
+xnn-step>=2026.10.12

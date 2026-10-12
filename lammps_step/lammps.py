@@ -343,6 +343,31 @@ def _free_tcp_port(hostname="localhost"):
         s.close()
 
 
+#: The launch of an MLFF engine and the LAMMPS driver as an MPI pair. {bind} is
+#: mdi_bind.sh and {engine} the engine's command; "-in input.dat" is appended.
+#: lammps.ini's "mlff-code" replaces it, e.g. to give mpirun other options.
+MLFF_PAIR = (
+    "mpirun --bind-to none -np 1 {bind} {engine} "
+    ': -np 1 {bind} lmp -mdi "-role DRIVER -name LAMMPS -method MPI"'
+)
+
+
+def _mlff_pair_script(engine_argv, config, bind):
+    """The bash script launching an MLFF engine and LAMMPS as an MPI pair.
+
+    The template is ``mlff-code`` from lammps.ini, else :data:`MLFF_PAIR`; its
+    ``{bind}`` and ``{engine}`` are filled in here, so the engine's options may
+    contain braces (``--dispersion "{regime: large}"``), which the executor's
+    substitution in a command line would take for placeholders. An ini value on
+    several lines is joined into one.
+    """
+    template = config.get("mlff-code", "").strip() or MLFF_PAIR
+    template = re.sub(r"[ \t]*\\?[ \t]*\n[ \t]*", " ", template)
+    line = template.replace("{bind}", shlex.quote(str(bind)))
+    line = line.replace("{engine}", shlex.join(engine_argv))
+    return "#!/bin/bash\n" + line + " -in input.dat\n"
+
+
 def _mdi_launch_script(engine_argv, port, config, ce, hostname="localhost"):
     """Compose the bash launch script for QM-MD over MDI.
 
@@ -1035,13 +1060,33 @@ class LAMMPS(seamm.Node):
             self._mc_forcefield = cached
         return cached[1]
 
+    def mlff_model_chemistry(self):
+        """The model chemistry, if it is a machine-learned forcefield (MLFF),
+        else None."""
+        if not self.variable_exists("_model_chemistry"):
+            return None
+        mc = self.get_variable("_model_chemistry")
+        return mc if mc.get("type") == "MLFF" else None
+
+    def pytorch_model(self):
+        """The machine-learned forcefield's checkpoint: an MLFF model
+        chemistry's, else the Forcefield step's ``_pytorch_model``."""
+        mc = self.mlff_model_chemistry()
+        if mc is not None:
+            return (mc.get("options") or {}).get("path")
+        return self.get_variable("_pytorch_model")
+
     def ff_form(self):
         """Return the form of the forcefield."""
-        # A forcefield model chemistry is evaluated by LAMMPS itself; any other
-        # model chemistry is QM driven over MDI. A QM-MD flowchart has no
-        # Forcefield step, so check this *before* "_forcefield", which would not
-        # exist. See campaigns/2026-06-22/NOTES_C.rst (D1).
+        # A forcefield model chemistry is evaluated by LAMMPS itself, and an MLFF
+        # by its engine run with LAMMPS as an MPI pair, as the Forcefield step's
+        # PyTorch models are; any other model chemistry is QM driven over MDI. A
+        # QM-MD flowchart has no Forcefield step, so check this *before*
+        # "_forcefield", which would not exist. See campaigns/2026-06-22/NOTES_C.rst
+        # (D1) and campaigns/2026-10-11.
         if self.variable_exists("_model_chemistry"):
+            if self.mlff_model_chemistry() is not None:
+                return "PyTorch"
             if self.forcefield_model_chemistry() is None:
                 return "MDI/QM"
         ff = self.forcefield()
@@ -1113,6 +1158,48 @@ class LAMMPS(seamm.Node):
             **kwargs,
         )
         return engine_argv, port
+
+    def _mlff_launch(self, config, bin_dir, gpus):
+        """The launch script for an MLFF model chemistry: its MDI engine and the
+        LAMMPS driver as an MPI pair, each through ``mdi_bind.sh``.
+
+        The engine's argv comes from the step offering the model chemistry
+        (``get_mdi_engine_command(..., mdi_method="MPI")``): the checkpoint, the
+        device -- ``cuda:0``, the GPU that mdi_bind.sh makes visible from
+        ``SEAMM_GPUS``, if one was chosen -- and the run's engine options.
+        """
+        mc = self.mlff_model_chemistry()
+        options = mc.get("options") or {}
+        _, configuration = self.get_system_configuration()
+        allocated = _allocated_mpi_slots()
+        if allocated is not None and allocated < 2:
+            raise RuntimeError(
+                "A machine-learned forcefield runs its engine and LAMMPS as two MPI "
+                f"tasks, but this job was allocated {allocated}. Resubmit asking "
+                "for at least 2 tasks (ntasks)."
+            )
+        step = self.flowchart.plugin_manager.get(mc["step"])
+        engine = step.get_mdi_engine_command(
+            self.flowchart.executor,
+            self.global_options,
+            method=options.get("mdi_method_arg") or mc["method"],
+            port=None,
+            charge=configuration.charge,
+            multiplicity=configuration.spin_multiplicity,
+            n_atoms=configuration.n_atoms,
+            mdi_method="MPI",
+            checkpoint=options.get("path"),
+            device="cuda:0" if gpus else None,
+            extra_args=options.get("engine_args") or None,
+        )
+        printer.important(
+            __(
+                f"The engine for '{mc['level']}' runs with LAMMPS as an MPI pair"
+                + (f" on GPU {gpus[0]}." if gpus else " without a GPU."),
+                indent=4 * " ",
+            )
+        )
+        return _mlff_pair_script(engine, config, bin_dir / "mdi_bind.sh")
 
     def model_chemistry(self, task):
         """Compose the full ``driver:task|level`` provenance label for a task.
@@ -1636,7 +1723,7 @@ class LAMMPS(seamm.Node):
             # of engine entirely to gpu-code in lammps.ini, with nothing here
             # needing to know which one is configured.
             if ff_form == "PyTorch":
-                model_path = self.get_variable("_pytorch_model")
+                model_path = self.pytorch_model()
                 env["SEAMM_FF"] = model_path
                 ce["MODEL"] = model_path
             else:
@@ -1696,6 +1783,11 @@ class LAMMPS(seamm.Node):
                 files["mdi_launch.sh"] = _mdi_launch_script(
                     engine_argv, port, config, ce
                 )
+                cmd = ["bash", "mdi_launch.sh"]
+            elif self.mlff_model_chemistry() is not None:
+                # An MLFF from the Model Chemistry step: its engine and LAMMPS run
+                # as an MPI pair, launched as lammps.ini's gpu-code used to.
+                files["mdi_launch.sh"] = self._mlff_launch(config, bin_dir, gpus)
                 cmd = ["bash", "mdi_launch.sh"]
             elif "run_lammps" in files:
                 cmd = ["{python}", "run_lammps"]
