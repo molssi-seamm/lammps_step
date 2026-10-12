@@ -20,6 +20,11 @@ LAMMPS uses the forcefield or model chemistry chosen before it in the flowchart:
 * a **Model Chemistry** step with a forcefield -- ``FF@oplsaa``, ``FF@pcff``,
   ``ReaxFF@CHO_cho_2008`` and the others the Forcefield plug-in offers. LAMMPS builds the
   forcefield and types the atoms that do not yet have types for it;
+* a **Model Chemistry** step with a machine-learned forcefield, ``xnn:MLFF@<model>``:
+  its engine and LAMMPS run as an MPI pair on a GPU, each through ``mdi_bind.sh``, with
+  the Model Chemistry step's checkpoint and engine options. ``gpu-code`` in
+  ``lammps.ini`` is not used; ``mlff-code`` can change the launch (see the comments in
+  ``lammps.ini``). The job needs a GPU and two MPI tasks;
 * a **Model Chemistry** step with a quantum method, such as ``MOPAC:SQM@PM6-ORG``:
   LAMMPS runs the dynamics and the program computes the energy and forces over MDI;
 * or a **Forcefield** step, as before.

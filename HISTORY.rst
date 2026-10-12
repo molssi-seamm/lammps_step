@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.10.12.1 -- Machine-learned forcefields from the Model Chemistry step
+    * LAMMPS can take a machine-learned forcefield (``xnn:MLFF@...``) from a Model
+      Chemistry step, with its checkpoint and engine options, and runs its engine and
+      LAMMPS as an MPI pair on a GPU, each through ``mdi_bind.sh`` -- as ``gpu-code`` in
+      ``lammps.ini`` did for the Forcefield step's PyTorch models, which still works.
+      ``mlff-code`` in ``lammps.ini`` can change the launch. Requires xnn-step
+      2026.10.12 and model-chemistry-step 2026.10.12.1.
+
 2026.10.12 -- Forcefields from the Model Chemistry step
     * LAMMPS can take its forcefield from a Model Chemistry step: ``FF@oplsaa``,
       ``ReaxFF@CHO_cho_2008`` and the others the Forcefield plug-in offers. It builds the

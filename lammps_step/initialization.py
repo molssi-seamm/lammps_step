@@ -807,7 +807,7 @@ class Initialization(seamm.Node):
         # Get the (simple) energy expression for these systems
         eex = self.PyTorch_energy_expression()
 
-        model = self.get_variable("_pytorch_model")
+        model = self.parent.pytorch_model()
         lammps_step.set_lammps_unit_system("metal")
 
         lines = []
