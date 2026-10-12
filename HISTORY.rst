@@ -7,6 +7,7 @@ History
       forcefield and types the atoms as it does with the Forcefield step, which still
       works as before. A model chemistry with a quantum method still runs the dynamics
       with the program over MDI.
+    * Requires forcefield-step 2026.10.12.1 and model-chemistry-step 2026.10.12.
 
 2026.10.11.2 -- Bugfix: mdi_bind.sh 2.2 really stops a failed MDI pair
     * 2.1 did not end a failed MLFF run. LAMMPS does not exit after an error in an MDI
