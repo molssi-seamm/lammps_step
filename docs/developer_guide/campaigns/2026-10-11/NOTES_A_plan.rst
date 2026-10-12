@@ -2,8 +2,8 @@ The plan
 ========
 
 Status: **agreed** (2026-10-11): naming and the MLFF launch decided (see
-*Decisions*). Phase A's classical and ReaxFF part is implemented (2026-10-12, see
-``NOTES_B_phase_A``); OpenKIM, phase B and phase C are not.
+*Decisions*). Phase A's classical and ReaxFF part (2026-10-12, ``NOTES_B_phase_A``) and phase
+B (2026-10-12, ``NOTES_C_phase_B``) are implemented; OpenKIM and phase C are not.
 
 This builds on the June sketch, *Phase D -- Forcefield handling folded into
 Model Chemistry* (``molssi-seamm.github.io``, campaign ``2026-06-22``,
