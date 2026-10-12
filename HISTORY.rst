@@ -2,7 +2,7 @@
 History
 =======
 2026.10.12 -- Forcefields from the Model Chemistry step
-    * LAMMPS can take its forcefield from a Model Chemistry step: ``FF@OPLS-AA``,
+    * LAMMPS can take its forcefield from a Model Chemistry step: ``FF@oplsaa``,
       ``ReaxFF@CHO_cho_2008`` and the others the Forcefield plug-in offers. It builds the
       forcefield and types the atoms as it does with the Forcefield step, which still
       works as before. A model chemistry with a quantum method still runs the dynamics

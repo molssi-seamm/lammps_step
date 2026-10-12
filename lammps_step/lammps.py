@@ -1019,7 +1019,7 @@ class LAMMPS(seamm.Node):
     def forcefield(self):
         """The forcefield for this run.
 
-        From a forcefield model chemistry (``FF@OPLS-AA``, ``ReaxFF@...``), built
+        From a forcefield model chemistry (``FF@oplsaa``, ``ReaxFF@...``), built
         by the step that offers it (forcefield_step) and kept for the next run with
         the same model chemistry; otherwise the Forcefield step's ``_forcefield``:
         a seamm_ff_util forcefield, or "OpenKIM" or "PyTorch".
@@ -1121,7 +1121,7 @@ class LAMMPS(seamm.Node):
         QM-MD-over-MDI run the level (owner/type/method/...) comes from the
         ``_model_chemistry`` variable, giving e.g.
         ``"LAMMPS:MD|MOPAC:SQM@PM6-ORG"`` (or, classical, the owner collapses to
-        ``"LAMMPS:MD|FF@OPLS-AA"``). For classical / MLFF / OpenKIM runs the
+        ``"LAMMPS:MD|FF@oplsaa"``). For classical / MLFF / OpenKIM runs the
         level is not yet classified into ``type@method``, so the legacy bare
         label (``self.model``) is returned unchanged. See
         ``model_chemistry_naming.rst``.

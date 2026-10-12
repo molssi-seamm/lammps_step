@@ -7,10 +7,13 @@ What was built
 * **forcefield_step** (``model_chemistry.py``; classmethods on ``ForcefieldStep``):
 
   - ``get_model_chemistry_options()`` offers one model chemistry per ``#define`` in
-    every ``.frc`` file found: ``FF@<name>`` (``oplsaa`` is ``FF@OPLS-AA``, ``pcff``
-    ``FF@PCFF``, ``dreiding/X6`` ``FF@DREIDING-X6``; other names as they are, with
-    the grammar's reserved characters replaced by ``-``) and ``ReaxFF@<set>`` for
-    ``reaxff/<set>``. There is no owner, since LAMMPS evaluates them itself. They
+    every ``.frc`` file found, with the file's own names: ``FF@<name>``
+    (``FF@oplsaa+``, ``FF@pcff``; ``dreiding/X6`` is ``FF@dreiding-X6``, the
+    grammar's reserved characters replaced by ``-``) and ``ReaxFF@<set>`` for
+    ``reaxff/<set>``. (Paul, 2026-10-12: the names are the files', not a table of
+    display names such as ``FF@OPLS-AA``.) Files another ``.frc`` file includes
+    (``#include``) are parts of that forcefield and are not offered: e.g.
+    ``local:OPLS-AA/ligpargen.frc`` extends ``oplsaa+``. There is no owner, since LAMMPS evaluates them itself. They
     are not MDI engines (``mdi_only`` gives nothing).
   - The files are searched in the same order as data files: the user's
     (``~/.seamm.d/data/Forcefields``), then the installation's
@@ -30,7 +33,7 @@ What was built
     directories. Providers without the argument are called as before.
   - ``ModelChemistry.list_data_files()`` asks the offering step for its files.
   - The dialog has no Program for a level offered without an owner, and composes
-    ``FF@OPLS-AA``. ``_programs()`` drops ``None``, because ``sorted()`` of a mix
+    ``FF@oplsaa``. ``_programs()`` drops ``None``, because ``sorted()`` of a mix
     raises.
 
 * **lammps_step**: ``forcefield_model_chemistry()`` and ``forcefield()``. The
@@ -47,7 +50,7 @@ Verification
 
 Packmol (12 ethanol, periodic) and then LAMMPS Initialization + Energy were run
 both ways, through a Forcefield step and through a Model Chemistry step, for
-``FF@OPLS-AA+`` (the Forcefield step's default for ``oplsaa.frc``) and
+``FF@oplsaa+`` (the Forcefield step's default for ``oplsaa.frc``) and
 ``ReaxFF@CHO_cho_2008``:
 
 * ``input.dat`` (and ReaxFF's ``forcefield.dat``) were identical;
@@ -59,7 +62,7 @@ Notes for later phases
 ----------------------
 
 * The Forcefield step's default for ``oplsaa.frc`` is its first forcefield,
-  ``oplsaa+``: the converter (phase C) must map it to ``FF@OPLS-AA+``.
+  ``oplsaa+``: the converter (phase C) must map it to ``FF@oplsaa+``.
 * **OpenKIM (IP@) is not done.** The plan offers *installed* potentials, but
   none are installed in practice: this Mac has none, and ChemAI's LAMMPS envs
   have only kim-api's examples (``LennardJones_Ar``, ``ex_model_*``). Listing

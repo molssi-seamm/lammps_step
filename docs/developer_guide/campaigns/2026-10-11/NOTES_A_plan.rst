@@ -184,7 +184,8 @@ Decisions
 
 Made by Paul on 2026-10-11:
 
-1. **Naming:** ``FF@OPLS-AA`` style, and the type vocabulary above (``ReaxFF``,
+1. **Naming:** ``FF@OPLS-AA`` style (amended 2026-10-12: the forcefields keep the
+   names their files give them, ``FF@oplsaa+``, ``FF@pcff``), and the type vocabulary above (``ReaxFF``,
    ``MLFF``, ``QC``).
 2. **The MLFF launch:** the MPI pair through ``mdi_bind.sh``.
 3. **The provider:** forcefield_step, installed and headless-only like
