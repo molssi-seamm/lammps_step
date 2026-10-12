@@ -1,6 +1,13 @@
 =======
 History
 =======
+2026.10.12 -- Forcefields from the Model Chemistry step
+    * LAMMPS can take its forcefield from a Model Chemistry step: ``FF@OPLS-AA``,
+      ``ReaxFF@CHO_cho_2008`` and the others the Forcefield plug-in offers. It builds the
+      forcefield and types the atoms as it does with the Forcefield step, which still
+      works as before. A model chemistry with a quantum method still runs the dynamics
+      with the program over MDI.
+
 2026.10.11.2 -- Bugfix: mdi_bind.sh 2.2 really stops a failed MDI pair
     * 2.1 did not end a failed MLFF run. LAMMPS does not exit after an error in an MDI
       pair -- it waits in MPI_Finalize for the engine -- so neither side ever exited;

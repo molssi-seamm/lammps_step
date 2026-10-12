@@ -213,7 +213,7 @@ class Initialization(seamm.Node):
             return self.MDI_QM_input()
 
         # Valence forcefield...
-        ff = self.get_variable("_forcefield")
+        ff = self.parent.forcefield()
         ffname = ff.current_forcefield
         n_atoms = configuration.n_atoms
 

@@ -1003,14 +1003,48 @@ class LAMMPS(seamm.Node):
 
         return text
 
+    #: Model-chemistry types that are forcefields LAMMPS evaluates itself
+    FORCEFIELD_TYPES = ("FF", "ReaxFF")
+
+    def forcefield_model_chemistry(self):
+        """The model chemistry, if it is a forcefield (``FF`` or ``ReaxFF``),
+        else None."""
+        if not self.variable_exists("_model_chemistry"):
+            return None
+        mc = self.get_variable("_model_chemistry")
+        if mc.get("type") in self.FORCEFIELD_TYPES:
+            return mc
+        return None
+
+    def forcefield(self):
+        """The forcefield for this run.
+
+        From a forcefield model chemistry (``FF@OPLS-AA``, ``ReaxFF@...``), built
+        by the step that offers it (forcefield_step) and kept for the next run with
+        the same model chemistry; otherwise the Forcefield step's ``_forcefield``:
+        a seamm_ff_util forcefield, or "OpenKIM" or "PyTorch".
+        """
+        mc = self.forcefield_model_chemistry()
+        if mc is None:
+            return self.get_variable("_forcefield")
+        key = (mc["level"], (mc.get("options") or {}).get("path"))
+        cached = getattr(self, "_mc_forcefield", None)
+        if cached is None or cached[0] != key:
+            provider = self.flowchart.plugin_manager.get(mc["step"])
+            cached = (key, provider.forcefield(mc, node=self))
+            self._mc_forcefield = cached
+        return cached[1]
+
     def ff_form(self):
         """Return the form of the forcefield."""
-        # A QM-MD flowchart selects a model chemistry (Model Chemistry step)
-        # and has no Forcefield step, so check this *before* "_forcefield",
-        # which would not exist. See campaigns/2026-06-22/NOTES_C.rst (D1).
+        # A forcefield model chemistry is evaluated by LAMMPS itself; any other
+        # model chemistry is QM driven over MDI. A QM-MD flowchart has no
+        # Forcefield step, so check this *before* "_forcefield", which would not
+        # exist. See campaigns/2026-06-22/NOTES_C.rst (D1).
         if self.variable_exists("_model_chemistry"):
-            return "MDI/QM"
-        ff = self.get_variable("_forcefield")
+            if self.forcefield_model_chemistry() is None:
+                return "MDI/QM"
+        ff = self.forcefield()
         if ff == "OpenKIM":
             ff_form = "OpenKIM"
         elif ff == "PyTorch":
@@ -1087,7 +1121,7 @@ class LAMMPS(seamm.Node):
         QM-MD-over-MDI run the level (owner/type/method/...) comes from the
         ``_model_chemistry`` variable, giving e.g.
         ``"LAMMPS:MD|MOPAC:SQM@PM6-ORG"`` (or, classical, the owner collapses to
-        ``"LAMMPS:MD|VFF@OPLS-AA"``). For classical / MLFF / OpenKIM runs the
+        ``"LAMMPS:MD|FF@OPLS-AA"``). For classical / MLFF / OpenKIM runs the
         level is not yet classified into ``type@method``, so the legacy bare
         label (``self.model``) is returned unchanged. See
         ``model_chemistry_naming.rst``.

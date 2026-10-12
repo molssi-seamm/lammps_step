@@ -12,6 +12,20 @@ The LAMMPS plug-in ...
       :maxdepth: 2
       :titlesonly:
 
+The forcefield
+==============
+
+LAMMPS uses the forcefield or model chemistry chosen before it in the flowchart:
+
+* a **Model Chemistry** step with a forcefield -- ``FF@OPLS-AA``, ``FF@PCFF``,
+  ``ReaxFF@CHO_cho_2008`` and the others the Forcefield plug-in offers. LAMMPS builds the
+  forcefield and types the atoms that do not yet have types for it;
+* a **Model Chemistry** step with a quantum method, such as ``MOPAC:SQM@PM6-ORG``:
+  LAMMPS runs the dynamics and the program computes the energy and forces over MDI;
+* or a **Forcefield** step, as before.
+
+If a flowchart has both, the model chemistry is used.
+
 Settings that depend on each other
 ==================================
 

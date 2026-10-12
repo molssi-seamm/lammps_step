@@ -91,7 +91,7 @@ def _fake_self(mc=None, variables=None, step=None):
     if step is not None and mc is not None:
         plugin_manager = _FakePluginManager({mc["step"]: step})
 
-    return types.SimpleNamespace(
+    me = types.SimpleNamespace(
         get_variable=get_variable,
         variable_exists=variable_exists,
         global_options={"root": "~/SEAMM"},
@@ -100,6 +100,11 @@ def _fake_self(mc=None, variables=None, step=None):
             executor="FAKE-EXECUTOR",
         ),
     )
+    # The methods ff_form uses, bound to the fake
+    me.FORCEFIELD_TYPES = LAMMPS.FORCEFIELD_TYPES
+    me.forcefield_model_chemistry = lambda: LAMMPS.forcefield_model_chemistry(me)
+    me.forcefield = lambda: LAMMPS.forcefield(me)
+    return me
 
 
 def _mc(mdi_capable=True, periodic_mdi=False):
@@ -156,6 +161,53 @@ def test_ff_form_does_not_touch_forcefield_on_qm_path():
 def test_ff_form_classical_path_unchanged():
     me = _fake_self(variables={"_forcefield": "OpenKIM"})
     assert LAMMPS.ff_form(me) == "OpenKIM"
+
+
+class _FakeForcefieldProvider:
+    """forcefield_step's side: builds the forcefield for an FF model chemistry."""
+
+    def __init__(self):
+        self.built = 0
+
+    def forcefield(self, model_chemistry, node=None):
+        self.built += 1
+        return types.SimpleNamespace(
+            ff_form=model_chemistry["options"]["form"],
+            current_forcefield=model_chemistry["options"]["forcefield"],
+        )
+
+
+def _ff_mc(type_="FF", method="OPLS-AA", name="oplsaa", form="oplsaa"):
+    return {
+        "level": f"{type_}@{method}",
+        "owner": None,
+        "type": type_,
+        "method": method,
+        "basis": None,
+        "cutoff": None,
+        "step": "Forcefield",
+        "options": {"forcefield": name, "path": f"/ff/{name}.frc", "form": form},
+    }
+
+
+def test_ff_form_from_a_forcefield_model_chemistry():
+    """FF and ReaxFF model chemistries are evaluated by LAMMPS itself, with the
+    forcefield the Forcefield step builds -- not MDI/QM -- and no _forcefield."""
+    provider = _FakeForcefieldProvider()
+    me = _fake_self(mc=_ff_mc(), step=provider)
+    assert LAMMPS.ff_form(me) == "oplsaa"
+    assert me.forcefield().current_forcefield == "oplsaa"
+    assert provider.built == 1  # built once for the run
+    me = _fake_self(
+        mc=_ff_mc("ReaxFF", "CHO_cho_2008", "reaxff/CHO_cho_2008", "reaxff"),
+        step=_FakeForcefieldProvider(),
+    )
+    assert LAMMPS.ff_form(me) == "reaxff"
+
+
+def test_a_qm_model_chemistry_is_still_mdi():
+    me = _fake_self(mc=_mc(), variables={"_forcefield": "OpenKIM"})
+    assert LAMMPS.ff_form(me) == "MDI/QM"
 
 
 # ---------------------------------------------------------------------------
