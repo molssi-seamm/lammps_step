@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.11.2 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.12 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=aac9e5a3"></script>
+    <script src="../../_static/documentation_options.js?v=a6df0ad7"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.11.2" />
+  <meta name="docsearch:version" content="2026.10.12" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1526,16 +1526,56 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">return</span> <span class="n">text</span></div>
 
 
+    <span class="c1">#: Model-chemistry types that are forcefields LAMMPS evaluates itself</span>
+    <span class="n">FORCEFIELD_TYPES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"FF"</span><span class="p">,</span> <span class="s2">"ReaxFF"</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LAMMPS.forcefield_model_chemistry">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.forcefield_model_chemistry">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forcefield_model_chemistry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The model chemistry, if it is a forcefield (``FF`` or ``ReaxFF``),</span>
+<span class="sd">        else None."""</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_exists</span><span class="p">(</span><span class="s2">"_model_chemistry"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">mc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"_model_chemistry"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"type"</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">FORCEFIELD_TYPES</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">mc</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="LAMMPS.forcefield">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.forcefield">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forcefield</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The forcefield for this run.</span>
+
+<span class="sd">        From a forcefield model chemistry (``FF@oplsaa``, ``ReaxFF@...``), built</span>
+<span class="sd">        by the step that offers it (forcefield_step) and kept for the next run with</span>
+<span class="sd">        the same model chemistry; otherwise the Forcefield step's ``_forcefield``:</span>
+<span class="sd">        a seamm_ff_util forcefield, or "OpenKIM" or "PyTorch".</span>
+<span class="sd">        """</span>
+        <span class="n">mc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forcefield_model_chemistry</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">mc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"_forcefield"</span><span class="p">)</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">mc</span><span class="p">[</span><span class="s2">"level"</span><span class="p">],</span> <span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"options"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"path"</span><span class="p">))</span>
+        <span class="n">cached</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_mc_forcefield"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">cached</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">key</span><span class="p">:</span>
+            <span class="n">provider</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">plugin_manager</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mc</span><span class="p">[</span><span class="s2">"step"</span><span class="p">])</span>
+            <span class="n">cached</span> <span class="o">=</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">provider</span><span class="o">.</span><span class="n">forcefield</span><span class="p">(</span><span class="n">mc</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="bp">self</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mc_forcefield</span> <span class="o">=</span> <span class="n">cached</span>
+        <span class="k">return</span> <span class="n">cached</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+
 <div class="viewcode-block" id="LAMMPS.ff_form">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.ff_form">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">ff_form</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Return the form of the forcefield."""</span>
-        <span class="c1"># A QM-MD flowchart selects a model chemistry (Model Chemistry step)</span>
-        <span class="c1"># and has no Forcefield step, so check this *before* "_forcefield",</span>
-        <span class="c1"># which would not exist. See campaigns/2026-06-22/NOTES_C.rst (D1).</span>
+        <span class="c1"># A forcefield model chemistry is evaluated by LAMMPS itself; any other</span>
+        <span class="c1"># model chemistry is QM driven over MDI. A QM-MD flowchart has no</span>
+        <span class="c1"># Forcefield step, so check this *before* "_forcefield", which would not</span>
+        <span class="c1"># exist. See campaigns/2026-06-22/NOTES_C.rst (D1).</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_exists</span><span class="p">(</span><span class="s2">"_model_chemistry"</span><span class="p">):</span>
-            <span class="k">return</span> <span class="s2">"MDI/QM"</span>
-        <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"_forcefield"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">forcefield_model_chemistry</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">"MDI/QM"</span>
+        <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forcefield</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">"OpenKIM"</span><span class="p">:</span>
             <span class="n">ff_form</span> <span class="o">=</span> <span class="s2">"OpenKIM"</span>
         <span class="k">elif</span> <span class="n">ff</span> <span class="o">==</span> <span class="s2">"PyTorch"</span><span class="p">:</span>
@@ -1615,7 +1655,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">        QM-MD-over-MDI run the level (owner/type/method/...) comes from the</span>
 <span class="sd">        ``_model_chemistry`` variable, giving e.g.</span>
 <span class="sd">        ``"LAMMPS:MD|MOPAC:SQM@PM6-ORG"`` (or, classical, the owner collapses to</span>
-<span class="sd">        ``"LAMMPS:MD|VFF@OPLS-AA"``). For classical / MLFF / OpenKIM runs the</span>
+<span class="sd">        ``"LAMMPS:MD|FF@oplsaa"``). For classical / MLFF / OpenKIM runs the</span>
 <span class="sd">        level is not yet classified into ``type@method``, so the legacy bare</span>
 <span class="sd">        label (``self.model``) is returned unchanged. See</span>
 <span class="sd">        ``model_chemistry_naming.rst``.</span>

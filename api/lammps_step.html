@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.10.11.2 documentation</title>
+    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.10.12 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=aac9e5a3"></script>
+    <script src="../_static/documentation_options.js?v=a6df0ad7"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.11.2" />
+  <meta name="docsearch:version" content="2026.10.12" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1317,6 +1317,12 @@ default.</p></li>
 <dt class="sig sig-object py" id="lammps_step.lammps.LAMMPS">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">lammps_step.lammps.</span></span><span class="sig-name descname"><span class="pre">LAMMPS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flowchart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'org.molssi.seamm.lammps'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Node</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lammps_step.lammps.LAMMPS.FORCEFIELD_TYPES">
+<span class="sig-name descname"><span class="pre">FORCEFIELD_TYPES</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('FF',</span> <span class="pre">'ReaxFF')</span></span><a class="headerlink" href="#lammps_step.lammps.LAMMPS.FORCEFIELD_TYPES" title="Link to this definition">#</a></dt>
+<dd><p>Model-chemistry types that are forcefields LAMMPS evaluates itself</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="lammps_step.lammps.LAMMPS.analyze">
 <span class="sig-name descname"><span class="pre">analyze</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.analyze"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.analyze" title="Link to this definition">#</a></dt>
@@ -1439,6 +1445,23 @@ be used as is.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.lammps.LAMMPS.forcefield">
+<span class="sig-name descname"><span class="pre">forcefield</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.forcefield"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.forcefield" title="Link to this definition">#</a></dt>
+<dd><p>The forcefield for this run.</p>
+<p>From a forcefield model chemistry (<code class="docutils literal notranslate"><span class="pre">FF&#64;oplsaa</span></code>, <code class="docutils literal notranslate"><span class="pre">ReaxFF&#64;...</span></code>), built
+by the step that offers it (forcefield_step) and kept for the next run with
+the same model chemistry; otherwise the Forcefield step’s <code class="docutils literal notranslate"><span class="pre">_forcefield</span></code>:
+a seamm_ff_util forcefield, or “OpenKIM” or “PyTorch”.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.lammps.LAMMPS.forcefield_model_chemistry">
+<span class="sig-name descname"><span class="pre">forcefield_model_chemistry</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.forcefield_model_chemistry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.forcefield_model_chemistry" title="Link to this definition">#</a></dt>
+<dd><p>The model chemistry, if it is a forcefield (<code class="docutils literal notranslate"><span class="pre">FF</span></code> or <code class="docutils literal notranslate"><span class="pre">ReaxFF</span></code>),
+else None.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="lammps_step.lammps.LAMMPS.get_dump">
 <span class="sig-name descname"><span class="pre">get_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dumpfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.get_dump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.get_dump" title="Link to this definition">#</a></dt>
 <dd><p>Read the LAMMPS dumpfile and return the data.</p>
@@ -1469,7 +1492,7 @@ be used as is.</p>
 QM-MD-over-MDI run the level (owner/type/method/…) comes from the
 <code class="docutils literal notranslate"><span class="pre">_model_chemistry</span></code> variable, giving e.g.
 <code class="docutils literal notranslate"><span class="pre">&quot;LAMMPS:MD|MOPAC:SQM&#64;PM6-ORG&quot;</span></code> (or, classical, the owner collapses to
-<code class="docutils literal notranslate"><span class="pre">&quot;LAMMPS:MD|VFF&#64;OPLS-AA&quot;</span></code>). For classical / MLFF / OpenKIM runs the
+<code class="docutils literal notranslate"><span class="pre">&quot;LAMMPS:MD|FF&#64;oplsaa&quot;</span></code>). For classical / MLFF / OpenKIM runs the
 level is not yet classified into <code class="docutils literal notranslate"><span class="pre">type&#64;method</span></code>, so the legacy bare
 label (<code class="docutils literal notranslate"><span class="pre">self.model</span></code>) is returned unchanged. See
 <code class="docutils literal notranslate"><span class="pre">model_chemistry_naming.rst</span></code>.</p>
@@ -3101,6 +3124,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.lammps">lammps_step.lammps module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS"><code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.FORCEFIELD_TYPES"><code class="docutils literal notranslate"><span class="pre">LAMMPS.FORCEFIELD_TYPES</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.analyze"><code class="docutils literal notranslate"><span class="pre">LAMMPS.analyze()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.analyze_trajectory"><code class="docutils literal notranslate"><span class="pre">LAMMPS.analyze_trajectory()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.angle_table"><code class="docutils literal notranslate"><span class="pre">LAMMPS.angle_table()</span></code></a></li>
@@ -3115,6 +3139,8 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.eex"><code class="docutils literal notranslate"><span class="pre">LAMMPS.eex</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.ff_form"><code class="docutils literal notranslate"><span class="pre">LAMMPS.ff_form()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.force_triclinic"><code class="docutils literal notranslate"><span class="pre">LAMMPS.force_triclinic</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.forcefield"><code class="docutils literal notranslate"><span class="pre">LAMMPS.forcefield()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.forcefield_model_chemistry"><code class="docutils literal notranslate"><span class="pre">LAMMPS.forcefield_model_chemistry()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.get_dump"><code class="docutils literal notranslate"><span class="pre">LAMMPS.get_dump()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.git_revision"><code class="docutils literal notranslate"><span class="pre">LAMMPS.git_revision</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.have_dreiding_hbonds"><code class="docutils literal notranslate"><span class="pre">LAMMPS.have_dreiding_hbonds</span></code></a></li>

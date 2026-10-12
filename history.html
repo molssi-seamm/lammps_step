@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.11.2 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.12 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=aac9e5a3"></script>
+    <script src="_static/documentation_options.js?v=a6df0ad7"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.11.2" />
+  <meta name="docsearch:version" content="2026.10.12" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.12 – Forcefields from the Model Chemistry step</dt><dd><ul class="simple">
+<li><p>LAMMPS can take its forcefield from a Model Chemistry step: <code class="docutils literal notranslate"><span class="pre">FF&#64;oplsaa</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ReaxFF&#64;CHO_cho_2008</span></code> and the others the Forcefield plug-in offers. It builds the
+forcefield and types the atoms as it does with the Forcefield step, which still
+works as before. A model chemistry with a quantum method still runs the dynamics
+with the program over MDI.</p></li>
+<li><p>Requires forcefield-step 2026.10.12.1 and model-chemistry-step 2026.10.12.</p></li>
+</ul>
+</dd>
 <dt>2026.10.11.2 – Bugfix: mdi_bind.sh 2.2 really stops a failed MDI pair</dt><dd><ul class="simple">
 <li><p>2.1 did not end a failed MLFF run. LAMMPS does not exit after an error in an MDI
 pair – it waits in MPI_Finalize for the engine – so neither side ever exited;
