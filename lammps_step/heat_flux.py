@@ -518,9 +518,10 @@ fix_modify          J_filter virial yes
                 )
             )
 
-        nevery = 10
+        # (sampling every step of a run of fewer than 100)
+        nevery = max(1, min(10, nsteps // 10))
         nfreq = int(nsteps / 10)
-        nrepeat = int(nfreq / nevery)
+        nrepeat = max(1, int(nfreq / nevery))
         nfreq = nevery * nrepeat
 
         filename = f"@{self._id[-1]}+heat_flux_summary.trj"

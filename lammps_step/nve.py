@@ -655,9 +655,10 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
 """)
 
         # summary output written 10 times during run so we can see progress
-        nevery = 10
+        # (sampling every step of a run of fewer than 100)
+        nevery = max(1, min(10, nsteps // 10))
         nfreq = int(nsteps / 10)
-        nrepeat = int(nfreq / nevery)
+        nrepeat = max(1, int(nfreq / nevery))
         nfreq = nevery * nrepeat
         nfixes += 1
         filename = f"@{self._id[-1]}+nve_summary.trj"
