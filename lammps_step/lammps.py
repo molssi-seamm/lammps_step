@@ -370,6 +370,13 @@ def _usable_gpus(available, visible):
     ]
 
 
+#: Why an MLFF model chemistry runs without a GPU
+_MLFF_ON_CPU = (
+    " No GPU is available, so the engine of the machine-learned forcefield runs "
+    "on the CPU, which is much slower except for small systems."
+)
+
+
 def _wait_for_gpus(maxload, wait=None, sleep=time.sleep, clock=time.time):
     """The usable GPUs that are idle, waiting up to ``wait`` seconds for one.
 
@@ -1497,7 +1504,11 @@ class LAMMPS(seamm.Node):
                     )
                 np = min(np, int(global_options["ncores"]))
             if ff_form == "PyTorch" and platform.system() != "Darwin":
-                if ngpus < 1:
+                if ngpus < 1 and self.mlff_model_chemistry() is not None:
+                    # The engine of an MLFF model chemistry runs on the CPU
+                    np = 1
+                    np_text += _MLFF_ON_CPU
+                elif ngpus < 1:
                     printer.important(
                         "    Using PyTorch forcefield, but no GPUs! Must exit."
                     )
@@ -1505,17 +1516,20 @@ class LAMMPS(seamm.Node):
                         "LAMMPS: PyTorch forcefield requested, but no GPUs!"
                         " Must stop."
                     )
-                np = min(np, ngpus)
-                ngpus = np
-                np_text += (
-                    " Because LAMMPS is using a PyTorch forcefield, the number of GPUs"
-                    f" must be the same as the number of cores = {ngpus}."
-                )
+                else:
+                    np = min(np, ngpus)
+                    ngpus = np
+                    np_text += (
+                        " Because LAMMPS is using a PyTorch forcefield, the number "
+                        f"of GPUs must be the same as the number of cores = {ngpus}."
+                    )
         else:
             np_text = "No parallelism requested: {global_options['parallelism']}"
             np = 1
             if ff_form == "PyTorch":
-                if ngpus < 1:
+                if ngpus < 1 and self.mlff_model_chemistry() is not None:
+                    np_text += _MLFF_ON_CPU
+                elif ngpus < 1:
                     printer.important(
                         "    Using PyTorch forcefield, but no GPUs! Must exit."
                     )
@@ -1523,11 +1537,12 @@ class LAMMPS(seamm.Node):
                         "LAMMPS: PyTorch forcefield requested, but no GPUs!"
                         " Must stop."
                     )
-                ngpus = 1
-                np_text += (
-                    " Because LAMMPS is using a PyTorch forcefield, the number of GPUs"
-                    f" must be the same as the number of cores = {ngpus}."
-                )
+                else:
+                    ngpus = 1
+                    np_text += (
+                        " Because LAMMPS is using a PyTorch forcefield, the number "
+                        f"of GPUs must be the same as the number of cores = {ngpus}."
+                    )
         if ngpus > 0:
             gpus = gpus[0:ngpus]
 
@@ -1764,7 +1779,7 @@ class LAMMPS(seamm.Node):
 
             # For PyTorch need at least 1 GPU and only 1 MPI process per GPU
             ff_form = self.ff_form()
-            if ff_form == "PyTorch":
+            if ff_form == "PyTorch" and ngpus > 0:
                 if "NGPUS" not in ce:
                     ce["NGPUS"] = ngpus
                 if "NTASKS" not in ce:
