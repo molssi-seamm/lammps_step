@@ -8,7 +8,7 @@ import copy
 import importlib
 import json
 import logging
-from math import sqrt, exp, degrees, radians, cos, acos, inf as infinity
+from math import sqrt, exp, degrees, radians, cos, acos
 from pathlib import Path
 import os
 import os.path
@@ -368,6 +368,39 @@ def _usable_gpus(available, visible):
     return [
         logical for logical, physical in enumerate(visible) if physical in available
     ]
+
+
+def _wait_for_gpus(maxload, wait=None, sleep=time.sleep, clock=time.time):
+    """The usable GPUs that are idle, waiting up to ``wait`` seconds for one.
+
+    Parameters
+    ----------
+    maxload : float
+        The load and memory use (a fraction) at or below which a GPU is idle.
+    wait : float or None
+        The seconds to wait for an idle GPU; ``None`` waits as long as it takes.
+    sleep, clock : callable
+        ``time.sleep`` and ``time.time``, replaceable for testing.
+
+    Returns
+    -------
+    [int]
+        The idle GPUs, in CUDA's numbering; empty to run on the CPU. That is at
+        once when this process can never have a GPU -- there is none on the
+        machine, or CUDA_VISIBLE_DEVICES gives it none -- and otherwise when no
+        GPU became idle within ``wait``.
+    """
+    visible = _cuda_visible_devices()
+    t_end = None if wait is None else clock() + wait
+    while True:
+        gpus = _usable_gpus(_available_gpus(maxload), visible)
+        if len(gpus) > 0:
+            return gpus
+        if len(_usable_gpus(_available_gpus(1.0), visible)) == 0:
+            return []
+        if t_end is not None and clock() >= t_end:
+            return []
+        sleep(1)
 
 
 def _free_tcp_port(hostname="localhost"):
@@ -1433,20 +1466,8 @@ class LAMMPS(seamm.Node):
         # Only worry about GPU's when using PyTorch, for the moment
         if ff_form == "PyTorch" and platform.system() != "Darwin":
             maxload = float(o["gpu_load"]) / 100
-            t0 = time.time()
-            t = o["gpu_wait_time"]
-            if t == "unlimited":
-                t_end = infinity
-            else:
-                t_end = t0 + int(t)
-            visible = _cuda_visible_devices()
-            while True:
-                gpus = _usable_gpus(_available_gpus(maxload), visible)
-                if len(gpus) > 0:
-                    break
-                if time.time() - t0 > t_end:
-                    break
-                time.sleep(1)
+            wait = o["gpu_wait_time"]
+            gpus = _wait_for_gpus(maxload, None if wait == "unlimited" else float(wait))
         else:
             gpus = []
             ngpus = 0
