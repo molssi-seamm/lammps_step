@@ -81,12 +81,12 @@ PBS or LSF it leaves the binding to the scheduler. To choose the CPUs yourself s
 ``SEAMM_BIND=none`` to turn binding off.
 
 ``mdi_bind.sh`` and the other helper scripts are installed into ``~/SEAMM/bin`` the
-first time the step runs, and not replaced afterwards, so that you can edit them.
-When a newer version ships with the plug-in the step's log says so; delete the
-file to pick it up. Versions before 2.0 bound to fixed cores laid out for one
-particular machine (an AMD EPYC 7763), which fail elsewhere -- under a scheduler,
-with fewer cores, or on a third or later GPU -- so delete an older copy unless you
-edited it for your machine.
+first time the step runs. When a newer version ships with the plug-in, the step
+replaces an older copy -- one whose ``#MolSSI`` header line names the same script
+at a lower version -- keeping the old one beside it as, e.g., ``mdi_bind.sh.2.2``,
+and says so in its output. A job already running the old script is not affected.
+To keep a script you have edited, remove its ``#MolSSI`` line (the second line) or
+raise the version in it; the step then leaves it alone.
 
 .. _MolSSI Driver Interface: https://molssi-mdi.github.io/MDI_Library/
 

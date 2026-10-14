@@ -21,10 +21,23 @@ LAMMPS uses the forcefield or model chemistry chosen before it in the flowchart:
   ``ReaxFF@CHO_cho_2008`` and the others the Forcefield plug-in offers. LAMMPS builds the
   forcefield and types the atoms that do not yet have types for it;
 * a **Model Chemistry** step with a machine-learned forcefield, ``xnn:MLFF@<model>``:
-  its engine and LAMMPS run as an MPI pair on a GPU, each through ``mdi_bind.sh``, with
-  the Model Chemistry step's checkpoint and engine options. ``gpu-code`` in
-  ``lammps.ini`` is not used; ``mlff-code`` can change the launch (see the comments in
-  ``lammps.ini``). The job needs a GPU and two MPI tasks;
+  its engine runs alongside LAMMPS, each through ``mdi_bind.sh``, with the Model
+  Chemistry step's checkpoint and engine options, on a GPU if the job has one. How the
+  two talk depends on where the engine is installed:
+
+  - in LAMMPS's own environment (``xnn.ini`` and ``lammps.ini`` name the same one, as
+    in a combined environment holding both), they run as an MPI pair, and the job
+    needs two MPI tasks;
+  - in an environment of its own -- a default installation has ``seamm-lammps`` and
+    ``seamm-xnn``, whose MPI libraries differ -- they talk over TCP on the same
+    machine, starting the engine with ``conda run``.
+
+  ``mlff-transport`` in ``lammps.ini`` (``auto``, ``mpi`` or ``tcp``) overrides the
+  choice, and ``mlff-code`` and ``mlff-tcp-code`` change the launch (see the comments
+  in ``lammps.ini``). ``gpu-code`` is not used. If either side fails, ``mdi_bind.sh``
+  stops the other, so a failed run ends instead of waiting. On Linux, TCP is
+  currently slower than MPI: a message can wait up to about 40 ms, which for a fast
+  model added a third to the run time. A fix is proposed in the MDI library;
 * a **Model Chemistry** step with a quantum method, such as ``MOPAC:SQM@PM6-ORG``:
   LAMMPS runs the dynamics and the program computes the energy and forces over MDI;
 * or a **Forcefield** step, as before.
