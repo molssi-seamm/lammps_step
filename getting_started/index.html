@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM LAMMPS Plug-in 2026.10.12.1 documentation</title>
+    <title>Getting Started &#8212; SEAMM LAMMPS Plug-in 2026.10.14 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=0f4eb122"></script>
+    <script src="../_static/documentation_options.js?v=c92e1e03"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.12.1" />
+  <meta name="docsearch:version" content="2026.10.14" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -577,12 +577,12 @@ PBS or LSF it leaves the binding to the scheduler. To choose the CPUs yourself s
 <code class="docutils literal notranslate"><span class="pre">SEAMM_ENGINE_CPUS</span></code> and <code class="docutils literal notranslate"><span class="pre">SEAMM_DRIVER_CPUS</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">0-7</span></code> and <code class="docutils literal notranslate"><span class="pre">8-15</span></code>), or
 <code class="docutils literal notranslate"><span class="pre">SEAMM_BIND=none</span></code> to turn binding off.</p>
 <p><code class="docutils literal notranslate"><span class="pre">mdi_bind.sh</span></code> and the other helper scripts are installed into <code class="docutils literal notranslate"><span class="pre">~/SEAMM/bin</span></code> the
-first time the step runs, and not replaced afterwards, so that you can edit them.
-When a newer version ships with the plug-in the step’s log says so; delete the
-file to pick it up. Versions before 2.0 bound to fixed cores laid out for one
-particular machine (an AMD EPYC 7763), which fail elsewhere – under a scheduler,
-with fewer cores, or on a third or later GPU – so delete an older copy unless you
-edited it for your machine.</p>
+first time the step runs. When a newer version ships with the plug-in, the step
+replaces an older copy – one whose <code class="docutils literal notranslate"><span class="pre">#MolSSI</span></code> header line names the same script
+at a lower version – keeping the old one beside it as, e.g., <code class="docutils literal notranslate"><span class="pre">mdi_bind.sh.2.2</span></code>,
+and says so in its output. A job already running the old script is not affected.
+To keep a script you have edited, remove its <code class="docutils literal notranslate"><span class="pre">#MolSSI</span></code> line (the second line) or
+raise the version in it; the step then leaves it alone.</p>
 </section>
 <section id="example-of-npt-dynamics">
 <h2>Example of NPT dynamics<a class="headerlink" href="#example-of-npt-dynamics" title="Link to this heading">#</a></h2>

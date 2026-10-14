@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.12.1 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.14 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=0f4eb122"></script>
+    <script src="_static/documentation_options.js?v=c92e1e03"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.12.1" />
+  <meta name="docsearch:version" content="2026.10.14" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,27 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.14 – Bugfix: machine-learned forcefields with the engine in its own environment</dt><dd><ul class="simple">
+<li><p>A machine-learned forcefield from the Model Chemistry step failed on a default
+installation (“xnn: not found”): its engine and LAMMPS were always run as an MPI
+pair in LAMMPS’s environment, which works only when one environment holds both,
+as on a cluster set up that way. When <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code> names another environment, the
+engine now starts there with <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">run</span></code> and the two talk over TCP on the same
+machine. <code class="docutils literal notranslate"><span class="pre">mlff-transport</span></code> in <code class="docutils literal notranslate"><span class="pre">lammps.ini</span></code> (<code class="docutils literal notranslate"><span class="pre">auto</span></code>, <code class="docutils literal notranslate"><span class="pre">mpi</span></code> or <code class="docutils literal notranslate"><span class="pre">tcp</span></code>)
+overrides the choice and <code class="docutils literal notranslate"><span class="pre">mlff-tcp-code</span></code> changes the LAMMPS command. On Linux
+TCP is currently slower than MPI, by about a third for a fast model, until the
+MDI library sets TCP_NODELAY (proposed upstream).</p></li>
+<li><p>mdi_bind.sh 2.3 runs a pair started without mpirun: <code class="docutils literal notranslate"><span class="pre">SEAMM_MDI_ROLE</span></code> names each
+side and <code class="docutils literal notranslate"><span class="pre">SEAMM_MDI_PAIR</span></code> the pair. Stopping a partner also stops its child
+processes, such as an engine started by <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">run</span></code>.</p></li>
+<li><p>The helper scripts in <code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/bin</span></code> (mdi_bind.sh, cpu_bind.sh, gpu_bind.sh,
+mdi_monitor.sh) are now upgraded when the plug-in ships a newer version, keeping
+the old copy as, e.g., <code class="docutils literal notranslate"><span class="pre">mdi_bind.sh.2.2</span></code>; before, the step only logged a
+warning that was easy to miss, and old copies failed (mdi_bind.sh 1.3 does not
+run with macOS’s bash). A job running the old script is not affected. A script
+without a <code class="docutils literal notranslate"><span class="pre">#MolSSI</span></code> header line is left alone.</p></li>
+</ul>
+</dd>
 <dt>2026.10.12.1 – Machine-learned forcefields from the Model Chemistry step</dt><dd><ul class="simple">
 <li><p>LAMMPS can take a machine-learned forcefield (<code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;...</span></code>) from a Model
 Chemistry step, with its checkpoint and engine options, and runs its engine and

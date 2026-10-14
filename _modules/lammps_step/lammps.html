@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.12.1 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.14 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=0f4eb122"></script>
+    <script src="../../_static/documentation_options.js?v=c92e1e03"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.12.1" />
+  <meta name="docsearch:version" content="2026.10.14" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -658,6 +658,50 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_version_tuple</span><span class="p">(</span><span class="n">version</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">""" "2.10" -&gt; (2, 10), or None if it is not dotted integers."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">part</span><span class="p">)</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">version</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">))</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_install_helper_script</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Install a helper script, or upgrade an older copy of it, in &lt;root&gt;/bin.</span>
+
+<span class="sd">    A copy is upgraded only when its MolSSI header names the same script at a</span>
+<span class="sd">    lower version; a copy without a header, of another script, or of the same or</span>
+<span class="sd">    a newer version is left alone. The old copy is kept as ``&lt;name&gt;.&lt;version&gt;``.</span>
+<span class="sd">    The new file is written beside it and renamed over it, so a job running the</span>
+<span class="sd">    old script -- bash reads a script as it goes -- keeps reading the old one.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str or None</span>
+<span class="sd">        What was done, or None if nothing was.</span>
+<span class="sd">    """</span>
+    <span class="n">dest</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
+    <span class="n">backup</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">dest</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">file_type</span><span class="p">,</span> <span class="n">version</span> <span class="o">=</span> <span class="n">_get_script_version</span><span class="p">(</span><span class="n">dest</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+        <span class="n">new_type</span><span class="p">,</span> <span class="n">new_version</span> <span class="o">=</span> <span class="n">_get_script_version</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">old</span><span class="p">,</span> <span class="n">new</span> <span class="o">=</span> <span class="n">_version_tuple</span><span class="p">(</span><span class="n">version</span><span class="p">),</span> <span class="n">_version_tuple</span><span class="p">(</span><span class="n">new_version</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">file_type</span> <span class="o">!=</span> <span class="n">new_type</span> <span class="ow">or</span> <span class="n">old</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">new</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">new</span> <span class="o">&lt;=</span> <span class="n">old</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">backup</span> <span class="o">=</span> <span class="n">dest</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">dest</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">backup</span><span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">dest</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="sa">f</span><span class="s2">".</span><span class="si">{</span><span class="n">dest</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span><span class="si">}</span><span class="s2">.tmp"</span><span class="p">)</span>
+    <span class="n">tmp</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="mo">0o755</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">backup</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"Installed </span><span class="si">{</span><span class="n">dest</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">dest</span><span class="o">.</span><span class="n">parent</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"Upgraded </span><span class="si">{</span><span class="n">dest</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">dest</span><span class="o">.</span><span class="n">parent</span><span class="si">}</span><span class="s2"> from version </span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2"> to "</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">new_version</span><span class="si">}</span><span class="s2">; the old one is kept as </span><span class="si">{</span><span class="n">backup</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">."</span>
+    <span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_gpu_code_is_usable</span><span class="p">(</span><span class="n">ff_form</span><span class="p">,</span> <span class="n">gpu_code</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Whether a forcefield can actually use the configured ``gpu-code``.</span>
 
@@ -860,6 +904,80 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="n">line</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="si">{bind}</span><span class="s2">"</span><span class="p">,</span> <span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">bind</span><span class="p">)))</span>
     <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="si">{engine}</span><span class="s2">"</span><span class="p">,</span> <span class="n">shlex</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">engine_argv</span><span class="p">))</span>
     <span class="k">return</span> <span class="s2">"#!/bin/bash</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="n">line</span> <span class="o">+</span> <span class="s2">" -in input.dat</span><span class="se">\n</span><span class="s2">"</span>
+
+
+<span class="c1">#: The launch of an MLFF engine in another environment than LAMMPS: the two meet</span>
+<span class="c1">#: over TCP on localhost. The engine's command carries its own ``conda run``. Each</span>
+<span class="c1">#: side runs through mdi_bind.sh ({bind}), which stops the other when one fails --</span>
+<span class="c1">#: otherwise LAMMPS would wait forever for an engine that died starting. The</span>
+<span class="c1">#: engine dials until LAMMPS listens, so it may start first. lammps.ini's</span>
+<span class="c1">#: "mlff-tcp-code" replaces the LAMMPS line, e.g. to name another executable.</span>
+<span class="n">MLFF_TCP_DRIVER</span> <span class="o">=</span> <span class="s1">'lmp -mdi "-role DRIVER -name LAMMPS -method TCP -port </span><span class="si">{port}</span><span class="s1">"'</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_mlff_tcp_script</span><span class="p">(</span><span class="n">engine_argv</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">bind</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The bash script launching an MLFF engine and LAMMPS as a pair over TCP.</span>
+
+<span class="sd">    Leading ``NAME=value`` items of the engine's argv (thread counts) are passed</span>
+<span class="sd">    through ``env``, since mdi_bind.sh runs the command with ``exec``. The script</span>
+<span class="sd">    leaves the environment, such as LD_PRELOAD, as it finds it, and exits with</span>
+<span class="sd">    LAMMPS's status, else the engine's.</span>
+<span class="sd">    """</span>
+    <span class="n">assignments</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">argv</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">engine_argv</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">argv</span> <span class="ow">and</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^[A-Za-z_][A-Za-z0-9_]*="</span><span class="p">,</span> <span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">assignments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">argv</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">engine</span> <span class="o">=</span> <span class="n">shlex</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">"env"</span><span class="p">,</span> <span class="o">*</span><span class="n">assignments</span><span class="p">,</span> <span class="o">*</span><span class="n">argv</span><span class="p">]</span> <span class="k">if</span> <span class="n">assignments</span> <span class="k">else</span> <span class="n">argv</span><span class="p">)</span>
+
+    <span class="n">driver</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mlff-tcp-code"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="n">MLFF_TCP_DRIVER</span>
+    <span class="n">driver</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[ \t]*</span><span class="se">\\</span><span class="s2">?[ \t]*\n[ \t]*"</span><span class="p">,</span> <span class="s2">" "</span><span class="p">,</span> <span class="n">driver</span><span class="p">)</span>
+    <span class="n">driver</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="si">{port}</span><span class="s2">"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">))</span>
+    <span class="n">bind</span> <span class="o">=</span> <span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">bind</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="s2">"#!/bin/bash</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"# The engine is in another environment than LAMMPS, so they meet over TCP.</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="sa">f</span><span class="s2">"export SEAMM_MDI_PAIR=tcp</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="sa">f</span><span class="s2">"SEAMM_MDI_ROLE=engine </span><span class="si">{</span><span class="n">bind</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">engine</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"ENGINE_PID=$!</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="sa">f</span><span class="s2">"SEAMM_MDI_ROLE=driver </span><span class="si">{</span><span class="n">bind</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">driver</span><span class="si">}</span><span class="s2"> -in input.dat</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"rc=$?</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"wait $ENGINE_PID</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"engine_rc=$?</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s1">'[ "$rc" -eq 0 ] &amp;&amp; rc=$engine_rc</span><span class="se">\n</span><span class="s1">'</span>
+        <span class="s2">"exit $rc</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_conda_environment</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The conda environment an ini section names, as a path if it gives one."""</span>
+    <span class="n">environment</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"conda-environment"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">environment</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"~"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"/"</span> <span class="ow">in</span> <span class="n">environment</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">environment</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">environment</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_same_environment</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">engine_config</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Whether LAMMPS and an MDI engine run in the same environment.</span>
+
+<span class="sd">    Each is described by its ini section (lammps.ini, and e.g. xnn.ini). Two</span>
+<span class="sd">    "conda" installations are the same when they name the same environment; an</span>
+<span class="sd">    environment given by name matches one given by a path ending in that name.</span>
+<span class="sd">    Two "local" installations share the PATH, so they count as the same.</span>
+<span class="sd">    """</span>
+    <span class="n">installation</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"installation"</span><span class="p">,</span> <span class="s2">"conda"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">installation</span> <span class="o">!=</span> <span class="n">engine_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"installation"</span><span class="p">,</span> <span class="s2">"conda"</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">installation</span> <span class="o">!=</span> <span class="s2">"conda"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">_conda_environment</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">_conda_environment</span><span class="p">(</span><span class="n">engine_config</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="n">b</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="s2">"/"</span> <span class="ow">in</span> <span class="n">a</span> <span class="ow">and</span> <span class="s2">"/"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">b</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">b</span>
+    <span class="k">if</span> <span class="s2">"/"</span> <span class="ow">in</span> <span class="n">b</span> <span class="ow">and</span> <span class="s2">"/"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">a</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">a</span>
+    <span class="k">return</span> <span class="kc">False</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_mdi_launch_script</span><span class="p">(</span><span class="n">engine_argv</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">ce</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="s2">"localhost"</span><span class="p">):</span>
@@ -1697,47 +1815,84 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">engine_argv</span><span class="p">,</span> <span class="n">port</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_mlff_transport</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""How an MLFF engine and LAMMPS communicate: "MPI" or "TCP".</span>
+
+<span class="sd">        As an MPI pair the engine runs in LAMMPS's environment, so the two must</span>
+<span class="sd">        share it -- and with it MPI and the MDI library -- as in a combined</span>
+<span class="sd">        environment holding both. When the engine's step is configured for</span>
+<span class="sd">        another environment (a default installation: seamm-lammps and, e.g.,</span>
+<span class="sd">        seamm-xnn) the two meet over TCP instead. lammps.ini's ``mlff-transport``</span>
+<span class="sd">        ("auto", "mpi" or "tcp") overrides the choice.</span>
+<span class="sd">        """</span>
+        <span class="n">choice</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mlff-transport"</span><span class="p">,</span> <span class="s2">"auto"</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">or</span> <span class="s2">"auto"</span>
+        <span class="k">if</span> <span class="n">choice</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"mpi"</span><span class="p">,</span> <span class="s2">"tcp"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">choice</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">choice</span> <span class="o">!=</span> <span class="s2">"auto"</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"mlff-transport in lammps.ini is '</span><span class="si">{</span><span class="n">choice</span><span class="si">}</span><span class="s2">', but must be 'auto', "</span>
+                <span class="s2">"'mpi' or 'tcp'."</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="s2">"get_executor_config"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">"MPI"</span>
+        <span class="n">engine_config</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">get_executor_config</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">executor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_options</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="s2">"MPI"</span> <span class="k">if</span> <span class="n">_same_environment</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">engine_config</span><span class="p">)</span> <span class="k">else</span> <span class="s2">"TCP"</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_mlff_launch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">bin_dir</span><span class="p">,</span> <span class="n">gpus</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""The launch script for an MLFF model chemistry: its MDI engine and the</span>
-<span class="sd">        LAMMPS driver as an MPI pair, each through ``mdi_bind.sh``.</span>
+<span class="sd">        LAMMPS driver, each through ``mdi_bind.sh``.</span>
 
-<span class="sd">        The engine's argv comes from the step offering the model chemistry</span>
-<span class="sd">        (``get_mdi_engine_command(..., mdi_method="MPI")``): the checkpoint, the</span>
-<span class="sd">        device -- ``cuda:0``, the GPU that mdi_bind.sh makes visible from</span>
-<span class="sd">        ``SEAMM_GPUS``, if one was chosen -- and the run's engine options.</span>
+<span class="sd">        They run as an MPI pair when the engine shares LAMMPS's environment, and</span>
+<span class="sd">        over TCP when it does not (see :meth:`_mlff_transport`). The engine's argv</span>
+<span class="sd">        comes from the step offering the model chemistry</span>
+<span class="sd">        (``get_mdi_engine_command``): the checkpoint, the device -- ``cuda:0``,</span>
+<span class="sd">        the GPU that mdi_bind.sh makes visible from ``SEAMM_GPUS``, if one was</span>
+<span class="sd">        chosen -- and the run's engine options.</span>
 <span class="sd">        """</span>
         <span class="n">mc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlff_model_chemistry</span><span class="p">()</span>
         <span class="n">options</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"options"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">()</span>
-        <span class="n">allocated</span> <span class="o">=</span> <span class="n">_allocated_mpi_slots</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">allocated</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">allocated</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="s2">"A machine-learned forcefield runs its engine and LAMMPS as two MPI "</span>
-                <span class="sa">f</span><span class="s2">"tasks, but this job was allocated </span><span class="si">{</span><span class="n">allocated</span><span class="si">}</span><span class="s2">. Resubmit asking "</span>
-                <span class="s2">"for at least 2 tasks (ntasks)."</span>
-            <span class="p">)</span>
         <span class="n">step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">plugin_manager</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mc</span><span class="p">[</span><span class="s2">"step"</span><span class="p">])</span>
+        <span class="n">transport</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mlff_transport</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">transport</span> <span class="o">==</span> <span class="s2">"MPI"</span><span class="p">:</span>
+            <span class="n">allocated</span> <span class="o">=</span> <span class="n">_allocated_mpi_slots</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">allocated</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">allocated</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="s2">"A machine-learned forcefield runs its engine and LAMMPS as two "</span>
+                    <span class="sa">f</span><span class="s2">"MPI tasks, but this job was allocated </span><span class="si">{</span><span class="n">allocated</span><span class="si">}</span><span class="s2">. Resubmit "</span>
+                    <span class="s2">"asking for at least 2 tasks (ntasks)."</span>
+                <span class="p">)</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="n">_free_tcp_port</span><span class="p">()</span>
         <span class="n">engine</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">get_mdi_engine_command</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">executor</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">global_options</span><span class="p">,</span>
             <span class="n">method</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mdi_method_arg"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">mc</span><span class="p">[</span><span class="s2">"method"</span><span class="p">],</span>
-            <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span>
+            <span class="n">hostname</span><span class="o">=</span><span class="s2">"localhost"</span><span class="p">,</span>
             <span class="n">charge</span><span class="o">=</span><span class="n">configuration</span><span class="o">.</span><span class="n">charge</span><span class="p">,</span>
             <span class="n">multiplicity</span><span class="o">=</span><span class="n">configuration</span><span class="o">.</span><span class="n">spin_multiplicity</span><span class="p">,</span>
             <span class="n">n_atoms</span><span class="o">=</span><span class="n">configuration</span><span class="o">.</span><span class="n">n_atoms</span><span class="p">,</span>
-            <span class="n">mdi_method</span><span class="o">=</span><span class="s2">"MPI"</span><span class="p">,</span>
+            <span class="n">mdi_method</span><span class="o">=</span><span class="n">transport</span><span class="p">,</span>
             <span class="n">checkpoint</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"path"</span><span class="p">),</span>
             <span class="n">device</span><span class="o">=</span><span class="s2">"cuda:0"</span> <span class="k">if</span> <span class="n">gpus</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">extra_args</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"engine_args"</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
-            <span class="n">__</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"The engine for '</span><span class="si">{</span><span class="n">mc</span><span class="p">[</span><span class="s1">'level'</span><span class="p">]</span><span class="si">}</span><span class="s2">' runs with LAMMPS as an MPI pair"</span>
-                <span class="o">+</span> <span class="p">(</span><span class="sa">f</span><span class="s2">" on GPU </span><span class="si">{</span><span class="n">gpus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">."</span> <span class="k">if</span> <span class="n">gpus</span> <span class="k">else</span> <span class="s2">" without a GPU."</span><span class="p">),</span>
-                <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">,</span>
+        <span class="n">where</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">" on GPU </span><span class="si">{</span><span class="n">gpus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">."</span> <span class="k">if</span> <span class="n">gpus</span> <span class="k">else</span> <span class="s2">" without a GPU."</span>
+        <span class="k">if</span> <span class="n">transport</span> <span class="o">==</span> <span class="s2">"MPI"</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"The engine for '</span><span class="si">{</span><span class="n">mc</span><span class="p">[</span><span class="s1">'level'</span><span class="p">]</span><span class="si">}</span><span class="s2">' runs with LAMMPS as an MPI pair"</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The engine for '</span><span class="si">{</span><span class="n">mc</span><span class="p">[</span><span class="s1">'level'</span><span class="p">]</span><span class="si">}</span><span class="s2">' is in another environment than "</span>
+                <span class="s2">"LAMMPS, so the two communicate over TCP"</span>
             <span class="p">)</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">_mlff_pair_script</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">bin_dir</span> <span class="o">/</span> <span class="s2">"mdi_bind.sh"</span><span class="p">)</span>
+        <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">text</span> <span class="o">+</span> <span class="n">where</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">transport</span> <span class="o">==</span> <span class="s2">"MPI"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_mlff_pair_script</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">bin_dir</span> <span class="o">/</span> <span class="s2">"mdi_bind.sh"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_mlff_tcp_script</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">bin_dir</span> <span class="o">/</span> <span class="s2">"mdi_bind.sh"</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LAMMPS.model_chemistry">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.model_chemistry">[docs]</a>
@@ -2189,24 +2344,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">]</span>
 
             <span class="k">for</span> <span class="n">script_name</span> <span class="ow">in</span> <span class="n">helper_scripts</span><span class="p">:</span>
-                <span class="n">dest</span> <span class="o">=</span> <span class="n">bin_dir</span> <span class="o">/</span> <span class="n">script_name</span>
-                <span class="n">src</span> <span class="o">=</span> <span class="n">resources</span> <span class="o">/</span> <span class="n">script_name</span>
-                <span class="n">src_text</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
-
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">dest</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-                    <span class="n">dest</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">src_text</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">script_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">".sh"</span><span class="p">):</span>
-                        <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="mo">0o755</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Installed </span><span class="si">{</span><span class="n">script_name</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">bin_dir</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">_</span><span class="p">,</span> <span class="n">src_version</span> <span class="o">=</span> <span class="n">_get_script_version</span><span class="p">(</span><span class="n">src_text</span><span class="p">)</span>
-                    <span class="n">_</span><span class="p">,</span> <span class="n">dest_version</span> <span class="o">=</span> <span class="n">_get_script_version</span><span class="p">(</span><span class="n">dest</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
-                    <span class="k">if</span> <span class="n">src_version</span> <span class="ow">and</span> <span class="n">dest_version</span> <span class="ow">and</span> <span class="n">src_version</span> <span class="o">!=</span> <span class="n">dest_version</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">script_name</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">bin_dir</span><span class="si">}</span><span class="s2"> is version </span><span class="si">{</span><span class="n">dest_version</span><span class="si">}</span><span class="s2">, "</span>
-                            <span class="sa">f</span><span class="s2">"but version </span><span class="si">{</span><span class="n">src_version</span><span class="si">}</span><span class="s2"> is available. "</span>
-                            <span class="s2">"Delete the file to get the updated version."</span>
-                        <span class="p">)</span>
+                <span class="n">src_text</span> <span class="o">=</span> <span class="p">(</span><span class="n">resources</span> <span class="o">/</span> <span class="n">script_name</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="n">_install_helper_script</span><span class="p">(</span><span class="n">bin_dir</span> <span class="o">/</span> <span class="n">script_name</span><span class="p">,</span> <span class="n">src_text</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">message</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="s2">"Upgraded"</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+                        <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">))</span>
 
             <span class="n">full_config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">ini_dir</span> <span class="o">/</span> <span class="s2">"lammps.ini"</span><span class="p">)</span>
 

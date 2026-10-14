@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.10.12.1 documentation</title>
+    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.10.14 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=0f4eb122"></script>
+    <script src="../_static/documentation_options.js?v=c92e1e03"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.12.1" />
+  <meta name="docsearch:version" content="2026.10.14" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1588,6 +1588,22 @@ with <a class="reference internal" href="#lammps_step.lammps.timing_descriptors"
 <dd><p>The launch of an MLFF engine and the LAMMPS driver as an MPI pair. {bind} is
 mdi_bind.sh and {engine} the engine’s command; “-in input.dat” is appended.
 lammps.ini’s “mlff-code” replaces it, e.g. to give mpirun other options.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="lammps_step.lammps.MLFF_TCP_DRIVER">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.lammps.</span></span><span class="sig-name descname"><span class="pre">MLFF_TCP_DRIVER</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'lmp</span> <span class="pre">-mdi</span> <span class="pre">&quot;-role</span> <span class="pre">DRIVER</span> <span class="pre">-name</span> <span class="pre">LAMMPS</span> <span class="pre">-method</span> <span class="pre">TCP</span> <span class="pre">-port</span> <span class="pre">{port}&quot;'</span></span><a class="headerlink" href="#lammps_step.lammps.MLFF_TCP_DRIVER" title="Link to this definition">#</a></dt>
+<dd><p>the two meet
+over TCP on localhost. The engine’s command carries its own <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">run</span></code>. Each
+side runs through mdi_bind.sh ({bind}), which stops the other when one fails –
+otherwise LAMMPS would wait forever for an engine that died starting. The
+engine dials until LAMMPS listens, so it may start first. lammps.ini’s
+“mlff-tcp-code” replaces the LAMMPS line, e.g. to name another executable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The launch of an MLFF engine in another environment than LAMMPS</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py data">
@@ -3180,6 +3196,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.MLFF_PAIR"><code class="docutils literal notranslate"><span class="pre">MLFF_PAIR</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.MLFF_TCP_DRIVER"><code class="docutils literal notranslate"><span class="pre">MLFF_TCP_DRIVER</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.TIMING_SPEC"><code class="docutils literal notranslate"><span class="pre">TIMING_SPEC</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.lammps_error"><code class="docutils literal notranslate"><span class="pre">lammps_error()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.lammps_error_message"><code class="docutils literal notranslate"><span class="pre">lammps_error_message()</span></code></a></li>
