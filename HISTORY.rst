@@ -1,6 +1,26 @@
 =======
 History
 =======
+2026.10.14 -- Bugfix: machine-learned forcefields with the engine in its own environment
+    * A machine-learned forcefield from the Model Chemistry step failed on a default
+      installation ("xnn: not found"): its engine and LAMMPS were always run as an MPI
+      pair in LAMMPS's environment, which works only when one environment holds both,
+      as on a cluster set up that way. When ``xnn.ini`` names another environment, the
+      engine now starts there with ``conda run`` and the two talk over TCP on the same
+      machine. ``mlff-transport`` in ``lammps.ini`` (``auto``, ``mpi`` or ``tcp``)
+      overrides the choice and ``mlff-tcp-code`` changes the LAMMPS command. On Linux
+      TCP is currently slower than MPI, by about a third for a fast model, until the
+      MDI library sets TCP_NODELAY (proposed upstream).
+    * mdi_bind.sh 2.3 runs a pair started without mpirun: ``SEAMM_MDI_ROLE`` names each
+      side and ``SEAMM_MDI_PAIR`` the pair. Stopping a partner also stops its child
+      processes, such as an engine started by ``conda run``.
+    * The helper scripts in ``<root>/bin`` (mdi_bind.sh, cpu_bind.sh, gpu_bind.sh,
+      mdi_monitor.sh) are now upgraded when the plug-in ships a newer version, keeping
+      the old copy as, e.g., ``mdi_bind.sh.2.2``; before, the step only logged a
+      warning that was easy to miss, and old copies failed (mdi_bind.sh 1.3 does not
+      run with macOS's bash). A job running the old script is not affected. A script
+      without a ``#MolSSI`` header line is left alone.
+
 2026.10.12.1 -- Machine-learned forcefields from the Model Chemistry step
     * LAMMPS can take a machine-learned forcefield (``xnn:MLFF@...``) from a Model
       Chemistry step, with its checkpoint and engine options, and runs its engine and

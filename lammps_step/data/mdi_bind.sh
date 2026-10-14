@@ -1,5 +1,5 @@
 #!/bin/bash
-#MolSSI lammps_step:mdi_bind 2.2
+#MolSSI lammps_step:mdi_bind 2.3
 # mdi_bind.sh — Resource binding for an MDI engine (e.g. an ML potential) + LAMMPS
 #
 # Runs one rank of an MPMD pair: the engine (rank 0) on the selected GPU, and the
@@ -24,6 +24,10 @@
 #                       finishes normally before it is stopped (default 120)
 #   SEAMM_ERROR_GRACE   Seconds LAMMPS may take to exit after printing an ERROR
 #                       before it is stopped (default 30)
+#   SEAMM_MDI_ROLE      "engine" or "driver", for a pair not started by mpirun
+#                       (over TCP), where there is no MPI rank to tell them apart
+#   SEAMM_MDI_PAIR      A name for the pair, the same on both sides, for a pair not
+#                       started by mpirun (e.g. its TCP port)
 #
 # Each side stops the other when it fails: a LAMMPS error otherwise leaves the
 # engine waiting for its driver forever, holding the GPU while the job sits in
@@ -43,6 +47,11 @@
 # Or for multi-GPU (simultaneous independent runs):
 #   SEAMM_GPUS=0 mpirun ... -np 1 mdi_bind.sh <engine> ... : -np 1 mdi_bind.sh lmp ...  &
 #   SEAMM_GPUS=1 mpirun ... -np 1 mdi_bind.sh <engine> ... : -np 1 mdi_bind.sh lmp ...  &
+#
+# Or over TCP, when the engine is in another environment than LAMMPS:
+#   export SEAMM_MDI_PAIR=tcp12345
+#   SEAMM_MDI_ROLE=engine mdi_bind.sh <engine> -mdi "... -method TCP -port 12345 ..." &
+#   SEAMM_MDI_ROLE=driver mdi_bind.sh lmp -mdi "... -method TCP -port 12345" -in input.dat
 
 set -uo pipefail
 
@@ -50,6 +59,14 @@ SEAMM_GPUS="${SEAMM_GPUS:-0}"
 # The rank within this pair: 0 is the engine, 1 the driver. Each MPI launcher names
 # it differently (OpenMPI, MPICH/Hydra, PMIx, SLURM's srun).
 LOCAL_RANK="${OMPI_COMM_WORLD_LOCAL_RANK:-${MPI_LOCALRANKID:-${PMIX_RANK:-${PMI_RANK:-${SLURM_LOCALID:-0}}}}}"
+# A pair not started by mpirun names its role instead
+case "${SEAMM_MDI_ROLE:-}" in
+    engine) LOCAL_RANK=0 ;;
+    driver) LOCAL_RANK=1 ;;
+    "") ;;
+    *) echo "mdi_bind.sh: SEAMM_MDI_ROLE must be 'engine' or 'driver', not '$SEAMM_MDI_ROLE'" >&2
+       exit 2 ;;
+esac
 
 IFS=',' read -ra GPU_ARRAY <<< "$SEAMM_GPUS"
 GPU_ID="${GPU_ARRAY[0]}"  # Use first GPU for this simulation
@@ -182,7 +199,7 @@ export OMPI_MCA_mpi_wait_mode=1
 # ---------------------------------------------------------------------------
 # Each side's program runs as a child, so that the other side can stop it
 # ---------------------------------------------------------------------------
-PAIR_KEY="$(printf '%s' "${PMIX_NAMESPACE:-${OMPI_MCA_ess_base_jobid:-${SLURM_JOB_ID:-local}.${SLURM_STEP_ID:-0}}}" | tr -c 'A-Za-z0-9._-' '_')_gpu${GPU_ID}"
+PAIR_KEY="$(printf '%s' "${SEAMM_MDI_PAIR:-${PMIX_NAMESPACE:-${OMPI_MCA_ess_base_jobid:-${SLURM_JOB_ID:-local}.${SLURM_STEP_ID:-0}}}}" | tr -c 'A-Za-z0-9._-' '_')_gpu${GPU_ID}"
 ENGINE_PID_FILE=".mdi_bind.${PAIR_KEY}.engine.pid"
 DRIVER_PID_FILE=".mdi_bind.${PAIR_KEY}.driver.pid"
 CHILD_PID=""
@@ -201,11 +218,15 @@ stop_partner() {
         sleep 1
     done
     echo "Stopping the partner process $pid." >&2
+    # Its children first: an engine started through "conda run" is a child of the
+    # process recorded, and conda run does not pass the signal on.
+    command -v pkill > /dev/null 2>&1 && pkill -TERM -P "$pid" 2>/dev/null
     kill -TERM "$pid" 2>/dev/null || return 0
     for (( i=0; i<10; i++ )); do
         kill -0 "$pid" 2>/dev/null || return 0
         sleep 1
     done
+    command -v pkill > /dev/null 2>&1 && pkill -KILL -P "$pid" 2>/dev/null
     kill -KILL "$pid" 2>/dev/null || true
 }
 

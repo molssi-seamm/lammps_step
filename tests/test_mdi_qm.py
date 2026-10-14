@@ -105,6 +105,7 @@ def _fake_self(mc=None, variables=None, step=None):
     me.forcefield_model_chemistry = lambda: LAMMPS.forcefield_model_chemistry(me)
     me.forcefield = lambda: LAMMPS.forcefield(me)
     me.mlff_model_chemistry = lambda: LAMMPS.mlff_model_chemistry(me)
+    me._mlff_transport = lambda config, step: LAMMPS._mlff_transport(me, config, step)
     return me
 
 
@@ -476,3 +477,133 @@ def test_the_mlff_pair_template_from_lammps_ini():
         "mpirun --mca btl ^openib -np 1 b xnn --dispersion '{regime: large}' : "
         "-np 1 b lmp_mpi -mdi '-role DRIVER -name LAMMPS -method MPI' -in input.dat"
     )
+
+
+class _FakeXnnElsewhere(_FakeXnn):
+    """An engine step configured for its own conda environment."""
+
+    def __init__(self, environment="seamm-xnn", installation="conda"):
+        super().__init__()
+        self.config = {
+            "installation": installation,
+            "conda-environment": environment,
+        }
+
+    def get_executor_config(self, executor, seamm_options):
+        return self.config
+
+    def get_mdi_engine_command(self, executor, seamm_options, **kwargs):
+        self.kwargs = kwargs
+        return [
+            "OMP_NUM_THREADS=4",
+            "conda",
+            "run",
+            "-n",
+            "seamm-xnn",
+            "xnn",
+            "mdi",
+            "-mdi",
+            f"-role ENGINE -method TCP -port {kwargs['port']}",
+        ]
+
+
+def _mlff_self(step):
+    me = _fake_self(mc=_mlff_mc(), step=step)
+    configuration = types.SimpleNamespace(
+        periodicity=3, charge=0, spin_multiplicity=1, n_atoms=1554
+    )
+    me.get_system_configuration = lambda: (None, configuration)
+    return me
+
+
+@pytest.mark.parametrize(
+    "lammps_env, engine_env, same",
+    [
+        ("seamm-lammps-xnn0130", "seamm-lammps-xnn0130", True),
+        ("seamm-lammps", "seamm-xnn", False),
+        ("/conda/envs/seamm-lammps-xnn0130", "seamm-lammps-xnn0130", True),
+        ("seamm-lammps-xnn0130", "/conda/envs/seamm-lammps-xnn0130", True),
+        ("/a/envs/seamm-lammps", "/b/envs/seamm-lammps", False),
+    ],
+)
+def test_same_environment(lammps_env, engine_env, same):
+    from lammps_step.lammps import _same_environment
+
+    lammps = {"installation": "conda", "conda-environment": lammps_env}
+    engine = {"installation": "conda", "conda-environment": engine_env}
+    assert _same_environment(lammps, engine) is same
+
+
+def test_same_environment_installations():
+    from lammps_step.lammps import _same_environment
+
+    local = {"installation": "local"}
+    conda = {"installation": "conda", "conda-environment": "seamm-lammps"}
+    assert _same_environment(local, dict(local))
+    assert not _same_environment(local, conda)
+    assert not _same_environment(conda, local)
+
+
+def test_the_mlff_launch_over_tcp(tmp_path, monkeypatch):
+    """An engine in another environment meets LAMMPS over TCP, needing no MPI."""
+    import lammps_step.lammps as lammps_module
+
+    monkeypatch.setattr(lammps_module, "_allocated_mpi_slots", lambda: 1)
+    xnn = _FakeXnnElsewhere()
+    me = _mlff_self(xnn)
+    config = {"installation": "conda", "conda-environment": "seamm-lammps"}
+    script = LAMMPS._mlff_launch(me, config, tmp_path / "bin", gpus=[0])
+    port = xnn.kwargs["port"]
+    assert xnn.kwargs["mdi_method"] == "TCP"
+    assert isinstance(port, int)
+    assert xnn.kwargs["hostname"] == "localhost"
+    assert xnn.kwargs["device"] == "cuda:0"
+    bind = str(tmp_path / "bin" / "mdi_bind.sh")
+    lines = script.splitlines()
+    assert f"export SEAMM_MDI_PAIR=tcp{port}" in lines
+    # The thread count goes through env, since mdi_bind.sh execs the command
+    assert (
+        f"SEAMM_MDI_ROLE=engine {bind} env OMP_NUM_THREADS=4 conda run -n seamm-xnn "
+        f"xnn mdi -mdi '-role ENGINE -method TCP -port {port}' &"
+    ) in lines
+    assert (
+        f"SEAMM_MDI_ROLE=driver {bind} lmp -mdi "
+        f'"-role DRIVER -name LAMMPS -method TCP -port {port}" -in input.dat'
+    ) in lines
+    assert "LD_PRELOAD" not in script
+
+
+def test_the_mlff_launch_shared_environment_is_mpi(tmp_path, monkeypatch):
+    import lammps_step.lammps as lammps_module
+
+    monkeypatch.setattr(lammps_module, "_allocated_mpi_slots", lambda: 2)
+    xnn = _FakeXnnElsewhere("/conda/envs/seamm-lammps-xnn0130")
+    me = _mlff_self(xnn)
+    config = {"installation": "conda", "conda-environment": "seamm-lammps-xnn0130"}
+    script = LAMMPS._mlff_launch(me, config, tmp_path / "bin", gpus=[])
+    assert xnn.kwargs["mdi_method"] == "MPI"
+    assert script.splitlines()[1].startswith("mpirun --bind-to none -np 1 ")
+
+
+@pytest.mark.parametrize("choice, transport", [("mpi", "MPI"), ("TCP", "TCP")])
+def test_the_mlff_transport_from_lammps_ini(choice, transport):
+    xnn = _FakeXnnElsewhere()
+    me = _mlff_self(xnn)
+    config = {"conda-environment": "seamm-lammps", "mlff-transport": choice}
+    assert LAMMPS._mlff_transport(me, config, xnn) == transport
+    with pytest.raises(ValueError, match="mlff-transport"):
+        LAMMPS._mlff_transport(me, {"mlff-transport": "udp"}, xnn)
+
+
+def test_the_mlff_tcp_driver_from_lammps_ini():
+    from lammps_step.lammps import _mlff_tcp_script
+
+    config = {
+        "mlff-tcp-code": "lmp_serial -mdi \\\n"
+        "  '-role DRIVER -name LAMMPS -method TCP -port {port}'"
+    }
+    script = _mlff_tcp_script(["xnn", "mdi"], 5555, config, "b")
+    assert (
+        "SEAMM_MDI_ROLE=driver b lmp_serial -mdi "
+        "'-role DRIVER -name LAMMPS -method TCP -port 5555' -in input.dat"
+    ) in script.splitlines()

@@ -164,6 +164,50 @@ def _get_script_version(text):
     return None, None
 
 
+def _version_tuple(version):
+    """ "2.10" -> (2, 10), or None if it is not dotted integers."""
+    try:
+        return tuple(int(part) for part in version.split("."))
+    except (AttributeError, ValueError):
+        return None
+
+
+def _install_helper_script(dest, text):
+    """Install a helper script, or upgrade an older copy of it, in <root>/bin.
+
+    A copy is upgraded only when its MolSSI header names the same script at a
+    lower version; a copy without a header, of another script, or of the same or
+    a newer version is left alone. The old copy is kept as ``<name>.<version>``.
+    The new file is written beside it and renamed over it, so a job running the
+    old script -- bash reads a script as it goes -- keeps reading the old one.
+
+    Returns
+    -------
+    str or None
+        What was done, or None if nothing was.
+    """
+    dest = Path(dest)
+    backup = None
+    if dest.exists():
+        file_type, version = _get_script_version(dest.read_text())
+        new_type, new_version = _get_script_version(text)
+        old, new = _version_tuple(version), _version_tuple(new_version)
+        if file_type != new_type or old is None or new is None or new <= old:
+            return None
+        backup = dest.with_name(f"{dest.name}.{version}")
+        shutil.copy2(dest, backup)
+    tmp = dest.with_name(f".{dest.name}.{os.getpid()}.tmp")
+    tmp.write_text(text)
+    os.chmod(tmp, 0o755)
+    os.replace(tmp, dest)
+    if backup is None:
+        return f"Installed {dest.name} in {dest.parent}"
+    return (
+        f"Upgraded {dest.name} in {dest.parent} from version {version} to "
+        f"{new_version}; the old one is kept as {backup.name}."
+    )
+
+
 def _gpu_code_is_usable(ff_form, gpu_code):
     """Whether a forcefield can actually use the configured ``gpu-code``.
 
@@ -366,6 +410,80 @@ def _mlff_pair_script(engine_argv, config, bind):
     line = template.replace("{bind}", shlex.quote(str(bind)))
     line = line.replace("{engine}", shlex.join(engine_argv))
     return "#!/bin/bash\n" + line + " -in input.dat\n"
+
+
+#: The launch of an MLFF engine in another environment than LAMMPS: the two meet
+#: over TCP on localhost. The engine's command carries its own ``conda run``. Each
+#: side runs through mdi_bind.sh ({bind}), which stops the other when one fails --
+#: otherwise LAMMPS would wait forever for an engine that died starting. The
+#: engine dials until LAMMPS listens, so it may start first. lammps.ini's
+#: "mlff-tcp-code" replaces the LAMMPS line, e.g. to name another executable.
+MLFF_TCP_DRIVER = 'lmp -mdi "-role DRIVER -name LAMMPS -method TCP -port {port}"'
+
+
+def _mlff_tcp_script(engine_argv, port, config, bind):
+    """The bash script launching an MLFF engine and LAMMPS as a pair over TCP.
+
+    Leading ``NAME=value`` items of the engine's argv (thread counts) are passed
+    through ``env``, since mdi_bind.sh runs the command with ``exec``. The script
+    leaves the environment, such as LD_PRELOAD, as it finds it, and exits with
+    LAMMPS's status, else the engine's.
+    """
+    assignments = []
+    argv = list(engine_argv)
+    while argv and re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", argv[0]):
+        assignments.append(argv.pop(0))
+    engine = shlex.join(["env", *assignments, *argv] if assignments else argv)
+
+    driver = config.get("mlff-tcp-code", "").strip() or MLFF_TCP_DRIVER
+    driver = re.sub(r"[ \t]*\\?[ \t]*\n[ \t]*", " ", driver)
+    driver = driver.replace("{port}", str(port))
+    bind = shlex.quote(str(bind))
+    return (
+        "#!/bin/bash\n"
+        "# The engine is in another environment than LAMMPS, so they meet over TCP.\n"
+        f"export SEAMM_MDI_PAIR=tcp{port}\n"
+        f"SEAMM_MDI_ROLE=engine {bind} {engine} &\n"
+        "ENGINE_PID=$!\n"
+        f"SEAMM_MDI_ROLE=driver {bind} {driver} -in input.dat\n"
+        "rc=$?\n"
+        "wait $ENGINE_PID\n"
+        "engine_rc=$?\n"
+        '[ "$rc" -eq 0 ] && rc=$engine_rc\n'
+        "exit $rc\n"
+    )
+
+
+def _conda_environment(config):
+    """The conda environment an ini section names, as a path if it gives one."""
+    environment = config.get("conda-environment", "").strip()
+    if environment.startswith("~") or "/" in environment:
+        return str(Path(environment).expanduser())
+    return environment
+
+
+def _same_environment(config, engine_config):
+    """Whether LAMMPS and an MDI engine run in the same environment.
+
+    Each is described by its ini section (lammps.ini, and e.g. xnn.ini). Two
+    "conda" installations are the same when they name the same environment; an
+    environment given by name matches one given by a path ending in that name.
+    Two "local" installations share the PATH, so they count as the same.
+    """
+    installation = config.get("installation", "conda")
+    if installation != engine_config.get("installation", "conda"):
+        return False
+    if installation != "conda":
+        return True
+    a = _conda_environment(config)
+    b = _conda_environment(engine_config)
+    if a == b:
+        return True
+    if "/" in a and "/" not in b:
+        return Path(a).name == b
+    if "/" in b and "/" not in a:
+        return Path(b).name == a
+    return False
 
 
 def _mdi_launch_script(engine_argv, port, config, ce, hostname="localhost"):
@@ -1159,47 +1277,84 @@ class LAMMPS(seamm.Node):
         )
         return engine_argv, port
 
+    def _mlff_transport(self, config, step):
+        """How an MLFF engine and LAMMPS communicate: "MPI" or "TCP".
+
+        As an MPI pair the engine runs in LAMMPS's environment, so the two must
+        share it -- and with it MPI and the MDI library -- as in a combined
+        environment holding both. When the engine's step is configured for
+        another environment (a default installation: seamm-lammps and, e.g.,
+        seamm-xnn) the two meet over TCP instead. lammps.ini's ``mlff-transport``
+        ("auto", "mpi" or "tcp") overrides the choice.
+        """
+        choice = config.get("mlff-transport", "auto").strip().lower() or "auto"
+        if choice in ("mpi", "tcp"):
+            return choice.upper()
+        if choice != "auto":
+            raise ValueError(
+                f"mlff-transport in lammps.ini is '{choice}', but must be 'auto', "
+                "'mpi' or 'tcp'."
+            )
+        if not hasattr(step, "get_executor_config"):
+            return "MPI"
+        engine_config = step.get_executor_config(
+            self.flowchart.executor, self.global_options
+        )
+        return "MPI" if _same_environment(config, engine_config) else "TCP"
+
     def _mlff_launch(self, config, bin_dir, gpus):
         """The launch script for an MLFF model chemistry: its MDI engine and the
-        LAMMPS driver as an MPI pair, each through ``mdi_bind.sh``.
+        LAMMPS driver, each through ``mdi_bind.sh``.
 
-        The engine's argv comes from the step offering the model chemistry
-        (``get_mdi_engine_command(..., mdi_method="MPI")``): the checkpoint, the
-        device -- ``cuda:0``, the GPU that mdi_bind.sh makes visible from
-        ``SEAMM_GPUS``, if one was chosen -- and the run's engine options.
+        They run as an MPI pair when the engine shares LAMMPS's environment, and
+        over TCP when it does not (see :meth:`_mlff_transport`). The engine's argv
+        comes from the step offering the model chemistry
+        (``get_mdi_engine_command``): the checkpoint, the device -- ``cuda:0``,
+        the GPU that mdi_bind.sh makes visible from ``SEAMM_GPUS``, if one was
+        chosen -- and the run's engine options.
         """
         mc = self.mlff_model_chemistry()
         options = mc.get("options") or {}
         _, configuration = self.get_system_configuration()
-        allocated = _allocated_mpi_slots()
-        if allocated is not None and allocated < 2:
-            raise RuntimeError(
-                "A machine-learned forcefield runs its engine and LAMMPS as two MPI "
-                f"tasks, but this job was allocated {allocated}. Resubmit asking "
-                "for at least 2 tasks (ntasks)."
-            )
         step = self.flowchart.plugin_manager.get(mc["step"])
+        transport = self._mlff_transport(config, step)
+        if transport == "MPI":
+            allocated = _allocated_mpi_slots()
+            if allocated is not None and allocated < 2:
+                raise RuntimeError(
+                    "A machine-learned forcefield runs its engine and LAMMPS as two "
+                    f"MPI tasks, but this job was allocated {allocated}. Resubmit "
+                    "asking for at least 2 tasks (ntasks)."
+                )
+            port = None
+        else:
+            port = _free_tcp_port()
         engine = step.get_mdi_engine_command(
             self.flowchart.executor,
             self.global_options,
             method=options.get("mdi_method_arg") or mc["method"],
-            port=None,
+            port=port,
+            hostname="localhost",
             charge=configuration.charge,
             multiplicity=configuration.spin_multiplicity,
             n_atoms=configuration.n_atoms,
-            mdi_method="MPI",
+            mdi_method=transport,
             checkpoint=options.get("path"),
             device="cuda:0" if gpus else None,
             extra_args=options.get("engine_args") or None,
         )
-        printer.important(
-            __(
-                f"The engine for '{mc['level']}' runs with LAMMPS as an MPI pair"
-                + (f" on GPU {gpus[0]}." if gpus else " without a GPU."),
-                indent=4 * " ",
+        where = f" on GPU {gpus[0]}." if gpus else " without a GPU."
+        if transport == "MPI":
+            text = f"The engine for '{mc['level']}' runs with LAMMPS as an MPI pair"
+        else:
+            text = (
+                f"The engine for '{mc['level']}' is in another environment than "
+                "LAMMPS, so the two communicate over TCP"
             )
-        )
-        return _mlff_pair_script(engine, config, bin_dir / "mdi_bind.sh")
+        printer.important(__(text + where, indent=4 * " "))
+        if transport == "MPI":
+            return _mlff_pair_script(engine, config, bin_dir / "mdi_bind.sh")
+        return _mlff_tcp_script(engine, port, config, bin_dir / "mdi_bind.sh")
 
     def model_chemistry(self, task):
         """Compose the full ``driver:task|level`` provenance label for a task.
@@ -1645,24 +1800,12 @@ class LAMMPS(seamm.Node):
             ]
 
             for script_name in helper_scripts:
-                dest = bin_dir / script_name
-                src = resources / script_name
-                src_text = src.read_text()
-
-                if not dest.exists():
-                    dest.write_text(src_text)
-                    if script_name.endswith(".sh"):
-                        os.chmod(dest, 0o755)
-                    self.logger.info(f"Installed {script_name} to {bin_dir}")
-                else:
-                    _, src_version = _get_script_version(src_text)
-                    _, dest_version = _get_script_version(dest.read_text())
-                    if src_version and dest_version and src_version != dest_version:
-                        self.logger.warning(
-                            f"{script_name} in {bin_dir} is version {dest_version}, "
-                            f"but version {src_version} is available. "
-                            "Delete the file to get the updated version."
-                        )
+                src_text = (resources / script_name).read_text()
+                message = _install_helper_script(bin_dir / script_name, src_text)
+                if message is not None:
+                    self.logger.info(message)
+                    if "Upgraded" in message:
+                        printer.normal(__(message, indent=4 * " "))
 
             full_config.read(ini_dir / "lammps.ini")
 

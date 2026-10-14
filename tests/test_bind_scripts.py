@@ -9,6 +9,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import time
 
 import pytest
 
@@ -351,3 +352,100 @@ def test_two_pairs_in_one_directory_keep_apart(tmp_path):
     assert codes[1] == 1 and not alive("sleep 311")
     codes, _ = finish(healthy)
     assert codes == [0, 0]  # not stopped by the other pair
+
+
+def test_mdi_bind_role_without_mpirun(tmp_path):
+    """A pair over TCP has no MPI rank, so it names its roles."""
+    result = run(
+        "mdi_bind.sh", ["true"], tmp_path, SEAMM_BIND="none", SEAMM_MDI_ROLE="driver"
+    )
+    assert result.returncode == 0
+    assert result.stderr.startswith("Driver (rank 1)")
+    result = run(
+        "mdi_bind.sh",
+        ["true"],
+        tmp_path,
+        SEAMM_BIND="none",
+        SEAMM_MDI_ROLE="engine",
+        OMPI_COMM_WORLD_LOCAL_RANK="1",
+    )
+    assert result.stderr.startswith("Engine (rank 0)")
+    result = run("mdi_bind.sh", ["true"], tmp_path, SEAMM_MDI_ROLE="both")
+    assert result.returncode == 2
+    assert "SEAMM_MDI_ROLE" in result.stderr
+
+
+def _tcp_pair(tmp_path, engine, driver, **env):
+    """Run an engine and a driver through mdi_bind.sh as a pair not started by
+    mpirun, the way lammps_step's TCP launch script does."""
+    from lammps_step.lammps import _mlff_tcp_script
+
+    bind = DATA / "mdi_bind.sh"
+    script = _mlff_tcp_script(engine, 1, {"mlff-tcp-code": driver}, bind)
+    (tmp_path / "launch.sh").write_text(script)
+    environ = {k: v for k, v in os.environ.items() if k not in SCHEDULER}
+    environ.update(SEAMM_BIND="none", SEAMM_ENGINE_GRACE="2", **env)
+    return subprocess.run(
+        ["bash", "launch.sh"],
+        cwd=tmp_path,
+        env=environ,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+
+
+def test_tcp_pair_engine_failure_stops_the_driver(tmp_path):
+    """An engine that dies starting must not leave LAMMPS waiting on its port."""
+    t0 = time.monotonic()
+    result = _tcp_pair(tmp_path, ["sh", "-c", "sleep 1; exit 4"], "sh -c 'sleep 50' x")
+    assert time.monotonic() - t0 < 30
+    assert result.returncode != 0
+    assert "Stopping the partner process" in result.stderr
+
+
+def test_tcp_pair_driver_failure_stops_the_engine_and_its_children(tmp_path):
+    """The engine runs under "conda run", which does not pass on signals, so its
+    child must be stopped too."""
+    marker = "317.5"  # an unusual sleep, to find any leftover
+    t0 = time.monotonic()
+    result = _tcp_pair(
+        tmp_path, ["sh", "-c", f"sleep {marker} & wait"], "sh -c 'sleep 1; exit 3' x"
+    )
+    assert time.monotonic() - t0 < 30
+    assert result.returncode == 3
+    time.sleep(1)
+    leftover = subprocess.run(["pgrep", "-f", f"sleep {marker}"], capture_output=True)
+    assert leftover.stdout == b""
+
+
+def test_tcp_pair_success(tmp_path):
+    result = _tcp_pair(tmp_path, ["sh", "-c", "sleep 1"], "sh -c 'sleep 2' x")
+    assert result.returncode == 0, result.stderr
+
+
+def test_install_helper_script(tmp_path):
+    from lammps_step.lammps import _install_helper_script
+
+    dest = tmp_path / "mdi_bind.sh"
+    v1 = "#!/bin/bash\n#MolSSI lammps_step:mdi_bind 1.3\necho old\n"
+    v2 = "#!/bin/bash\n#MolSSI lammps_step:mdi_bind 2.10\necho new\n"
+    assert "Installed" in _install_helper_script(dest, v1)
+    assert os.access(dest, os.X_OK)
+    message = _install_helper_script(dest, v2)
+    assert "from version 1.3 to 2.10" in message
+    assert dest.read_text() == v2
+    assert (tmp_path / "mdi_bind.sh.1.3").read_text() == v1
+    assert os.access(dest, os.X_OK)
+    # The same or an older version, no header, or another script: left alone
+    assert _install_helper_script(dest, v2) is None
+    assert _install_helper_script(dest, v1) is None
+    assert dest.read_text() == v2
+    for text in (
+        "#!/bin/bash\necho mine\n",
+        "#!/bin/bash\n#MolSSI lammps_step:gpu_bind 1.0\n",
+    ):
+        dest.write_text(text)
+        assert _install_helper_script(dest, v2) is None
+        assert dest.read_text() == text
+    assert not list(tmp_path.glob(".*.tmp"))
