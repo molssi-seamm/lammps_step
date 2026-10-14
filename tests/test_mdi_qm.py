@@ -456,9 +456,15 @@ def test_the_mlff_launch(tmp_path, monkeypatch):
         f"-mdi '-role ENGINE' : -np 1 {bind} lmp "
         '-mdi "-role DRIVER -name LAMMPS -method MPI" -in input.dat'
     )
-    # Without a GPU the engine uses the device in its own configuration
-    LAMMPS._mlff_launch(me, {}, tmp_path / "bin", gpus=[])
+    # Without a GPU the engine uses the device in its own configuration, and the
+    # job's cores but one (mdi_bind.sh would leave it one thread)
+    monkeypatch.setattr(lammps_module, "_engine_cpu_threads", lambda ncores: 7)
+    script = LAMMPS._mlff_launch(me, {}, tmp_path / "bin", gpus=[])
     assert xnn.kwargs["device"] is None
+    assert (
+        f"{bind} env OMP_NUM_THREADS=7 MKL_NUM_THREADS=7 xnn mdi"
+        in script.splitlines()[1]
+    )
     # The pair needs two MPI tasks
     monkeypatch.setattr(lammps_module, "_allocated_mpi_slots", lambda: 1)
     with pytest.raises(RuntimeError, match="two MPI"):
@@ -607,3 +613,17 @@ def test_the_mlff_tcp_driver_from_lammps_ini():
         "SEAMM_MDI_ROLE=driver b lmp_serial -mdi "
         "'-role DRIVER -name LAMMPS -method TCP -port 5555' -in input.dat"
     ) in script.splitlines()
+
+
+def test_engine_cpu_threads(monkeypatch):
+    import lammps_step.lammps as lammps_module
+
+    monkeypatch.setattr(
+        lammps_module.os, "sched_getaffinity", lambda pid: set(range(16)), raising=False
+    )
+    assert lammps_module._engine_cpu_threads() == 15
+    assert lammps_module._engine_cpu_threads("4") == 4
+    monkeypatch.setattr(
+        lammps_module.os, "sched_getaffinity", lambda pid: {0}, raising=False
+    )
+    assert lammps_module._engine_cpu_threads() == 1

@@ -566,7 +566,8 @@ class NVE(lammps_step.Energy):
         if extras is not None and "nsteps" in extras:
             nsteps = extras["nsteps"]
         else:
-            time = P["time"].to("fs").magnitude
+            # both in LAMMPS's units: fs for "real", ps for "metal" (MLFFs)
+            time = lammps_step.to_lammps_units(P["time"], quantity="time")
             nsteps = round(time / timestep)
 
         # Have to fix formatting for printing...
@@ -576,9 +577,6 @@ class NVE(lammps_step.Energy):
                 PP[key] = "{:~P}".format(PP[key])
 
         self.description.append(__(self.description_text(), **PP, indent=7 * " "))
-
-        # time = lammps_step.to_lammps_units(P['time'], quantity='time')
-        # nsteps = round(time / timestep)
 
         form = self.parent.ff_form()
         thermo_properties = "time temp press etotal ke pe"

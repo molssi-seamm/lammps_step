@@ -370,6 +370,26 @@ def _usable_gpus(available, visible):
     ]
 
 
+#: A leading NAME=value item of an engine's argv
+_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
+
+
+def _engine_cpu_threads(ncores="available"):
+    """The CPU threads for an MLFF engine running without a GPU.
+
+    The CPUs this process may use (the job's, under a scheduler) less one for the
+    LAMMPS driver, and no more than ``ncores`` unless that is ``"available"``.
+    """
+    try:
+        n = len(os.sched_getaffinity(0))
+    except AttributeError:  # macOS
+        n = os.cpu_count() or 1
+    n = max(1, n - 1)
+    if str(ncores) != "available":
+        n = max(1, min(n, int(ncores)))
+    return n
+
+
 #: Why an MLFF model chemistry runs without a GPU
 _MLFF_ON_CPU = (
     " No GPU is available, so the engine of the machine-learned forcefield runs "
@@ -1383,6 +1403,11 @@ class LAMMPS(seamm.Node):
             device="cuda:0" if gpus else None,
             extra_args=options.get("engine_args") or None,
         )
+        if not gpus and not (engine and _ASSIGNMENT.match(engine[0])):
+            # mdi_bind.sh keeps an engine beside a GPU on one thread; on the CPU
+            # it needs the job's cores, less the one LAMMPS uses
+            n = _engine_cpu_threads(self.global_options.get("ncores", "available"))
+            engine = ["env", f"OMP_NUM_THREADS={n}", f"MKL_NUM_THREADS={n}", *engine]
         where = f" on GPU {gpus[0]}." if gpus else " without a GPU."
         if transport == "MPI":
             text = f"The engine for '{mc['level']}' runs with LAMMPS as an MPI pair"
