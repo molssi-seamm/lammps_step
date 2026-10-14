@@ -8,7 +8,7 @@ import copy
 import importlib
 import json
 import logging
-from math import sqrt, exp, degrees, radians, cos, acos, inf as infinity
+from math import sqrt, exp, degrees, radians, cos, acos
 from pathlib import Path
 import os
 import os.path
@@ -368,6 +368,66 @@ def _usable_gpus(available, visible):
     return [
         logical for logical, physical in enumerate(visible) if physical in available
     ]
+
+
+#: A leading NAME=value item of an engine's argv
+_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
+
+
+def _engine_cpu_threads(ncores="available"):
+    """The CPU threads for an MLFF engine running without a GPU.
+
+    The CPUs this process may use (the job's, under a scheduler) less one for the
+    LAMMPS driver, and no more than ``ncores`` unless that is ``"available"``.
+    """
+    try:
+        n = len(os.sched_getaffinity(0))
+    except AttributeError:  # macOS
+        n = os.cpu_count() or 1
+    n = max(1, n - 1)
+    if str(ncores) != "available":
+        n = max(1, min(n, int(ncores)))
+    return n
+
+
+#: Why an MLFF model chemistry runs without a GPU
+_MLFF_ON_CPU = (
+    " No GPU is available, so the engine of the machine-learned forcefield runs "
+    "on the CPU, which is much slower except for small systems."
+)
+
+
+def _wait_for_gpus(maxload, wait=None, sleep=time.sleep, clock=time.time):
+    """The usable GPUs that are idle, waiting up to ``wait`` seconds for one.
+
+    Parameters
+    ----------
+    maxload : float
+        The load and memory use (a fraction) at or below which a GPU is idle.
+    wait : float or None
+        The seconds to wait for an idle GPU; ``None`` waits as long as it takes.
+    sleep, clock : callable
+        ``time.sleep`` and ``time.time``, replaceable for testing.
+
+    Returns
+    -------
+    [int]
+        The idle GPUs, in CUDA's numbering; empty to run on the CPU. That is at
+        once when this process can never have a GPU -- there is none on the
+        machine, or CUDA_VISIBLE_DEVICES gives it none -- and otherwise when no
+        GPU became idle within ``wait``.
+    """
+    visible = _cuda_visible_devices()
+    t_end = None if wait is None else clock() + wait
+    while True:
+        gpus = _usable_gpus(_available_gpus(maxload), visible)
+        if len(gpus) > 0:
+            return gpus
+        if len(_usable_gpus(_available_gpus(1.0), visible)) == 0:
+            return []
+        if t_end is not None and clock() >= t_end:
+            return []
+        sleep(1)
 
 
 def _free_tcp_port(hostname="localhost"):
@@ -1343,6 +1403,11 @@ class LAMMPS(seamm.Node):
             device="cuda:0" if gpus else None,
             extra_args=options.get("engine_args") or None,
         )
+        if not gpus and not (engine and _ASSIGNMENT.match(engine[0])):
+            # mdi_bind.sh keeps an engine beside a GPU on one thread; on the CPU
+            # it needs the job's cores, less the one LAMMPS uses
+            n = _engine_cpu_threads(self.global_options.get("ncores", "available"))
+            engine = ["env", f"OMP_NUM_THREADS={n}", f"MKL_NUM_THREADS={n}", *engine]
         where = f" on GPU {gpus[0]}." if gpus else " without a GPU."
         if transport == "MPI":
             text = f"The engine for '{mc['level']}' runs with LAMMPS as an MPI pair"
@@ -1433,20 +1498,8 @@ class LAMMPS(seamm.Node):
         # Only worry about GPU's when using PyTorch, for the moment
         if ff_form == "PyTorch" and platform.system() != "Darwin":
             maxload = float(o["gpu_load"]) / 100
-            t0 = time.time()
-            t = o["gpu_wait_time"]
-            if t == "unlimited":
-                t_end = infinity
-            else:
-                t_end = t0 + int(t)
-            visible = _cuda_visible_devices()
-            while True:
-                gpus = _usable_gpus(_available_gpus(maxload), visible)
-                if len(gpus) > 0:
-                    break
-                if time.time() - t0 > t_end:
-                    break
-                time.sleep(1)
+            wait = o["gpu_wait_time"]
+            gpus = _wait_for_gpus(maxload, None if wait == "unlimited" else float(wait))
         else:
             gpus = []
             ngpus = 0
@@ -1476,7 +1529,11 @@ class LAMMPS(seamm.Node):
                     )
                 np = min(np, int(global_options["ncores"]))
             if ff_form == "PyTorch" and platform.system() != "Darwin":
-                if ngpus < 1:
+                if ngpus < 1 and self.mlff_model_chemistry() is not None:
+                    # The engine of an MLFF model chemistry runs on the CPU
+                    np = 1
+                    np_text += _MLFF_ON_CPU
+                elif ngpus < 1:
                     printer.important(
                         "    Using PyTorch forcefield, but no GPUs! Must exit."
                     )
@@ -1484,17 +1541,20 @@ class LAMMPS(seamm.Node):
                         "LAMMPS: PyTorch forcefield requested, but no GPUs!"
                         " Must stop."
                     )
-                np = min(np, ngpus)
-                ngpus = np
-                np_text += (
-                    " Because LAMMPS is using a PyTorch forcefield, the number of GPUs"
-                    f" must be the same as the number of cores = {ngpus}."
-                )
+                else:
+                    np = min(np, ngpus)
+                    ngpus = np
+                    np_text += (
+                        " Because LAMMPS is using a PyTorch forcefield, the number "
+                        f"of GPUs must be the same as the number of cores = {ngpus}."
+                    )
         else:
             np_text = "No parallelism requested: {global_options['parallelism']}"
             np = 1
             if ff_form == "PyTorch":
-                if ngpus < 1:
+                if ngpus < 1 and self.mlff_model_chemistry() is not None:
+                    np_text += _MLFF_ON_CPU
+                elif ngpus < 1:
                     printer.important(
                         "    Using PyTorch forcefield, but no GPUs! Must exit."
                     )
@@ -1502,11 +1562,12 @@ class LAMMPS(seamm.Node):
                         "LAMMPS: PyTorch forcefield requested, but no GPUs!"
                         " Must stop."
                     )
-                ngpus = 1
-                np_text += (
-                    " Because LAMMPS is using a PyTorch forcefield, the number of GPUs"
-                    f" must be the same as the number of cores = {ngpus}."
-                )
+                else:
+                    ngpus = 1
+                    np_text += (
+                        " Because LAMMPS is using a PyTorch forcefield, the number "
+                        f"of GPUs must be the same as the number of cores = {ngpus}."
+                    )
         if ngpus > 0:
             gpus = gpus[0:ngpus]
 
@@ -1711,6 +1772,11 @@ class LAMMPS(seamm.Node):
             "log.cite",
             "run_lammps",
         ]
+        # and what an MLFF model chemistry's engine writes, such as a committee's
+        # spreads, which the cleanup of the run would otherwise remove
+        mc = self.mlff_model_chemistry()
+        if mc is not None:
+            return_files += list((mc.get("options") or {}).get("engine_files") or [])
 
         # Check for already having run
         path = Path(self.directory) / "success.dat"
@@ -1743,7 +1809,7 @@ class LAMMPS(seamm.Node):
 
             # For PyTorch need at least 1 GPU and only 1 MPI process per GPU
             ff_form = self.ff_form()
-            if ff_form == "PyTorch":
+            if ff_form == "PyTorch" and ngpus > 0:
                 if "NGPUS" not in ce:
                     ce["NGPUS"] = ngpus
                 if "NTASKS" not in ce:

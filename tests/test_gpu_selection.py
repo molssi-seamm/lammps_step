@@ -70,3 +70,55 @@ def test_order_follows_the_variable_not_the_hardware():
 def test_uuid_allocation_is_used_whole():
     """Unmappable, but discarding the allocation would be worse."""
     assert _usable_gpus([0, 1], [None, None]) == [0, 1]
+
+
+# --------------------------------------------------------------------------- #
+# Waiting for an idle GPU
+# --------------------------------------------------------------------------- #
+
+
+class _Clock:
+    def __init__(self):
+        self.now = 1.0e9  # an epoch time, as time.time() gives
+
+    def time(self):
+        return self.now
+
+    def sleep(self, seconds):
+        self.now += seconds
+
+
+def _wait(monkeypatch, idle, every, visible=None, wait=None):
+    """_wait_for_gpus with nvidia-smi reporting ``idle`` GPUs at the given load
+    and ``every`` GPU at any load."""
+    from lammps_step import lammps
+
+    if visible is None:
+        monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+    else:
+        monkeypatch.setenv("CUDA_VISIBLE_DEVICES", visible)
+    monkeypatch.setattr(
+        lammps,
+        "_available_gpus",
+        lambda maxload, timeout=10: list(every if maxload >= 1.0 else idle),
+    )
+    clock = _Clock()
+    gpus = lammps._wait_for_gpus(0.1, wait, sleep=clock.sleep, clock=clock.time)
+    return gpus, clock.now - 1.0e9
+
+
+def test_an_idle_gpu_is_used_at_once(monkeypatch):
+    assert _wait(monkeypatch, idle=[1], every=[0, 1]) == ([1], 0)
+
+
+def test_no_gpu_on_the_machine_runs_on_the_cpu_at_once(monkeypatch):
+    assert _wait(monkeypatch, idle=[], every=[]) == ([], 0)
+
+
+def test_an_allocation_without_gpus_runs_on_the_cpu_at_once(monkeypatch):
+    assert _wait(monkeypatch, idle=[], every=[0, 1], visible="") == ([], 0)
+
+
+def test_busy_gpus_are_waited_for_as_long_as_asked(monkeypatch):
+    """A finite wait ends (it once compared the time elapsed with the epoch)."""
+    assert _wait(monkeypatch, idle=[], every=[0, 1], wait=5) == ([], 5)

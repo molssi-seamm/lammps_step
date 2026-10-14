@@ -22,7 +22,12 @@ LAMMPS uses the forcefield or model chemistry chosen before it in the flowchart:
   forcefield and types the atoms that do not yet have types for it;
 * a **Model Chemistry** step with a machine-learned forcefield, ``xnn:MLFF@<model>``:
   its engine runs alongside LAMMPS, each through ``mdi_bind.sh``, with the Model
-  Chemistry step's checkpoint and engine options, on a GPU if the job has one. How the
+  Chemistry step's checkpoint and engine options. It runs on an idle GPU, waiting for
+  one if all are busy (``--gpu-wait-time`` in seconds, unlimited by default). When the
+  job can never have a GPU -- there is none on the machine, or the scheduler gave it
+  none -- it runs on the CPU at once, with the job's cores less one for LAMMPS; on the
+  CPU it is much slower except for small systems. Files the engine writes, such as a
+  committee's ``committee_spreads.csv``, are kept in the step's directory. How the
   two talk depends on where the engine is installed:
 
   - in LAMMPS's own environment (``xnn.ini`` and ``lammps.ini`` name the same one, as
@@ -40,7 +45,8 @@ LAMMPS uses the forcefield or model chemistry chosen before it in the flowchart:
   model added a third to the run time. A fix is proposed in the MDI library;
 * a **Model Chemistry** step with a quantum method, such as ``MOPAC:SQM@PM6-ORG``:
   LAMMPS runs the dynamics and the program computes the energy and forces over MDI;
-* or a **Forcefield** step, as before.
+* or a **Forcefield** step, as before. A PyTorch model from the Forcefield step still
+  needs a GPU on Linux.
 
 If a flowchart has both, the model chemistry is used.
 
