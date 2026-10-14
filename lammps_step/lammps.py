@@ -1772,6 +1772,11 @@ class LAMMPS(seamm.Node):
             "log.cite",
             "run_lammps",
         ]
+        # and what an MLFF model chemistry's engine writes, such as a committee's
+        # spreads, which the cleanup of the run would otherwise remove
+        mc = self.mlff_model_chemistry()
+        if mc is not None:
+            return_files += list((mc.get("options") or {}).get("engine_files") or [])
 
         # Check for already having run
         path = Path(self.directory) / "success.dat"
