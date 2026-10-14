@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.14 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.14.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=c92e1e03"></script>
+    <script src="../../_static/documentation_options.js?v=f0c00ab5"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.14" />
+  <meta name="docsearch:version" content="2026.10.14.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -496,7 +496,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">degrees</span><span class="p">,</span> <span class="n">radians</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">acos</span><span class="p">,</span> <span class="n">inf</span> <span class="k">as</span> <span class="n">infinity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">degrees</span><span class="p">,</span> <span class="n">radians</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">acos</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span>
@@ -862,6 +862,66 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="k">return</span> <span class="p">[</span>
         <span class="n">logical</span> <span class="k">for</span> <span class="n">logical</span><span class="p">,</span> <span class="n">physical</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">visible</span><span class="p">)</span> <span class="k">if</span> <span class="n">physical</span> <span class="ow">in</span> <span class="n">available</span>
     <span class="p">]</span>
+
+
+<span class="c1">#: A leading NAME=value item of an engine's argv</span>
+<span class="n">_ASSIGNMENT</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^[A-Za-z_][A-Za-z0-9_]*="</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_engine_cpu_threads</span><span class="p">(</span><span class="n">ncores</span><span class="o">=</span><span class="s2">"available"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The CPU threads for an MLFF engine running without a GPU.</span>
+
+<span class="sd">    The CPUs this process may use (the job's, under a scheduler) less one for the</span>
+<span class="sd">    LAMMPS driver, and no more than ``ncores`` unless that is ``"available"``.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sched_getaffinity</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>  <span class="c1"># macOS</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">1</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">ncores</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">"available"</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">ncores</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">n</span>
+
+
+<span class="c1">#: Why an MLFF model chemistry runs without a GPU</span>
+<span class="n">_MLFF_ON_CPU</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">" No GPU is available, so the engine of the machine-learned forcefield runs "</span>
+    <span class="s2">"on the CPU, which is much slower except for small systems."</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_wait_for_gpus</span><span class="p">(</span><span class="n">maxload</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sleep</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">,</span> <span class="n">clock</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The usable GPUs that are idle, waiting up to ``wait`` seconds for one.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    maxload : float</span>
+<span class="sd">        The load and memory use (a fraction) at or below which a GPU is idle.</span>
+<span class="sd">    wait : float or None</span>
+<span class="sd">        The seconds to wait for an idle GPU; ``None`` waits as long as it takes.</span>
+<span class="sd">    sleep, clock : callable</span>
+<span class="sd">        ``time.sleep`` and ``time.time``, replaceable for testing.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    [int]</span>
+<span class="sd">        The idle GPUs, in CUDA's numbering; empty to run on the CPU. That is at</span>
+<span class="sd">        once when this process can never have a GPU -- there is none on the</span>
+<span class="sd">        machine, or CUDA_VISIBLE_DEVICES gives it none -- and otherwise when no</span>
+<span class="sd">        GPU became idle within ``wait``.</span>
+<span class="sd">    """</span>
+    <span class="n">visible</span> <span class="o">=</span> <span class="n">_cuda_visible_devices</span><span class="p">()</span>
+    <span class="n">t_end</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">wait</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">clock</span><span class="p">()</span> <span class="o">+</span> <span class="n">wait</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">gpus</span> <span class="o">=</span> <span class="n">_usable_gpus</span><span class="p">(</span><span class="n">_available_gpus</span><span class="p">(</span><span class="n">maxload</span><span class="p">),</span> <span class="n">visible</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gpus</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">gpus</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_usable_gpus</span><span class="p">(</span><span class="n">_available_gpus</span><span class="p">(</span><span class="mf">1.0</span><span class="p">),</span> <span class="n">visible</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">t_end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">clock</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">t_end</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_free_tcp_port</span><span class="p">(</span><span class="n">hostname</span><span class="o">=</span><span class="s2">"localhost"</span><span class="p">):</span>
@@ -1881,6 +1941,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">device</span><span class="o">=</span><span class="s2">"cuda:0"</span> <span class="k">if</span> <span class="n">gpus</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">extra_args</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"engine_args"</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">gpus</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">engine</span> <span class="ow">and</span> <span class="n">_ASSIGNMENT</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">engine</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+            <span class="c1"># mdi_bind.sh keeps an engine beside a GPU on one thread; on the CPU</span>
+            <span class="c1"># it needs the job's cores, less the one LAMMPS uses</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">_engine_cpu_threads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"ncores"</span><span class="p">,</span> <span class="s2">"available"</span><span class="p">))</span>
+            <span class="n">engine</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"env"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"OMP_NUM_THREADS=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"MKL_NUM_THREADS=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="o">*</span><span class="n">engine</span><span class="p">]</span>
         <span class="n">where</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">" on GPU </span><span class="si">{</span><span class="n">gpus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">."</span> <span class="k">if</span> <span class="n">gpus</span> <span class="k">else</span> <span class="s2">" without a GPU."</span>
         <span class="k">if</span> <span class="n">transport</span> <span class="o">==</span> <span class="s2">"MPI"</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"The engine for '</span><span class="si">{</span><span class="n">mc</span><span class="p">[</span><span class="s1">'level'</span><span class="p">]</span><span class="si">}</span><span class="s2">' runs with LAMMPS as an MPI pair"</span>
@@ -1976,20 +2041,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="c1"># Only worry about GPU's when using PyTorch, for the moment</span>
         <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">"PyTorch"</span> <span class="ow">and</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">"Darwin"</span><span class="p">:</span>
             <span class="n">maxload</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="s2">"gpu_load"</span><span class="p">])</span> <span class="o">/</span> <span class="mi">100</span>
-            <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-            <span class="n">t</span> <span class="o">=</span> <span class="n">o</span><span class="p">[</span><span class="s2">"gpu_wait_time"</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="s2">"unlimited"</span><span class="p">:</span>
-                <span class="n">t_end</span> <span class="o">=</span> <span class="n">infinity</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">t_end</span> <span class="o">=</span> <span class="n">t0</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-            <span class="n">visible</span> <span class="o">=</span> <span class="n">_cuda_visible_devices</span><span class="p">()</span>
-            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="n">gpus</span> <span class="o">=</span> <span class="n">_usable_gpus</span><span class="p">(</span><span class="n">_available_gpus</span><span class="p">(</span><span class="n">maxload</span><span class="p">),</span> <span class="n">visible</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gpus</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">break</span>
-                <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span> <span class="o">&gt;</span> <span class="n">t_end</span><span class="p">:</span>
-                    <span class="k">break</span>
-                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">wait</span> <span class="o">=</span> <span class="n">o</span><span class="p">[</span><span class="s2">"gpu_wait_time"</span><span class="p">]</span>
+            <span class="n">gpus</span> <span class="o">=</span> <span class="n">_wait_for_gpus</span><span class="p">(</span><span class="n">maxload</span><span class="p">,</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">wait</span> <span class="o">==</span> <span class="s2">"unlimited"</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">wait</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">gpus</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">ngpus</span> <span class="o">=</span> <span class="mi">0</span>
@@ -2019,7 +2072,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="p">)</span>
                 <span class="n">np</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">global_options</span><span class="p">[</span><span class="s2">"ncores"</span><span class="p">]))</span>
             <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">"PyTorch"</span> <span class="ow">and</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">"Darwin"</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">ngpus</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">ngpus</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlff_model_chemistry</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># The engine of an MLFF model chemistry runs on the CPU</span>
+                    <span class="n">np</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="n">np_text</span> <span class="o">+=</span> <span class="n">_MLFF_ON_CPU</span>
+                <span class="k">elif</span> <span class="n">ngpus</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
                         <span class="s2">"    Using PyTorch forcefield, but no GPUs! Must exit."</span>
                     <span class="p">)</span>
@@ -2027,17 +2084,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <span class="s2">"LAMMPS: PyTorch forcefield requested, but no GPUs!"</span>
                         <span class="s2">" Must stop."</span>
                     <span class="p">)</span>
-                <span class="n">np</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="p">,</span> <span class="n">ngpus</span><span class="p">)</span>
-                <span class="n">ngpus</span> <span class="o">=</span> <span class="n">np</span>
-                <span class="n">np_text</span> <span class="o">+=</span> <span class="p">(</span>
-                    <span class="s2">" Because LAMMPS is using a PyTorch forcefield, the number of GPUs"</span>
-                    <span class="sa">f</span><span class="s2">" must be the same as the number of cores = </span><span class="si">{</span><span class="n">ngpus</span><span class="si">}</span><span class="s2">."</span>
-                <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">np</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="p">,</span> <span class="n">ngpus</span><span class="p">)</span>
+                    <span class="n">ngpus</span> <span class="o">=</span> <span class="n">np</span>
+                    <span class="n">np_text</span> <span class="o">+=</span> <span class="p">(</span>
+                        <span class="s2">" Because LAMMPS is using a PyTorch forcefield, the number "</span>
+                        <span class="sa">f</span><span class="s2">"of GPUs must be the same as the number of cores = </span><span class="si">{</span><span class="n">ngpus</span><span class="si">}</span><span class="s2">."</span>
+                    <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">np_text</span> <span class="o">=</span> <span class="s2">"No parallelism requested: </span><span class="si">{global_options['parallelism']}</span><span class="s2">"</span>
             <span class="n">np</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">"PyTorch"</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">ngpus</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">ngpus</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlff_model_chemistry</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">np_text</span> <span class="o">+=</span> <span class="n">_MLFF_ON_CPU</span>
+                <span class="k">elif</span> <span class="n">ngpus</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
                         <span class="s2">"    Using PyTorch forcefield, but no GPUs! Must exit."</span>
                     <span class="p">)</span>
@@ -2045,11 +2105,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <span class="s2">"LAMMPS: PyTorch forcefield requested, but no GPUs!"</span>
                         <span class="s2">" Must stop."</span>
                     <span class="p">)</span>
-                <span class="n">ngpus</span> <span class="o">=</span> <span class="mi">1</span>
-                <span class="n">np_text</span> <span class="o">+=</span> <span class="p">(</span>
-                    <span class="s2">" Because LAMMPS is using a PyTorch forcefield, the number of GPUs"</span>
-                    <span class="sa">f</span><span class="s2">" must be the same as the number of cores = </span><span class="si">{</span><span class="n">ngpus</span><span class="si">}</span><span class="s2">."</span>
-                <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">ngpus</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="n">np_text</span> <span class="o">+=</span> <span class="p">(</span>
+                        <span class="s2">" Because LAMMPS is using a PyTorch forcefield, the number "</span>
+                        <span class="sa">f</span><span class="s2">"of GPUs must be the same as the number of cores = </span><span class="si">{</span><span class="n">ngpus</span><span class="si">}</span><span class="s2">."</span>
+                    <span class="p">)</span>
         <span class="k">if</span> <span class="n">ngpus</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">gpus</span> <span class="o">=</span> <span class="n">gpus</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">ngpus</span><span class="p">]</span>
 
@@ -2255,6 +2316,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"log.cite"</span><span class="p">,</span>
             <span class="s2">"run_lammps"</span><span class="p">,</span>
         <span class="p">]</span>
+        <span class="c1"># and what an MLFF model chemistry's engine writes, such as a committee's</span>
+        <span class="c1"># spreads, which the cleanup of the run would otherwise remove</span>
+        <span class="n">mc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlff_model_chemistry</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">mc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">return_files</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">((</span><span class="n">mc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"options"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"engine_files"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[])</span>
 
         <span class="c1"># Check for already having run</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"success.dat"</span>
@@ -2287,7 +2353,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
             <span class="c1"># For PyTorch need at least 1 GPU and only 1 MPI process per GPU</span>
             <span class="n">ff_form</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_form</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">"PyTorch"</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">"PyTorch"</span> <span class="ow">and</span> <span class="n">ngpus</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">if</span> <span class="s2">"NGPUS"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ce</span><span class="p">:</span>
                     <span class="n">ce</span><span class="p">[</span><span class="s2">"NGPUS"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ngpus</span>
                 <span class="k">if</span> <span class="s2">"NTASKS"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ce</span><span class="p">:</span>

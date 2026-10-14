@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2026.10.14 documentation</title>
+    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2026.10.14.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=c92e1e03"></script>
+    <script src="../../_static/documentation_options.js?v=f0c00ab5"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.14" />
+  <meta name="docsearch:version" content="2026.10.14.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1064,7 +1064,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">if</span> <span class="n">extras</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">"nsteps"</span> <span class="ow">in</span> <span class="n">extras</span><span class="p">:</span>
             <span class="n">nsteps</span> <span class="o">=</span> <span class="n">extras</span><span class="p">[</span><span class="s2">"nsteps"</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">time</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"fs"</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+            <span class="c1"># both in LAMMPS's units: fs for "real", ps for "metal" (MLFFs)</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"time"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"time"</span><span class="p">)</span>
             <span class="n">nsteps</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">time</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">)</span>
 
         <span class="c1"># Have to fix formatting for printing...</span>
@@ -1074,9 +1075,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"{:~P}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">PP</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description_text</span><span class="p">(),</span> <span class="o">**</span><span class="n">PP</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">))</span>
-
-        <span class="c1"># time = lammps_step.to_lammps_units(P['time'], quantity='time')</span>
-        <span class="c1"># nsteps = round(time / timestep)</span>
 
         <span class="n">form</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">ff_form</span><span class="p">()</span>
         <span class="n">thermo_properties</span> <span class="o">=</span> <span class="s2">"time temp press etotal ke pe"</span>
@@ -1155,9 +1153,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="s2">"""</span><span class="p">)</span>
 
         <span class="c1"># summary output written 10 times during run so we can see progress</span>
-        <span class="n">nevery</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="c1"># (sampling every step of a run of fewer than 100)</span>
+        <span class="n">nevery</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="mi">10</span><span class="p">))</span>
         <span class="n">nfreq</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nsteps</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span>
-        <span class="n">nrepeat</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nfreq</span> <span class="o">/</span> <span class="n">nevery</span><span class="p">)</span>
+        <span class="n">nrepeat</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">nfreq</span> <span class="o">/</span> <span class="n">nevery</span><span class="p">))</span>
         <span class="n">nfreq</span> <span class="o">=</span> <span class="n">nevery</span> <span class="o">*</span> <span class="n">nrepeat</span>
         <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+nve_summary.trj"</span>

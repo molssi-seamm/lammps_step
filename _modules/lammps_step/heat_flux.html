@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.heat_flux &#8212; SEAMM LAMMPS Plug-in 2026.10.14 documentation</title>
+    <title>lammps_step.heat_flux &#8212; SEAMM LAMMPS Plug-in 2026.10.14.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=c92e1e03"></script>
+    <script src="../../_static/documentation_options.js?v=f0c00ab5"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.14" />
+  <meta name="docsearch:version" content="2026.10.14.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1013,9 +1013,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="p">)</span>
             <span class="p">)</span>
 
-        <span class="n">nevery</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="c1"># (sampling every step of a run of fewer than 100)</span>
+        <span class="n">nevery</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="mi">10</span><span class="p">))</span>
         <span class="n">nfreq</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nsteps</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span>
-        <span class="n">nrepeat</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nfreq</span> <span class="o">/</span> <span class="n">nevery</span><span class="p">)</span>
+        <span class="n">nrepeat</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">nfreq</span> <span class="o">/</span> <span class="n">nevery</span><span class="p">))</span>
         <span class="n">nfreq</span> <span class="o">=</span> <span class="n">nevery</span> <span class="o">*</span> <span class="n">nrepeat</span>
 
         <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+heat_flux_summary.trj"</span>

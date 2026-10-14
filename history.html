@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.14 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.14.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=c92e1e03"></script>
+    <script src="_static/documentation_options.js?v=f0c00ab5"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.14" />
+  <meta name="docsearch:version" content="2026.10.14.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.14.1 – Bugfix: MLFF dynamics on the CPU, NVE run length and short runs</dt><dd><ul class="simple">
+<li><p>A machine-learned forcefield from the Model Chemistry step now runs on the CPU
+when the job can have no GPU, using the job’s cores less one for LAMMPS. Before,
+the step either waited forever for a GPU or stopped with “PyTorch forcefield
+requested, but no GPUs!”. The Forcefield step’s PyTorch models still need a GPU.</p></li>
+<li><p>With busy GPUs the step waits for one for <code class="docutils literal notranslate"><span class="pre">--gpu-wait-time</span></code> seconds; a finite
+wait never ended before.</p></li>
+<li><p>NVE dynamics with a machine-learned forcefield, or any model in LAMMPS’s metal
+units, ran 1000 times the steps asked for (e.g. 40,000 steps for 0.02 ps at
+0.5 fs). NVT and NPT were right.</p></li>
+<li><p>Dynamics of fewer than 100 steps (NVE, NVT, NPT, Heat Flux) stopped with “Illegal
+fix ave/time nfreq value: 0”.</p></li>
+<li><p>Files the MLFF engine writes, such as a committee’s spreads, are now kept rather
+than removed when the run finishes.</p></li>
+</ul>
+</dd>
 <dt>2026.10.14 – Bugfix: machine-learned forcefields with the engine in its own environment</dt><dd><ul class="simple">
 <li><p>A machine-learned forcefield from the Model Chemistry step failed on a default
 installation (“xnn: not found”): its engine and LAMMPS were always run as an MPI

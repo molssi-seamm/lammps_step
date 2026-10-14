@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.14 documentation</title>
+    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.14.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=c92e1e03"></script>
+    <script src="../_static/documentation_options.js?v=f0c00ab5"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.14" />
+  <meta name="docsearch:version" content="2026.10.14.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -516,7 +516,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 forcefield and types the atoms that do not yet have types for it;</p></li>
 <li><p>a <strong>Model Chemistry</strong> step with a machine-learned forcefield, <code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;&lt;model&gt;</span></code>:
 its engine runs alongside LAMMPS, each through <code class="docutils literal notranslate"><span class="pre">mdi_bind.sh</span></code>, with the Model
-Chemistry step’s checkpoint and engine options, on a GPU if the job has one. How the
+Chemistry step’s checkpoint and engine options. It runs on an idle GPU, waiting for
+one if all are busy (<code class="docutils literal notranslate"><span class="pre">--gpu-wait-time</span></code> in seconds, unlimited by default). When the
+job can never have a GPU – there is none on the machine, or the scheduler gave it
+none – it runs on the CPU at once, with the job’s cores less one for LAMMPS; on the
+CPU it is much slower except for small systems. Files the engine writes, such as a
+committee’s <code class="docutils literal notranslate"><span class="pre">committee_spreads.csv</span></code>, are kept in the step’s directory. How the
 two talk depends on where the engine is installed:</p>
 <ul class="simple">
 <li><p>in LAMMPS’s own environment (<code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code> and <code class="docutils literal notranslate"><span class="pre">lammps.ini</span></code> name the same one, as
@@ -535,7 +540,8 @@ model added a third to the run time. A fix is proposed in the MDI library;</p>
 </li>
 <li><p>a <strong>Model Chemistry</strong> step with a quantum method, such as <code class="docutils literal notranslate"><span class="pre">MOPAC:SQM&#64;PM6-ORG</span></code>:
 LAMMPS runs the dynamics and the program computes the energy and forces over MDI;</p></li>
-<li><p>or a <strong>Forcefield</strong> step, as before.</p></li>
+<li><p>or a <strong>Forcefield</strong> step, as before. A PyTorch model from the Forcefield step still
+needs a GPU on Linux.</p></li>
 </ul>
 <p>If a flowchart has both, the model chemistry is used.</p>
 </section>
