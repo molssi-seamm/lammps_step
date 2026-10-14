@@ -1,6 +1,21 @@
 =======
 History
 =======
+2026.10.14.1 -- Bugfix: MLFF dynamics on the CPU, NVE run length and short runs
+    * A machine-learned forcefield from the Model Chemistry step now runs on the CPU
+      when the job can have no GPU, using the job's cores less one for LAMMPS. Before,
+      the step either waited forever for a GPU or stopped with "PyTorch forcefield
+      requested, but no GPUs!". The Forcefield step's PyTorch models still need a GPU.
+    * With busy GPUs the step waits for one for ``--gpu-wait-time`` seconds; a finite
+      wait never ended before.
+    * NVE dynamics with a machine-learned forcefield, or any model in LAMMPS's metal
+      units, ran 1000 times the steps asked for (e.g. 40,000 steps for 0.02 ps at
+      0.5 fs). NVT and NPT were right.
+    * Dynamics of fewer than 100 steps (NVE, NVT, NPT, Heat Flux) stopped with "Illegal
+      fix ave/time nfreq value: 0".
+    * Files the MLFF engine writes, such as a committee's spreads, are now kept rather
+      than removed when the run finishes.
+
 2026.10.14 -- Bugfix: machine-learned forcefields with the engine in its own environment
     * A machine-learned forcefield from the Model Chemistry step failed on a default
       installation ("xnn: not found"): its engine and LAMMPS were always run as an MPI
