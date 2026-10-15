@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2026.10.15.2 documentation</title>
+    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2026.10.15.3 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=b6edca86"></script>
+    <script src="../../_static/documentation_options.js?v=12954e9f"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15.2" />
+  <meta name="docsearch:version" content="2026.10.15.3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1320,9 +1320,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="k">def</span><span class="w"> </span><span class="nf">_drop_periodic_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">configuration</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Turn off sampling that needs a periodic cell, for a non-periodic system.</span>
 
-<span class="sd">        The heat flux and the stress are divided by the volume of the cell, so they</span>
-<span class="sd">        are meaningless without one. The GUI cannot hide these choices because it</span>
-<span class="sd">        does not know the structure, so they are turned off here with a warning.</span>
+<span class="sd">        The heat flux and the pressure tensor are divided by the volume of the</span>
+<span class="sd">        cell, so they are meaningless without one. The GUI cannot hide these</span>
+<span class="sd">        choices because it does not know the structure, so they are turned off</span>
+<span class="sd">        here with a warning.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1339,7 +1340,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">""</span>
         <span class="n">dropped</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"heat flux"</span><span class="p">,</span> <span class="s2">"shear stress"</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"heat flux"</span><span class="p">,</span> <span class="s2">"pressure tensor"</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">P</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s2">"never"</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">"never"</span><span class="p">:</span>
                 <span class="n">P</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"never"</span>
                 <span class="n">dropped</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
@@ -1652,22 +1653,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="sa">f</span><span class="s2">"                        title2 '</span><span class="si">{</span><span class="n">title2</span><span class="si">}</span><span class="s2">' &amp;</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="sa">f</span><span class="s2">"                        file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
-        <span class="n">sampling</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"shear stress"</span><span class="p">]</span>
+        <span class="n">sampling</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"pressure tensor"</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">sampling</span> <span class="o">!=</span> <span class="s2">"never"</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">"interval"</span> <span class="ow">in</span> <span class="n">sampling</span><span class="p">:</span>
                 <span class="n">t_s</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">to_lammps_units</span><span class="p">(</span>
-                    <span class="n">P</span><span class="p">[</span><span class="s2">"shear stress rate"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"time"</span>
+                    <span class="n">P</span><span class="p">[</span><span class="s2">"pressure tensor rate"</span><span class="p">],</span> <span class="n">quantity</span><span class="o">=</span><span class="s2">"time"</span>
                 <span class="p">)</span>
                 <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_s</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">P</span><span class="p">[</span><span class="s2">"shear stress number of samples"</span><span class="p">])</span>
-            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+shear_stress.trj"</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">P</span><span class="p">[</span><span class="s2">"pressure tensor number of samples"</span><span class="p">])</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+pressure_tensor.trj"</span>
             <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">P</span><span class="p">[</span><span class="s2">"timestep"</span><span class="p">])</span><span class="o">.</span><span class="n">to_compact</span><span class="p">()</span>
             <span class="n">text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
                 <span class="p">{</span>
                     <span class="s2">"code"</span><span class="p">:</span> <span class="s2">"LAMMPS"</span><span class="p">,</span>
-                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"shear stress"</span><span class="p">,</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"pressure tensor"</span><span class="p">,</span>
                     <span class="s2">"dt"</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span>
                     <span class="s2">"tunits"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">u</span><span class="p">),</span>
                     <span class="s2">"nsteps"</span><span class="p">:</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">n</span><span class="p">,</span>
@@ -1675,11 +1676,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">","</span><span class="p">,</span> <span class="s2">":"</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="n">title1</span> <span class="o">=</span> <span class="s2">"!MolSSI trajectory 2.0 "</span> <span class="o">+</span> <span class="n">text</span>
-            <span class="n">title2</span> <span class="o">=</span> <span class="s2">"Pxy Pxz Pyz"</span>
+            <span class="n">title2</span> <span class="o">=</span> <span class="s2">"Pxx Pyy Pzz Pxy Pxz Pyz"</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="sa">f</span><span class="s2">"fix                 </span><span class="si">{</span><span class="n">nfixes</span><span class="si">}</span><span class="s2"> all ave/time </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> 1 </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> "</span>
-                <span class="s2">"v_pxy v_pxz v_pyz &amp;</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="s2">"v_pxx v_pyy v_pzz v_pxy v_pxz v_pyz &amp;</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="sa">f</span><span class="s2">"                        title1 '</span><span class="si">{</span><span class="n">title1</span><span class="si">}</span><span class="s2">' &amp;</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="sa">f</span><span class="s2">"                        title2 '</span><span class="si">{</span><span class="n">title2</span><span class="si">}</span><span class="s2">' &amp;</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="sa">f</span><span class="s2">"                        file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">"</span>

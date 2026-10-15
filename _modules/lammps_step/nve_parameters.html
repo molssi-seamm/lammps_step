@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nve_parameters &#8212; SEAMM LAMMPS Plug-in 2026.10.15.2 documentation</title>
+    <title>lammps_step.nve_parameters &#8212; SEAMM LAMMPS Plug-in 2026.10.15.3 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=b6edca86"></script>
+    <script src="../../_static/documentation_options.js?v=12954e9f"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15.2" />
+  <meta name="docsearch:version" content="2026.10.15.3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -775,35 +775,35 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Use centroid/stress/atom:"</span><span class="p">,</span>
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"Whether to use centroid/stress/atom"</span><span class="p">,</span>
         <span class="p">},</span>
-        <span class="s2">"shear stress"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"pressure tensor"</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"never"</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"never"</span><span class="p">,</span> <span class="s2">"by number of samples"</span><span class="p">,</span> <span class="s2">"by time interval"</span><span class="p">),</span>
             <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Sample the shear stress:"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Sample the pressure tensor:"</span><span class="p">,</span>
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="p">(</span>
-                <span class="s2">"How to sample the shear stress, usually used for viscosity "</span>
-                <span class="s2">"calculations."</span>
+                <span class="s2">"How to sample the full pressure tensor, usually for the viscosity. "</span>
+                <span class="s2">"Periodic systems only."</span>
             <span class="p">),</span>
         <span class="p">},</span>
-        <span class="s2">"shear stress rate"</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"shear stress"</span><span class="p">:</span> <span class="s2">"by time interval"</span><span class="p">},</span>
+        <span class="s2">"pressure tensor rate"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"pressure tensor"</span><span class="p">:</span> <span class="s2">"by time interval"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"fs"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(),</span>
             <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">".1f"</span><span class="p">,</span>
             <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Time interval:"</span><span class="p">,</span>
-            <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"How often to sample the shear stress"</span><span class="p">,</span>
+            <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"How often to sample the pressure tensor"</span><span class="p">,</span>
         <span class="p">},</span>
-        <span class="s2">"shear stress number of samples"</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"shear stress"</span><span class="p">:</span> <span class="s2">"by number of samples"</span><span class="p">},</span>
+        <span class="s2">"pressure tensor number of samples"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"pressure tensor"</span><span class="p">:</span> <span class="s2">"by number of samples"</span><span class="p">},</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(),</span>
             <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
             <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Number of samples:"</span><span class="p">,</span>
-            <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"How many samples of the shear stress to collect"</span><span class="p">,</span>
+            <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"How many samples of the pressure tensor to collect"</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s2">"trajectory"</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"never"</span><span class="p">,</span>
@@ -930,9 +930,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="c1"># for a fixed length of simulated time.</span>
     <span class="n">not_implemented</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"run_control"</span><span class="p">,</span> <span class="s2">"maximum_time"</span><span class="p">,</span> <span class="s2">"control_properties"</span><span class="p">)</span>
 
+    <span class="c1">#: Parameters renamed since older flowcharts were written: {old: new}. The</span>
+    <span class="c1">#: shear stress (three components) became the full pressure tensor.</span>
+    <span class="n">renamed</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"shear stress"</span><span class="p">:</span> <span class="s2">"pressure tensor"</span><span class="p">,</span>
+        <span class="s2">"shear stress rate"</span><span class="p">:</span> <span class="s2">"pressure tensor rate"</span><span class="p">,</span>
+        <span class="s2">"shear stress number of samples"</span><span class="p">:</span> <span class="s2">"pressure tensor number of samples"</span><span class="p">,</span>
+    <span class="p">}</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="p">{},</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Initialize the instance, by default from the default</span>
 <span class="sd">        parameters given in the class"""</span>
+
+        <span class="c1"># Fix incompatible changes.</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span> <span class="ow">in</span> <span class="n">NVE_Parameters</span><span class="o">.</span><span class="n">renamed</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">old</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">new</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">old</span><span class="p">)</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">defaults</span><span class="o">=</span><span class="p">{</span>

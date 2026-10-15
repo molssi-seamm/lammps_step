@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.15.2 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.15.3 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=b6edca86"></script>
+    <script src="_static/documentation_options.js?v=12954e9f"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15.2" />
+  <meta name="docsearch:version" content="2026.10.15.3" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,25 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.15.3 – Sampling the full pressure tensor, for the viscosity</dt><dd><ul class="simple">
+<li><p>The NVE, NVT and NPT sub-steps can sample the full pressure tensor often, as
+the viscosity needs, with “Sample the pressure tensor”. It replaces “Sample the
+shear stress”, which saved only the three off-diagonal components; flowcharts
+that used it now sample the full tensor.</p></li>
+<li><p>The sampled pressure tensor is written to <code class="docutils literal notranslate"><span class="pre">md.h5md</span></code> as <code class="docutils literal notranslate"><span class="pre">pressure_tensor</span></code>,
+in place of the coarser one from the thermodynamic state, and analysis steps
+such as Viscosity can ask for it to be turned on.</p></li>
+<li><p>Bugfix: “Keep the internal geometry of water molecules fixed”, on by default,
+did nothing since 2020, so water was always flexible. Water molecules (an O
+bonded to two H’s) are now held rigid with RATTLE.</p></li>
+<li><p>Bugfix: “Fix X-H bond lengths” in the Initialization sub-step looked up the
+elements of the wrong atoms, so it stopped with an error or constrained the
+wrong bonds.</p></li>
+<li><p>Bugfix: the nacl_water forcefield, with SPC/E water and ions, could not be used:
+LAMMPS stopped with “Special bonds not implemented”.</p></li>
+<li><p>Requires seamm-md-analysis 2026.10.15.2.</p></li>
+</ul>
+</dd>
 <dt>2026.10.15.2 – Analysis steps can check and adjust the MD before it runs</dt><dd><ul class="simple">
 <li><p>The NVE, NVT, NPT and Heat Flux sub-steps tell analysis steps what each run will
 sample, before it runs, and can turn on sampling an analysis needs.</p></li>
