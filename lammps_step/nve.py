@@ -789,6 +789,29 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol
             "use python": False,
         }
 
+    def md_provides(self):
+        """What this run will write to md.h5md, from its parameters.
+
+        Returns
+        -------
+        seamm_md_analysis.Provides
+        """
+        return lammps_step.md_provides.md_provides(self)
+
+    def request_sampling(self, need):
+        """Turn on the sampling an analysis needs, if possible.
+
+        Parameters
+        ----------
+        need : seamm_md_analysis.Need
+
+        Returns
+        -------
+        str or None
+            A description of the change, or None if it could not be made.
+        """
+        return lammps_step.md_provides.request_sampling(self, need)
+
     def _drop_periodic_sampling(self, P, configuration):
         """Turn off sampling that needs a periodic cell, for a non-periodic system.
 
