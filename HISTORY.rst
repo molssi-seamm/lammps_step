@@ -1,6 +1,13 @@
 =======
 History
 =======
+2026.10.15.2 -- Analysis steps can check and adjust the MD before it runs
+    * The NVE, NVT, NPT and Heat Flux sub-steps tell analysis steps what each run will
+      sample, before it runs, and can turn on sampling an analysis needs.
+    * Just before LAMMPS runs, the analysis steps that will read its MD check the
+      structure, so that, for example, Diffusivity stops the job before the MD if the
+      system is not periodic.
+
 2026.10.15.1 -- The MD data in H5MD files; non-periodic systems
     * At the end of each NVE, NVT, NPT and Heat Flux sub-step, everything the run sampled
       is written to ``md.h5md`` in the sub-step's directory: the time series, the full

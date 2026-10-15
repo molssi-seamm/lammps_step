@@ -24,6 +24,7 @@ from .lammps import dihedral_style
 from .lammps import improper_style
 
 from .lammps import LAMMPS
+from . import md_provides  # noqa: F401
 from .lammps_step import LAMMPSStep
 from .tk_lammps import TkLAMMPS
 

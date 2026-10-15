@@ -223,6 +223,14 @@ class HeatFlux(NVE):
         """The git version of this module."""
         return lammps_step.__git_revision__
 
+    def md_provides(self):
+        """What this run will write to md.h5md: the heat flux every two steps."""
+        from seamm_md_analysis import Interval
+
+        provides = super().md_provides()
+        provides.data["heat_flux"] = Interval(steps=2)
+        return provides
+
     def description_text(self, P=None):
         """Create the text description of what this step will do.
         The dictionary of control values is passed in as P so that

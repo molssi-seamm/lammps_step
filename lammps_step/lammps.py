@@ -1485,6 +1485,9 @@ class LAMMPS(seamm.Node):
             self.logger.error("LAMMPS run(): there is no structure!")
             raise RuntimeError("LAMMPS run(): there is no structure!")
 
+        # Let the analysis steps that will read this MD check the structure first
+        self.check_following_analyses(configuration)
+
         # Initialize storage
         self._results = {}
 
@@ -2250,6 +2253,51 @@ class LAMMPS(seamm.Node):
             )
             raise
         return ret
+
+    def following_nodes(self):
+        """The steps after this one in execution order, up to the next LAMMPS step.
+
+        Loop bodies after this step are not entered; a loop around this step is
+        left through its exit. Only the flowchart's edges are followed, so no
+        step's state changes.
+        """
+        flowchart = self.flowchart
+        result = []
+        seen = {id(self)}
+        node = self
+        while True:
+            following = None
+            for edge in flowchart.edges(node, direction="out"):
+                if edge.edge_type != "execution":
+                    continue
+                if edge.edge_subtype in ("next", "exit"):
+                    following = edge.node2
+            if following is None or id(following) in seen:
+                break
+            if isinstance(following, LAMMPS):
+                break
+            seen.add(id(following))
+            result.append(following)
+            node = following
+        return result
+
+    def check_following_analyses(self, configuration):
+        """Ask the analysis steps that will read this MD whether the structure suits.
+
+        Each step after this one, up to the next LAMMPS step, that has a
+        ``check_configuration`` method is asked. One that cannot use the structure,
+        e.g. an analysis needing a periodic system, raises an exception, so the job
+        stops before the MD rather than after it.
+
+        Parameters
+        ----------
+        configuration : molsystem._Configuration
+            The structure about to be simulated.
+        """
+        for node in self.following_nodes():
+            check = getattr(node, "check_configuration", None)
+            if check is not None:
+                check(configuration)
 
     def check_for_lammps_error(self, result=None):
         """Raise an error, with a readable message, if LAMMPS failed."""
