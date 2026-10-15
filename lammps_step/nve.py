@@ -14,6 +14,7 @@ from tabulate import tabulate
 
 import lammps_step
 from lammps_step import from_lammps_units
+from lammps_step.md_h5md import write_md_h5md
 import logging
 import seamm
 from seamm_util import ureg, Q_, units_class  # noqa: F401
@@ -363,6 +364,13 @@ class NVE(lammps_step.Energy):
                         text += "\n\n"
                     printer.normal(__(text, indent=8 * " ", wrap=True, dedent=True))
 
+        # Write the MD data as H5MD for the analysis steps
+        text = write_md_h5md(
+            self, P, initial_configuration, wall_time=data.get("loop time")
+        )
+        printer.normal(__(text, indent=self.indent + 4 * " "))
+        printer.normal("")
+
         # Save the trajectory to a new system and its configurations
         if P["trajectory save"]:
             text = self._save_trajectory(P)
@@ -563,6 +571,7 @@ class NVE(lammps_step.Energy):
         _, configuration = self.get_system_configuration()
 
         timestep, P["timestep"] = self.timestep(P["timestep"])
+        sampling_warning = self._drop_periodic_sampling(P, configuration)
 
         if extras is not None and "nsteps" in extras:
             nsteps = extras["nsteps"]
@@ -578,6 +587,8 @@ class NVE(lammps_step.Energy):
                 PP[key] = "{:~P}".format(PP[key])
 
         self.description.append(__(self.description_text(), **PP, indent=7 * " "))
+        if sampling_warning != "":
+            self.description.append(__(sampling_warning, indent=7 * " "))
 
         form = self.parent.ff_form()
         thermo_properties = "time temp press etotal ke pe"
@@ -585,8 +596,13 @@ class NVE(lammps_step.Energy):
         # LAMMPS computes no bonded/pair terms -- those columns would be all zero.
         if form not in ("PyTorch", "MDI/QM"):
             thermo_properties += " ebond eangle edihed eimp evdwl etail ecoul elong"
-        properties = "v_time v_temp v_press v_etotal v_ke v_pe v_emol v_epair"
-        title2 = "tstep t T P Etot Eke Epe Emol Epair"
+        if configuration.periodicity == 3:
+            properties = "v_time v_temp v_press v_etotal v_ke v_pe v_emol v_epair"
+            title2 = "tstep t T P Etot Eke Epe Emol Epair"
+        else:
+            # The pressure of a non-periodic system is meaningless
+            properties = "v_time v_temp v_etotal v_ke v_pe v_emol v_epair"
+            title2 = "tstep t T Etot Eke Epe Emol Epair"
         if configuration.periodicity == 3:
             properties += " v_sxx v_syy v_szz v_syz v_sxz v_sxy"
             title2 += " Sxx Syy Szz Syz Sxz Sxy"
@@ -773,6 +789,40 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol
             "use python": False,
         }
 
+    def _drop_periodic_sampling(self, P, configuration):
+        """Turn off sampling that needs a periodic cell, for a non-periodic system.
+
+        The heat flux and the stress are divided by the volume of the cell, so they
+        are meaningless without one. The GUI cannot hide these choices because it
+        does not know the structure, so they are turned off here with a warning.
+
+        Parameters
+        ----------
+        P : dict
+            The parameters of the step, changed in place.
+        configuration : molsystem._Configuration
+            The configuration that will be simulated.
+
+        Returns
+        -------
+        str
+            A warning for the description, or "" if nothing was changed.
+        """
+        if configuration.periodicity != 0:
+            return ""
+        dropped = []
+        for key in ("heat flux", "shear stress"):
+            if P.get(key, "never") != "never":
+                P[key] = "never"
+                dropped.append(key)
+        if len(dropped) == 0:
+            return ""
+        return (
+            "Warning: the system is not periodic, so the "
+            + " and the ".join(dropped)
+            + " will not be sampled. They need the volume of a periodic cell."
+        )
+
     def timestep(self, value):
         """Get the timestep in the correct units.
 
@@ -911,8 +961,15 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol
                 separators=(",", ":"),
             )
             title1 = "!MolSSI trajectory 2.0 " + text
-            title2 += " Sxx Syy Szz Syz Sxz Sxy"
-            properties += " v_sxx v_syy v_szz v_syz v_sxz v_sxy"
+            _, configuration = self.get_system_configuration()
+            if configuration.periodicity == 3:
+                title2 += " Sxx Syy Szz Syz Sxz Sxy"
+                properties += " v_sxx v_syy v_szz v_syz v_sxz v_sxy"
+            else:
+                # No pressure for a non-periodic system: it is meaningless, and
+                # the stress variables do not exist
+                properties = properties.replace(" v_press", "")
+                title2 = title2.replace(" P ", " ")
             lines.append(
                 "\n"
                 f"fix                 {nfixes} all ave/time {n} 1 {n} "

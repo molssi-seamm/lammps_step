@@ -264,6 +264,12 @@ class HeatFlux(NVE):
             context=seamm.flowchart_variables._data
         )
         _, configuration = self.get_system_configuration()
+        if configuration.periodicity == 0:
+            raise RuntimeError(
+                "The heat flux of a non-periodic system is meaningless, because it "
+                "is divided by the volume of the periodic cell. Use a periodic "
+                "system for the Heat Flux sub-step."
+            )
 
         time = lammps_step.to_lammps_units(P["time"], quantity="time")
         timestep, P["timestep"] = self.timestep(P["timestep"])

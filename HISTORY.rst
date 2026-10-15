@@ -1,6 +1,18 @@
 =======
 History
 =======
+2026.10.15.1 -- The MD data in H5MD files; non-periodic systems
+    * At the end of each NVE, NVT, NPT and Heat Flux sub-step, everything the run sampled
+      is written to ``md.h5md`` in the sub-step's directory: the time series, the full
+      pressure tensor, the trajectory and centres of mass with the box of each frame,
+      and the run's parameters and provenance. The analysis steps read it. LAMMPS's own
+      files are still written and kept.
+    * Each MD run is recorded in the variable ``_md_runs``.
+    * Bugfix: sampling the trajectory of a non-periodic system (a molecule or cluster)
+      failed with "Variable name sxx ... does not exist". For a non-periodic system the
+      pressure is no longer reported, the heat flux and shear stress are not sampled
+      (with a warning), and the Heat Flux sub-step stops with a clear message.
+
 2026.10.15 -- Bugfix: the heat flux was far too large
     * The Heat Flux sub-step removes each atom's average energy and stress from the
       heat flux, to reduce its noise. The stress was handed to LAMMPS in the wrong
