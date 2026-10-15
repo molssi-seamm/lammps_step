@@ -3719,7 +3719,11 @@ class LAMMPS(seamm.Node):
 
         # And the result is ....
         if len(bond_types) > 0:
-            result = "fix                 {} all rattle 0.001 20 1000 b "
+            # SHAKE, not RATTLE: with LAMMPS's fix rattle, rigid SPC/E water had a
+            # pressure about 850 atm too high, an anisotropic pressure tensor and a
+            # drifting center of mass, whatever its tolerance. SHAKE gives the
+            # right pressure and conserves momentum.
+            result = "fix                 {} all shake 1.0e-6 50 1000 b "
             for bond_type in bond_types.keys():
                 result += " " + str(bond_type)
             if len(angle_types) > 0:

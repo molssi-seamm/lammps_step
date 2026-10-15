@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Tests of the constraints (fix rattle) for rigid waters and X-H bonds."""
+"""Tests of the constraints (fix shake) for rigid waters and X-H bonds."""
 
 from lammps_step.lammps import LAMMPS
 
@@ -44,9 +44,9 @@ def test_rigid_waters():
     line = fix()
     assert line.split()[2:] == [
         "all",
-        "rattle",
-        "0.001",
-        "20",
+        "shake",
+        "1.0e-6",
+        "50",
         "1000",
         "b",
         "1",
