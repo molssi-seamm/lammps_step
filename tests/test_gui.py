@@ -111,7 +111,7 @@ SAMPLED = (
     "atomic velocities",
     "com velocities",
     "heat flux",
-    "shear stress",
+    "pressure tensor",
 )
 
 

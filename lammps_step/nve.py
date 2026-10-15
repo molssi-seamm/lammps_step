@@ -815,9 +815,10 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol
     def _drop_periodic_sampling(self, P, configuration):
         """Turn off sampling that needs a periodic cell, for a non-periodic system.
 
-        The heat flux and the stress are divided by the volume of the cell, so they
-        are meaningless without one. The GUI cannot hide these choices because it
-        does not know the structure, so they are turned off here with a warning.
+        The heat flux and the pressure tensor are divided by the volume of the
+        cell, so they are meaningless without one. The GUI cannot hide these
+        choices because it does not know the structure, so they are turned off
+        here with a warning.
 
         Parameters
         ----------
@@ -834,7 +835,7 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol
         if configuration.periodicity != 0:
             return ""
         dropped = []
-        for key in ("heat flux", "shear stress"):
+        for key in ("heat flux", "pressure tensor"):
             if P.get(key, "never") != "never":
                 P[key] = "never"
                 dropped.append(key)
@@ -1142,22 +1143,22 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol
                 f"                        title2 '{title2}' &\n"
                 f"                        file {filename}"
             )
-        sampling = P["shear stress"]
+        sampling = P["pressure tensor"]
         if sampling != "never":
             if "interval" in sampling:
                 t_s = lammps_step.to_lammps_units(
-                    P["shear stress rate"], quantity="time"
+                    P["pressure tensor rate"], quantity="time"
                 )
                 n = max(1, round(t_s / timestep))
             else:
-                n = max(1, nsteps // P["shear stress number of samples"])
-            filename = f"@{self._id[-1]}+shear_stress.trj"
+                n = max(1, nsteps // P["pressure tensor number of samples"])
+            filename = f"@{self._id[-1]}+pressure_tensor.trj"
             nfixes += 1
             dt = (n * P["timestep"]).to_compact()
             text = json.dumps(
                 {
                     "code": "LAMMPS",
-                    "type": "shear stress",
+                    "type": "pressure tensor",
                     "dt": dt.magnitude,
                     "tunits": str(dt.u),
                     "nsteps": nsteps // n,
@@ -1165,11 +1166,11 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol
                 separators=(",", ":"),
             )
             title1 = "!MolSSI trajectory 2.0 " + text
-            title2 = "Pxy Pxz Pyz"
+            title2 = "Pxx Pyy Pzz Pxy Pxz Pyz"
             lines.append(
                 "\n"
                 f"fix                 {nfixes} all ave/time {n} 1 {n} "
-                "v_pxy v_pxz v_pyz &\n"
+                "v_pxx v_pyy v_pzz v_pxy v_pxz v_pyz &\n"
                 f"                        title1 '{title1}' &\n"
                 f"                        title2 '{title2}' &\n"
                 f"                        file {filename}"

@@ -569,6 +569,10 @@ class Initialization(seamm.Node):
             elif "cff" in ffname:
                 lines.append("special_bonds       lj/coul 0.0 0.0 1.0")
                 lines.append("")
+            elif "nacl_water" in ffname:
+                # Only water and ions, so no 1-4 pairs; exclude 1-2 and 1-3
+                lines.append("special_bonds       lj/coul 0.0 0.0 0.0")
+                lines.append("")
             else:
                 raise RuntimeError(
                     f"Special bonds not implemented for this force field: {ffname}"

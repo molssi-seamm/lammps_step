@@ -49,10 +49,10 @@ sampling_parameters = {
         "com velocities number of samples",
     ),
     "heat_flux": ("heat flux", "heat flux rate", "heat flux number of samples"),
-    "pressure_offdiagonal": (
-        "shear stress",
-        "shear stress rate",
-        "shear stress number of samples",
+    "pressure_tensor": (
+        "pressure tensor",
+        "pressure tensor rate",
+        "pressure tensor number of samples",
     ),
 }
 

@@ -13,4 +13,4 @@ tabulate
 model-chemistry-step>=2026.10.12.1
 forcefield-step>=2026.10.12.1
 xnn-step>=2026.10.12
-seamm-md-analysis>=2026.10.15.1
+seamm-md-analysis>=2026.10.15.2
