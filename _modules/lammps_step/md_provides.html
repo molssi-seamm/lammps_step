@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>lammps_step.md_provides &#8212; SEAMM LAMMPS Plug-in 2026.10.15.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=c224919a" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
+<!-- End Google Tag Manager -->
+
+    <script src="../../_static/documentation_options.js?v=b6edca86"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lammps_step/md_provides';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.15.2" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/SEAMM logo.png" class="logo__image only-light" alt=""/>
+    <img src="../../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">LAMMPS Step</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../developer_guide/index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API Documentation
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../authors.html">
+    Development Team
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../history.html">
+    History
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/lammps_step" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../developer_guide/index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../authors.html">
+    Development Team
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../history.html">
+    History
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/lammps_step" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lammps_step.md_provides</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for lammps_step.md_provides</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">"""What the LAMMPS MD sub-steps will write to md.h5md, known from their parameters.</span>
+
+<span class="sd">The NVE, NVT, NPT and Heat Flux sub-steps use these to tell analysis steps what a</span>
+<span class="sd">run will provide (``md_provides``) before it runs, and to turn on sampling an</span>
+<span class="sd">analysis needs (``request_sampling``). The names are those of the H5MD file (see</span>
+<span class="sd">seamm_md_analysis, "The H5MD file").</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">seamm</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1">#: The observables in the state files, and those of NPT runs</span>
+<span class="n">state_observables</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"temperature"</span><span class="p">,</span>
+    <span class="s2">"pressure"</span><span class="p">,</span>
+    <span class="s2">"pressure_tensor"</span><span class="p">,</span>
+    <span class="s2">"total_energy"</span><span class="p">,</span>
+    <span class="s2">"kinetic_energy"</span><span class="p">,</span>
+    <span class="s2">"potential_energy"</span><span class="p">,</span>
+    <span class="s2">"pair_energy"</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">npt_observables</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"volume"</span><span class="p">,</span> <span class="s2">"density"</span><span class="p">)</span>
+
+<span class="c1">#: The sampling parameters for each name: (choice, rate, number of samples)</span>
+<span class="n">sampling_parameters</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"all/position"</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">"atomic positions"</span><span class="p">,</span>
+        <span class="s2">"atomic positions rate"</span><span class="p">,</span>
+        <span class="s2">"atomic positions number of samples"</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="s2">"all/velocity"</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">"atomic velocities"</span><span class="p">,</span>
+        <span class="s2">"atomic velocities rate"</span><span class="p">,</span>
+        <span class="s2">"atomic velocities number of samples"</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="s2">"molecules/position"</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">"com positions"</span><span class="p">,</span>
+        <span class="s2">"com positions rate"</span><span class="p">,</span>
+        <span class="s2">"com positions number of samples"</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="s2">"molecules/velocity"</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">"com velocities"</span><span class="p">,</span>
+        <span class="s2">"com velocities rate"</span><span class="p">,</span>
+        <span class="s2">"com velocities number of samples"</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="s2">"heat_flux"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"heat flux"</span><span class="p">,</span> <span class="s2">"heat flux rate"</span><span class="p">,</span> <span class="s2">"heat flux number of samples"</span><span class="p">),</span>
+    <span class="s2">"pressure_offdiagonal"</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">"shear stress"</span><span class="p">,</span>
+        <span class="s2">"shear stress rate"</span><span class="p">,</span>
+        <span class="s2">"shear stress number of samples"</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="static_value">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.md_provides.static_value">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">static_value</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A parameter's value before the run, or None if it cannot be known yet.</span>
+
+<span class="sd">    A variable or expression is evaluated if the flowchart's variables already</span>
+<span class="sd">    define it (at run time); otherwise it is unknown.</span>
+<span class="sd">    """</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parameters</span>
+    <span class="k">if</span> <span class="n">parameters</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">parameter</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">parameter</span><span class="o">.</span><span class="n">is_expr</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">parameter</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parameter</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_interval</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">choice</span><span class="p">,</span> <span class="n">rate</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_md_analysis</span><span class="w"> </span><span class="kn">import</span> <span class="n">Interval</span>
+
+    <span class="n">mode</span> <span class="o">=</span> <span class="n">static_value</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">choice</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Interval</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"never"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s2">"interval"</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Interval</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">static_value</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">rate</span><span class="p">))</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">static_value</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Interval</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">time</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Interval</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="md_provides">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.md_provides.md_provides">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">md_provides</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""What an NVE, NVT or NPT sub-step will write to md.h5md.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    node : lammps_step.NVE</span>
+<span class="sd">        The sub-step.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    seamm_md_analysis.Provides</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_md_analysis</span><span class="w"> </span><span class="kn">import</span> <span class="n">Interval</span><span class="p">,</span> <span class="n">Provides</span>
+
+    <span class="n">time</span> <span class="o">=</span> <span class="n">static_value</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"time"</span><span class="p">)</span>
+    <span class="n">timestep</span> <span class="o">=</span> <span class="n">static_value</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"timestep"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">timestep</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">timestep</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># "normal" etc. depend on the masses</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">sampling</span> <span class="o">=</span> <span class="n">static_value</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"sampling"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sampling</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">sampling</span> <span class="o">!=</span> <span class="s2">"none"</span><span class="p">:</span>
+        <span class="n">interval</span> <span class="o">=</span> <span class="n">Interval</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">sampling</span><span class="p">)</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">state_observables</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">node</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"NPT"</span><span class="p">:</span>
+            <span class="n">names</span> <span class="o">+=</span> <span class="n">npt_observables</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">interval</span>
+
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">choice</span><span class="p">,</span> <span class="n">rate</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span> <span class="ow">in</span> <span class="n">sampling_parameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">interval</span> <span class="o">=</span> <span class="n">_interval</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">choice</span><span class="p">,</span> <span class="n">rate</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">interval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">interval</span>
+
+    <span class="c1"># The trajectory: in "all" unless atomic positions are sampled too</span>
+    <span class="n">trajectory</span> <span class="o">=</span> <span class="n">_interval</span><span class="p">(</span>
+        <span class="n">node</span><span class="p">,</span> <span class="s2">"trajectory"</span><span class="p">,</span> <span class="s2">"trajectory rate"</span><span class="p">,</span> <span class="s2">"trajectory number of samples"</span><span class="p">,</span> <span class="n">time</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">trajectory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="s2">"trajectory"</span> <span class="k">if</span> <span class="s2">"all/position"</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">else</span> <span class="s2">"all"</span>
+        <span class="n">data</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2">/position"</span><span class="p">]</span> <span class="o">=</span> <span class="n">trajectory</span>
+        <span class="k">if</span> <span class="n">static_value</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"trajectory velocities"</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"all/velocity"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2">/velocity"</span><span class="p">]</span> <span class="o">=</span> <span class="n">trajectory</span>
+        <span class="k">if</span> <span class="n">static_value</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"trajectory forces"</span><span class="p">):</span>
+            <span class="n">data</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2">/force"</span><span class="p">]</span> <span class="o">=</span> <span class="n">trajectory</span>
+
+    <span class="n">parent</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"parent"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">step</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">title</span> <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">parent</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2"> / </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">return</span> <span class="n">Provides</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">timestep</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="request_sampling">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.md_provides.request_sampling">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">request_sampling</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">need</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Turn on the sampling a need asks for, if possible.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    node : lammps_step.NVE</span>
+<span class="sd">        The sub-step to change.</span>
+<span class="sd">    need : seamm_md_analysis.Need</span>
+<span class="sd">        What is needed; its first name that this step can sample is used.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str or None</span>
+<span class="sd">        A description of the change for the output, or None if the step could not</span>
+<span class="sd">        provide it (e.g. the interval is in steps and the timestep is not known).</span>
+<span class="sd">    """</span>
+    <span class="n">timestep</span> <span class="o">=</span> <span class="n">static_value</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"timestep"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">timestep</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">timestep</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">need</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sampling_parameters</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">choice</span><span class="p">,</span> <span class="n">rate</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">sampling_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="n">interval</span> <span class="o">=</span> <span class="n">need</span><span class="o">.</span><span class="n">max_time</span> <span class="k">if</span> <span class="n">need</span><span class="o">.</span><span class="n">sample_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">need</span><span class="o">.</span><span class="n">sample_time</span>
+        <span class="k">if</span> <span class="n">need</span><span class="o">.</span><span class="n">max_steps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">timestep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">by_steps</span> <span class="o">=</span> <span class="n">need</span><span class="o">.</span><span class="n">max_steps</span> <span class="o">*</span> <span class="n">timestep</span>
+            <span class="k">if</span> <span class="n">interval</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">by_steps</span> <span class="o">&lt;</span> <span class="n">interval</span><span class="p">:</span>
+                <span class="n">interval</span> <span class="o">=</span> <span class="n">by_steps</span>
+        <span class="k">if</span> <span class="n">interval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">interval</span> <span class="o">=</span> <span class="n">interval</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"fs"</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">choice</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">"by time interval"</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">rate</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">interval</span><span class="o">.</span><span class="n">magnitude</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">rate</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">"fs"</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"turned on sampling of </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> every </span><span class="si">{</span><span class="n">interval</span><span class="si">:</span><span class="s2">~P</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

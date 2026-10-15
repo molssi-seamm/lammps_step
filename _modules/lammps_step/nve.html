@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2026.10.15.1 documentation</title>
+    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2026.10.15.2 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=811540ec"></script>
+    <script src="../../_static/documentation_options.js?v=b6edca86"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15.1" />
+  <meta name="docsearch:version" content="2026.10.15.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1286,6 +1286,35 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"postscript"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
             <span class="s2">"use python"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
         <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="NVE.md_provides">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nve.NVE.md_provides">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">md_provides</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""What this run will write to md.h5md, from its parameters.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        seamm_md_analysis.Provides</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">md_provides</span><span class="o">.</span><span class="n">md_provides</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NVE.request_sampling">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nve.NVE.request_sampling">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">request_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">need</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Turn on the sampling an analysis needs, if possible.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        need : seamm_md_analysis.Need</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str or None</span>
+<span class="sd">            A description of the change, or None if it could not be made.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">md_provides</span><span class="o">.</span><span class="n">request_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">need</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_drop_periodic_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">configuration</span><span class="p">):</span>

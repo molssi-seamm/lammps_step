@@ -148,6 +148,14 @@ lammps\_step.md\_h5md module
    :show-inheritance:
    :undoc-members:
 
+lammps\_step.md\_provides module
+--------------------------------
+
+.. automodule:: lammps_step.md_provides
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 lammps\_step.metadata module
 ----------------------------
 

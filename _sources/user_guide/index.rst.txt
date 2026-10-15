@@ -97,6 +97,15 @@ be followed as before and nothing is lost if it stops.
 Each run is also recorded in the variable ``_md_runs``, which analysis steps later in
 the flowchart use to find the data.
 
+Analysis steps check the MD before it runs. When a flowchart is checked (in the
+editor before submitting, with ``seamm-flowchart validate``, and when a job starts), an
+analysis step that reads the MD before it is told what each NVE, NVT, NPT or Heat Flux
+sub-step will sample, and reports anything missing or too coarse. An analysis step
+that runs its own MD turns on what is missing itself, and says so in the output. And
+just before LAMMPS runs, the analysis steps that will read its MD check the structure,
+so that, for example, Diffusivity stops the job before the MD if the system is not
+periodic.
+
 Non-periodic systems
 ====================
 

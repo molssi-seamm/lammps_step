@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.15.1 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.15.2 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=811540ec"></script>
+    <script src="../../_static/documentation_options.js?v=b6edca86"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15.1" />
+  <meta name="docsearch:version" content="2026.10.15.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -2028,6 +2028,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"LAMMPS run(): there is no structure!"</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"LAMMPS run(): there is no structure!"</span><span class="p">)</span>
 
+        <span class="c1"># Let the analysis steps that will read this MD check the structure first</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_following_analyses</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+
         <span class="c1"># Initialize storage</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_results</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -2794,6 +2797,57 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">)</span>
             <span class="k">raise</span>
         <span class="k">return</span> <span class="n">ret</span>
+
+<div class="viewcode-block" id="LAMMPS.following_nodes">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.following_nodes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">following_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The steps after this one in execution order, up to the next LAMMPS step.</span>
+
+<span class="sd">        Loop bodies after this step are not entered; a loop around this step is</span>
+<span class="sd">        left through its exit. Only the flowchart's edges are followed, so no</span>
+<span class="sd">        step's state changes.</span>
+<span class="sd">        """</span>
+        <span class="n">flowchart</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">seen</span> <span class="o">=</span> <span class="p">{</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)}</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">following</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">flowchart</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"out"</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">edge</span><span class="o">.</span><span class="n">edge_type</span> <span class="o">!=</span> <span class="s2">"execution"</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">edge</span><span class="o">.</span><span class="n">edge_subtype</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"next"</span><span class="p">,</span> <span class="s2">"exit"</span><span class="p">):</span>
+                    <span class="n">following</span> <span class="o">=</span> <span class="n">edge</span><span class="o">.</span><span class="n">node2</span>
+            <span class="k">if</span> <span class="n">following</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">id</span><span class="p">(</span><span class="n">following</span><span class="p">)</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">following</span><span class="p">,</span> <span class="n">LAMMPS</span><span class="p">):</span>
+                <span class="k">break</span>
+            <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">following</span><span class="p">))</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">following</span><span class="p">)</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">following</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="LAMMPS.check_following_analyses">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.check_following_analyses">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_following_analyses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configuration</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Ask the analysis steps that will read this MD whether the structure suits.</span>
+
+<span class="sd">        Each step after this one, up to the next LAMMPS step, that has a</span>
+<span class="sd">        ``check_configuration`` method is asked. One that cannot use the structure,</span>
+<span class="sd">        e.g. an analysis needing a periodic system, raises an exception, so the job</span>
+<span class="sd">        stops before the MD rather than after it.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        configuration : molsystem._Configuration</span>
+<span class="sd">            The structure about to be simulated.</span>
+<span class="sd">        """</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">following_nodes</span><span class="p">():</span>
+            <span class="n">check</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"check_configuration"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">check</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">check</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="LAMMPS.check_for_lammps_error">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.lammps.LAMMPS.check_for_lammps_error">[docs]</a>

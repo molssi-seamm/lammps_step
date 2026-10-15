@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.15.1 documentation</title>
+    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.15.2 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=811540ec"></script>
+    <script src="../_static/documentation_options.js?v=b6edca86"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15.1" />
+  <meta name="docsearch:version" content="2026.10.15.2" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -588,6 +588,14 @@ LAMMPS still writes its usual files during the run, and they are kept, so a run 
 be followed as before and nothing is lost if it stops.</p>
 <p>Each run is also recorded in the variable <code class="docutils literal notranslate"><span class="pre">_md_runs</span></code>, which analysis steps later in
 the flowchart use to find the data.</p>
+<p>Analysis steps check the MD before it runs. When a flowchart is checked (in the
+editor before submitting, with <code class="docutils literal notranslate"><span class="pre">seamm-flowchart</span> <span class="pre">validate</span></code>, and when a job starts), an
+analysis step that reads the MD before it is told what each NVE, NVT, NPT or Heat Flux
+sub-step will sample, and reports anything missing or too coarse. An analysis step
+that runs its own MD turns on what is missing itself, and says so in the output. And
+just before LAMMPS runs, the analysis steps that will read its MD check the structure,
+so that, for example, Diffusivity stops the job before the MD if the system is not
+periodic.</p>
 </section>
 <section id="non-periodic-systems">
 <h2>Non-periodic systems<a class="headerlink" href="#non-periodic-systems" title="Link to this heading">#</a></h2>

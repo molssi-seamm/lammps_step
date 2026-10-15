@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.10.15.1 documentation</title>
+    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.10.15.2 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=811540ec"></script>
+    <script src="../_static/documentation_options.js?v=b6edca86"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15.1" />
+  <meta name="docsearch:version" content="2026.10.15.2" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -915,6 +915,12 @@ parameters.</p>
 <dd><p>A printable header for this section of output</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.heat_flux.HeatFlux.md_provides">
+<span class="sig-name descname"><span class="pre">md_provides</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/heat_flux.html#HeatFlux.md_provides"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.heat_flux.HeatFlux.md_provides" title="Link to this definition">#</a></dt>
+<dd><p>What this run will write to md.h5md: the heat flux every two steps.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="lammps_step.heat_flux.HeatFlux.version">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">version</span></span><a class="headerlink" href="#lammps_step.heat_flux.HeatFlux.version" title="Link to this definition">#</a></dt>
@@ -1390,6 +1396,21 @@ not orthorhombic requires.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.lammps.LAMMPS.check_following_analyses">
+<span class="sig-name descname"><span class="pre">check_following_analyses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.check_following_analyses"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.check_following_analyses" title="Link to this definition">#</a></dt>
+<dd><p>Ask the analysis steps that will read this MD whether the structure suits.</p>
+<p>Each step after this one, up to the next LAMMPS step, that has a
+<code class="docutils literal notranslate"><span class="pre">check_configuration</span></code> method is asked. One that cannot use the structure,
+e.g. an analysis needing a periodic system, raises an exception, so the job
+stops before the MD rather than after it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>configuration</strong> (<em>molsystem._Configuration</em>) – The structure about to be simulated.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="lammps_step.lammps.LAMMPS.check_for_lammps_error">
 <span class="sig-name descname"><span class="pre">check_for_lammps_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.check_for_lammps_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.check_for_lammps_error" title="Link to this definition">#</a></dt>
 <dd><p>Raise an error, with a readable message, if LAMMPS failed.</p>
@@ -1436,6 +1457,15 @@ be used as is.</p>
 <dt class="sig sig-object py" id="lammps_step.lammps.LAMMPS.ff_form">
 <span class="sig-name descname"><span class="pre">ff_form</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.ff_form"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.ff_form" title="Link to this definition">#</a></dt>
 <dd><p>Return the form of the forcefield.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.lammps.LAMMPS.following_nodes">
+<span class="sig-name descname"><span class="pre">following_nodes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#LAMMPS.following_nodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.lammps.LAMMPS.following_nodes" title="Link to this definition">#</a></dt>
+<dd><p>The steps after this one in execution order, up to the next LAMMPS step.</p>
+<p>Loop bodies after this step are not entered; a loop around this step is
+left through its exit. Only the flowchart’s edges are followed, so no
+step’s state changes.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -1885,6 +1915,74 @@ LAMMPS quantity that gives their units.</p>
 </dd></dl>
 
 </section>
+<section id="module-lammps_step.md_provides">
+<span id="lammps-step-md-provides-module"></span><h2>lammps_step.md_provides module<a class="headerlink" href="#module-lammps_step.md_provides" title="Link to this heading">#</a></h2>
+<p>What the LAMMPS MD sub-steps will write to md.h5md, known from their parameters.</p>
+<p>The NVE, NVT, NPT and Heat Flux sub-steps use these to tell analysis steps what a
+run will provide (<code class="docutils literal notranslate"><span class="pre">md_provides</span></code>) before it runs, and to turn on sampling an
+analysis needs (<code class="docutils literal notranslate"><span class="pre">request_sampling</span></code>). The names are those of the H5MD file (see
+seamm_md_analysis, “The H5MD file”).</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="lammps_step.md_provides.md_provides">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.md_provides.</span></span><span class="sig-name descname"><span class="pre">md_provides</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/md_provides.html#md_provides"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.md_provides.md_provides" title="Link to this definition">#</a></dt>
+<dd><p>What an NVE, NVT or NPT sub-step will write to md.h5md.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>node</strong> (<em>lammps_step.NVE</em>) – The sub-step.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>seamm_md_analysis.Provides</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lammps_step.md_provides.request_sampling">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.md_provides.</span></span><span class="sig-name descname"><span class="pre">request_sampling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">need</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/md_provides.html#request_sampling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.md_provides.request_sampling" title="Link to this definition">#</a></dt>
+<dd><p>Turn on the sampling a need asks for, if possible.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> (<em>lammps_step.NVE</em>) – The sub-step to change.</p></li>
+<li><p><strong>need</strong> (<em>seamm_md_analysis.Need</em>) – What is needed; its first name that this step can sample is used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A description of the change for the output, or None if the step could not
+provide it (e.g. the interval is in steps and the timestep is not known).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="lammps_step.md_provides.sampling_parameters">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.md_provides.</span></span><span class="sig-name descname"><span class="pre">sampling_parameters</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'all/position':</span> <span class="pre">('atomic</span> <span class="pre">positions',</span> <span class="pre">'atomic</span> <span class="pre">positions</span> <span class="pre">rate',</span> <span class="pre">'atomic</span> <span class="pre">positions</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">samples'),</span> <span class="pre">'all/velocity':</span> <span class="pre">('atomic</span> <span class="pre">velocities',</span> <span class="pre">'atomic</span> <span class="pre">velocities</span> <span class="pre">rate',</span> <span class="pre">'atomic</span> <span class="pre">velocities</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">samples'),</span> <span class="pre">'heat_flux':</span> <span class="pre">('heat</span> <span class="pre">flux',</span> <span class="pre">'heat</span> <span class="pre">flux</span> <span class="pre">rate',</span> <span class="pre">'heat</span> <span class="pre">flux</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">samples'),</span> <span class="pre">'molecules/position':</span> <span class="pre">('com</span> <span class="pre">positions',</span> <span class="pre">'com</span> <span class="pre">positions</span> <span class="pre">rate',</span> <span class="pre">'com</span> <span class="pre">positions</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">samples'),</span> <span class="pre">'molecules/velocity':</span> <span class="pre">('com</span> <span class="pre">velocities',</span> <span class="pre">'com</span> <span class="pre">velocities</span> <span class="pre">rate',</span> <span class="pre">'com</span> <span class="pre">velocities</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">samples'),</span> <span class="pre">'pressure_offdiagonal':</span> <span class="pre">('shear</span> <span class="pre">stress',</span> <span class="pre">'shear</span> <span class="pre">stress</span> <span class="pre">rate',</span> <span class="pre">'shear</span> <span class="pre">stress</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">samples')}</span></span><a class="headerlink" href="#lammps_step.md_provides.sampling_parameters" title="Link to this definition">#</a></dt>
+<dd><p>(choice, rate, number of samples)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The sampling parameters for each name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="lammps_step.md_provides.state_observables">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.md_provides.</span></span><span class="sig-name descname"><span class="pre">state_observables</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('temperature',</span> <span class="pre">'pressure',</span> <span class="pre">'pressure_tensor',</span> <span class="pre">'total_energy',</span> <span class="pre">'kinetic_energy',</span> <span class="pre">'potential_energy',</span> <span class="pre">'pair_energy')</span></span><a class="headerlink" href="#lammps_step.md_provides.state_observables" title="Link to this definition">#</a></dt>
+<dd><p>The observables in the state files, and those of NPT runs</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lammps_step.md_provides.static_value">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.md_provides.</span></span><span class="sig-name descname"><span class="pre">static_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/md_provides.html#static_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.md_provides.static_value" title="Link to this definition">#</a></dt>
+<dd><p>A parameter’s value before the run, or None if it cannot be known yet.</p>
+<p>A variable or expression is evaluated if the flowchart’s variables already
+define it (at run time); otherwise it is unknown.</p>
+</dd></dl>
+
+</section>
 <section id="module-lammps_step.metadata">
 <span id="lammps-step-metadata-module"></span><h2>lammps_step.metadata module<a class="headerlink" href="#module-lammps_step.metadata" title="Link to this heading">#</a></h2>
 <p>This file contains metadata to help describe the results of LAMMPS
@@ -2145,6 +2243,34 @@ be used as is.</p>
 <dt class="sig sig-object py" id="lammps_step.nve.NVE.get_input">
 <span class="sig-name descname"><span class="pre">get_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extras</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve.html#NVE.get_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.nve.NVE.get_input" title="Link to this definition">#</a></dt>
 <dd><p>Get the input for an NVE dynamics run in LAMMPS</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.nve.NVE.md_provides">
+<span class="sig-name descname"><span class="pre">md_provides</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve.html#NVE.md_provides"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.nve.NVE.md_provides" title="Link to this definition">#</a></dt>
+<dd><p>What this run will write to md.h5md, from its parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>seamm_md_analysis.Provides</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.nve.NVE.request_sampling">
+<span class="sig-name descname"><span class="pre">request_sampling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">need</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve.html#NVE.request_sampling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.nve.NVE.request_sampling" title="Link to this definition">#</a></dt>
+<dd><p>Turn on the sampling an analysis needs, if possible.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>need</strong> (<em>seamm_md_analysis.Need</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A description of the change, or None if it could not be made.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str or None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -3207,6 +3333,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.heat_flux.HeatFlux.get_input"><code class="docutils literal notranslate"><span class="pre">HeatFlux.get_input()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.heat_flux.HeatFlux.git_revision"><code class="docutils literal notranslate"><span class="pre">HeatFlux.git_revision</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.heat_flux.HeatFlux.header"><code class="docutils literal notranslate"><span class="pre">HeatFlux.header</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.heat_flux.HeatFlux.md_provides"><code class="docutils literal notranslate"><span class="pre">HeatFlux.md_provides()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.heat_flux.HeatFlux.version"><code class="docutils literal notranslate"><span class="pre">HeatFlux.version</span></code></a></li>
 </ul>
 </li>
@@ -3280,6 +3407,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.box_to_cell"><code class="docutils literal notranslate"><span class="pre">LAMMPS.box_to_cell()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.cell_to_box"><code class="docutils literal notranslate"><span class="pre">LAMMPS.cell_to_box()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.check_barostats"><code class="docutils literal notranslate"><span class="pre">LAMMPS.check_barostats()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.check_following_analyses"><code class="docutils literal notranslate"><span class="pre">LAMMPS.check_following_analyses()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.check_for_lammps_error"><code class="docutils literal notranslate"><span class="pre">LAMMPS.check_for_lammps_error()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.create_parser"><code class="docutils literal notranslate"><span class="pre">LAMMPS.create_parser()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.description_text"><code class="docutils literal notranslate"><span class="pre">LAMMPS.description_text()</span></code></a></li>
@@ -3287,6 +3415,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.display_units"><code class="docutils literal notranslate"><span class="pre">LAMMPS.display_units</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.eex"><code class="docutils literal notranslate"><span class="pre">LAMMPS.eex</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.ff_form"><code class="docutils literal notranslate"><span class="pre">LAMMPS.ff_form()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.following_nodes"><code class="docutils literal notranslate"><span class="pre">LAMMPS.following_nodes()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.force_triclinic"><code class="docutils literal notranslate"><span class="pre">LAMMPS.force_triclinic</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.forcefield"><code class="docutils literal notranslate"><span class="pre">LAMMPS.forcefield()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.LAMMPS.forcefield_model_chemistry"><code class="docutils literal notranslate"><span class="pre">LAMMPS.forcefield_model_chemistry()</span></code></a></li>
@@ -3347,6 +3476,14 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_h5md.periodic_only"><code class="docutils literal notranslate"><span class="pre">periodic_only</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_h5md.state_observables"><code class="docutils literal notranslate"><span class="pre">state_observables</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_h5md.write_md_h5md"><code class="docutils literal notranslate"><span class="pre">write_md_h5md()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.md_provides">lammps_step.md_provides module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_provides.md_provides"><code class="docutils literal notranslate"><span class="pre">md_provides()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_provides.request_sampling"><code class="docutils literal notranslate"><span class="pre">request_sampling()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_provides.sampling_parameters"><code class="docutils literal notranslate"><span class="pre">sampling_parameters</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_provides.state_observables"><code class="docutils literal notranslate"><span class="pre">state_observables</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_provides.static_value"><code class="docutils literal notranslate"><span class="pre">static_value()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.metadata">lammps_step.metadata module</a><ul class="pst-show_toc_level nav section-nav flex-column">
@@ -3419,6 +3556,8 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.analyze"><code class="docutils literal notranslate"><span class="pre">NVE.analyze()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.description_text"><code class="docutils literal notranslate"><span class="pre">NVE.description_text()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.get_input"><code class="docutils literal notranslate"><span class="pre">NVE.get_input()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.md_provides"><code class="docutils literal notranslate"><span class="pre">NVE.md_provides()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.request_sampling"><code class="docutils literal notranslate"><span class="pre">NVE.request_sampling()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.task"><code class="docutils literal notranslate"><span class="pre">NVE.task</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.timestep"><code class="docutils literal notranslate"><span class="pre">NVE.timestep()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.trajectory_input"><code class="docutils literal notranslate"><span class="pre">NVE.trajectory_input()</span></code></a></li>

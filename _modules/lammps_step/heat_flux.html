@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.heat_flux &#8212; SEAMM LAMMPS Plug-in 2026.10.15.1 documentation</title>
+    <title>lammps_step.heat_flux &#8212; SEAMM LAMMPS Plug-in 2026.10.15.2 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=811540ec"></script>
+    <script src="../../_static/documentation_options.js?v=b6edca86"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15.1" />
+  <meta name="docsearch:version" content="2026.10.15.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -712,6 +712,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="k">def</span><span class="w"> </span><span class="nf">git_revision</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""The git version of this module."""</span>
         <span class="k">return</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">__git_revision__</span>
+
+<div class="viewcode-block" id="HeatFlux.md_provides">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.heat_flux.HeatFlux.md_provides">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">md_provides</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""What this run will write to md.h5md: the heat flux every two steps."""</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_md_analysis</span><span class="w"> </span><span class="kn">import</span> <span class="n">Interval</span>
+
+        <span class="n">provides</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">md_provides</span><span class="p">()</span>
+        <span class="n">provides</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"heat_flux"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Interval</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">provides</span></div>
+
 
 <div class="viewcode-block" id="HeatFlux.description_text">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.heat_flux.HeatFlux.description_text">[docs]</a>
