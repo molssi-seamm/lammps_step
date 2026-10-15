@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.10.15 documentation</title>
+    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.10.15.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=6d569a1a"></script>
+    <script src="../_static/documentation_options.js?v=811540ec"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15" />
+  <meta name="docsearch:version" content="2026.10.15.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1774,6 +1774,117 @@ nodes.</p>
 </dd></dl>
 
 </section>
+<section id="module-lammps_step.md_h5md">
+<span id="lammps-step-md-h5md-module"></span><h2>lammps_step.md_h5md module<a class="headerlink" href="#module-lammps_step.md_h5md" title="Link to this heading">#</a></h2>
+<p>Convert the output of an MD sub-step to SEAMM’s H5MD file, md.h5md.</p>
+<p>LAMMPS writes its usual text files during the run. When the run ends, the NVE, NVT
+and NPT sub-steps (and Heat Flux, an NVE run) stream them into <code class="docutils literal notranslate"><span class="pre">md.h5md</span></code> in the
+sub-step’s directory, with the layout described in seamm_md_analysis (“The H5MD
+file”), and add a record of the run to the workspace variable <code class="docutils literal notranslate"><span class="pre">_md_runs</span></code>. The
+native files are kept.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="lammps_step.md_h5md.MDH5MDConverter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">lammps_step.md_h5md.</span></span><span class="sig-name descname"><span class="pre">MDH5MDConverter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wall_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/md_h5md.html#MDH5MDConverter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.md_h5md.MDH5MDConverter" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Write md.h5md for one MD sub-step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> (<em>lammps_step.NVE</em>) – The sub-step (NVE, NVT, NPT or Heat Flux).</p></li>
+<li><p><strong>P</strong> (<em>dict</em>) – Its parameters, as values.</p></li>
+<li><p><strong>configuration</strong> (<em>molsystem._Configuration</em>) – The configuration at the start of the run.</p></li>
+<li><p><strong>directory</strong> (<em>str</em><em> or </em><em>pathlib.Path = None</em>) – The sub-step’s directory, by default node.directory.</p></li>
+<li><p><strong>wall_time</strong> (<em>float = None</em>) – The wall time of the run in seconds (LAMMPS’s loop time).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="lammps_step.md_h5md.MDH5MDConverter.ensemble">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ensemble</span></span><a class="headerlink" href="#lammps_step.md_h5md.MDH5MDConverter.ensemble" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="lammps_step.md_h5md.MDH5MDConverter.path">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">path</span></span><a class="headerlink" href="#lammps_step.md_h5md.MDH5MDConverter.path" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.md_h5md.MDH5MDConverter.record">
+<span class="sig-name descname"><span class="pre">record</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/md_h5md.html#MDH5MDConverter.record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.md_h5md.MDH5MDConverter.record" title="Link to this definition">#</a></dt>
+<dd><p>The record of this run for the workspace variable <code class="docutils literal notranslate"><span class="pre">_md_runs</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.md_h5md.MDH5MDConverter.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/md_h5md.html#MDH5MDConverter.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.md_h5md.MDH5MDConverter.write" title="Link to this definition">#</a></dt>
+<dd><p>Write md.h5md from the native files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The record of the run for <code class="docutils literal notranslate"><span class="pre">_md_runs</span></code>.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lammps_step.md_h5md.h5md_units">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.md_h5md.</span></span><span class="sig-name descname"><span class="pre">h5md_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit_system</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/md_h5md.html#h5md_units"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.md_h5md.h5md_units" title="Link to this definition">#</a></dt>
+<dd><p>The H5MD unit strings for a LAMMPS unit system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>unit_system</strong> (<em>str = None</em>) – The LAMMPS unit system, by default the current one.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>{str</strong> – The unit for each LAMMPS quantity (“time”, “distance”, “energy”, …).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="lammps_step.md_h5md.periodic_only">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.md_h5md.</span></span><span class="sig-name descname"><span class="pre">periodic_only</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('pressure',</span> <span class="pre">'pressure_tensor',</span> <span class="pre">'volume',</span> <span class="pre">'density',</span> <span class="pre">'heat_flux')</span></span><a class="headerlink" href="#lammps_step.md_h5md.periodic_only" title="Link to this definition">#</a></dt>
+<dd><p>The observables that need the volume of a periodic cell</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="lammps_step.md_h5md.state_observables">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.md_h5md.</span></span><span class="sig-name descname"><span class="pre">state_observables</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'E_hbond':</span> <span class="pre">('hbond_energy',</span> <span class="pre">'energy'),</span> <span class="pre">'Eke':</span> <span class="pre">('kinetic_energy',</span> <span class="pre">'energy'),</span> <span class="pre">'Emol':</span> <span class="pre">('molecular_energy',</span> <span class="pre">'energy'),</span> <span class="pre">'Epair':</span> <span class="pre">('pair_energy',</span> <span class="pre">'energy'),</span> <span class="pre">'Epe':</span> <span class="pre">('potential_energy',</span> <span class="pre">'energy'),</span> <span class="pre">'Etot':</span> <span class="pre">('total_energy',</span> <span class="pre">'energy'),</span> <span class="pre">'N_hbond':</span> <span class="pre">('hbond_count',</span> <span class="pre">None),</span> <span class="pre">'P':</span> <span class="pre">('pressure',</span> <span class="pre">'pressure'),</span> <span class="pre">'T':</span> <span class="pre">('temperature',</span> <span class="pre">'temperature'),</span> <span class="pre">'V':</span> <span class="pre">('volume',</span> <span class="pre">'volume'),</span> <span class="pre">'density':</span> <span class="pre">('density',</span> <span class="pre">'density')}</span></span><a class="headerlink" href="#lammps_step.md_h5md.state_observables" title="Link to this definition">#</a></dt>
+<dd><p>The columns of the state files and the observables they become, with the
+LAMMPS quantity that gives their units.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lammps_step.md_h5md.write_md_h5md">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.md_h5md.</span></span><span class="sig-name descname"><span class="pre">write_md_h5md</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wall_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/md_h5md.html#write_md_h5md"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.md_h5md.write_md_h5md" title="Link to this definition">#</a></dt>
+<dd><p>Write md.h5md for an MD sub-step and record it in <code class="docutils literal notranslate"><span class="pre">_md_runs</span></code>.</p>
+<p>A failure is reported, not raised: the native files are still there.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> (<em>lammps_step.NVE</em>) – The sub-step.</p></li>
+<li><p><strong>P</strong> (<em>dict</em>) – Its parameters, as values.</p></li>
+<li><p><strong>configuration</strong> (<em>molsystem._Configuration</em>) – The configuration at the start of the run.</p></li>
+<li><p><strong>directory</strong> (<em>str</em><em> or </em><em>pathlib.Path = None</em>) – The sub-step’s directory, by default node.directory.</p></li>
+<li><p><strong>wall_time</strong> (<em>float = None</em>) – The wall time of the run in seconds.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Text for the output.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 <section id="module-lammps_step.metadata">
 <span id="lammps-step-metadata-module"></span><h2>lammps_step.metadata module<a class="headerlink" href="#module-lammps_step.metadata" title="Link to this heading">#</a></h2>
 <p>This file contains metadata to help describe the results of LAMMPS
@@ -3222,6 +3333,20 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps_units.lammps_units"><code class="docutils literal notranslate"><span class="pre">lammps_units()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps_units.set_lammps_unit_system"><code class="docutils literal notranslate"><span class="pre">set_lammps_unit_system()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps_units.to_lammps_units"><code class="docutils literal notranslate"><span class="pre">to_lammps_units()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.md_h5md">lammps_step.md_h5md module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_h5md.MDH5MDConverter"><code class="docutils literal notranslate"><span class="pre">MDH5MDConverter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_h5md.MDH5MDConverter.ensemble"><code class="docutils literal notranslate"><span class="pre">MDH5MDConverter.ensemble</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_h5md.MDH5MDConverter.path"><code class="docutils literal notranslate"><span class="pre">MDH5MDConverter.path</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_h5md.MDH5MDConverter.record"><code class="docutils literal notranslate"><span class="pre">MDH5MDConverter.record()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_h5md.MDH5MDConverter.write"><code class="docutils literal notranslate"><span class="pre">MDH5MDConverter.write()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_h5md.h5md_units"><code class="docutils literal notranslate"><span class="pre">h5md_units()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_h5md.periodic_only"><code class="docutils literal notranslate"><span class="pre">periodic_only</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_h5md.state_observables"><code class="docutils literal notranslate"><span class="pre">state_observables</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_h5md.write_md_h5md"><code class="docutils literal notranslate"><span class="pre">write_md_h5md()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.metadata">lammps_step.metadata module</a><ul class="pst-show_toc_level nav section-nav flex-column">

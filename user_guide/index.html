@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.15 documentation</title>
+    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.15.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=6d569a1a"></script>
+    <script src="../_static/documentation_options.js?v=811540ec"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15" />
+  <meta name="docsearch:version" content="2026.10.15.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -568,6 +568,39 @@ with a message giving the sub-step, LAMMPS’s message, the last command, advice
 common errors, and where <code class="docutils literal notranslate"><span class="pre">log.lammps</span></code> is.</p></li>
 </ul>
 </section>
+<section id="the-md-data-for-analysis-md-h5md">
+<h2>The MD data for analysis: <code class="docutils literal notranslate"><span class="pre">md.h5md</span></code><a class="headerlink" href="#the-md-data-for-analysis-md-h5md" title="Link to this heading">#</a></h2>
+<p>At the end of each NVE, NVT, NPT or Heat Flux sub-step, the step writes everything
+the run sampled into one file, <code class="docutils literal notranslate"><span class="pre">md.h5md</span></code>, in the sub-step’s directory:</p>
+<ul class="simple">
+<li><p>the time series (temperature, pressure, the energies, the full pressure tensor, the
+volume and density of an NPT run, the heat flux, …), each on its own time axis
+and in the units LAMMPS produced;</p></li>
+<li><p>the atoms’ positions, velocities and forces, and the centres of mass of the
+molecules, as far as they were sampled, with the box of each frame;</p></li>
+<li><p>the run’s parameters and where it came from (the job, step, structure and model).</p></li>
+</ul>
+<p>The file is <a class="reference external" href="https://www.nongnu.org/h5md/">H5MD</a>, an HDF5 format for molecular
+dynamics; its layout is described in the documentation of <code class="docutils literal notranslate"><span class="pre">seamm_md_analysis</span></code>
+(“The H5MD file”). The analysis steps, such as Diffusivity and Thermal Conductivity,
+read it, and it can be read with h5py, <code class="docutils literal notranslate"><span class="pre">seamm_md_analysis.open_md</span></code> or MDAnalysis.
+LAMMPS still writes its usual files during the run, and they are kept, so a run can
+be followed as before and nothing is lost if it stops.</p>
+<p>Each run is also recorded in the variable <code class="docutils literal notranslate"><span class="pre">_md_runs</span></code>, which analysis steps later in
+the flowchart use to find the data.</p>
+</section>
+<section id="non-periodic-systems">
+<h2>Non-periodic systems<a class="headerlink" href="#non-periodic-systems" title="Link to this heading">#</a></h2>
+<p>The step runs molecules and clusters without a periodic cell, with a shrink-wrapped
+box. The pressure, the stress and the heat flux are divided by the volume of the cell,
+so for such a system:</p>
+<ul class="simple">
+<li><p>the pressure is not reported, and the stress is not sampled;</p></li>
+<li><p>asking for the heat flux or the shear stress in an NVE or NVT sub-step gives a
+warning in the output, and they are not sampled;</p></li>
+<li><p>the Heat Flux sub-step and NPT dynamics stop with an error before LAMMPS starts.</p></li>
+</ul>
+</section>
 <section id="index">
 <h2>Index<a class="headerlink" href="#index" title="Link to this heading">#</a></h2>
 <ul class="simple">
@@ -625,6 +658,8 @@ common errors, and where <code class="docutils literal notranslate"><span class=
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-forcefield">The forcefield</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#settings-that-depend-on-each-other">Settings that depend on each other</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-md-data-for-analysis-md-h5md">The MD data for analysis: <code class="docutils literal notranslate"><span class="pre">md.h5md</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#non-periodic-systems">Non-periodic systems</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#index">Index</a></li>
 </ul>
   </nav></div>
