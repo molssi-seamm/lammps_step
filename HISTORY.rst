@@ -1,6 +1,28 @@
 =======
 History
 =======
+2026.10.15 -- Bugfix: the heat flux was far too large
+    * The Heat Flux sub-step removes each atom's average energy and stress from the
+      heat flux, to reduce its noise. The stress was handed to LAMMPS in the wrong
+      units and with the wrong sign, which changed it by 68,568 times its average
+      instead of removing it. For liquid argon the heat flux was about 10,000 times
+      too large and the thermal conductivity about 4x10^7 W/m/K; it is now about 0.1
+      W/m/K, as measured. Every thermal conductivity computed with the Heat Flux
+      sub-step for a system without bonds (e.g. with class II forcefields such as
+      PCFF) was affected.
+    * For molecular systems the average stress was not removed at all, and the
+      convective part of the heat flux was counted twice. Both are corrected, also
+      for the heat flux sampled during NVE dynamics.
+    * The Heat Flux sub-step sampled the heat flux 1000 times per run, e.g. every 20
+      fs for a 20 ps run. That is too coarse for the fastest vibrations, which then
+      alias into the Green-Kubo integral: for liquid water the thermal conductivity
+      came out 3-4 times too large. The heat flux is now sampled every two timesteps,
+      and the meaningless "50" for the heat flux sampling is no longer shown in the
+      dialog. For water the thermal conductivity is now about 1 W/m/K.
+    * After the Heat Flux sub-step the final coordinates and velocities were not read
+      back into the configuration, because the step looked for a file of the wrong
+      name. They are now.
+
 2026.10.14.1 -- Bugfix: MLFF dynamics on the CPU, NVE run length and short runs
     * A machine-learned forcefield from the Model Chemistry step now runs on the CPU
       when the job can have no GPU, using the job's cores less one for LAMMPS. Before,
