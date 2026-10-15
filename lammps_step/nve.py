@@ -169,8 +169,9 @@ class NVE(lammps_step.Energy):
         system, configuration = self.get_system_configuration(P, model=self.model)
 
         # Read the dump file and get the structure
-        dump_file = Path(self.directory) / f"{self.calculation}.dump"
-        if dump_file.exists:
+        stem = self.calculation.lower().replace(" ", "_")  # "Heat Flux" -> heat_flux
+        dump_file = Path(self.directory) / f"{stem}.dump"
+        if dump_file.exists():
             try:
                 xyz, fractional, cell, vxyz = self.parent.read_dump(dump_file)
             except Exception as e:
@@ -649,9 +650,11 @@ compute             flux_b all heat/flux KE PE S_b
 #          Conversion from kcal/Å^2/fs/mol to W/m^2
 
 variable            factor equal {factor}
-variable            Jx equal v_factor*(c_flux_p[1]+c_flux_b[1])/vol
-variable            Jy equal v_factor*(c_flux_p[2]+c_flux_b[2])/vol
-variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
+#          Both computes include the convective term, so remove one copy
+
+variable            Jx equal v_factor*(c_flux_p[1]+c_flux_b[1]-c_flux_b[4])/vol
+variable            Jy equal v_factor*(c_flux_p[2]+c_flux_b[2]-c_flux_b[5])/vol
+variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol
 """)
 
         # summary output written 10 times during run so we can see progress

@@ -116,7 +116,7 @@ class TkHeatFlux(lammps_step.TkNVE):
         P = self.node.parameters
 
         # Then create the widgets
-        for key in ("time", "timestep", "heat flux", "use centroid stress", "sampling"):
+        for key in ("time", "timestep", "use centroid stress", "sampling"):
             self[key] = P[key].widget(frame)
 
         # and lay them out
@@ -162,7 +162,7 @@ class TkHeatFlux(lammps_step.TkNVE):
         # if e.g. rows are skipped to control such as "method" here
         row = 0
         widgets = []
-        for key in ("time", "timestep", "heat flux", "use centroid stress", "sampling"):
+        for key in ("time", "timestep", "use centroid stress", "sampling"):
             if P.applies(key, values):
                 self[key].grid(row=row, column=0, sticky=tk.EW)
                 widgets.append(self[key])

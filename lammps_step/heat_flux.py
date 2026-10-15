@@ -57,7 +57,8 @@ def J_filter_cb(lmp, ntimestep, nlocal, ids, xyz, fext, args = []):
     S_p0 = lmp.numpy.extract_fix("S_p_ave", LMP_STYLE_ATOM, LMP_TYPE_ARRAY)
     S_b0 = lmp.numpy.extract_fix("S_b_ave", LMP_STYLE_ATOM, LMP_TYPE_ARRAY)
 
-    S = np.reshape(S_p0, (nlocal, 6))
+    # Copy: the arrays are views of the fixes' storage, which must not change
+    S = np.array(S_p0, dtype=float).reshape((nlocal, 6))
     tmp = np.reshape(S_b0, (nlocal, 9))
 
     S[:, 0] += tmp[:, 0]
@@ -67,7 +68,10 @@ def J_filter_cb(lmp, ntimestep, nlocal, ids, xyz, fext, args = []):
     S[:, 4] += (tmp[:, 4] + tmp[:, 7]) / 2
     S[:, 5] += (tmp[:, 5] + tmp[:, 8]) / 2
 
-    lmp.numpy.fix_external_set_virial_peratom("J_filter", -S)
+    # compute stress/atom multiplies the virial by -nktv2p, so subtracting the
+    # average stress needs a virial of +S/nktv2p, in energy units
+    nktv2p = lmp.extract_global("nktv2p")
+    lmp.numpy.fix_external_set_virial_peratom("J_filter", S / nktv2p)
 
 def run_thermal_conductivity(cmd_args=None):
     if cmd_args is None:
@@ -114,7 +118,10 @@ def J_filter_cb(lmp, ntimestep, nlocal, ids, xyz, fext, args = []):
 
     S = np.reshape(S_p0, (nlocal, 6))
 
-    lmp.numpy.fix_external_set_virial_peratom("J_filter", -S)
+    # compute stress/atom multiplies the virial by -nktv2p, so subtracting the
+    # average stress needs a virial of +S/nktv2p, in energy units
+    nktv2p = lmp.extract_global("nktv2p")
+    lmp.numpy.fix_external_set_virial_peratom("J_filter", S / nktv2p)
 
 def run_thermal_conductivity(cmd_args=None):
     if cmd_args is None:
@@ -237,7 +244,7 @@ class HeatFlux(NVE):
         text = (
             "Calculate the heat flux using a microcanonical ensemble (NVE), "
             "running for {time} with a timestep of {timestep}. The "
-            "heat flux will be sampled every {heat flux}."
+            "heat flux will be sampled every two timesteps."
         )
 
         return self.header + "\n" + __(text, **P, indent=4 * " ").__str__()
@@ -381,7 +388,7 @@ compute             PE all pe/atom
 
 #          centroid doesn't work with kspace, so split into pair and non-pair parts
 
-compute             S_p all stress/atom NULL pair kspace
+compute             S_p all stress/atom NULL pair kspace fix
 compute             S_b all centroid/stress/atom NULL bond angle dihedral improper
 compute             flux_p all heat/flux KE PE S_p
 compute             flux_b all heat/flux KE PE S_b
@@ -453,9 +460,11 @@ reset_timestep      0
 #          Conversion from kcal/Å^2/fs/mol to W/m^2")
 
 variable            factor equal {factor}
-variable            Jx equal v_factor*(c_flux_p[1]+c_flux_b[1])/vol
-variable            Jy equal v_factor*(c_flux_p[2]+c_flux_b[2])/vol
-variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3])/vol
+#          Both computes include the convective term, so remove one copy
+
+variable            Jx equal v_factor*(c_flux_p[1]+c_flux_b[1]-c_flux_b[4])/vol
+variable            Jy equal v_factor*(c_flux_p[2]+c_flux_b[2]-c_flux_b[5])/vol
+variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol
 
 #          The thermo output
 
@@ -532,7 +541,13 @@ fix_modify          J_filter virial yes
             f"                       file {filename}"
         )
 
-        # Handle trajectories
+        # Handle trajectories. The heat flux is sampled every two timesteps: it
+        # oscillates with the fastest motions, and coarser sampling aliases them
+        # into the Green-Kubo integral (sampling liquid water every 20 fs gave a
+        # thermal conductivity 3-4 times too large).
+        P = dict(P)
+        P["heat flux"] = "by number of samples"
+        P["heat flux number of samples"] = max(1, nsteps // 2)
         tmp, ncomputes, ndumps, nfixes = self.trajectory_input(
             P, timestep, nsteps, ncomputes, ndumps, nfixes
         )
