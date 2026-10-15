@@ -1,6 +1,13 @@
 =======
 History
 =======
+2026.10.15.4 -- Bugfix: rigid water gave the wrong pressure
+    * Rigid water molecules, and fixed X-H bond lengths, were held with LAMMPS's
+      RATTLE, which for rigid SPC/E water gave a pressure about 850 atm too high, an
+      anisotropic pressure tensor and a center of mass that drifted ever faster, so
+      the viscosity and diffusion coefficients were wrong. SHAKE is now used, with a
+      tolerance of 1e-6, which gives the right pressure and conserves momentum.
+
 2026.10.15.3 -- Sampling the full pressure tensor, for the viscosity
     * The NVE, NVT and NPT sub-steps can sample the full pressure tensor often, as
       the viscosity needs, with "Sample the pressure tensor". It replaces "Sample the
