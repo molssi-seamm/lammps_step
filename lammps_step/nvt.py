@@ -190,6 +190,7 @@ class NVT(lammps_step.NVE):
 
         # Fix variables with special cases
         timestep, P["timestep"] = self.timestep(P["timestep"])
+        sampling_warning = self._drop_periodic_sampling(P, configuration)
 
         if P["seed"] == "random":
             # Apparently the seed must be no larger than 900,000,000
@@ -204,6 +205,8 @@ class NVT(lammps_step.NVE):
         self.description.append(
             __(self.description_text(PP), **PP, indent=4 * " ").__str__()
         )
+        if sampling_warning != "":
+            self.description.append(__(sampling_warning, indent=4 * " ").__str__())
 
         time = lammps_step.to_lammps_units(P["time"], quantity="time")
         nsteps = round(time / timestep)
@@ -218,8 +221,13 @@ class NVT(lammps_step.NVE):
         # LAMMPS computes no bonded/pair terms -- those columns would be all zero.
         if form not in ("PyTorch", "MDI/QM"):
             thermo_properties += " ebond eangle edihed eimp evdwl etail ecoul elong"
-        properties = "v_time v_temp v_press v_etotal v_ke v_pe v_epair"
-        title2 = "tstep t T P Etot Eke Epe Epair"
+        if configuration.periodicity == 3:
+            properties = "v_time v_temp v_press v_etotal v_ke v_pe v_epair"
+            title2 = "tstep t T P Etot Eke Epe Epair"
+        else:
+            # The pressure of a non-periodic system is meaningless
+            properties = "v_time v_temp v_etotal v_ke v_pe v_epair"
+            title2 = "tstep t T Etot Eke Epe Epair"
         if configuration.periodicity == 3:
             properties += " v_sxx v_syy v_szz v_syz v_sxz v_sxy"
             title2 += " Sxx Syy Szz Syz Sxz Sxy"
