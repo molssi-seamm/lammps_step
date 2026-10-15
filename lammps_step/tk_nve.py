@@ -67,7 +67,7 @@ class TkNVE(lammps_step.TkEnergy):
             "atomic velocities",
             "com velocities",
             "heat flux",
-            "shear stress",
+            "pressure tensor",
         ):
             if title == "Heat Flux" and (key == "heat flux" or "centroid" in key):
                 continue
@@ -97,8 +97,8 @@ class TkNVE(lammps_step.TkEnergy):
             "com velocities number of samples",
             "heat flux rate",
             "heat flux number of samples",
-            "shear stress rate",
-            "shear stress number of samples",
+            "pressure tensor rate",
+            "pressure tensor number of samples",
         ):
             if title == "Heat Flux" and (key == "heat flux" or "centroid" in key):
                 continue
@@ -210,7 +210,7 @@ class TkNVE(lammps_step.TkEnergy):
                 "atomic velocities",
                 "com velocities",
                 "heat flux",
-                "shear stress",
+                "pressure tensor",
             )
             for item in (
                 (what, 0),

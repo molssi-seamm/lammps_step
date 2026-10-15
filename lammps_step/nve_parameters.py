@@ -285,35 +285,35 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             "description": "Use centroid/stress/atom:",
             "help_text": "Whether to use centroid/stress/atom",
         },
-        "shear stress": {
+        "pressure tensor": {
             "default": "never",
             "kind": "string",
             "enumeration": ("never", "by number of samples", "by time interval"),
             "format_string": "",
-            "description": "Sample the shear stress:",
+            "description": "Sample the pressure tensor:",
             "help_text": (
-                "How to sample the shear stress, usually used for viscosity "
-                "calculations."
+                "How to sample the full pressure tensor, usually for the viscosity. "
+                "Periodic systems only."
             ),
         },
-        "shear stress rate": {
-            "applies_when": {"shear stress": "by time interval"},
+        "pressure tensor rate": {
+            "applies_when": {"pressure tensor": "by time interval"},
             "default": 100,
             "kind": "float",
             "default_units": "fs",
             "enumeration": tuple(),
             "format_string": ".1f",
             "description": "Time interval:",
-            "help_text": "How often to sample the shear stress",
+            "help_text": "How often to sample the pressure tensor",
         },
-        "shear stress number of samples": {
-            "applies_when": {"shear stress": "by number of samples"},
+        "pressure tensor number of samples": {
+            "applies_when": {"pressure tensor": "by number of samples"},
             "default": 1000,
             "kind": "integer",
             "enumeration": tuple(),
             "format_string": "",
             "description": "Number of samples:",
-            "help_text": "How many samples of the shear stress to collect",
+            "help_text": "How many samples of the pressure tensor to collect",
         },
         "trajectory": {
             "default": "never",
@@ -440,9 +440,23 @@ class NVE_Parameters(lammps_step.EnergyParameters):
     # for a fixed length of simulated time.
     not_implemented = ("run_control", "maximum_time", "control_properties")
 
+    #: Parameters renamed since older flowcharts were written: {old: new}. The
+    #: shear stress (three components) became the full pressure tensor.
+    renamed = {
+        "shear stress": "pressure tensor",
+        "shear stress rate": "pressure tensor rate",
+        "shear stress number of samples": "pressure tensor number of samples",
+    }
+
     def __init__(self, defaults={}, data=None):
         """Initialize the instance, by default from the default
         parameters given in the class"""
+
+        # Fix incompatible changes.
+        if data is not None:
+            for old, new in NVE_Parameters.renamed.items():
+                if old in data:
+                    data[new] = data.pop(old)
 
         super().__init__(
             defaults={

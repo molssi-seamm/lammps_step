@@ -104,3 +104,36 @@ def test_heat_flux_substep_samples_every_two_steps():
     node.title = "Heat Flux"
     node.parent = SimpleNamespace(title="LAMMPS")
     assert node.md_provides().data["heat_flux"].steps == 2
+
+
+def test_pressure_tensor_sampled_on_its_own():
+    node = NVT()
+    set_(node, time=("10", "ps"), timestep=("1", "fs"))
+    # From the state, every 50 fs by default
+    assert md_provides(node).data["pressure_tensor"].time.m_as("fs") == 50
+    need = Need("pressure_tensor", max_time="5 fs", why="the viscosity")
+    change = request_sampling(node, need)
+    assert "pressure_tensor" in change
+    assert node.parameters["pressure tensor"].value == "by time interval"
+    interval = md_provides(node).interval("pressure_tensor")
+    assert interval.time.m_as("fs") == 5
+    assert interval.steps == 5
+
+
+def test_old_shear_stress_parameters_are_renamed():
+    data = {
+        "shear stress": {"value": "by time interval", "units": None},
+        "shear stress rate": {"value": "2", "units": "fs"},
+        "shear stress number of samples": {"value": "500", "units": None},
+    }
+    for cls in (
+        lammps_step.NVE_Parameters,
+        lammps_step.NVT_Parameters,
+        lammps_step.NPT_Parameters,
+    ):
+        P = cls(data={k: dict(v) for k, v in data.items()})
+        assert "shear stress" not in P
+        assert P["pressure tensor"].value == "by time interval"
+        assert P["pressure tensor rate"].value == "2"
+        assert P["pressure tensor rate"].units == "fs"
+        assert P["pressure tensor number of samples"].value == "500"

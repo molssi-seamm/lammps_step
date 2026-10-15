@@ -1,6 +1,24 @@
 =======
 History
 =======
+2026.10.15.3 -- Sampling the full pressure tensor, for the viscosity
+    * The NVE, NVT and NPT sub-steps can sample the full pressure tensor often, as
+      the viscosity needs, with "Sample the pressure tensor". It replaces "Sample the
+      shear stress", which saved only the three off-diagonal components; flowcharts
+      that used it now sample the full tensor.
+    * The sampled pressure tensor is written to ``md.h5md`` as ``pressure_tensor``,
+      in place of the coarser one from the thermodynamic state, and analysis steps
+      such as Viscosity can ask for it to be turned on.
+    * Bugfix: "Keep the internal geometry of water molecules fixed", on by default,
+      did nothing since 2020, so water was always flexible. Water molecules (an O
+      bonded to two H's) are now held rigid with RATTLE.
+    * Bugfix: "Fix X-H bond lengths" in the Initialization sub-step looked up the
+      elements of the wrong atoms, so it stopped with an error or constrained the
+      wrong bonds.
+    * Bugfix: the nacl_water forcefield, with SPC/E water and ions, could not be used:
+      LAMMPS stopped with "Special bonds not implemented".
+    * Requires seamm-md-analysis 2026.10.15.2.
+
 2026.10.15.2 -- Analysis steps can check and adjust the MD before it runs
     * The NVE, NVT, NPT and Heat Flux sub-steps tell analysis steps what each run will
       sample, before it runs, and can turn on sampling an analysis needs.

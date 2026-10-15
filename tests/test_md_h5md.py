@@ -99,6 +99,7 @@ def test_periodic_water(tmp_path):
     assert record["ensemble"] == "NVT"
     assert record["periodic"]
     assert record["observables"]["heat_flux"] == "2 fs"
+    assert record["observables"]["pressure_tensor"] == "5 fs"
     assert record["observables"]["temperature"] == "10 fs"
     assert record["particles"]["all/position"] == "100 fs"
     assert record["particles"]["molecules/position"] == "50 fs"
@@ -109,23 +110,24 @@ def test_periodic_water(tmp_path):
         assert md.parameters["temperature"] == 300.0
         assert md.provenance["segments"]["wall_time"] == [12.5]
 
-        # The pressure tensor is minus the stress, and its trace is the pressure
-        _, columns = read_trajectory(tmp_path / "nvt_state.trj")
+        # The pressure tensor sampled on its own replaces the one in the state
+        _, columns = read_trajectory(tmp_path / "pressure_tensor.trj")
         PT = md.observable("pressure_tensor")
-        assert np.allclose(PT.values[:, 0, 0], -columns["Sxx"])
-        assert np.allclose(PT.values[:, 0, 1], -columns["Sxy"])
-        assert np.allclose(PT.values[:, 1, 0], -columns["Sxy"])
-        pressure = md.observable("pressure").values
-        trace = np.trace(PT.values, axis1=1, axis2=2) / 3
-        assert np.allclose(trace, pressure, rtol=1e-4, atol=1)
+        assert PT.values.shape == (401, 3, 3)
+        assert PT.dt == Q_(5.0, "fs")
+        assert PT.units == Q_(1, "atm").units
+        assert np.allclose(PT.values[:, 0, 0], columns["Pxx"])
+        assert np.allclose(PT.values[:, 2, 2], columns["Pzz"])
+        assert np.allclose(PT.values[:, 0, 1], columns["Pxy"])
+        assert np.allclose(PT.values[:, 1, 0], columns["Pxy"])
+        assert np.allclose(PT.values[:, 1, 2], columns["Pyz"])
+        assert "pressure_offdiagonal" not in md.observables()
 
         J = md.observable("heat_flux")
         _, columns = read_trajectory(tmp_path / "heat_flux.trj")
         assert np.allclose(J.values[:, 2], columns["Jz"])
         assert J.units == Q_(1, "W/m^2").units
         assert J.dt == Q_(2.0, "fs")
-        off = md.observable("pressure_offdiagonal")
-        assert off.attrs["components"] == "xy xz yz"
 
         # The trajectory gives positions, velocities, forces and the box
         assert md.n_frames() == 3
@@ -140,6 +142,32 @@ def test_periodic_water(tmp_path):
 
         com = md.particle_series("position", group="molecules")
         assert com.values.shape == (3, 64, 3)
+
+
+def test_pressure_tensor_from_the_state(tmp_path):
+    """Without its own sampling, the pressure tensor comes from the state file."""
+    for path in (DATA / "water").iterdir():
+        if path.name != "pressure_tensor.trj":
+            shutil.copy(path, tmp_path)
+    node = NVT(tmp_path, [-0.82, 0.41, 0.41] * 64)
+    config = configuration(
+        64, ["O", "H", "H"], [8, 1, 1], [15.999, 1.008, 1.008], cell=[12.4172] * 3
+    )
+    config.cell.parameters = [12.417241581015336] * 3 + [90.0] * 3
+    write_md_h5md(node, P, config)
+    (record,) = node.variables["_md_runs"]
+    assert record["observables"]["pressure_tensor"] == "10 fs"
+
+    with open_md(tmp_path / "md.h5md") as md:
+        # The pressure tensor is minus the stress, and its trace is the pressure
+        _, columns = read_trajectory(tmp_path / "nvt_state.trj")
+        PT = md.observable("pressure_tensor")
+        assert np.allclose(PT.values[:, 0, 0], -columns["Sxx"])
+        assert np.allclose(PT.values[:, 0, 1], -columns["Sxy"])
+        assert np.allclose(PT.values[:, 1, 0], -columns["Sxy"])
+        pressure = md.observable("pressure").values
+        trace = np.trace(PT.values, axis1=1, axis2=2) / 3
+        assert np.allclose(trace, pressure, rtol=1e-4, atol=1)
 
 
 def test_non_periodic_ethanol(tmp_path):

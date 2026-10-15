@@ -3676,41 +3676,46 @@ class LAMMPS(seamm.Node):
         bond_types = {}
         angle_types = {}
 
-        # Water models
-        if P["rigid_waters"]:
-            # waters = seamm_util.water_models.Water.find_waters(data.structure)  # noqa: E501
+        # The element of each atom, 1-based. eex["elements"] is by atom type.
+        type_elements = eex["elements"]
+        elements = [""] + [type_elements[atom[3] - 1] for atom in eex["atoms"]]
+        bonds = eex["bonds"] if eex.get("n_bonds", 0) > 0 else []
+        angles = eex["angles"] if eex.get("n_angles", 0) > 0 else []
 
-            waters = []
-
-            if len(waters) > 0:
-                atoms = []
-                for i, j, k in waters:
-                    atoms.append(i)
-                    atoms.append(j)
-                    atoms.append(k)
-                if "n_bonds" in eex and eex["n_bonds"] > 0:
-                    for i, j, index in eex["bonds"]:
-                        if i in atoms and j in atoms:
-                            bond_types[index] = 1
-                if "n_angles" in eex and eex["n_angles"] > 0:
-                    for i, j, k, index in eex["angles"]:
-                        if i in atoms and j in atoms and k in atoms:
-                            angle_types[index] = 1
+        # Water models: an O bonded to two H's, each bonded only to it
+        if P["rigid_waters"] and len(bonds) > 0:
+            neighbors = {}
+            for i, j, index in bonds:
+                neighbors.setdefault(i, []).append(j)
+                neighbors.setdefault(j, []).append(i)
+            oxygens = set()
+            for i, partners in neighbors.items():
+                if (
+                    elements[i] == "O"
+                    and len(partners) == 2
+                    and all(
+                        elements[j] == "H" and len(neighbors[j]) == 1 for j in partners
+                    )
+                ):
+                    oxygens.add(i)
+            atoms = oxygens | {j for i in oxygens for j in neighbors[i]}
+            for i, j, index in bonds:
+                if i in atoms and j in atoms:
+                    bond_types[index] = 1
+            for i, j, k, index in angles:
+                if j in oxygens and i in atoms and k in atoms:
+                    angle_types[index] = 1
 
         # Fixing bond lengths of X-H bonds...
-        if "n_bonds" in eex and eex["n_bonds"] > 0:
-            fix_bonds = P["fix_XH_bond_lengths"]
-            elements = eex["elements"]
-            if fix_bonds == "CH":
-                for i, j, index in eex["bonds"]:
-                    if (elements[i - 1] == "C" and elements[j - 1] == "H") or (
-                        elements[i - 1] == "H" and elements[j - 1] == "C"
-                    ):
-                        bond_types[index] = 1
-            elif fix_bonds == "all":
-                for i, j, index in eex["bonds"]:
-                    if elements[i - 1] == "H" or elements[j - 1] == "H":
-                        bond_types[index] = 1
+        fix_bonds = P["fix_XH_bond_lengths"]
+        if fix_bonds == "CH":
+            for i, j, index in bonds:
+                if {elements[i], elements[j]} == {"C", "H"}:
+                    bond_types[index] = 1
+        elif fix_bonds == "all":
+            for i, j, index in bonds:
+                if elements[i] == "H" or elements[j] == "H":
+                    bond_types[index] = 1
 
         # And the result is ....
         if len(bond_types) > 0:

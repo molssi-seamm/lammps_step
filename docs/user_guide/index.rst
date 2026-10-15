@@ -94,6 +94,13 @@ read it, and it can be read with h5py, ``seamm_md_analysis.open_md`` or MDAnalys
 LAMMPS still writes its usual files during the run, and they are kept, so a run can
 be followed as before and nothing is lost if it stops.
 
+The full pressure tensor is always written with the thermodynamic state, at its
+sampling interval. For the viscosity it is needed much more often, every few
+femtoseconds: the NVE, NVT and NPT sub-steps can sample it on its own ("Sample the
+pressure tensor" on the trajectory tab), and that series is then the one written. It
+replaces the earlier choice "Sample the shear stress", which saved only the three
+off-diagonal components; flowcharts that use it now sample the full tensor.
+
 Each run is also recorded in the variable ``_md_runs``, which analysis steps later in
 the flowchart use to find the data.
 
@@ -114,7 +121,7 @@ box. The pressure, the stress and the heat flux are divided by the volume of the
 so for such a system:
 
 * the pressure is not reported, and the stress is not sampled;
-* asking for the heat flux or the shear stress in an NVE or NVT sub-step gives a
+* asking for the heat flux or the pressure tensor in an NVE or NVT sub-step gives a
   warning in the output, and they are not sampled;
 * the Heat Flux sub-step and NPT dynamics stop with an error before LAMMPS starts.
 

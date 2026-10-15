@@ -300,8 +300,10 @@ class MDH5MDConverter:
                 unit = "" if quantity is None else self.units[quantity]
                 self._observable(writer, name, steps, times, columns[column], unit)
 
+        # The pressure tensor sampled on its own, if it was, replaces this one
         stress = ("Sxx", "Syy", "Szz", "Syz", "Sxz", "Sxy")
-        if all(s in columns for s in stress):
+        sampled = (self.directory / "pressure_tensor.trj").exists()
+        if not sampled and all(s in columns for s in stress):
             xx, yy, zz, yz, xz, xy = (columns[s] for s in stress)
             # The stress is minus the pressure
             tensor = -np.stack(
@@ -383,19 +385,23 @@ class MDH5MDConverter:
             # Converted to W/m^2 in the LAMMPS input
             self._observable(writer, "heat_flux", steps, times, flux, "W m-2")
 
-        path = self.directory / "shear_stress.trj"
+        path = self.directory / "pressure_tensor.trj"
         if path.exists():
             steps, _, columns = self._read_trj(path)
             times = steps * self.timestep
-            values = np.column_stack([columns["Pxy"], columns["Pxz"], columns["Pyz"]])
+            xx, yy, zz, xy, xz, yz = (
+                columns[c] for c in ("Pxx", "Pyy", "Pzz", "Pxy", "Pxz", "Pyz")
+            )
+            tensor = np.stack(
+                [
+                    np.stack([xx, xy, xz], axis=-1),
+                    np.stack([xy, yy, yz], axis=-1),
+                    np.stack([xz, yz, zz], axis=-1),
+                ],
+                axis=-2,
+            )
             self._observable(
-                writer,
-                "pressure_offdiagonal",
-                steps,
-                times,
-                values,
-                self.units["pressure"],
-                attrs={"components": "xy xz yz"},
+                writer, "pressure_tensor", steps, times, tensor, self.units["pressure"]
             )
 
     # Parameters, provenance and the record
