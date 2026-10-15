@@ -74,6 +74,41 @@ refused, with the reason, and a value that contradicts another is refused too. S
   common errors, and where ``log.lammps`` is.
 
 
+The MD data for analysis: ``md.h5md``
+=====================================
+
+At the end of each NVE, NVT, NPT or Heat Flux sub-step, the step writes everything
+the run sampled into one file, ``md.h5md``, in the sub-step's directory:
+
+* the time series (temperature, pressure, the energies, the full pressure tensor, the
+  volume and density of an NPT run, the heat flux, ...), each on its own time axis
+  and in the units LAMMPS produced;
+* the atoms' positions, velocities and forces, and the centres of mass of the
+  molecules, as far as they were sampled, with the box of each frame;
+* the run's parameters and where it came from (the job, step, structure and model).
+
+The file is `H5MD <https://www.nongnu.org/h5md/>`_, an HDF5 format for molecular
+dynamics; its layout is described in the documentation of ``seamm_md_analysis``
+("The H5MD file"). The analysis steps, such as Diffusivity and Thermal Conductivity,
+read it, and it can be read with h5py, ``seamm_md_analysis.open_md`` or MDAnalysis.
+LAMMPS still writes its usual files during the run, and they are kept, so a run can
+be followed as before and nothing is lost if it stops.
+
+Each run is also recorded in the variable ``_md_runs``, which analysis steps later in
+the flowchart use to find the data.
+
+Non-periodic systems
+====================
+
+The step runs molecules and clusters without a periodic cell, with a shrink-wrapped
+box. The pressure, the stress and the heat flux are divided by the volume of the cell,
+so for such a system:
+
+* the pressure is not reported, and the stress is not sampled;
+* asking for the heat flux or the shear stress in an NVE or NVT sub-step gives a
+  warning in the output, and they are not sampled;
+* the Heat Flux sub-step and NPT dynamics stop with an error before LAMMPS starts.
+
 Index
 =====
 
