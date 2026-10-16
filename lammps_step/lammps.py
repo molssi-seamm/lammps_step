@@ -3278,18 +3278,29 @@ class LAMMPS(seamm.Node):
             t_units = "ps"
         t_max = float((len(t) - 1) * dt.m_as(t_units))
 
+        # The user's extra properties: their names, units, and whether the values
+        # are in LAMMPS's units (a quantity) or the user's own (explicit units)
+        extra_meta = {}
+        if node is not None and hasattr(node, "extra_definitions"):
+            extra_meta = lammps_step.extras.column_metadata(node.extra_definitions())
+
         for column in data.columns:
             if "Unnamed:" in column:
                 continue
             meta_column = column.rstrip("0123456789")
+            convert = True
 
-            if meta_column in LAMMPS.display_title:
+            if column in extra_meta:
+                meta_title, meta_units, convert = extra_meta[column]
+            elif meta_column in LAMMPS.display_title:
                 meta_title = LAMMPS.display_title[meta_column]
             elif column in LAMMPS.display_title:
                 meta_title = LAMMPS.display_title[column]
             else:
                 meta_title = f"unknown: {column}"
-            if meta_column in LAMMPS.display_units:
+            if column in extra_meta:
+                pass
+            elif meta_column in LAMMPS.display_units:
                 meta_units = LAMMPS.display_units[meta_column]
             elif column in LAMMPS.display_units:
                 meta_units = LAMMPS.display_units[column]
@@ -3304,7 +3315,7 @@ class LAMMPS(seamm.Node):
             self.logger.info("Analyzing {}, nsamples = {}".format(column, len(yy)))
 
             # Change from the units LAMMPS is using to the ones that we want
-            if meta_units not in ("???", "º"):
+            if convert and meta_units not in ("???", "º", ""):
                 try:
                     factor = lammps_step.from_lammps_units(1.0, meta_units)
                     # Do not use inplace operator *= because yy might be int
@@ -3335,7 +3346,9 @@ class LAMMPS(seamm.Node):
 
             if np.isnan(inefficiency) or np.isnan(Neff_max):
                 # Apparently didn't converge!
-                table["Property"].append(column)
+                table["Property"].append(
+                    extra_meta[column][0] if column in extra_meta else column
+                )
                 table["Value"].append("")
                 table[" "].append("")
                 table["StdErr"].append("")
@@ -3416,6 +3429,14 @@ class LAMMPS(seamm.Node):
                 if column in ("Jx", "Jy", "Jz"):
                     results[column]["values"] = data[column].to_numpy()
 
+                # The production part of an extra property, in its display
+                # units, for its treatment (lammps_step.extras)
+                if column in extra_meta:
+                    results[column]["units"] = meta_units
+                    if not hasattr(node, "_extra_series"):
+                        node._extra_series = {}
+                    node._extra_series[column] = y_t_equil
+
                 # Work out units on convergence time
                 conv_units = "fs"
                 t_conv = t0
@@ -3450,7 +3471,8 @@ class LAMMPS(seamm.Node):
 
                 results[column]["few_neff"] = have_warning
 
-                table["Property"].append(f"{column}{warn}")
+                label = extra_meta[column][0] if column in extra_meta else column
+                table["Property"].append(f"{label}{warn}")
                 table["Value"].append(f"{mean:.3f}")
                 table[" "].append("±")
                 table["StdErr"].append(f"{sem:.3f}")

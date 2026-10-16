@@ -4,9 +4,12 @@
 
 import lammps_step
 import logging
+import Pmw
 import seamm_widgets as sw
 import tkinter as tk
 import tkinter.ttk as ttk
+
+from lammps_step.extras import DISPLAY_UNITS, PREFACTORS, TREATMENTS, check
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +33,8 @@ class TkNVE(lammps_step.TkEnergy):
 
         # Metadata for the properties
         self.property_metadata = {}
+        # The rows of the extra properties table: a dict of widgets per row
+        self._extra_rows = []
 
         super().__init__(
             tk_flowchart=tk_flowchart,
@@ -108,6 +113,8 @@ class TkNVE(lammps_step.TkEnergy):
 
         if title == "Heat Flux":
             return frame
+
+        self._create_extras_tab(notebook, P)
 
         # Frame to isolate widgets
         c_frame = self["control_frame"] = ttk.LabelFrame(
@@ -262,10 +269,161 @@ class TkNVE(lammps_step.TkEnergy):
             width = width_level
         frame.columnconfigure(4, weight=1)
 
+    # The extra commands and properties (lammps_step.extras)
+
+    def _create_extras_tab(self, notebook, P):
+        """The tab for the extra commands and the table of extra properties."""
+        eframe = ttk.Frame(notebook)
+        self["extras frame"] = eframe
+        notebook.insert(self["results frame"], eframe, text="Extras", sticky=tk.NSEW)
+
+        ttk.Label(
+            eframe,
+            text=(
+                "Extra commands: LAMMPS compute, fix, variable and dump commands for "
+                "this sub-step only, removed when it ends."
+            ),
+        ).grid(row=0, column=0, sticky=tk.W)
+        text = self["extra commands text"] = Pmw.ScrolledText(
+            eframe,
+            labelpos="n",
+            text_wrap="none",
+            text_height=6,
+            text_width=80,
+        )
+        text.insert("1.0", P["extra commands"].value or "")
+        text.component("text").bind("<KeyRelease>", self._check_extras)
+        text.grid(row=1, column=0, sticky=tk.NSEW)
+
+        ttk.Label(
+            eframe,
+            text=(
+                "Extra properties: LAMMPS expressions sampled and analysed with the "
+                "other properties."
+            ),
+        ).grid(row=2, column=0, sticky=tk.W, pady=(10, 0))
+        table = self["extra properties table"] = ttk.Frame(eframe)
+        table.grid(row=3, column=0, sticky=tk.NSEW)
+        self["extras message"] = ttk.Label(eframe, text="", foreground="red")
+        self["extras message"].grid(row=4, column=0, sticky=tk.W)
+        eframe.columnconfigure(0, weight=1)
+        eframe.rowconfigure(1, weight=1)
+
+        for row in P["extra properties"].value or []:
+            self._add_extra_row(row, layout=False)
+        self._layout_extra_properties()
+
+    def _add_extra_row(self, data=None, layout=True):
+        """Add a row to the extra properties table."""
+        data = data or {}
+        table = self["extra properties table"]
+        row = {
+            "name": ttk.Entry(table, width=12),
+            "expression": ttk.Entry(table, width=24),
+            "units": ttk.Combobox(table, width=14, values=list(DISPLAY_UNITS)),
+            "treatment": ttk.Combobox(
+                table, width=18, values=TREATMENTS, state="readonly"
+            ),
+            "prefactor": ttk.Combobox(table, width=12, values=PREFACTORS),
+            "store": tk.BooleanVar(value=bool(data.get("store", False))),
+        }
+        row["store widget"] = ttk.Checkbutton(table, variable=row["store"])
+        row["remove"] = ttk.Button(
+            table, text="-", width=2, command=lambda r=row: self._remove_extra_row(r)
+        )
+        row["name"].insert(0, data.get("name", ""))
+        row["expression"].insert(0, data.get("expression", ""))
+        row["units"].set(data.get("units", "dimensionless") or "dimensionless")
+        row["treatment"].set(data.get("treatment", "average") or "average")
+        row["prefactor"].set(data.get("prefactor", "") or "V/kT")
+        for key in ("name", "expression", "units", "prefactor"):
+            row[key].bind("<KeyRelease>", self._check_extras)
+        for key in ("units", "treatment", "prefactor"):
+            row[key].bind("<<ComboboxSelected>>", self._layout_extra_properties)
+        self._extra_rows.append(row)
+        if layout:
+            self._layout_extra_properties()
+
+    def _remove_extra_row(self, row):
+        """Remove a row from the extra properties table."""
+        for key, widget in row.items():
+            if isinstance(widget, tk.Widget):
+                widget.destroy()
+        self._extra_rows.remove(row)
+        self._layout_extra_properties()
+
+    def _layout_extra_properties(self, event=None):
+        """Lay out the table: the prefactor only for a Green-Kubo integral."""
+        table = self["extra properties table"]
+        for slave in table.grid_slaves():
+            slave.grid_forget()
+        headers = ("Name", "Expression", "Units", "Treatment", "Prefactor", "Store")
+        for column, text in enumerate(headers):
+            if "header " + text not in self:
+                self["header " + text] = ttk.Label(table, text=text)
+            self["header " + text].grid(row=0, column=column, sticky=tk.W)
+        for i, row in enumerate(self._extra_rows, start=1):
+            row["name"].grid(row=i, column=0, sticky=tk.EW)
+            row["expression"].grid(row=i, column=1, sticky=tk.EW)
+            row["units"].grid(row=i, column=2, sticky=tk.EW)
+            row["treatment"].grid(row=i, column=3, sticky=tk.EW)
+            if row["treatment"].get() == "Green-Kubo integral":
+                row["prefactor"].grid(row=i, column=4, sticky=tk.EW)
+            row["store widget"].grid(row=i, column=5)
+            row["remove"].grid(row=i, column=6)
+        if "add extra property" not in self:
+            self["add extra property"] = ttk.Button(
+                table, text="+", width=2, command=self._add_extra_row
+            )
+        self["add extra property"].grid(
+            row=len(self._extra_rows) + 1, column=6, sticky=tk.W
+        )
+        table.columnconfigure(1, weight=1)
+        self._check_extras()
+
+    def _read_extras(self):
+        """The extra commands and the rows of the table, as the parameters hold
+        them."""
+        commands = self["extra commands text"].get(1.0, tk.END).rstrip()
+        rows = []
+        for row in self._extra_rows:
+            treatment = row["treatment"].get()
+            rows.append(
+                {
+                    "name": row["name"].get().strip(),
+                    "expression": row["expression"].get().strip(),
+                    "units": row["units"].get().strip(),
+                    "treatment": treatment,
+                    "prefactor": (
+                        row["prefactor"].get().strip()
+                        if treatment == "Green-Kubo integral"
+                        else ""
+                    ),
+                    "store": bool(row["store"].get()),
+                }
+            )
+        return commands, rows
+
+    def _check_extras(self, event=None):
+        """Show any problems with the extra commands and properties."""
+        if "extras message" not in self:
+            return ""
+        commands, rows = self._read_extras()
+        problems = check({"extra commands": commands, "extra properties": rows})
+        self["extras message"].configure(text=problems)
+        return problems
+
     def handle_dialog(self, result):
         if result == "OK":
             # Shortcut for parameters
             P = self.node.parameters
+
+            if "extras frame" in self:
+                commands, rows = self._read_extras()
+                P["extra commands"].value = commands
+                P["extra properties"].value = [
+                    r for r in rows if r["name"] != "" or r["expression"] != ""
+                ]
 
             value, units = self["time"].get()
             P["time"].value = value

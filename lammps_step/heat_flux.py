@@ -237,6 +237,14 @@ class HeatFlux(NVE):
         """The git version of this module."""
         return lammps_step.__git_revision__
 
+    def extra_definitions(self):
+        """The Heat Flux sub-step has no extra properties (yet)."""
+        return []
+
+    def check_flowchart(self, preceding):
+        """Nothing to check: the Heat Flux sub-step has no extra commands."""
+        return []
+
     def md_provides(self):
         """What this run will write to md.h5md: the heat flux every two steps."""
         from seamm_md_analysis import Interval

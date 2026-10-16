@@ -242,3 +242,58 @@ def test_variables_show_the_controls_they_might_need(root):
     set_and_check(tk_node, {"thermostat": "$thermostat"})
     for key in ("Tdamp", "Tchain", "seed", "frequency"):
         assert shown(tk_node[key])
+
+
+@pytest.mark.parametrize("substep", ("NVE", "NVT", "NPT"))
+def test_extras_tab(root, substep):
+    """The Extras tab: the prefactor only for a Green-Kubo integral, problems shown
+    as they are typed, and the commands and table saved on OK."""
+    tk_node = make(root, substep)
+    assert "extras frame" in tk_node
+    tk_node["extra commands text"].insert("1.0", "compute msd all msd\n")
+    tk_node._add_extra_row(
+        {"name": "msd", "expression": "c_msd[4]", "units": "distance"}
+    )
+    tk_node._add_extra_row(
+        {
+            "name": "Pxy",
+            "expression": "pxy",
+            "units": "pressure",
+            "treatment": "Green-Kubo integral",
+        }
+    )
+    tk_node._layout_extra_properties()
+    root.update_idletasks()
+    msd, pxy = tk_node._extra_rows
+    assert msd["prefactor"].winfo_manager() == ""
+    assert pxy["prefactor"].winfo_manager() == "grid"
+    msd["treatment"].set("Green-Kubo integral")
+    tk_node._layout_extra_properties()
+    assert msd["prefactor"].winfo_manager() == "grid"
+    msd["treatment"].set("average")
+    tk_node._layout_extra_properties()
+    assert msd["prefactor"].winfo_manager() == ""
+    assert tk_node._check_extras() == ""
+
+    # A wrong command is reported, not refused
+    tk_node["extra commands text"].insert("end", "group g type 1\n")
+    assert "'group' is not allowed" in tk_node._check_extras()
+    assert "'group' is not allowed" in tk_node["extras message"].cget("text")
+    tk_node["extra commands text"].delete("1.0", "end")
+    tk_node["extra commands text"].insert("1.0", "compute msd all msd\n")
+
+    # Removing a row, and saving
+    tk_node._add_extra_row()
+    assert len(tk_node._extra_rows) == 3
+    tk_node._remove_extra_row(tk_node._extra_rows[-1])
+    tk_node.handle_dialog("OK")
+    P = tk_node.node.parameters
+    assert P["extra commands"].value == "compute msd all msd"
+    rows = P["extra properties"].value
+    assert [r["name"] for r in rows] == ["msd", "Pxy"]
+    assert rows[0]["prefactor"] == "" and rows[1]["prefactor"] == "V/kT"
+
+
+def test_heat_flux_has_no_extras_tab(root):
+    tk_node = make(root, "HeatFlux")
+    assert "extras frame" not in tk_node
