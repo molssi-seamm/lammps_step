@@ -7,10 +7,10 @@ scipy
 pymbar>=4.0
 seamm>=2026.10.5
 seamm-exec>=2026.10.6
-seamm-ff-util>=2026.10.15
+seamm-ff-util>=2026.10.16
 statsmodels
 tabulate
 model-chemistry-step>=2026.10.12.1
-forcefield-step>=2026.10.15
+forcefield-step>=2026.10.16
 xnn-step>=2026.10.12
 seamm-md-analysis>=2026.10.15.2

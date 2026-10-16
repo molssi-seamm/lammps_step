@@ -1,7 +1,7 @@
 =======
 History
 =======
-2026.10.15.5 -- Rigid models from the forcefield, and the heat flux of liquids corrected
+2026.10.16 -- Rigid models from the forcefield, and the heat flux of liquids corrected
     * Which bonds and angles are rigid now comes from the forcefield, e.g. the SPC/E
       and TIP3P water in the new forcefields oplsaa+-spc_e and oplsaa+-tip3p, and
       SHAKE holds exactly those. Before, any water was made rigid, whatever the
