@@ -236,10 +236,11 @@ class NVT(lammps_step.NVE):
             properties += " v_N_hbond v_E_hbond"
             title2 += " N_hbond E_hbond"
         # The user's extra commands and properties for this sub-step
-        extras = self.extra_input(P)
-        if extras["properties"] != "":
-            properties += " " + extras["properties"]
-            title2 += " " + extras["titles"]
+        # (not "extras": that is the argument carrying SHAKE and the steps)
+        user_extras = self.extra_input(P)
+        if user_extras["properties"] != "":
+            properties += " " + user_extras["properties"]
+            title2 += " " + user_extras["titles"]
 
         lines = []
         lines.append("")
@@ -332,7 +333,7 @@ class NVT(lammps_step.NVE):
                 level=1,
                 note="Citation for thermostat.",
             )
-        lines.extend(extras["lines"])
+        lines.extend(user_extras["lines"])
 
         # For the heat flux, if requested, we need extra input
         if P["heat flux"] != "never":
@@ -453,7 +454,7 @@ class NVT(lammps_step.NVE):
             lines.append(f"unfix               {i}")
         if P["heat flux"] != "never":
             lines.extend(self.heat_flux_cleanup(P))
-        lines.extend(extras["cleanup"])
+        lines.extend(user_extras["cleanup"])
         lines.append("")
 
         return {

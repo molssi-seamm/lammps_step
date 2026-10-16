@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.10.16.3 -- Bugfix: rigid water was not held rigid in MD
+    * In 2026.10.16.1 and 2026.10.16.2, NVE, NVT and NPT dynamics dropped the SHAKE
+      constraints, so rigid models such as SPC/E water ran with flexible bonds and
+      angles (the stiff harmonic terms that hold them in minimizations). Results of
+      MD with rigid models from those two versions should be rerun; the shear
+      viscosity of SPC/E water came out about twice too large. 2026.10.16 and earlier
+      are not affected.
+
 2026.10.16.2 -- Bugfix: LAMMPS said it used more cores than it did; summaries are averages
     * In a batch job, LAMMPS can only use as many MPI processes as the job has tasks.
       A job with one task and several CPUs per task ran LAMMPS on one process, but
