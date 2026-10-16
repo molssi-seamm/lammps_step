@@ -639,7 +639,16 @@ path = importlib.resources.files("lammps_step") / "data"
 csv_file = path / "properties.csv"
 molsystem.add_properties_from_file(csv_file)
 
+# Rigid bonds and angles are held by SHAKE during dynamics. LAMMPS cannot minimize
+# with SHAKE (its "kbond" restraints make the line search fail), so they are also
+# stiff harmonic terms, which hold the geometry while minimizing and are exactly
+# zero when SHAKE holds the bond or angle at its value. In kcal/mol/Å^2 and
+# kcal/mol/radian^2.
+rigid_bond_k = 1000.0
+rigid_angle_k = 100.0
+
 bond_style = {
+    "rigid_bond": "harmonic",
     "quadratic_bond": "harmonic",
     "quartic_bond": "class2",
     "fene": "fene",
@@ -647,6 +656,7 @@ bond_style = {
 }
 
 angle_style = {
+    "rigid_angle": "harmonic",
     "quadratic_angle": "harmonic",
     "quartic_angle": "class2",
     "cosine": "cosine",
@@ -2529,14 +2539,24 @@ class LAMMPS(seamm.Node):
             lines.append("Bond Coeffs")
             lines.append("")
 
-            forms = set([v[0] for v in eex["bond parameters"]])
-            use_hybrid = len(forms) > 1
+            styles = set([bond_style[v[0]] for v in eex["bond parameters"]])
+            use_hybrid = len(styles) > 1
 
             for counter, parameters in zip(
                 range(1, eex["n_bond_types"] + 1), eex["bond parameters"]
             ):
                 form, values, types, parameters_type, real_types = parameters
-                if form == "quadratic_bond":
+                if form == "rigid_bond":
+                    function = "harmonic" if use_hybrid else ""
+                    line = pline(
+                        counter,
+                        function,
+                        {**values, "K2": rigid_bond_k},
+                        ["K2", "R0"],
+                        types,
+                        real_types,
+                    )
+                elif form == "quadratic_bond":
                     function = "harmonic" if use_hybrid else ""
                     line = pline(
                         counter,
@@ -2574,12 +2594,22 @@ class LAMMPS(seamm.Node):
             lines.append("")
 
             quartic_function = "class2" if "n_bond-bond_types" in eex else "quartic"
-            forms = set([v[0] for v in eex["angle parameters"]])
-            use_hybrid = len(forms) > 1
+            styles = set([angle_style[v[0]] for v in eex["angle parameters"]])
+            use_hybrid = len(styles) > 1
 
             for counter, parameters in enumerate(eex["angle parameters"], start=1):
                 form, values, types, parameters_type, real_types = parameters
-                if form == "quadratic_angle":
+                if form == "rigid_angle":
+                    function = "harmonic" if use_hybrid else ""
+                    line = pline(
+                        counter,
+                        function,
+                        {**values, "K2": rigid_angle_k},
+                        ["K2", "Theta0"],
+                        types,
+                        real_types,
+                    )
+                elif form == "quadratic_angle":
                     function = "harmonic" if use_hybrid else ""
                     line = pline(
                         counter,
@@ -3658,7 +3688,7 @@ class LAMMPS(seamm.Node):
         return results, table
 
     def shake_fix(self, P, eex):
-        """Create the 'fix shake' line needed for handling waters and X-H.
+        """Create the 'fix shake' line for rigid bonds and angles and X-H bonds.
 
         Parameters
         ----------
@@ -3680,31 +3710,14 @@ class LAMMPS(seamm.Node):
         type_elements = eex["elements"]
         elements = [""] + [type_elements[atom[3] - 1] for atom in eex["atoms"]]
         bonds = eex["bonds"] if eex.get("n_bonds", 0) > 0 else []
-        angles = eex["angles"] if eex.get("n_angles", 0) > 0 else []
 
-        # Water models: an O bonded to two H's, each bonded only to it
-        if P["rigid_waters"] and len(bonds) > 0:
-            neighbors = {}
-            for i, j, index in bonds:
-                neighbors.setdefault(i, []).append(j)
-                neighbors.setdefault(j, []).append(i)
-            oxygens = set()
-            for i, partners in neighbors.items():
-                if (
-                    elements[i] == "O"
-                    and len(partners) == 2
-                    and all(
-                        elements[j] == "H" and len(neighbors[j]) == 1 for j in partners
-                    )
-                ):
-                    oxygens.add(i)
-            atoms = oxygens | {j for i in oxygens for j in neighbors[i]}
-            for i, j, index in bonds:
-                if i in atoms and j in atoms:
-                    bond_types[index] = 1
-            for i, j, k, index in angles:
-                if j in oxygens and i in atoms and k in atoms:
-                    angle_types[index] = 1
+        # Bonds and angles the forcefield makes rigid, e.g. in water models
+        for index, parameters in enumerate(eex.get("bond parameters", []), start=1):
+            if parameters[0] == "rigid_bond":
+                bond_types[index] = 1
+        for index, parameters in enumerate(eex.get("angle parameters", []), start=1):
+            if parameters[0] == "rigid_angle":
+                angle_types[index] = 1
 
         # Fixing bond lengths of X-H bonds...
         fix_bonds = P["fix_XH_bond_lengths"]

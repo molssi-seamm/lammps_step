@@ -37,6 +37,7 @@ script = """\
 
 import argparse
 import sys
+import traceback
 
 from lammps import lammps, LMP_STYLE_ATOM, LMP_TYPE_VECTOR, LMP_TYPE_ARRAY
 from mpi4py import MPI
@@ -92,7 +93,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--cmd-args", help="Command line arguments for LAMMPS")
 kwords = vars(parser.parse_args())
 
-run_thermal_conductivity(**kwords)
+# An error on one rank must stop all of them, or mpirun waits forever
+try:
+    run_thermal_conductivity(**kwords)
+except Exception:
+    traceback.print_exc()
+    sys.stderr.flush()
+    MPI.COMM_WORLD.Abort(1)
 """
 
 script2 = """\
@@ -100,6 +107,7 @@ script2 = """\
 
 import argparse
 import sys
+import traceback
 
 from lammps import lammps, LMP_STYLE_ATOM, LMP_TYPE_VECTOR, LMP_TYPE_ARRAY
 from mpi4py import MPI
@@ -142,7 +150,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--cmd-args", help="Command line arguments for LAMMPS")
 kwords = vars(parser.parse_args())
 
-run_thermal_conductivity(**kwords)
+# An error on one rank must stop all of them, or mpirun waits forever
+try:
+    run_thermal_conductivity(**kwords)
+except Exception:
+    traceback.print_exc()
+    sys.stderr.flush()
+    MPI.COMM_WORLD.Abort(1)
 """
 
 
@@ -254,6 +268,14 @@ class HeatFlux(NVE):
             "running for {time} with a timestep of {timestep}. The "
             "heat flux will be sampled every two timesteps."
         )
+        if P.get("filter", "none") == "per-atom averages":
+            text += (
+                " Each atom's average energy and stress, from a preliminary run of "
+                "6000 steps, will be removed from the heat flux, which is correct "
+                "for a crystal but not for a liquid."
+            )
+        elif P.get("filter", "none") != "none":
+            text += " The filter of the heat flux is given by {filter}."
 
         return self.header + "\n" + __(text, **P, indent=4 * " ").__str__()
 
@@ -265,12 +287,19 @@ class HeatFlux(NVE):
             ffname = ""
         else:
             ffname = ff.current_forcefield
+        ff_form = self.parent.ff_form()
 
         self.description = []
 
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data
         )
+        if P["filter"] not in ("none", "per-atom averages"):
+            raise ValueError(
+                f"The heat flux filter must be 'none' or 'per-atom averages', not "
+                f"'{P['filter']}'."
+            )
+        filtered = P["filter"] == "per-atom averages"
         _, configuration = self.get_system_configuration()
         if configuration.periodicity == 0:
             raise RuntimeError(
@@ -327,12 +356,35 @@ class HeatFlux(NVE):
             factor = Q_("kcal/Å^2/fs/mol") / Q_("kcal/mol") * Q_("kcal/mol").to("kJ")
         factor = factor.m_as("W/m^2")
 
-        if "cff" in ffname:
+        # Constraints (SHAKE) must be on from the start: the runs that settle the
+        # system and average the per-atom energies and stresses are part of the
+        # dynamics, and rigid water without them flies apart.
+        constraint = ""
+        if extras is not None and "shake" in extras:
+            constraint = extras["shake"].format("constraint")
+            fixes.append("constraint")
+
+        if not filtered:
+            lines.append(f"""
+#          Green-Kubo method
+
+fix                 dynamics all nve
+{constraint}
+""")
+            lines.append(self.heat_flux_input(P, ff_form))
+            lines.append(f"""
+#          The thermo output
+
+thermo              {nsteps // 100}
+thermo_style        custom {thermo_properties}
+""")
+        elif "cff" in ffname:
             # Centroid/stress/atom does not handle class2 ff ... cross-terms?
             lines.append(f"""
 #          Green-Kubo method
 
 fix                 dynamics all nve
+{constraint}
 
 compute             KE all ke/atom
 compute             PE all pe/atom
@@ -396,6 +448,7 @@ fix_modify          J_filter virial yes
 #          Green-Kubo method
 
 fix                 dynamics all nve
+{constraint}
 
 compute             KE all ke/atom
 compute             PE all pe/atom
@@ -567,9 +620,6 @@ fix_modify          J_filter virial yes
         )
         lines.extend(tmp)
 
-        if extras is not None and "shake" in extras:
-            lines.append(extras["shake"].format("constraint"))
-            fixes.append("constraint")
         lines.append("")
 
         filename = f"@{self._id[-1]}+heat_flux.dump"
@@ -594,18 +644,21 @@ run                 {nsteps}
 thermo              0
 thermo_style        one
 
+unfix               summary
+unfix               dynamics
+"""]
+        if filtered:
+            post_lines.append("""\
 variable            factor delete
 variable            Jx delete
 variable            Jy delete
 variable            Jz delete
-unfix               summary
 unfix               J_filter
 unfix               S_p0
 unfix               PE0
 unfix               S_p_ave
 unfix               PE_ave
-unfix               dynamics
-"""]
+""")
         for compute in computes:
             post_lines.append(f"uncompute           {compute}")
         for fix in fixes:
@@ -616,7 +669,9 @@ unfix               dynamics
             post_lines.append(f"uncompute           {n}")
         for n in range(1, ndumps + 1):
             post_lines.append(f"undump              {n}")
-        if P["heat flux"] != "never":
+        if not filtered:
+            post_lines.extend(self.heat_flux_cleanup(P, ff_form))
+        elif P["heat flux"] != "never":
             if "cff" not in ffname:
                 post_lines.append("uncompute           flux_b")
                 post_lines.append("uncompute           S_b")
@@ -627,7 +682,14 @@ unfix               dynamics
             post_lines.append("uncompute           PE")
             post_lines.append("uncompute           KE")
 
-        if "cff" in ffname:
+        if not filtered:
+            # A plain LAMMPS run: input_post.dat is only read by the Python script
+            return {
+                "script": lines + post_lines,
+                "postscript": None,
+                "use python": False,
+            }
+        elif "cff" in ffname:
             return {
                 "script": lines,
                 "postscript": post_lines,

@@ -627,51 +627,7 @@ class NVE(lammps_step.Energy):
 
         # For the heat flux, if requested, we need extra input
         if P["heat flux"] != "never":
-            # Unit conversion factor
-            if lammps_step.get_lammps_unit_system() == "metal":
-                factor = Q_("eV/Å^2/ps")
-            else:
-                factor = (
-                    Q_("kcal/Å^2/fs/mol") / Q_("kcal/mol") * Q_("kcal/mol").to("kJ")
-                )
-            factor = factor.m_as("W/m^2")
-            if ff_form == "class2" or not P["use centroid stress"]:
-                # Centroid/stress/atom does not handle class2 ff ... cross-terms?
-                lines.append(f"""
-compute             KE all ke/atom
-compute             PE all pe/atom
-
-compute             S_p all stress/atom NULL virial
-compute             flux_p all heat/flux KE PE S_p
-
-#          Conversion from kcal/Å^2/fs/mol to W/m^2
-
-variable            factor equal {factor}
-variable            Jx equal v_factor*c_flux_p[1]/vol
-variable            Jy equal v_factor*c_flux_p[2]/vol
-variable            Jz equal v_factor*c_flux_p[3]/vol
-""")
-            else:
-                lines.append(f"""
-compute             KE all ke/atom
-compute             PE all pe/atom
-
-#          centroid doesn't work with kspace, so split into pair and non-pair parts
-
-compute             S_p all stress/atom NULL pair kspace
-compute             S_b all centroid/stress/atom NULL bond angle dihedral improper
-compute             flux_p all heat/flux KE PE S_p
-compute             flux_b all heat/flux KE PE S_b
-
-#          Conversion from kcal/Å^2/fs/mol to W/m^2
-
-variable            factor equal {factor}
-#          Both computes include the convective term, so remove one copy
-
-variable            Jx equal v_factor*(c_flux_p[1]+c_flux_b[1]-c_flux_b[4])/vol
-variable            Jy equal v_factor*(c_flux_p[2]+c_flux_b[2]-c_flux_b[5])/vol
-variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol
-""")
+            lines.append(self.heat_flux_input(P, ff_form))
 
         # summary output written 10 times during run so we can see progress
         # (sampling every step of a run of fewer than 100)
@@ -770,17 +726,7 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol
         for i in range(1, nfixes + 1):
             lines.append(f"unfix               {i}")
         if P["heat flux"] != "never":
-            if ff_form != "class2" and P["use centroid stress"]:
-                lines.append("uncompute           flux_b")
-                lines.append("uncompute           S_b")
-            lines.append("uncompute           flux_p")
-            lines.append("uncompute           S_p")
-            lines.append("uncompute           PE")
-            lines.append("uncompute           KE")
-            lines.append("variable            factor delete")
-            lines.append("variable            Jx delete")
-            lines.append("variable            Jy delete")
-            lines.append("variable            Jz delete")
+            lines.extend(self.heat_flux_cleanup(P, ff_form))
         lines.append("")
 
         return {
@@ -788,6 +734,94 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol
             "postscript": None,
             "use python": False,
         }
+
+    def heat_flux_input(self, P, ff_form=None):
+        """The computes and variables giving the heat flux, in W/m^2, as the
+        variables Jx, Jy and Jz.
+
+        The flux is J = sum_i e_i v_i - sum_i S_i.v_i over the atoms, with e_i
+        the per-atom energy and S_i the per-atom stress. The bonded terms and the
+        constraint forces (SHAKE) need the centroid form of the stress, which
+        compute centroid/stress/atom gives (Surblys et al., J. Appl. Phys. 2021);
+        it does not handle kspace, so the pair and kspace terms are a second
+        compute, and since both computes include the convective term sum_i e_i v_i,
+        one copy is removed. Class2 forcefields, or "use centroid stress" off, use
+        the ordinary per-atom stress of all the terms.
+
+        Parameters
+        ----------
+        P : dict
+            The step's parameter values ("use centroid stress").
+        ff_form : str, optional
+            The form of the forcefield. Default: the forcefield's.
+
+        Returns
+        -------
+        str
+            The LAMMPS input, to be undone by :meth:`heat_flux_cleanup`.
+        """
+        if ff_form is None:
+            ff_form = self.parent.ff_form()
+        if lammps_step.get_lammps_unit_system() == "metal":
+            factor = Q_("eV/Å^2/ps")
+        else:
+            factor = Q_("kcal/Å^2/fs/mol") / Q_("kcal/mol") * Q_("kcal/mol").to("kJ")
+        factor = factor.m_as("W/m^2")
+        if ff_form == "class2" or not P["use centroid stress"]:
+            # Centroid/stress/atom does not handle class2 ff ... cross-terms?
+            return f"""
+compute             KE all ke/atom
+compute             PE all pe/atom
+
+compute             S_p all stress/atom NULL virial
+compute             flux_p all heat/flux KE PE S_p
+
+#          Conversion from kcal/Å^2/fs/mol to W/m^2
+
+variable            factor equal {factor}
+variable            Jx equal v_factor*c_flux_p[1]/vol
+variable            Jy equal v_factor*c_flux_p[2]/vol
+variable            Jz equal v_factor*c_flux_p[3]/vol
+"""
+        return f"""
+compute             KE all ke/atom
+compute             PE all pe/atom
+
+#          centroid doesn't work with kspace, so split into pair and non-pair parts.
+#          The constraint forces (fix) need the centroid form.
+
+compute             S_p all stress/atom NULL pair kspace
+compute             S_b all centroid/stress/atom NULL bond angle dihedral improper fix
+compute             flux_p all heat/flux KE PE S_p
+compute             flux_b all heat/flux KE PE S_b
+
+#          Conversion from kcal/Å^2/fs/mol to W/m^2
+
+variable            factor equal {factor}
+#          Both computes include the convective term, so remove one copy
+
+variable            Jx equal v_factor*(c_flux_p[1]+c_flux_b[1]-c_flux_b[4])/vol
+variable            Jy equal v_factor*(c_flux_p[2]+c_flux_b[2]-c_flux_b[5])/vol
+variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol
+"""
+
+    def heat_flux_cleanup(self, P, ff_form=None):
+        """The lines removing what :meth:`heat_flux_input` defined."""
+        if ff_form is None:
+            ff_form = self.parent.ff_form()
+        lines = []
+        if ff_form != "class2" and P["use centroid stress"]:
+            lines.append("uncompute           flux_b")
+            lines.append("uncompute           S_b")
+        lines.append("uncompute           flux_p")
+        lines.append("uncompute           S_p")
+        lines.append("uncompute           PE")
+        lines.append("uncompute           KE")
+        lines.append("variable            factor delete")
+        lines.append("variable            Jx delete")
+        lines.append("variable            Jy delete")
+        lines.append("variable            Jz delete")
+        return lines
 
     def md_provides(self):
         """What this run will write to md.h5md, from its parameters.
