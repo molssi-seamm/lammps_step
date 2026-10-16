@@ -119,6 +119,10 @@ def md_provides(node):
             names += npt_observables
         for name in names:
             data[name] = interval
+        # The user's extra properties are sampled with the state
+        if hasattr(node, "extra_definitions"):
+            for d in node.extra_definitions():
+                data[f"user/{d['name']}"] = interval
 
     for name, (choice, rate, number) in sampling_parameters.items():
         interval = _interval(node, choice, rate, number, time)

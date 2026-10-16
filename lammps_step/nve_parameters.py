@@ -436,6 +436,36 @@ class NVE_Parameters(lammps_step.EnergyParameters):
         },
     }
 
+    #: The extra commands and extra properties of the sub-step (see
+    #: lammps_step.extras)
+    extras = {
+        "extra commands": {
+            "default": "",
+            "kind": "string",
+            "default_units": None,
+            "enumeration": tuple(),
+            "format_string": "",
+            "description": "Extra commands:",
+            "help_text": (
+                "LAMMPS compute, fix, variable and dump commands for this sub-step "
+                "only. SEAMM removes what they define when the sub-step ends."
+            ),
+        },
+        "extra properties": {
+            "default": [],
+            "kind": "list",
+            "default_units": None,
+            "enumeration": tuple(),
+            "format_string": "",
+            "description": "Extra properties:",
+            "help_text": (
+                "Properties to sample, each a name, a LAMMPS expression, its units, "
+                "and its treatment: an average, an autocorrelation or a Green-Kubo "
+                "integral."
+            ),
+        },
+    }
+
     # Running until properties converge is not implemented yet: the run is always
     # for a fixed length of simulated time.
     not_implemented = ("run_control", "maximum_time", "control_properties")
@@ -462,6 +492,7 @@ class NVE_Parameters(lammps_step.EnergyParameters):
             defaults={
                 **NVE_Parameters.parameters,
                 **NVE_Parameters.trajectories,
+                **NVE_Parameters.extras,
                 **defaults,
             },
             data=data,

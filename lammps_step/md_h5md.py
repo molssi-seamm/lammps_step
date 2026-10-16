@@ -300,6 +300,32 @@ class MDH5MDConverter:
                 unit = "" if quantity is None else self.units[quantity]
                 self._observable(writer, name, steps, times, columns[column], unit)
 
+        # The user's extra properties (lammps_step.extras)
+        if hasattr(self.node, "extra_definitions"):
+            from seamm_md_analysis.units import to_h5md
+
+            for d in self.node.extra_definitions():
+                if d["column"] not in columns:
+                    continue
+                if d["kind"] == "explicit":
+                    unit = to_h5md(d["units"])
+                elif d["units"] == "dimensionless":
+                    unit = ""
+                else:
+                    unit = self.units[d["units"]]
+                self._observable(
+                    writer,
+                    f"user/{d['name']}",
+                    steps,
+                    times,
+                    columns[d["column"]],
+                    unit,
+                    attrs={
+                        "seamm_expression": d["expression"],
+                        "seamm_treatment": d["treatment"],
+                    },
+                )
+
         # The pressure tensor sampled on its own, if it was, replaces this one
         stress = ("Sxx", "Syy", "Szz", "Syz", "Sxz", "Sxy")
         sampled = (self.directory / "pressure_tensor.trj").exists()

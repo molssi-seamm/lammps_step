@@ -208,6 +208,13 @@ class NVE(lammps_step.Energy):
             printer.normal(__(text, **data, indent=self.indent + 4 * " "))
             printer.normal("")
 
+        # The user's extra properties and their treatments
+        if properties is not None:
+            text = self._analyze_extra_properties(properties, data, configuration)
+            if text != "":
+                printer.normal(__(text, indent=8 * " ", wrap=False, dedent=False))
+                printer.normal("")
+
         # Get performance data from the output
         if output != "":
             table = {
@@ -610,6 +617,11 @@ class NVE(lammps_step.Energy):
             thermo_properties += " v_N_hbond v_E_hbond"
             properties += " v_N_hbond v_E_hbond"
             title2 += " N_hbond E_hbond"
+        # The user's extra commands and properties for this sub-step
+        extras = self.extra_input(P)
+        if extras["properties"] != "":
+            properties += " " + extras["properties"]
+            title2 += " " + extras["titles"]
 
         lines = []
         nfixes = 0
@@ -624,6 +636,8 @@ class NVE(lammps_step.Energy):
         lines.append("thermo              {}".format(int(nsteps / 100)))
         nfixes += 1
         lines.append("fix                 {} all nve".format(nfixes))
+
+        lines.extend(extras["lines"])
 
         # For the heat flux, if requested, we need extra input
         if P["heat flux"] != "never":
@@ -727,6 +741,7 @@ class NVE(lammps_step.Energy):
             lines.append(f"unfix               {i}")
         if P["heat flux"] != "never":
             lines.extend(self.heat_flux_cleanup(P, ff_form))
+        lines.extend(extras["cleanup"])
         lines.append("")
 
         return {
@@ -734,6 +749,287 @@ class NVE(lammps_step.Energy):
             "postscript": None,
             "use python": False,
         }
+
+    def _extras_parameters(self):
+        """The extra commands and properties as given: a string and a list of
+        dicts (``values_to_dict`` would give the list as text)."""
+        P = self.parameters
+        result = {}
+        for key in ("extra commands", "extra properties"):
+            value = P[key].value if key in P else None
+            if isinstance(value, str) and key == "extra properties":
+                value = json.loads(value) if value.strip() != "" else []
+            result[key] = value
+        return result
+
+    def check_flowchart(self, preceding):
+        """Check the extra commands and properties before the job runs (see
+        seamm.builder.validate), so that a mistake stops the job at once."""
+        text = lammps_step.extras.check(self._extras_parameters())
+        if text == "":
+            return []
+        return [f"'{self.title}': {problem}" for problem in text.splitlines()]
+
+    def extra_definitions(self):
+        """The user's extra properties, checked, or [] if there are none or they
+        are wrong (the input refuses wrong ones before the run)."""
+        P = self._extras_parameters()
+        try:
+            return lammps_step.extras.check_properties(P["extra properties"])
+        except lammps_step.extras.ExtrasError:
+            return []
+
+    def _mean_volume(self, data, configuration):
+        """The mean volume of the cell, or None for a non-periodic system."""
+        if "V" in data:
+            return Q_(data["V"], "Å^3")
+        if configuration is not None and configuration.periodicity == 3:
+            return Q_(configuration.cell.volume, "Å^3")
+        return None
+
+    def _analyze_extra_properties(self, properties, data, configuration):
+        """Treat, print and store the user's extra properties.
+
+        Parameters
+        ----------
+        properties : dict
+            The analysis of the state file, per column.
+        data : dict
+            The results of the step; ``extra properties`` is added.
+        configuration : molsystem._Configuration
+            Where to store the properties asked for.
+
+        Returns
+        -------
+        str
+            The table of the extra properties, or "" if there are none.
+        """
+        definitions = self.extra_definitions()
+        if len(definitions) == 0:
+            return ""
+        table = {
+            "Property": [],
+            "Treatment": [],
+            "Value": [],
+            " ": [],
+            "StdErr": [],
+            "Units": [],
+            "Note": [],
+        }
+        results = {}
+        for d in definitions:
+            name = d["name"]
+            entry = {
+                "expression": d["expression"],
+                "treatment": d["treatment"],
+                "units": d["display_units"],
+            }
+            results[name] = entry
+            r = properties.get(d["column"])
+            if r is None or "mean" not in r:
+                entry["error"] = "the property did not equilibrate"
+                for key, value in (
+                    ("Property", name),
+                    ("Treatment", d["treatment"]),
+                    ("Value", ""),
+                    (" ", ""),
+                    ("StdErr", ""),
+                    ("Units", d["display_units"]),
+                    ("Note", entry["error"]),
+                ):
+                    table[key].append(value)
+                continue
+            entry["mean"] = r["mean"]
+            entry["stderr"] = r["stderr"]
+            value, stderr, units = r["mean"], r["stderr"], d["display_units"]
+            note = ""
+            dt = Q_(r["timestep"], "fs")
+            # The production part of the series, kept by analyze_trajectory
+            values = getattr(self, "_extra_series", {}).get(d["column"])
+            try:
+                if d["treatment"] == "autocorrelation":
+                    ac = lammps_step.extras.autocorrelation(values, dt)
+                    tau = ac["tau"].m_as("ps")
+                    entry["correlation time"] = tau
+                    entry["correlation time,units"] = "ps"
+                    entry["acf"] = ac["acf"]
+                    note = f"correlation time {tau:.3g} ps"
+                    self._extra_acf_graph(d, ac)
+                elif d["treatment"] == "Green-Kubo integral":
+                    temperature = Q_(data["T"], "K") if "T" in data else None
+                    gk = lammps_step.extras.green_kubo(
+                        values,
+                        dt,
+                        d,
+                        unit=d["display_units"],
+                        volume=self._mean_volume(data, configuration),
+                        temperature=temperature,
+                    )
+                    value = gk["value"].magnitude
+                    stderr = gk["stderr"].magnitude
+                    units = gk["units"]
+                    entry["integral"] = value
+                    entry["integral,stderr"] = stderr
+                    entry["integral,units"] = units
+                    entry["integral,error from"] = gk["error_from"]
+                    entry["tau"] = gk["tau"]
+                    entry["tau,units"] = "ps"
+                    note = (
+                        "Green-Kubo, error from 4 blocks"
+                        if gk["error_from"] == "blocks"
+                        else "Green-Kubo, error from the fit (too small: the run is "
+                        "too short for blocks)"
+                    )
+                    self._extra_gk_graph(d, gk)
+            except Exception as e:
+                logger.warning(f"The {d['treatment']} of {name} failed: {e}")
+                entry["error"] = f"the {d['treatment']} failed: {e}"
+                note = entry["error"]
+
+            for key, item in (
+                ("Property", name),
+                ("Treatment", d["treatment"]),
+                ("Value", f"{value:.4g}"),
+                (" ", "±"),
+                ("StdErr", f"{stderr:.2g}"),
+                ("Units", units),
+                ("Note", note),
+            ):
+                table[key].append(item)
+
+            if d["store"] and configuration is not None and "error" not in entry:
+                self._store_extra_property(configuration, d, value, stderr, units)
+                entry["stored as"] = f"{name}#LAMMPS#{self.model}"
+
+        data["extra properties"] = results
+
+        tmp = tabulate(
+            table,
+            headers="keys",
+            tablefmt="rounded_outline",
+            disable_numparse=True,
+        )
+        length = len(tmp.splitlines()[0])
+        return "\n" + "Extra Properties".center(length) + "\n" + tmp + "\n"
+
+    def _store_extra_property(self, configuration, definition, value, stderr, units):
+        """Store an extra property, and its standard error, in the configuration,
+        defining them if needed."""
+        properties = configuration.properties
+        for suffix, item in (("", value), (",stderr", stderr)):
+            name = f"{definition['name']}{suffix}#LAMMPS#{self.model}"
+            if not properties.exists(name):
+                what = "the standard error of " if suffix else ""
+                properties.add(
+                    name,
+                    "float",
+                    units=units,
+                    description=(
+                        f"{what}{definition['name']} = {definition['expression']} "
+                        f"({definition['treatment']}, {self.model})"
+                    ),
+                    noerror=True,
+                )
+            properties.put(name, item)
+
+    def _write_graph(self, figure, name):
+        """Write a graph, and the other formats asked for."""
+        path = Path(self.directory) / f"{name}.graph"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        figure.write_file(path)
+
+    def _extra_acf_graph(self, definition, ac):
+        """The graph of the autocorrelation function of an extra property."""
+        dt = ac["dt"].m_as("ps")
+        n = len(ac["acf"])
+        ts = [i * dt for i in range(n)]
+        figure = self.create_figure(
+            module_path=("lammps_step", "seamm"),
+            template="line.graph_template",
+            title=f"Autocorrelation of {definition['name']}",
+        )
+        plot = figure.add_plot("acf")
+        x_axis = plot.add_axis("x", label="Time (ps)")
+        y_axis = plot.add_axis("y", label="ACF", anchor=x_axis)
+        x_axis.anchor = y_axis
+        upper = [a + 2 * e for a, e in zip(ac["acf"], ac["stderr"])]
+        lower = [a - 2 * e for a, e in zip(ac["acf"], ac["stderr"])]
+        plot.add_trace(
+            x_axis=x_axis,
+            y_axis=y_axis,
+            name="95% confidence",
+            x=ts + ts[::-1],
+            xlabel="t",
+            xunits="ps",
+            y=upper + lower[::-1],
+            ylabel="95%",
+            yunits="",
+            color="rgba(211,211,211,0.5)",
+            fill="toself",
+        )
+        plot.add_trace(
+            x_axis=x_axis,
+            y_axis=y_axis,
+            name="ACF",
+            x0=0,
+            dx=dt,
+            xlabel="t",
+            xunits="ps",
+            y=list(ac["acf"]),
+            ylabel="ACF",
+            yunits="",
+            color="red",
+        )
+        figure.grid_plots("acf")
+        self._write_graph(figure, f"{definition['name']}_acf")
+
+    def _extra_gk_graph(self, definition, gk):
+        """The graph of the Green-Kubo running integral of an extra property."""
+        figure = self.create_figure(
+            module_path=("lammps_step", "seamm"),
+            template="line.graph_template",
+            title=f"Green-Kubo integral of {definition['name']}",
+        )
+        plot = figure.add_plot("gk")
+        x_axis = plot.add_axis("x", label="Time (ps)")
+        y_axis = plot.add_axis("y", label=f"Integral ({gk['units']})", anchor=x_axis)
+        x_axis.anchor = y_axis
+        plot.add_trace(
+            x_axis=x_axis,
+            y_axis=y_axis,
+            name="integral",
+            x=gk["ts"],
+            xlabel="t",
+            xunits="ps",
+            y=gk["integral"],
+            ylabel="integral",
+            yunits=gk["units"],
+            color="#4dbd74",
+        )
+        plot.add_trace(
+            x_axis=x_axis,
+            y_axis=y_axis,
+            name="fit",
+            x=gk["fit_ts"],
+            xlabel="t",
+            xunits="ps",
+            y=gk["fit"],
+            ylabel="fit",
+            yunits=gk["units"],
+            color="black",
+        )
+        figure.grid_plots("gk")
+        self._write_graph(figure, f"{definition['name']}_gk")
+
+    def extra_input(self, P):
+        """The user's extra commands and properties for this sub-step, checked
+        (see :mod:`lammps_step.extras`)."""
+        try:
+            return lammps_step.extras.extra_input(self._extras_parameters())
+        except lammps_step.extras.ExtrasError as e:
+            raise RuntimeError(
+                f"{self.header}: the extra commands or properties are wrong:\n{e}"
+            ) from None
 
     def heat_flux_input(self, P, ff_form=None):
         """The computes and variables giving the heat flux, in W/m^2, as the

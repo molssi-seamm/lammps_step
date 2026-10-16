@@ -1,6 +1,17 @@
 =======
 History
 =======
+2026.10.16.1 -- Extra commands and extra properties in the MD sub-steps
+    * The NVE, NVT and NPT sub-steps have an Extras tab. Extra commands are LAMMPS
+      compute, fix, variable and dump commands for that sub-step only, removed when
+      it ends. Extra properties are LAMMPS expressions, each with a name and units,
+      sampled and analysed with the built-in properties, as an average, an
+      autocorrelation function with its correlation time, or a Green-Kubo integral
+      with a chosen prefactor. They are printed, graphed, written to md.h5md as
+      observables/user/<name>, and can be stored as properties of the configuration.
+    * Mistakes in the extra commands or properties are shown in the dialog as they
+      are typed, and stop a job before it runs.
+
 2026.10.16 -- Rigid models from the forcefield, and the heat flux of liquids corrected
     * Which bonds and angles are rigid now comes from the forcefield, e.g. the SPC/E
       and TIP3P water in the new forcefields oplsaa+-spc_e and oplsaa+-tip3p, and

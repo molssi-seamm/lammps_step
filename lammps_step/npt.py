@@ -218,6 +218,11 @@ class NPT(lammps_step.NVT):
             thermo_properties += " v_N_hbond v_E_hbond"
             properties += " v_N_hbond v_E_hbond"
             title2 += " N_hbond E_hbond"
+        # The user's extra commands and properties for this sub-step
+        extras = self.extra_input(P)
+        if extras["properties"] != "":
+            properties += " " + extras["properties"]
+            title2 += " " + extras["titles"]
 
         # and build the LAMMPS script
         lines = []
@@ -368,6 +373,8 @@ class NPT(lammps_step.NVT):
                     note="Citation for thermostat.",
                 )
 
+        lines.extend(extras["lines"])
+
         # For the heat flux, if requested, we need extra input
         if P["heat flux"] != "never":
             lines.append(self.heat_flux_input(P))
@@ -476,6 +483,7 @@ class NPT(lammps_step.NVT):
             lines.append("unfix               {}".format(fix))
         if P["heat flux"] != "never":
             lines.extend(self.heat_flux_cleanup(P))
+        lines.extend(extras["cleanup"])
         lines.append("")
 
         return {

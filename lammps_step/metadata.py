@@ -53,6 +53,19 @@ metadata["results"] = {
         "units": "kcal/mol",
         "format": ".2f",
     },
+    "extra properties": {
+        "calculation": [
+            "nve",
+            "nvt",
+            "npt",
+        ],
+        "description": (
+            "the user's extra properties: for each name its mean, standard error "
+            "and units, and its correlation time or Green-Kubo integral"
+        ),
+        "dimensionality": "{name: {key: value}}",
+        "type": "json",
+    },
     "T": {
         "calculation": [
             "nve",
