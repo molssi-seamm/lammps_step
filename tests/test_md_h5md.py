@@ -210,3 +210,27 @@ def _real_units():
     lammps_step.set_lammps_unit_system("real")
     yield
     lammps_step.set_lammps_unit_system(old)
+
+
+def test_the_kspace_style_is_recorded(tmp_path):
+    """The dielectric constant's formula assumes Ewald or PPPM: the run records
+    its kspace style."""
+    for path in (DATA / "water").iterdir():
+        shutil.copy(path, tmp_path)
+    (tmp_path / "input.dat").write_text(
+        "pair_style          lj/cut/coul/long 12.0\n"
+        "kspace_style        pppm 1.0e-5\n"
+    )
+    node = NVT(tmp_path, [-0.82, 0.41, 0.41] * 64)
+    config = configuration(
+        64, ["O", "H", "H"], [8, 1, 1], [15.999, 1.008, 1.008], cell=[12.4172] * 3
+    )
+    config.cell.parameters = [12.417241581015336] * 3 + [90.0] * 3
+    write_md_h5md(node, P, config)
+    with open_md(tmp_path / "md.h5md") as md:
+        assert md.parameters["kspace_style"] == "pppm 1.0e-5"
+    (tmp_path / "input.dat").write_text("pair_style lj/cut/coul/cut 12.0\n")
+    (tmp_path / "md.h5md").unlink()
+    write_md_h5md(node, P, config)
+    with open_md(tmp_path / "md.h5md") as md:
+        assert md.parameters["kspace_style"] == "none"
