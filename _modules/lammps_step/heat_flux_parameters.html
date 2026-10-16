@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.heat_flux_parameters &#8212; SEAMM LAMMPS Plug-in 2026.10.15.4 documentation</title>
+    <title>lammps_step.heat_flux_parameters &#8212; SEAMM LAMMPS Plug-in 2026.10.16 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=d91cde52"></script>
+    <script src="../../_static/documentation_options.js?v=5aae1070"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15.4" />
+  <meta name="docsearch:version" content="2026.10.16" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -563,7 +563,40 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">    HeatFlux, TkHeatFlux, HeatFlux HeatFluxParameters, Heat FluxStep</span>
 <span class="sd">    """</span>
 
-    <span class="n">parameters</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"filter"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"none"</span><span class="p">,</span>
+            <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"enum"</span><span class="p">,</span>
+            <span class="s2">"default_units"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"none"</span><span class="p">,</span> <span class="s2">"per-atom averages"</span><span class="p">),</span>
+            <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Filter the heat flux:"</span><span class="p">,</span>
+            <span class="s2">"help_text"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">"Whether to remove the constant parts of the per-atom energies and "</span>
+                <span class="s2">"stresses from the heat flux. 'per-atom averages' subtracts each "</span>
+                <span class="s2">"atom's average energy and stress, from a preliminary 5 ps run "</span>
+                <span class="s2">"(Pereverzev &amp; Sewell 2022). In a crystal, where each atom stays on "</span>
+                <span class="s2">"its site, that removes noise without changing the thermal "</span>
+                <span class="s2">"conductivity. In a liquid the atoms move, and it makes the thermal "</span>
+                <span class="s2">"conductivity too large (about 20</span><span class="si">% f</span><span class="s2">or water), so use 'none' for "</span>
+                <span class="s2">"liquids."</span>
+            <span class="p">),</span>
+        <span class="p">},</span>
+        <span class="c1"># The centroid stress is for the unfiltered heat flux</span>
+        <span class="s2">"use centroid stress"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"heat flux"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"not"</span><span class="p">:</span> <span class="s2">"never"</span><span class="p">},</span> <span class="s2">"filter"</span><span class="p">:</span> <span class="s2">"none"</span><span class="p">},</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"yes"</span><span class="p">,</span>
+            <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"default_units"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"yes"</span><span class="p">,</span> <span class="s2">"no"</span><span class="p">),</span>
+            <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Use centroid/stress/atom:"</span><span class="p">,</span>
+            <span class="s2">"help_text"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">"Whether to use the centroid form of the stress for the bonded "</span>
+                <span class="s2">"terms and the constraints (SHAKE), which is the correct one."</span>
+            <span class="p">),</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="p">{},</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>

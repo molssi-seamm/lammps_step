@@ -50,6 +50,47 @@ LAMMPS uses the forcefield or model chemistry chosen before it in the flowchart:
 
 If a flowchart has both, the model chemistry is used.
 
+Rigid bonds and angles
+======================
+
+Some models are rigid, such as the SPC/E and TIP3P water models in the forcefields
+``oplsaa+-spc_e``, ``oplsaa+-tip3p`` and ``nacl_water``. The forcefield says which bonds
+and angles are rigid, and LAMMPS holds them at their values with SHAKE (``fix shake``)
+during dynamics, so a timestep of 2 fs can be used. LAMMPS cannot minimize with SHAKE,
+so a rigid bond or angle is also a stiff harmonic term, 1000 kcal/mol/Å\ :sup:`2` for a
+bond and 100 kcal/mol/radian\ :sup:`2` for an angle. It holds the geometry close to
+the rigid one in a minimization and is exactly zero when SHAKE holds it in dynamics.
+
+A forcefield that is not rigid, such as ``oplsaa+`` with its flexible SPC water, is
+used as it is. The Initialization sub-step's "Fix X-H bond lengths" holds bonds to
+hydrogen fixed with SHAKE in any forcefield.
+
+SHAKE is used rather than RATTLE: LAMMPS's RATTLE gave rigid SPC/E water a pressure
+about 850 atm too high and a center of mass that drifted.
+
+The heat flux
+=============
+
+The Heat Flux sub-step, and the NVE, NVT and NPT sub-steps when asked to sample it,
+give the heat flux for the thermal conductivity,
+J = Σ\ :sub:`i` e\ :sub:`i` v\ :sub:`i` − Σ\ :sub:`i` S\ :sub:`i`·v\ :sub:`i`, from
+each atom's energy e\ :sub:`i` and stress S\ :sub:`i`. The bonded terms and the
+constraint forces of rigid bonds and angles use the centroid form of the stress, which
+is the correct one for them (Surblys et al., J. Appl. Phys. 2021), unless "Use
+centroid/stress/atom" is turned off; class2 forcefields always use the ordinary form.
+
+The Heat Flux sub-step can also filter the heat flux ("Filter the heat flux"):
+
+``none``
+    The default, and the choice for liquids.
+``per-atom averages``
+    Subtracts each atom's average energy and stress, from a preliminary 6000-step run,
+    from the heat flux (Pereverzev and Sewell, 2022). In a crystal, where every atom
+    stays on its site, this removes a constant that only adds noise. In a liquid the
+    atoms move, and it adds a term that makes the thermal conductivity too large:
+    for SPC/E water by about 0.15-0.2 W/m/K, or 20%, which longer runs do not remove.
+    Use it only for solids. How much it helps there has not been measured yet.
+
 Settings that depend on each other
 ==================================
 

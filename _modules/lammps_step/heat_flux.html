@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.heat_flux &#8212; SEAMM LAMMPS Plug-in 2026.10.15.4 documentation</title>
+    <title>lammps_step.heat_flux &#8212; SEAMM LAMMPS Plug-in 2026.10.16 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=d91cde52"></script>
+    <script src="../../_static/documentation_options.js?v=5aae1070"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15.4" />
+  <meta name="docsearch:version" content="2026.10.16" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -525,6 +525,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <span class="s2">import argparse</span>
 <span class="s2">import sys</span>
+<span class="s2">import traceback</span>
 
 <span class="s2">from lammps import lammps, LMP_STYLE_ATOM, LMP_TYPE_VECTOR, LMP_TYPE_ARRAY</span>
 <span class="s2">from mpi4py import MPI</span>
@@ -580,7 +581,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="s2">parser.add_argument("--cmd-args", help="Command line arguments for LAMMPS")</span>
 <span class="s2">kwords = vars(parser.parse_args())</span>
 
-<span class="s2">run_thermal_conductivity(**kwords)</span>
+<span class="s2"># An error on one rank must stop all of them, or mpirun waits forever</span>
+<span class="s2">try:</span>
+<span class="s2">    run_thermal_conductivity(**kwords)</span>
+<span class="s2">except Exception:</span>
+<span class="s2">    traceback.print_exc()</span>
+<span class="s2">    sys.stderr.flush()</span>
+<span class="s2">    MPI.COMM_WORLD.Abort(1)</span>
 <span class="s2">"""</span>
 
 <span class="n">script2</span> <span class="o">=</span> <span class="s2">"""</span><span class="se">\</span>
@@ -588,6 +595,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <span class="s2">import argparse</span>
 <span class="s2">import sys</span>
+<span class="s2">import traceback</span>
 
 <span class="s2">from lammps import lammps, LMP_STYLE_ATOM, LMP_TYPE_VECTOR, LMP_TYPE_ARRAY</span>
 <span class="s2">from mpi4py import MPI</span>
@@ -630,7 +638,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="s2">parser.add_argument("--cmd-args", help="Command line arguments for LAMMPS")</span>
 <span class="s2">kwords = vars(parser.parse_args())</span>
 
-<span class="s2">run_thermal_conductivity(**kwords)</span>
+<span class="s2"># An error on one rank must stop all of them, or mpirun waits forever</span>
+<span class="s2">try:</span>
+<span class="s2">    run_thermal_conductivity(**kwords)</span>
+<span class="s2">except Exception:</span>
+<span class="s2">    traceback.print_exc()</span>
+<span class="s2">    sys.stderr.flush()</span>
+<span class="s2">    MPI.COMM_WORLD.Abort(1)</span>
 <span class="s2">"""</span>
 
 
@@ -749,6 +763,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"running for </span><span class="si">{time}</span><span class="s2"> with a timestep of </span><span class="si">{timestep}</span><span class="s2">. The "</span>
             <span class="s2">"heat flux will be sampled every two timesteps."</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="n">P</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"filter"</span><span class="p">,</span> <span class="s2">"none"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"per-atom averages"</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="s2">" Each atom's average energy and stress, from a preliminary run of "</span>
+                <span class="s2">"6000 steps, will be removed from the heat flux, which is correct "</span>
+                <span class="s2">"for a crystal but not for a liquid."</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">P</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"filter"</span><span class="p">,</span> <span class="s2">"none"</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">"none"</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">" The filter of the heat flux is given by </span><span class="si">{filter}</span><span class="s2">."</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">P</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span></div>
 
@@ -763,12 +785,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">ffname</span> <span class="o">=</span> <span class="s2">""</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">ffname</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">current_forcefield</span>
+        <span class="n">ff_form</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">ff_form</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">current_values_to_dict</span><span class="p">(</span>
             <span class="n">context</span><span class="o">=</span><span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">_data</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"filter"</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"none"</span><span class="p">,</span> <span class="s2">"per-atom averages"</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The heat flux filter must be 'none' or 'per-atom averages', not "</span>
+                <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">P</span><span class="p">[</span><span class="s1">'filter'</span><span class="p">]</span><span class="si">}</span><span class="s2">'."</span>
+            <span class="p">)</span>
+        <span class="n">filtered</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"filter"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"per-atom averages"</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
@@ -825,12 +854,35 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">factor</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">"kcal/Å^2/fs/mol"</span><span class="p">)</span> <span class="o">/</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">"kcal/mol"</span><span class="p">)</span> <span class="o">*</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">"kcal/mol"</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"kJ"</span><span class="p">)</span>
         <span class="n">factor</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">"W/m^2"</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="s2">"cff"</span> <span class="ow">in</span> <span class="n">ffname</span><span class="p">:</span>
+        <span class="c1"># Constraints (SHAKE) must be on from the start: the runs that settle the</span>
+        <span class="c1"># system and average the per-atom energies and stresses are part of the</span>
+        <span class="c1"># dynamics, and rigid water without them flies apart.</span>
+        <span class="n">constraint</span> <span class="o">=</span> <span class="s2">""</span>
+        <span class="k">if</span> <span class="n">extras</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">"shake"</span> <span class="ow">in</span> <span class="n">extras</span><span class="p">:</span>
+            <span class="n">constraint</span> <span class="o">=</span> <span class="n">extras</span><span class="p">[</span><span class="s2">"shake"</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">"constraint"</span><span class="p">)</span>
+            <span class="n">fixes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"constraint"</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filtered</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"""</span>
+<span class="s2">#          Green-Kubo method</span>
+
+<span class="s2">fix                 dynamics all nve</span>
+<span class="si">{</span><span class="n">constraint</span><span class="si">}</span>
+<span class="s2">"""</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">heat_flux_input</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">ff_form</span><span class="p">))</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"""</span>
+<span class="s2">#          The thermo output</span>
+
+<span class="s2">thermo              </span><span class="si">{</span><span class="n">nsteps</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="mi">100</span><span class="si">}</span>
+<span class="s2">thermo_style        custom </span><span class="si">{</span><span class="n">thermo_properties</span><span class="si">}</span>
+<span class="s2">"""</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">"cff"</span> <span class="ow">in</span> <span class="n">ffname</span><span class="p">:</span>
             <span class="c1"># Centroid/stress/atom does not handle class2 ff ... cross-terms?</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">#          Green-Kubo method</span>
 
 <span class="s2">fix                 dynamics all nve</span>
+<span class="si">{</span><span class="n">constraint</span><span class="si">}</span>
 
 <span class="s2">compute             KE all ke/atom</span>
 <span class="s2">compute             PE all pe/atom</span>
@@ -894,6 +946,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="s2">#          Green-Kubo method</span>
 
 <span class="s2">fix                 dynamics all nve</span>
+<span class="si">{</span><span class="n">constraint</span><span class="si">}</span>
 
 <span class="s2">compute             KE all ke/atom</span>
 <span class="s2">compute             PE all pe/atom</span>
@@ -1065,9 +1118,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">extras</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">"shake"</span> <span class="ow">in</span> <span class="n">extras</span><span class="p">:</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extras</span><span class="p">[</span><span class="s2">"shake"</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">"constraint"</span><span class="p">))</span>
-            <span class="n">fixes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"constraint"</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 
         <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+heat_flux.dump"</span>
@@ -1092,18 +1142,21 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="s2">thermo              0</span>
 <span class="s2">thermo_style        one</span>
 
+<span class="s2">unfix               summary</span>
+<span class="s2">unfix               dynamics</span>
+<span class="s2">"""</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">filtered</span><span class="p">:</span>
+            <span class="n">post_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
 <span class="s2">variable            factor delete</span>
 <span class="s2">variable            Jx delete</span>
 <span class="s2">variable            Jy delete</span>
 <span class="s2">variable            Jz delete</span>
-<span class="s2">unfix               summary</span>
 <span class="s2">unfix               J_filter</span>
 <span class="s2">unfix               S_p0</span>
 <span class="s2">unfix               PE0</span>
 <span class="s2">unfix               S_p_ave</span>
 <span class="s2">unfix               PE_ave</span>
-<span class="s2">unfix               dynamics</span>
-<span class="s2">"""</span><span class="p">]</span>
+<span class="s2">"""</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">compute</span> <span class="ow">in</span> <span class="n">computes</span><span class="p">:</span>
             <span class="n">post_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"uncompute           </span><span class="si">{</span><span class="n">compute</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">fix</span> <span class="ow">in</span> <span class="n">fixes</span><span class="p">:</span>
@@ -1114,7 +1167,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">post_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"uncompute           </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndumps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="n">post_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"undump              </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"heat flux"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"never"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filtered</span><span class="p">:</span>
+            <span class="n">post_lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">heat_flux_cleanup</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">ff_form</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"heat flux"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"never"</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">"cff"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ffname</span><span class="p">:</span>
                 <span class="n">post_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"uncompute           flux_b"</span><span class="p">)</span>
                 <span class="n">post_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"uncompute           S_b"</span><span class="p">)</span>
@@ -1125,7 +1180,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">post_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"uncompute           PE"</span><span class="p">)</span>
             <span class="n">post_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"uncompute           KE"</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="s2">"cff"</span> <span class="ow">in</span> <span class="n">ffname</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filtered</span><span class="p">:</span>
+            <span class="c1"># A plain LAMMPS run: input_post.dat is only read by the Python script</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">"script"</span><span class="p">:</span> <span class="n">lines</span> <span class="o">+</span> <span class="n">post_lines</span><span class="p">,</span>
+                <span class="s2">"postscript"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">"use python"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="k">elif</span> <span class="s2">"cff"</span> <span class="ow">in</span> <span class="n">ffname</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{</span>
                 <span class="s2">"script"</span><span class="p">:</span> <span class="n">lines</span><span class="p">,</span>
                 <span class="s2">"postscript"</span><span class="p">:</span> <span class="n">post_lines</span><span class="p">,</span>

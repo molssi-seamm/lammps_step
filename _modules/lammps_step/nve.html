@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2026.10.15.4 documentation</title>
+    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2026.10.16 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=d91cde52"></script>
+    <script src="../../_static/documentation_options.js?v=5aae1070"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15.4" />
+  <meta name="docsearch:version" content="2026.10.16" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1125,51 +1125,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <span class="c1"># For the heat flux, if requested, we need extra input</span>
         <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"heat flux"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"never"</span><span class="p">:</span>
-            <span class="c1"># Unit conversion factor</span>
-            <span class="k">if</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">get_lammps_unit_system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"metal"</span><span class="p">:</span>
-                <span class="n">factor</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">"eV/Å^2/ps"</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">factor</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">Q_</span><span class="p">(</span><span class="s2">"kcal/Å^2/fs/mol"</span><span class="p">)</span> <span class="o">/</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">"kcal/mol"</span><span class="p">)</span> <span class="o">*</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">"kcal/mol"</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"kJ"</span><span class="p">)</span>
-                <span class="p">)</span>
-            <span class="n">factor</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">"W/m^2"</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">"class2"</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">P</span><span class="p">[</span><span class="s2">"use centroid stress"</span><span class="p">]:</span>
-                <span class="c1"># Centroid/stress/atom does not handle class2 ff ... cross-terms?</span>
-                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"""</span>
-<span class="s2">compute             KE all ke/atom</span>
-<span class="s2">compute             PE all pe/atom</span>
-
-<span class="s2">compute             S_p all stress/atom NULL virial</span>
-<span class="s2">compute             flux_p all heat/flux KE PE S_p</span>
-
-<span class="s2">#          Conversion from kcal/Å^2/fs/mol to W/m^2</span>
-
-<span class="s2">variable            factor equal </span><span class="si">{</span><span class="n">factor</span><span class="si">}</span>
-<span class="s2">variable            Jx equal v_factor*c_flux_p[1]/vol</span>
-<span class="s2">variable            Jy equal v_factor*c_flux_p[2]/vol</span>
-<span class="s2">variable            Jz equal v_factor*c_flux_p[3]/vol</span>
-<span class="s2">"""</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"""</span>
-<span class="s2">compute             KE all ke/atom</span>
-<span class="s2">compute             PE all pe/atom</span>
-
-<span class="s2">#          centroid doesn't work with kspace, so split into pair and non-pair parts</span>
-
-<span class="s2">compute             S_p all stress/atom NULL pair kspace</span>
-<span class="s2">compute             S_b all centroid/stress/atom NULL bond angle dihedral improper</span>
-<span class="s2">compute             flux_p all heat/flux KE PE S_p</span>
-<span class="s2">compute             flux_b all heat/flux KE PE S_b</span>
-
-<span class="s2">#          Conversion from kcal/Å^2/fs/mol to W/m^2</span>
-
-<span class="s2">variable            factor equal </span><span class="si">{</span><span class="n">factor</span><span class="si">}</span>
-<span class="s2">#          Both computes include the convective term, so remove one copy</span>
-
-<span class="s2">variable            Jx equal v_factor*(c_flux_p[1]+c_flux_b[1]-c_flux_b[4])/vol</span>
-<span class="s2">variable            Jy equal v_factor*(c_flux_p[2]+c_flux_b[2]-c_flux_b[5])/vol</span>
-<span class="s2">variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol</span>
-<span class="s2">"""</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">heat_flux_input</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">ff_form</span><span class="p">))</span>
 
         <span class="c1"># summary output written 10 times during run so we can see progress</span>
         <span class="c1"># (sampling every step of a run of fewer than 100)</span>
@@ -1268,17 +1224,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nfixes</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unfix               </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"heat flux"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"never"</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">ff_form</span> <span class="o">!=</span> <span class="s2">"class2"</span> <span class="ow">and</span> <span class="n">P</span><span class="p">[</span><span class="s2">"use centroid stress"</span><span class="p">]:</span>
-                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"uncompute           flux_b"</span><span class="p">)</span>
-                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"uncompute           S_b"</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"uncompute           flux_p"</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"uncompute           S_p"</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"uncompute           PE"</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"uncompute           KE"</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"variable            factor delete"</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"variable            Jx delete"</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"variable            Jy delete"</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"variable            Jz delete"</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">heat_flux_cleanup</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">ff_form</span><span class="p">))</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
@@ -1286,6 +1232,100 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"postscript"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
             <span class="s2">"use python"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
         <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="NVE.heat_flux_input">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nve.NVE.heat_flux_input">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">heat_flux_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">ff_form</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The computes and variables giving the heat flux, in W/m^2, as the</span>
+<span class="sd">        variables Jx, Jy and Jz.</span>
+
+<span class="sd">        The flux is J = sum_i e_i v_i - sum_i S_i.v_i over the atoms, with e_i</span>
+<span class="sd">        the per-atom energy and S_i the per-atom stress. The bonded terms and the</span>
+<span class="sd">        constraint forces (SHAKE) need the centroid form of the stress, which</span>
+<span class="sd">        compute centroid/stress/atom gives (Surblys et al., J. Appl. Phys. 2021);</span>
+<span class="sd">        it does not handle kspace, so the pair and kspace terms are a second</span>
+<span class="sd">        compute, and since both computes include the convective term sum_i e_i v_i,</span>
+<span class="sd">        one copy is removed. Class2 forcefields, or "use centroid stress" off, use</span>
+<span class="sd">        the ordinary per-atom stress of all the terms.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        P : dict</span>
+<span class="sd">            The step's parameter values ("use centroid stress").</span>
+<span class="sd">        ff_form : str, optional</span>
+<span class="sd">            The form of the forcefield. Default: the forcefield's.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            The LAMMPS input, to be undone by :meth:`heat_flux_cleanup`.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">ff_form</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ff_form</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">ff_form</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">get_lammps_unit_system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"metal"</span><span class="p">:</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">"eV/Å^2/ps"</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">"kcal/Å^2/fs/mol"</span><span class="p">)</span> <span class="o">/</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">"kcal/mol"</span><span class="p">)</span> <span class="o">*</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">"kcal/mol"</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"kJ"</span><span class="p">)</span>
+        <span class="n">factor</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">"W/m^2"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">"class2"</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">P</span><span class="p">[</span><span class="s2">"use centroid stress"</span><span class="p">]:</span>
+            <span class="c1"># Centroid/stress/atom does not handle class2 ff ... cross-terms?</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"""</span>
+<span class="s2">compute             KE all ke/atom</span>
+<span class="s2">compute             PE all pe/atom</span>
+
+<span class="s2">compute             S_p all stress/atom NULL virial</span>
+<span class="s2">compute             flux_p all heat/flux KE PE S_p</span>
+
+<span class="s2">#          Conversion from kcal/Å^2/fs/mol to W/m^2</span>
+
+<span class="s2">variable            factor equal </span><span class="si">{</span><span class="n">factor</span><span class="si">}</span>
+<span class="s2">variable            Jx equal v_factor*c_flux_p[1]/vol</span>
+<span class="s2">variable            Jy equal v_factor*c_flux_p[2]/vol</span>
+<span class="s2">variable            Jz equal v_factor*c_flux_p[3]/vol</span>
+<span class="s2">"""</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"""</span>
+<span class="s2">compute             KE all ke/atom</span>
+<span class="s2">compute             PE all pe/atom</span>
+
+<span class="s2">#          centroid doesn't work with kspace, so split into pair and non-pair parts.</span>
+<span class="s2">#          The constraint forces (fix) need the centroid form.</span>
+
+<span class="s2">compute             S_p all stress/atom NULL pair kspace</span>
+<span class="s2">compute             S_b all centroid/stress/atom NULL bond angle dihedral improper fix</span>
+<span class="s2">compute             flux_p all heat/flux KE PE S_p</span>
+<span class="s2">compute             flux_b all heat/flux KE PE S_b</span>
+
+<span class="s2">#          Conversion from kcal/Å^2/fs/mol to W/m^2</span>
+
+<span class="s2">variable            factor equal </span><span class="si">{</span><span class="n">factor</span><span class="si">}</span>
+<span class="s2">#          Both computes include the convective term, so remove one copy</span>
+
+<span class="s2">variable            Jx equal v_factor*(c_flux_p[1]+c_flux_b[1]-c_flux_b[4])/vol</span>
+<span class="s2">variable            Jy equal v_factor*(c_flux_p[2]+c_flux_b[2]-c_flux_b[5])/vol</span>
+<span class="s2">variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol</span>
+<span class="s2">"""</span></div>
+
+
+<div class="viewcode-block" id="NVE.heat_flux_cleanup">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nve.NVE.heat_flux_cleanup">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">heat_flux_cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">ff_form</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The lines removing what :meth:`heat_flux_input` defined."""</span>
+        <span class="k">if</span> <span class="n">ff_form</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ff_form</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">ff_form</span><span class="p">()</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">ff_form</span> <span class="o">!=</span> <span class="s2">"class2"</span> <span class="ow">and</span> <span class="n">P</span><span class="p">[</span><span class="s2">"use centroid stress"</span><span class="p">]:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"uncompute           flux_b"</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"uncompute           S_b"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"uncompute           flux_p"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"uncompute           S_p"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"uncompute           PE"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"uncompute           KE"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"variable            factor delete"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"variable            Jx delete"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"variable            Jy delete"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"variable            Jz delete"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">lines</span></div>
 
 
 <div class="viewcode-block" id="NVE.md_provides">

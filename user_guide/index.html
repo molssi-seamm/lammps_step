@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.15.4 documentation</title>
+    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.16 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=d91cde52"></script>
+    <script src="../_static/documentation_options.js?v=5aae1070"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15.4" />
+  <meta name="docsearch:version" content="2026.10.16" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -545,6 +545,43 @@ needs a GPU on Linux.</p></li>
 </ul>
 <p>If a flowchart has both, the model chemistry is used.</p>
 </section>
+<section id="rigid-bonds-and-angles">
+<h2>Rigid bonds and angles<a class="headerlink" href="#rigid-bonds-and-angles" title="Link to this heading">#</a></h2>
+<p>Some models are rigid, such as the SPC/E and TIP3P water models in the forcefields
+<code class="docutils literal notranslate"><span class="pre">oplsaa+-spc_e</span></code>, <code class="docutils literal notranslate"><span class="pre">oplsaa+-tip3p</span></code> and <code class="docutils literal notranslate"><span class="pre">nacl_water</span></code>. The forcefield says which bonds
+and angles are rigid, and LAMMPS holds them at their values with SHAKE (<code class="docutils literal notranslate"><span class="pre">fix</span> <span class="pre">shake</span></code>)
+during dynamics, so a timestep of 2 fs can be used. LAMMPS cannot minimize with SHAKE,
+so a rigid bond or angle is also a stiff harmonic term, 1000 kcal/mol/Å<sup>2</sup> for a
+bond and 100 kcal/mol/radian<sup>2</sup> for an angle. It holds the geometry close to
+the rigid one in a minimization and is exactly zero when SHAKE holds it in dynamics.</p>
+<p>A forcefield that is not rigid, such as <code class="docutils literal notranslate"><span class="pre">oplsaa+</span></code> with its flexible SPC water, is
+used as it is. The Initialization sub-step’s “Fix X-H bond lengths” holds bonds to
+hydrogen fixed with SHAKE in any forcefield.</p>
+<p>SHAKE is used rather than RATTLE: LAMMPS’s RATTLE gave rigid SPC/E water a pressure
+about 850 atm too high and a center of mass that drifted.</p>
+</section>
+<section id="the-heat-flux">
+<h2>The heat flux<a class="headerlink" href="#the-heat-flux" title="Link to this heading">#</a></h2>
+<p>The Heat Flux sub-step, and the NVE, NVT and NPT sub-steps when asked to sample it,
+give the heat flux for the thermal conductivity,
+J = Σ<sub>i</sub> e<sub>i</sub> v<sub>i</sub> − Σ<sub>i</sub> S<sub>i</sub>·v<sub>i</sub>, from
+each atom’s energy e<sub>i</sub> and stress S<sub>i</sub>. The bonded terms and the
+constraint forces of rigid bonds and angles use the centroid form of the stress, which
+is the correct one for them (Surblys et al., J. Appl. Phys. 2021), unless “Use
+centroid/stress/atom” is turned off; class2 forcefields always use the ordinary form.</p>
+<p>The Heat Flux sub-step can also filter the heat flux (“Filter the heat flux”):</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">none</span></code></dt><dd><p>The default, and the choice for liquids.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">per-atom</span> <span class="pre">averages</span></code></dt><dd><p>Subtracts each atom’s average energy and stress, from a preliminary 6000-step run,
+from the heat flux (Pereverzev and Sewell, 2022). In a crystal, where every atom
+stays on its site, this removes a constant that only adds noise. In a liquid the
+atoms move, and it adds a term that makes the thermal conductivity too large:
+for SPC/E water by about 0.15-0.2 W/m/K, or 20%, which longer runs do not remove.
+Use it only for solids. How much it helps there has not been measured yet.</p>
+</dd>
+</dl>
+</section>
 <section id="settings-that-depend-on-each-other">
 <h2>Settings that depend on each other<a class="headerlink" href="#settings-that-depend-on-each-other" title="Link to this heading">#</a></h2>
 <p>Which settings apply depends on others: the k-space settings only with a k-space method,
@@ -671,6 +708,8 @@ warning in the output, and they are not sampled;</p></li>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-forcefield">The forcefield</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rigid-bonds-and-angles">Rigid bonds and angles</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-heat-flux">The heat flux</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#settings-that-depend-on-each-other">Settings that depend on each other</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-md-data-for-analysis-md-h5md">The MD data for analysis: <code class="docutils literal notranslate"><span class="pre">md.h5md</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#non-periodic-systems">Non-periodic systems</a></li>
