@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.heat_flux &#8212; SEAMM LAMMPS Plug-in 2026.10.16.1 documentation</title>
+    <title>lammps_step.heat_flux &#8212; SEAMM LAMMPS Plug-in 2026.10.16.2 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=136a9e07"></script>
+    <script src="../../_static/documentation_options.js?v=2492146d"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16.1" />
+  <meta name="docsearch:version" content="2026.10.16.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1089,7 +1089,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"fix                 </span><span class="si">{</span><span class="n">nfixes</span><span class="si">}</span><span class="s2"> all ave/time </span><span class="si">{</span><span class="n">nevery</span><span class="si">}</span><span class="s2"> 1 </span><span class="si">{</span><span class="n">nfreq</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="sa">f</span><span class="s2">"                       </span><span class="si">{</span><span class="n">properties</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">"</span>
-                <span class="s2">"                       off 2 &amp;</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="s2">"                       off 1 &amp;</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="sa">f</span><span class="s2">"                       title1 '</span><span class="si">{</span><span class="n">title1</span><span class="si">}</span><span class="s2">' &amp;</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="sa">f</span><span class="s2">"                       title2 '</span><span class="si">{</span><span class="n">title2</span><span class="si">}</span><span class="s2">' &amp;</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="sa">f</span><span class="s2">"                       file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">"</span>
@@ -1114,9 +1114,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+heat_flux_summary.trj"</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"fix                 summary all ave/time </span><span class="si">{</span><span class="n">nevery</span><span class="si">}</span><span class="s2"> 1 </span><span class="si">{</span><span class="n">nfreq</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="sa">f</span><span class="s2">"fix                 summary all ave/time </span><span class="si">{</span><span class="n">nevery</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">nrepeat</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">nfreq</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">"</span>
             <span class="sa">f</span><span class="s2">"                       </span><span class="si">{</span><span class="n">properties</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">"</span>
-            <span class="s2">"                       off 2 &amp;</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="s2">"                       off 1 &amp;</span><span class="se">\n</span><span class="s2">"</span>
             <span class="sa">f</span><span class="s2">"                       file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
 
