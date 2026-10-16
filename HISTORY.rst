@@ -1,7 +1,7 @@
 =======
 History
 =======
-2026.10.16.2 -- Bugfix: LAMMPS said it used more cores than it did
+2026.10.16.2 -- Bugfix: LAMMPS said it used more cores than it did; summaries are averages
     * In a batch job, LAMMPS can only use as many MPI processes as the job has tasks.
       A job with one task and several CPUs per task ran LAMMPS on one process, but
       the output said it was using all the cores the system's size allowed. It now
