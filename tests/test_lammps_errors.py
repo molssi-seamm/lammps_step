@@ -74,3 +74,15 @@ def test_check_raises_and_writes_no_success(tmp_path, monkeypatch):
     with pytest.raises(RuntimeError, match="LAMMPS failed in Step 3.2"):
         lammps.check_for_lammps_error({"stdout": "", "stderr": ""})
     assert not (tmp_path / "success.dat").exists()
+
+
+def test_a_smaller_allocation_is_reported():
+    """A Slurm job with one task and 8 CPUs per task gave LAMMPS one MPI process,
+    but the step said 8 (ChemAI job 12273, 2026-10-16)."""
+    from lammps_step.lammps import allocation_note
+
+    text = allocation_note(8, 1)
+    assert "allocated only 1 MPI task," in text
+    assert "runs on 1 process." in text
+    assert "--ntasks=8" in text
+    assert "allocated only 4 MPI tasks" in allocation_note(8, 4)

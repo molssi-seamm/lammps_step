@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.10.16.2 -- Bugfix: LAMMPS said it used more cores than it did
+    * In a batch job, LAMMPS can only use as many MPI processes as the job has tasks.
+      A job with one task and several CPUs per task ran LAMMPS on one process, but
+      the output said it was using all the cores the system's size allowed. It now
+      gives the number of processes LAMMPS actually runs on, and when the job's
+      allocation is what limits it, explains that MPI processes need tasks (e.g.
+      --ntasks) rather than CPUs per task.
+
 2026.10.16.1 -- Extra commands and extra properties in the MD sub-steps
     * The NVE, NVT and NPT sub-steps have an Extras tab. Extra commands are LAMMPS
       compute, fix, variable and dump commands for that sub-step only, removed when
