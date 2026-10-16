@@ -154,6 +154,73 @@ just before LAMMPS runs, the analysis steps that will read its MD check the stru
 so that, for example, Diffusivity stops the job before the MD if the system is not
 periodic.
 
+Extra commands and extra properties
+===================================
+
+The NVE, NVT and NPT sub-steps have an **Extras** tab for measuring things that SEAMM
+does not sample itself, without leaving SEAMM.
+
+**Extra commands** are LAMMPS ``compute``, ``fix``, ``variable`` and ``dump``
+commands for that sub-step only: they are put in after the sub-step's own fixes and
+before its sampling, so the sampling can use them, and SEAMM removes everything they
+define (``uncompute``, ``unfix``, ``undump``, ``variable ... delete``) when the
+sub-step ends. Other commands, such as ``group`` or ``run``, are refused, as are IDs
+that are numbers or that SEAMM uses itself: commands that change the system for the
+rest of the run belong in a Custom sub-step, whose commands stay in force and whose
+output SEAMM does not analyse.
+
+**Extra properties** are quantities to sample, a row each:
+
+* **Name:** letters, digits and ``_``, starting with a letter.
+* **Expression:** a LAMMPS equal-style expression, such as ``c_msd[4]``, ``v_myvar``,
+  a thermo keyword such as ``density`` or ``pxy``, or arithmetic of these.
+* **Units:** a LAMMPS quantity (``energy``, ``pressure``, ``distance``, ``density``,
+  ... or ``dimensionless``), recommended, since the units then follow the
+  forcefield: a classical forcefield runs in LAMMPS's ``real`` units and a
+  machine-learned one in ``metal`` units. Explicit units (``atm``, ``debye``) are
+  accepted too, and are then taken as the units of the value LAMMPS reports.
+* **Treatment:**
+
+  - *average*, the default: the same analysis as the built-in properties -- the
+    mean, its standard error, the equilibration and correlation times, and the
+    graphs;
+  - *autocorrelation*: also the normalized autocorrelation function with its 95 %
+    confidence band, and the correlation time, its integral up to the first zero;
+  - *Green–Kubo integral*: prefactor × ∫⟨δA(0) δA(t)⟩ dt, fitted as the Viscosity
+    and Thermal Conductivity steps fit theirs. The prefactor is ``V/kT`` (for a
+    stress, as for the viscosity), ``V/kT^2`` (for a flux, as for the thermal
+    conductivity), ``1/(V kT)`` (for a current, as for an ionic conductivity), or a
+    number with units. The error comes from four blocks of the run when they are long
+    enough, otherwise from the fit, which is too small, and the output says which.
+    The fit smooths the integral over 0.4 ps, so it suits correlations lasting about
+    a picosecond or longer, and the property should be sampled often (a few fs for a
+    stress).
+
+* **Store:** also save the result (the mean, or the Green–Kubo integral) and its
+  standard error as properties of the configuration, ``<name>#LAMMPS#<model>``.
+
+The extra properties are sampled with the built-in ones, at the sub-step's sampling
+interval, and appear in its table of properties and graphs; a table *Extra
+Properties* gives the result of each treatment, with a graph of the autocorrelation
+function (``<name>_acf.graph``) or the running integral (``<name>_gk.graph``). They
+are written to ``md.h5md`` as ``observables/user/<name>``, with their units and
+expressions, for analysis steps and scripts, and their results are in the step's
+result "extra properties". Mistakes are shown in the tab as they are typed, and are
+reported when the flowchart is checked, so a job stops before it runs.
+
+Three examples:
+
+* The mean squared displacement: the extra command ``compute msd all msd`` and the
+  property ``msd``, expression ``c_msd[4]``, units ``distance``.
+* An energy of part of the system: ``compute pe_w water pe/atom`` and ``compute
+  sum_w water reduce sum c_pe_w``, with the property ``E_water``, expression
+  ``c_sum_w``, units ``energy`` (``water`` being a group defined earlier in a Custom
+  sub-step).
+* The shear viscosity from one stress component: the property ``Pxy``, expression
+  ``pxy``, units ``pressure``, treatment *Green–Kubo integral*, prefactor ``V/kT``,
+  sampled every 5 fs. The result is in mPa·s. (The Viscosity step does this
+  properly, averaging five components.)
+
 Non-periodic systems
 ====================
 

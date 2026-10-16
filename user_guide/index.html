@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.16 documentation</title>
+    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.16.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=5aae1070"></script>
+    <script src="../_static/documentation_options.js?v=136a9e07"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16" />
+  <meta name="docsearch:version" content="2026.10.16.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -640,6 +640,71 @@ just before LAMMPS runs, the analysis steps that will read its MD check the stru
 so that, for example, Diffusivity stops the job before the MD if the system is not
 periodic.</p>
 </section>
+<section id="extra-commands-and-extra-properties">
+<h2>Extra commands and extra properties<a class="headerlink" href="#extra-commands-and-extra-properties" title="Link to this heading">#</a></h2>
+<p>The NVE, NVT and NPT sub-steps have an <strong>Extras</strong> tab for measuring things that SEAMM
+does not sample itself, without leaving SEAMM.</p>
+<p><strong>Extra commands</strong> are LAMMPS <code class="docutils literal notranslate"><span class="pre">compute</span></code>, <code class="docutils literal notranslate"><span class="pre">fix</span></code>, <code class="docutils literal notranslate"><span class="pre">variable</span></code> and <code class="docutils literal notranslate"><span class="pre">dump</span></code>
+commands for that sub-step only: they are put in after the sub-step’s own fixes and
+before its sampling, so the sampling can use them, and SEAMM removes everything they
+define (<code class="docutils literal notranslate"><span class="pre">uncompute</span></code>, <code class="docutils literal notranslate"><span class="pre">unfix</span></code>, <code class="docutils literal notranslate"><span class="pre">undump</span></code>, <code class="docutils literal notranslate"><span class="pre">variable</span> <span class="pre">...</span> <span class="pre">delete</span></code>) when the
+sub-step ends. Other commands, such as <code class="docutils literal notranslate"><span class="pre">group</span></code> or <code class="docutils literal notranslate"><span class="pre">run</span></code>, are refused, as are IDs
+that are numbers or that SEAMM uses itself: commands that change the system for the
+rest of the run belong in a Custom sub-step, whose commands stay in force and whose
+output SEAMM does not analyse.</p>
+<p><strong>Extra properties</strong> are quantities to sample, a row each:</p>
+<ul class="simple">
+<li><p><strong>Name:</strong> letters, digits and <code class="docutils literal notranslate"><span class="pre">_</span></code>, starting with a letter.</p></li>
+<li><p><strong>Expression:</strong> a LAMMPS equal-style expression, such as <code class="docutils literal notranslate"><span class="pre">c_msd[4]</span></code>, <code class="docutils literal notranslate"><span class="pre">v_myvar</span></code>,
+a thermo keyword such as <code class="docutils literal notranslate"><span class="pre">density</span></code> or <code class="docutils literal notranslate"><span class="pre">pxy</span></code>, or arithmetic of these.</p></li>
+<li><p><strong>Units:</strong> a LAMMPS quantity (<code class="docutils literal notranslate"><span class="pre">energy</span></code>, <code class="docutils literal notranslate"><span class="pre">pressure</span></code>, <code class="docutils literal notranslate"><span class="pre">distance</span></code>, <code class="docutils literal notranslate"><span class="pre">density</span></code>,
+… or <code class="docutils literal notranslate"><span class="pre">dimensionless</span></code>), recommended, since the units then follow the
+forcefield: a classical forcefield runs in LAMMPS’s <code class="docutils literal notranslate"><span class="pre">real</span></code> units and a
+machine-learned one in <code class="docutils literal notranslate"><span class="pre">metal</span></code> units. Explicit units (<code class="docutils literal notranslate"><span class="pre">atm</span></code>, <code class="docutils literal notranslate"><span class="pre">debye</span></code>) are
+accepted too, and are then taken as the units of the value LAMMPS reports.</p></li>
+<li><p><strong>Treatment:</strong></p>
+<ul>
+<li><p><em>average</em>, the default: the same analysis as the built-in properties – the
+mean, its standard error, the equilibration and correlation times, and the
+graphs;</p></li>
+<li><p><em>autocorrelation</em>: also the normalized autocorrelation function with its 95 %
+confidence band, and the correlation time, its integral up to the first zero;</p></li>
+<li><p><em>Green–Kubo integral</em>: prefactor × ∫⟨δA(0) δA(t)⟩ dt, fitted as the Viscosity
+and Thermal Conductivity steps fit theirs. The prefactor is <code class="docutils literal notranslate"><span class="pre">V/kT</span></code> (for a
+stress, as for the viscosity), <code class="docutils literal notranslate"><span class="pre">V/kT^2</span></code> (for a flux, as for the thermal
+conductivity), <code class="docutils literal notranslate"><span class="pre">1/(V</span> <span class="pre">kT)</span></code> (for a current, as for an ionic conductivity), or a
+number with units. The error comes from four blocks of the run when they are long
+enough, otherwise from the fit, which is too small, and the output says which.
+The fit smooths the integral over 0.4 ps, so it suits correlations lasting about
+a picosecond or longer, and the property should be sampled often (a few fs for a
+stress).</p></li>
+</ul>
+</li>
+<li><p><strong>Store:</strong> also save the result (the mean, or the Green–Kubo integral) and its
+standard error as properties of the configuration, <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;#LAMMPS#&lt;model&gt;</span></code>.</p></li>
+</ul>
+<p>The extra properties are sampled with the built-in ones, at the sub-step’s sampling
+interval, and appear in its table of properties and graphs; a table <em>Extra
+Properties</em> gives the result of each treatment, with a graph of the autocorrelation
+function (<code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_acf.graph</span></code>) or the running integral (<code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_gk.graph</span></code>). They
+are written to <code class="docutils literal notranslate"><span class="pre">md.h5md</span></code> as <code class="docutils literal notranslate"><span class="pre">observables/user/&lt;name&gt;</span></code>, with their units and
+expressions, for analysis steps and scripts, and their results are in the step’s
+result “extra properties”. Mistakes are shown in the tab as they are typed, and are
+reported when the flowchart is checked, so a job stops before it runs.</p>
+<p>Three examples:</p>
+<ul class="simple">
+<li><p>The mean squared displacement: the extra command <code class="docutils literal notranslate"><span class="pre">compute</span> <span class="pre">msd</span> <span class="pre">all</span> <span class="pre">msd</span></code> and the
+property <code class="docutils literal notranslate"><span class="pre">msd</span></code>, expression <code class="docutils literal notranslate"><span class="pre">c_msd[4]</span></code>, units <code class="docutils literal notranslate"><span class="pre">distance</span></code>.</p></li>
+<li><p>An energy of part of the system: <code class="docutils literal notranslate"><span class="pre">compute</span> <span class="pre">pe_w</span> <span class="pre">water</span> <span class="pre">pe/atom</span></code> and <code class="docutils literal notranslate"><span class="pre">compute</span>
+<span class="pre">sum_w</span> <span class="pre">water</span> <span class="pre">reduce</span> <span class="pre">sum</span> <span class="pre">c_pe_w</span></code>, with the property <code class="docutils literal notranslate"><span class="pre">E_water</span></code>, expression
+<code class="docutils literal notranslate"><span class="pre">c_sum_w</span></code>, units <code class="docutils literal notranslate"><span class="pre">energy</span></code> (<code class="docutils literal notranslate"><span class="pre">water</span></code> being a group defined earlier in a Custom
+sub-step).</p></li>
+<li><p>The shear viscosity from one stress component: the property <code class="docutils literal notranslate"><span class="pre">Pxy</span></code>, expression
+<code class="docutils literal notranslate"><span class="pre">pxy</span></code>, units <code class="docutils literal notranslate"><span class="pre">pressure</span></code>, treatment <em>Green–Kubo integral</em>, prefactor <code class="docutils literal notranslate"><span class="pre">V/kT</span></code>,
+sampled every 5 fs. The result is in mPa·s. (The Viscosity step does this
+properly, averaging five components.)</p></li>
+</ul>
+</section>
 <section id="non-periodic-systems">
 <h2>Non-periodic systems<a class="headerlink" href="#non-periodic-systems" title="Link to this heading">#</a></h2>
 <p>The step runs molecules and clusters without a periodic cell, with a shrink-wrapped
@@ -712,6 +777,7 @@ warning in the output, and they are not sampled;</p></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-heat-flux">The heat flux</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#settings-that-depend-on-each-other">Settings that depend on each other</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-md-data-for-analysis-md-h5md">The MD data for analysis: <code class="docutils literal notranslate"><span class="pre">md.h5md</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#extra-commands-and-extra-properties">Extra commands and extra properties</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#non-periodic-systems">Non-periodic systems</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#index">Index</a></li>
 </ul>

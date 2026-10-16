@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.16 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.16.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=5aae1070"></script>
+    <script src="_static/documentation_options.js?v=136a9e07"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16" />
+  <meta name="docsearch:version" content="2026.10.16.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.16.1 – Extra commands and extra properties in the MD sub-steps</dt><dd><ul class="simple">
+<li><p>The NVE, NVT and NPT sub-steps have an Extras tab. Extra commands are LAMMPS
+compute, fix, variable and dump commands for that sub-step only, removed when
+it ends. Extra properties are LAMMPS expressions, each with a name and units,
+sampled and analysed with the built-in properties, as an average, an
+autocorrelation function with its correlation time, or a Green-Kubo integral
+with a chosen prefactor. They are printed, graphed, written to md.h5md as
+observables/user/&lt;name&gt;, and can be stored as properties of the configuration.</p></li>
+<li><p>Mistakes in the extra commands or properties are shown in the dialog as they
+are typed, and stop a job before it runs.</p></li>
+</ul>
+</dd>
 <dt>2026.10.16 – Rigid models from the forcefield, and the heat flux of liquids corrected</dt><dd><ul class="simple">
 <li><p>Which bonds and angles are rigid now comes from the forcefield, e.g. the SPC/E
 and TIP3P water in the new forcefields oplsaa+-spc_e and oplsaa+-tip3p, and

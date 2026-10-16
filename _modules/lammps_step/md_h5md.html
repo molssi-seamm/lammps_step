@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.md_h5md &#8212; SEAMM LAMMPS Plug-in 2026.10.16 documentation</title>
+    <title>lammps_step.md_h5md &#8212; SEAMM LAMMPS Plug-in 2026.10.16.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=5aae1070"></script>
+    <script src="../../_static/documentation_options.js?v=136a9e07"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16" />
+  <meta name="docsearch:version" content="2026.10.16.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -795,6 +795,32 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="k">if</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
                 <span class="n">unit</span> <span class="o">=</span> <span class="s2">""</span> <span class="k">if</span> <span class="n">quantity</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">[</span><span class="n">quantity</span><span class="p">]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_observable</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">columns</span><span class="p">[</span><span class="n">column</span><span class="p">],</span> <span class="n">unit</span><span class="p">)</span>
+
+        <span class="c1"># The user's extra properties (lammps_step.extras)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="p">,</span> <span class="s2">"extra_definitions"</span><span class="p">):</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_md_analysis.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_h5md</span>
+
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">extra_definitions</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="s2">"column"</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"explicit"</span><span class="p">:</span>
+                    <span class="n">unit</span> <span class="o">=</span> <span class="n">to_h5md</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"units"</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">d</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"dimensionless"</span><span class="p">:</span>
+                    <span class="n">unit</span> <span class="o">=</span> <span class="s2">""</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_observable</span><span class="p">(</span>
+                    <span class="n">writer</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">"user/</span><span class="si">{</span><span class="n">d</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="n">steps</span><span class="p">,</span>
+                    <span class="n">times</span><span class="p">,</span>
+                    <span class="n">columns</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">"column"</span><span class="p">]],</span>
+                    <span class="n">unit</span><span class="p">,</span>
+                    <span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                        <span class="s2">"seamm_expression"</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="s2">"expression"</span><span class="p">],</span>
+                        <span class="s2">"seamm_treatment"</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="s2">"treatment"</span><span class="p">],</span>
+                    <span class="p">},</span>
+                <span class="p">)</span>
 
         <span class="c1"># The pressure tensor sampled on its own, if it was, replaces this one</span>
         <span class="n">stress</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"Sxx"</span><span class="p">,</span> <span class="s2">"Syy"</span><span class="p">,</span> <span class="s2">"Szz"</span><span class="p">,</span> <span class="s2">"Syz"</span><span class="p">,</span> <span class="s2">"Sxz"</span><span class="p">,</span> <span class="s2">"Sxy"</span><span class="p">)</span>

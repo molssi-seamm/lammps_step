@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>lammps_step.extras &#8212; SEAMM LAMMPS Plug-in 2026.10.16.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=c224919a" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
+<!-- End Google Tag Manager -->
+
+    <script src="../../_static/documentation_options.js?v=136a9e07"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lammps_step/extras';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.16.1" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/SEAMM logo.png" class="logo__image only-light" alt=""/>
+    <img src="../../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">LAMMPS Step</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../developer_guide/index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API Documentation
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../authors.html">
+    Development Team
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../history.html">
+    History
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/lammps_step" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../developer_guide/index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../authors.html">
+    Development Team
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../history.html">
+    History
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/lammps_step" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lammps_step.extras</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for lammps_step.extras</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">"""Extra commands and extra properties of the MD sub-steps (NVE, NVT and NPT).</span>
+
+<span class="sd">*Extra commands* are LAMMPS ``compute``, ``fix``, ``variable`` and ``dump`` lines</span>
+<span class="sd">that apply to one sub-step: SEAMM removes what they define when the sub-step ends.</span>
+<span class="sd">*Extra properties* are named LAMMPS expressions sampled with the built-in</span>
+<span class="sd">properties, analysed like them, and optionally treated as an autocorrelation or a</span>
+<span class="sd">Green–Kubo integral. The Custom sub-step remains for commands that change the</span>
+<span class="sd">system.</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util</span><span class="w"> </span><span class="kn">import</span> <span class="n">Q_</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">lammps_step</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1">#: The commands allowed among the extra commands</span>
+<span class="n">ALLOWED_COMMANDS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"compute"</span><span class="p">,</span> <span class="s2">"fix"</span><span class="p">,</span> <span class="s2">"variable"</span><span class="p">,</span> <span class="s2">"dump"</span><span class="p">)</span>
+
+<span class="c1">#: The units in which properties of each LAMMPS quantity are shown, the same as</span>
+<span class="c1">#: for the built-in properties</span>
+<span class="n">DISPLAY_UNITS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"dimensionless"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="s2">"energy"</span><span class="p">:</span> <span class="s2">"kcal/mol"</span><span class="p">,</span>
+    <span class="s2">"pressure"</span><span class="p">:</span> <span class="s2">"atm"</span><span class="p">,</span>
+    <span class="s2">"temperature"</span><span class="p">:</span> <span class="s2">"K"</span><span class="p">,</span>
+    <span class="s2">"distance"</span><span class="p">:</span> <span class="s2">"Å"</span><span class="p">,</span>
+    <span class="s2">"volume"</span><span class="p">:</span> <span class="s2">"Å^3"</span><span class="p">,</span>
+    <span class="s2">"time"</span><span class="p">:</span> <span class="s2">"fs"</span><span class="p">,</span>
+    <span class="s2">"density"</span><span class="p">:</span> <span class="s2">"g/mL"</span><span class="p">,</span>
+    <span class="s2">"velocity"</span><span class="p">:</span> <span class="s2">"Å/fs"</span><span class="p">,</span>
+    <span class="s2">"force"</span><span class="p">:</span> <span class="s2">"kcal/mol/Å"</span><span class="p">,</span>
+    <span class="s2">"mass"</span><span class="p">:</span> <span class="s2">"g/mol"</span><span class="p">,</span>
+    <span class="s2">"charge"</span><span class="p">:</span> <span class="s2">"e"</span><span class="p">,</span>
+    <span class="s2">"dipole"</span><span class="p">:</span> <span class="s2">"debye"</span><span class="p">,</span>
+    <span class="s2">"electric field"</span><span class="p">:</span> <span class="s2">"V/Å"</span><span class="p">,</span>
+    <span class="s2">"dynamic viscosity"</span><span class="p">:</span> <span class="s2">"mPa*s"</span><span class="p">,</span>
+    <span class="s2">"torque"</span><span class="p">:</span> <span class="s2">"kcal/mol"</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1">#: The treatments of an extra property</span>
+<span class="n">TREATMENTS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"average"</span><span class="p">,</span> <span class="s2">"autocorrelation"</span><span class="p">,</span> <span class="s2">"Green-Kubo integral"</span><span class="p">)</span>
+
+<span class="c1">#: The named prefactors of a Green–Kubo integral, V the volume, k Boltzmann's</span>
+<span class="c1">#: constant and T the temperature</span>
+<span class="n">PREFACTORS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"V/kT"</span><span class="p">,</span> <span class="s2">"V/kT^2"</span><span class="p">,</span> <span class="s2">"1/(V kT)"</span><span class="p">)</span>
+
+<span class="c1">#: Units for the results of Green–Kubo integrals, when they have the</span>
+<span class="c1">#: dimensions of one of these</span>
+<span class="n">RESULT_UNITS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"mPa*s"</span><span class="p">,</span> <span class="s2">"W/(m*K)"</span><span class="p">,</span> <span class="s2">"S/m"</span><span class="p">,</span> <span class="s2">"m^2/s"</span><span class="p">,</span> <span class="s2">"1/ps"</span><span class="p">)</span>
+
+<span class="c1">#: The prefix of SEAMM's own variables wrapping the extra properties, and of</span>
+<span class="c1">#: their columns in the state files</span>
+<span class="n">VARIABLE_PREFIX</span> <span class="o">=</span> <span class="s2">"seamm_x_"</span>
+<span class="n">COLUMN_PREFIX</span> <span class="o">=</span> <span class="s2">"x_"</span>
+
+<span class="c1">#: IDs and names that SEAMM's own input defines, which the extra commands may not</span>
+<span class="c1">#: reuse (numbered fixes, computes and dumps are refused separately)</span>
+<span class="n">RESERVED_IDS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"S_p"</span><span class="p">,</span>
+    <span class="s2">"S_b"</span><span class="p">,</span>
+    <span class="s2">"flux_p"</span><span class="p">,</span>
+    <span class="s2">"flux_b"</span><span class="p">,</span>
+    <span class="s2">"flux"</span><span class="p">,</span>
+    <span class="s2">"hb"</span><span class="p">,</span>
+    <span class="s2">"ke_atom"</span><span class="p">,</span>
+    <span class="s2">"pe_atom"</span><span class="p">,</span>
+    <span class="s2">"stress_atom"</span><span class="p">,</span>
+    <span class="s2">"dynamics"</span><span class="p">,</span>
+    <span class="s2">"constraint"</span><span class="p">,</span>
+    <span class="s2">"time"</span><span class="p">,</span>
+    <span class="s2">"temp"</span><span class="p">,</span>
+    <span class="s2">"press"</span><span class="p">,</span>
+    <span class="s2">"etotal"</span><span class="p">,</span>
+    <span class="s2">"ke"</span><span class="p">,</span>
+    <span class="s2">"pe"</span><span class="p">,</span>
+    <span class="s2">"emol"</span><span class="p">,</span>
+    <span class="s2">"epair"</span><span class="p">,</span>
+    <span class="s2">"sxx"</span><span class="p">,</span>
+    <span class="s2">"syy"</span><span class="p">,</span>
+    <span class="s2">"szz"</span><span class="p">,</span>
+    <span class="s2">"syz"</span><span class="p">,</span>
+    <span class="s2">"sxz"</span><span class="p">,</span>
+    <span class="s2">"sxy"</span><span class="p">,</span>
+    <span class="s2">"pxx"</span><span class="p">,</span>
+    <span class="s2">"pyy"</span><span class="p">,</span>
+    <span class="s2">"pzz"</span><span class="p">,</span>
+    <span class="s2">"pyz"</span><span class="p">,</span>
+    <span class="s2">"pxz"</span><span class="p">,</span>
+    <span class="s2">"pxy"</span><span class="p">,</span>
+    <span class="s2">"Jx"</span><span class="p">,</span>
+    <span class="s2">"Jy"</span><span class="p">,</span>
+    <span class="s2">"Jz"</span><span class="p">,</span>
+    <span class="s2">"factor"</span><span class="p">,</span>
+    <span class="s2">"N_hbond"</span><span class="p">,</span>
+    <span class="s2">"E_hbond"</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">_NAME</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[A-Za-z][A-Za-z0-9_]*$"</span><span class="p">)</span>
+<span class="c1">#: An explicit prefactor starts with a number</span>
+<span class="n">_NUMBER</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"\s*[-+]?(\d|\.\d)"</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ExtrasError">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.extras.ExtrasError">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ExtrasError</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A problem with the extra commands or extra properties."""</span></div>
+
+
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># The extra commands</span>
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_strip_comment</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The line without a LAMMPS comment: '#' outside quotes to the end."""</span>
+    <span class="n">quote</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">quote</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="n">quote</span><span class="p">:</span>
+                <span class="n">quote</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"'"</span><span class="p">,</span> <span class="s1">'"'</span><span class="p">):</span>
+            <span class="n">quote</span> <span class="o">=</span> <span class="n">c</span>
+        <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">"#"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">line</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">line</span>
+
+
+<div class="viewcode-block" id="logical_lines">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.extras.logical_lines">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">logical_lines</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The commands in ``text``, comments removed and continuation lines ('&amp;' at</span>
+<span class="sd">    the end) joined, as LAMMPS reads them."""</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">current</span> <span class="o">=</span> <span class="s2">""</span>
+    <span class="k">for</span> <span class="n">raw</span> <span class="ow">in</span> <span class="p">(</span><span class="n">text</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">_strip_comment</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"&amp;"</span><span class="p">):</span>
+            <span class="n">current</span> <span class="o">+=</span> <span class="n">line</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">" "</span>
+            <span class="k">continue</span>
+        <span class="n">current</span> <span class="o">+=</span> <span class="n">line</span>
+        <span class="k">if</span> <span class="n">current</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">""</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current</span><span class="o">.</span><span class="n">split</span><span class="p">()))</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="s2">""</span>
+    <span class="k">if</span> <span class="n">current</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">""</span><span class="p">:</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current</span><span class="o">.</span><span class="n">split</span><span class="p">()))</span>
+    <span class="k">return</span> <span class="n">lines</span></div>
+
+
+
+<div class="viewcode-block" id="parse_commands">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.extras.parse_commands">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_commands</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Check the extra commands and find what they define.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    text : str</span>
+<span class="sd">        The extra commands.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    [dict]</span>
+<span class="sd">        For each command, in order: ``command`` (compute, fix, variable or dump),</span>
+<span class="sd">        ``id`` (its ID, or the variable's name) and ``line``.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ExtrasError</span>
+<span class="sd">        Listing every problem: a command other than those allowed, a missing ID,</span>
+<span class="sd">        an ID that SEAMM uses or that is all digits.</span>
+<span class="sd">    """</span>
+    <span class="n">commands</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">problems</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">logical_lines</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="n">words</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="n">words</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">command</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ALLOWED_COMMANDS</span><span class="p">:</span>
+            <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">command</span><span class="si">}</span><span class="s2">' is not allowed in the extra commands, which may only "</span>
+                <span class="sa">f</span><span class="s2">"be </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ALLOWED_COMMANDS</span><span class="p">)</span><span class="si">}</span><span class="s2">. Use a Custom sub-step for "</span>
+                <span class="sa">f</span><span class="s2">"commands that change the system: </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The </span><span class="si">{</span><span class="n">command</span><span class="si">}</span><span class="s2"> has no ID or style: </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">_id</span> <span class="o">=</span> <span class="n">words</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">command</span> <span class="o">==</span> <span class="s2">"variable"</span> <span class="ow">and</span> <span class="n">words</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"delete"</span><span class="p">:</span>
+            <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Variables are deleted automatically: </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">_id</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+            <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The ID of a </span><span class="si">{</span><span class="n">command</span><span class="si">}</span><span class="s2"> may not be a number, which SEAMM uses for "</span>
+                <span class="sa">f</span><span class="s2">"its own: </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">_id</span> <span class="ow">in</span> <span class="n">RESERVED_IDS</span> <span class="ow">or</span> <span class="n">_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">VARIABLE_PREFIX</span><span class="p">):</span>
+            <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"SEAMM uses the </span><span class="si">{</span><span class="n">command</span><span class="si">}</span><span class="s2"> ID '</span><span class="si">{</span><span class="n">_id</span><span class="si">}</span><span class="s2">' itself: </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">commands</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"command"</span><span class="p">:</span> <span class="n">command</span><span class="p">,</span> <span class="s2">"id"</span><span class="p">:</span> <span class="n">_id</span><span class="p">,</span> <span class="s2">"line"</span><span class="p">:</span> <span class="n">line</span><span class="p">})</span>
+    <span class="k">if</span> <span class="n">problems</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ExtrasError</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">problems</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">commands</span></div>
+
+
+
+<div class="viewcode-block" id="cleanup_lines">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.extras.cleanup_lines">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cleanup_lines</span><span class="p">(</span><span class="n">commands</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The lines removing what the extra commands defined, in reverse order (a fix</span>
+<span class="sd">    may use a compute, a variable another variable)."""</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">commands</span><span class="p">):</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">"command"</span><span class="p">],</span> <span class="n">item</span><span class="p">[</span><span class="s2">"id"</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s2">"command"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"compute"</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"uncompute           </span><span class="si">{</span><span class="n">item</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">item</span><span class="p">[</span><span class="s2">"command"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"fix"</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unfix               </span><span class="si">{</span><span class="n">item</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">item</span><span class="p">[</span><span class="s2">"command"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"dump"</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"undump              </span><span class="si">{</span><span class="n">item</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"variable            </span><span class="si">{</span><span class="n">item</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span><span class="si">}</span><span class="s2"> delete"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lines</span></div>
+
+
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># The extra properties</span>
+<span class="c1"># ----------------------------------------------------------------------</span>
+<div class="viewcode-block" id="unit_kind">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.extras.unit_kind">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">unit_kind</span><span class="p">(</span><span class="n">units</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Whether ``units`` names a LAMMPS quantity or explicit units.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    (str, str)</span>
+<span class="sd">        ``("quantity", name)`` or ``("explicit", units)``.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ExtrasError</span>
+<span class="sd">        If they are neither a quantity nor units pint understands.</span>
+<span class="sd">    """</span>
+    <span class="n">units</span> <span class="o">=</span> <span class="p">(</span><span class="n">units</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">units</span> <span class="o">==</span> <span class="s2">""</span> <span class="ow">or</span> <span class="n">units</span> <span class="o">==</span> <span class="s2">"dimensionless"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">"quantity"</span><span class="p">,</span> <span class="s2">"dimensionless"</span>
+    <span class="k">if</span> <span class="n">units</span> <span class="ow">in</span> <span class="n">DISPLAY_UNITS</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">"quantity"</span><span class="p">,</span> <span class="n">units</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">Q_</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ExtrasError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s2">' is neither a LAMMPS quantity (</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DISPLAY_UNITS</span><span class="p">)</span><span class="si">}</span><span class="s2">) "</span>
+            <span class="s2">"nor units."</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="s2">"explicit"</span><span class="p">,</span> <span class="n">units</span></div>
+
+
+
+<div class="viewcode-block" id="check_properties">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.extras.check_properties">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_properties</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Check the extra properties and complete their definitions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rows : [dict]</span>
+<span class="sd">        The rows of the table: ``name``, ``expression``, ``units``,</span>
+<span class="sd">        ``treatment``, ``prefactor`` and ``store``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    [dict]</span>
+<span class="sd">        The rows with defaults filled in and ``column``, ``variable``, ``kind``</span>
+<span class="sd">        (quantity or explicit) and ``display_units`` added.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ExtrasError</span>
+<span class="sd">        Listing every problem.</span>
+<span class="sd">    """</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">problems</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span> <span class="ow">or</span> <span class="p">[]:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">expression</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"expression"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">""</span> <span class="ow">and</span> <span class="n">expression</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
+            <span class="k">continue</span>  <span class="c1"># an empty row of the table</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">_NAME</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The name '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' must start with a letter and contain only "</span>
+                <span class="s2">"letters, digits and '_'."</span>
+            <span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+            <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Two extra properties are named '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">'."</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">expression</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
+            <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The extra property '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' has no expression."</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="s1">'"'</span> <span class="ow">in</span> <span class="n">expression</span><span class="p">:</span>
+            <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The expression of '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' may not contain a double quote."</span>
+            <span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">treatment</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"treatment"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"average"</span>
+        <span class="k">if</span> <span class="n">treatment</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">TREATMENTS</span><span class="p">:</span>
+            <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The treatment '</span><span class="si">{</span><span class="n">treatment</span><span class="si">}</span><span class="s2">' of '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' is not one of "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TREATMENTS</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">kind</span><span class="p">,</span> <span class="n">units</span> <span class="o">=</span> <span class="n">unit_kind</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"units"</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">ExtrasError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The units of '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">': </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">prefactor</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"prefactor"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">treatment</span> <span class="o">==</span> <span class="s2">"Green-Kubo integral"</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">prefactor</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
+                <span class="n">prefactor</span> <span class="o">=</span> <span class="s2">"V/kT"</span>
+            <span class="k">if</span> <span class="n">prefactor</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">PREFACTORS</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">_NUMBER</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">prefactor</span><span class="p">):</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"not a number"</span><span class="p">)</span>
+                    <span class="n">Q_</span><span class="p">(</span><span class="n">prefactor</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"The prefactor of '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' must be one of "</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PREFACTORS</span><span class="p">)</span><span class="si">}</span><span class="s2"> or a value with units, not "</span>
+                        <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">prefactor</span><span class="si">}</span><span class="s2">'."</span>
+                    <span class="p">)</span>
+                    <span class="k">continue</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">"name"</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                <span class="s2">"expression"</span><span class="p">:</span> <span class="n">expression</span><span class="p">,</span>
+                <span class="s2">"units"</span><span class="p">:</span> <span class="n">units</span><span class="p">,</span>
+                <span class="s2">"kind"</span><span class="p">:</span> <span class="n">kind</span><span class="p">,</span>
+                <span class="s2">"display_units"</span><span class="p">:</span> <span class="n">DISPLAY_UNITS</span><span class="p">[</span><span class="n">units</span><span class="p">]</span> <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">"quantity"</span> <span class="k">else</span> <span class="n">units</span><span class="p">,</span>
+                <span class="s2">"treatment"</span><span class="p">:</span> <span class="n">treatment</span><span class="p">,</span>
+                <span class="s2">"prefactor"</span><span class="p">:</span> <span class="n">prefactor</span><span class="p">,</span>
+                <span class="s2">"store"</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"store"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)),</span>
+                <span class="s2">"column"</span><span class="p">:</span> <span class="n">COLUMN_PREFIX</span> <span class="o">+</span> <span class="n">name</span><span class="p">,</span>
+                <span class="s2">"variable"</span><span class="p">:</span> <span class="n">VARIABLE_PREFIX</span> <span class="o">+</span> <span class="n">name</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">problems</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ExtrasError</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">problems</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="extra_input">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.extras.extra_input">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extra_input</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The input for the extra commands and properties of an MD sub-step.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    P : dict</span>
+<span class="sd">        The sub-step's parameters.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        ``lines``: the commands and the variables wrapping the properties, to put</span>
+<span class="sd">        after the ensemble's fix and before the sampling; ``properties``: the</span>
+<span class="sd">        ``v_`` references to add to the sampled properties; ``titles``: their</span>
+<span class="sd">        column titles; ``cleanup``: the lines removing everything defined, to put</span>
+<span class="sd">        after the run; ``definitions``: the checked extra properties.</span>
+<span class="sd">    """</span>
+    <span class="n">commands</span> <span class="o">=</span> <span class="n">parse_commands</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"extra commands"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+    <span class="n">definitions</span> <span class="o">=</span> <span class="n">check_properties</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"extra properties"</span><span class="p">,</span> <span class="p">[]))</span>
+
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">commands</span><span class="p">:</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"# Extra commands for this sub-step"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">"line"</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">definitions</span><span class="p">:</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"# Extra properties"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">definitions</span><span class="p">:</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">'variable            </span><span class="si">{</span><span class="n">d</span><span class="p">[</span><span class="s2">"variable"</span><span class="p">]</span><span class="si">}</span><span class="s1"> equal "</span><span class="si">{</span><span class="n">d</span><span class="p">[</span><span class="s2">"expression"</span><span class="p">]</span><span class="si">}</span><span class="s1">"'</span><span class="p">)</span>
+        <span class="n">commands</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"command"</span><span class="p">:</span> <span class="s2">"variable"</span><span class="p">,</span> <span class="s2">"id"</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="s2">"variable"</span><span class="p">],</span> <span class="s2">"line"</span><span class="p">:</span> <span class="s2">""</span><span class="p">})</span>
+    <span class="k">if</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"lines"</span><span class="p">:</span> <span class="n">lines</span><span class="p">,</span>
+        <span class="s2">"properties"</span><span class="p">:</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"v_</span><span class="si">{</span><span class="n">d</span><span class="p">[</span><span class="s1">'variable'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">definitions</span><span class="p">),</span>
+        <span class="s2">"titles"</span><span class="p">:</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"column"</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">definitions</span><span class="p">),</span>
+        <span class="s2">"cleanup"</span><span class="p">:</span> <span class="n">cleanup_lines</span><span class="p">(</span><span class="n">commands</span><span class="p">),</span>
+        <span class="s2">"definitions"</span><span class="p">:</span> <span class="n">definitions</span><span class="p">,</span>
+    <span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="check">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.extras.check">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The problems with the extra commands and properties, as text, or ''."""</span>
+    <span class="n">problems</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">check_one</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">parse_commands</span><span class="p">,</span> <span class="s2">"extra commands"</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">check_properties</span><span class="p">,</span> <span class="s2">"extra properties"</span><span class="p">),</span>
+    <span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">check_one</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">ExtrasError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+    <span class="k">return</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">problems</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="column_metadata">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.extras.column_metadata">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">column_metadata</span><span class="p">(</span><span class="n">definitions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""{column: (title, display units, convert)} for the analysis of the state</span>
+<span class="sd">    file: ``convert`` is False for explicit units, which are the values' own."""</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">"column"</span><span class="p">]:</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"name"</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="s2">"display_units"</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"quantity"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">definitions</span>
+    <span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="h5md_unit">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.extras.h5md_unit">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">h5md_unit</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">unit_system</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The units of the values LAMMPS writes for a property, or None if it is</span>
+<span class="sd">    dimensionless."""</span>
+    <span class="k">if</span> <span class="n">definition</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"explicit"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">definition</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">definition</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"dimensionless"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">lammps_units</span><span class="p">(</span><span class="n">definition</span><span class="p">[</span><span class="s2">"units"</span><span class="p">],</span> <span class="n">unit_system</span><span class="o">=</span><span class="n">unit_system</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># The treatments</span>
+<span class="c1"># ----------------------------------------------------------------------</span>
+<div class="viewcode-block" id="prefactor_value">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.extras.prefactor_value">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prefactor_value</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The prefactor of a Green–Kubo integral as a quantity.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    definition : dict</span>
+<span class="sd">        The extra property.</span>
+<span class="sd">    volume : pint.Quantity</span>
+<span class="sd">        The (mean) volume of the cell.</span>
+<span class="sd">    temperature : pint.Quantity</span>
+<span class="sd">        The mean temperature.</span>
+<span class="sd">    """</span>
+    <span class="n">prefactor</span> <span class="o">=</span> <span class="n">definition</span><span class="p">[</span><span class="s2">"prefactor"</span><span class="p">]</span>
+    <span class="n">k_B</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="s2">"k_B"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">prefactor</span> <span class="ow">in</span> <span class="n">PREFACTORS</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">temperature</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ExtrasError</span><span class="p">(</span><span class="s2">"The temperature is needed for the prefactor."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">volume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ExtrasError</span><span class="p">(</span>
+                <span class="s2">"The prefactor needs the volume, which a non-periodic system does "</span>
+                <span class="s2">"not have."</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">prefactor</span> <span class="o">==</span> <span class="s2">"V/kT"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">volume</span> <span class="o">/</span> <span class="p">(</span><span class="n">k_B</span> <span class="o">*</span> <span class="n">temperature</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">prefactor</span> <span class="o">==</span> <span class="s2">"V/kT^2"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">volume</span> <span class="o">/</span> <span class="p">(</span><span class="n">k_B</span> <span class="o">*</span> <span class="n">temperature</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">volume</span> <span class="o">*</span> <span class="n">k_B</span> <span class="o">*</span> <span class="n">temperature</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Q_</span><span class="p">(</span><span class="n">prefactor</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="result_units">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.extras.result_units">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">result_units</span><span class="p">(</span><span class="n">quantity</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Readable units for a result: the first of :data:`RESULT_UNITS` with its</span>
+<span class="sd">    dimensions (the viscosity in mPa*s, ...), else SI base units scaled with a</span>
+<span class="sd">    prefix."""</span>
+    <span class="k">for</span> <span class="n">units</span> <span class="ow">in</span> <span class="n">RESULT_UNITS</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">quantity</span><span class="o">.</span><span class="n">dimensionality</span> <span class="o">==</span> <span class="n">Q_</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Q_</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">units</span>
+    <span class="k">if</span> <span class="n">quantity</span><span class="o">.</span><span class="n">dimensionless</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Q_</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">units</span>
+    <span class="k">return</span> <span class="n">quantity</span><span class="o">.</span><span class="n">to_base_units</span><span class="p">()</span><span class="o">.</span><span class="n">to_compact</span><span class="p">()</span><span class="o">.</span><span class="n">units</span></div>
+
+
+
+<div class="viewcode-block" id="autocorrelation">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.extras.autocorrelation">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">autocorrelation</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The normalized autocorrelation function of a series, its standard error</span>
+<span class="sd">    and the integrated correlation time.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    values : numpy.ndarray(n)</span>
+<span class="sd">        The series, sampled every ``dt``.</span>
+<span class="sd">    dt : pint.Quantity</span>
+<span class="sd">        The sampling interval.</span>
+<span class="sd">    m : int</span>
+<span class="sd">        The lags to keep; a tenth of the series by default.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        ``acf``, ``stderr`` (lists), ``tau`` (the integral of the ACF up to its</span>
+<span class="sd">        first zero, a quantity) and ``dt``.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_md_analysis.correlate</span><span class="w"> </span><span class="kn">import</span> <span class="n">acf_err</span><span class="p">,</span> <span class="n">autocorrelation_functions</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">std</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mf">1.0e-12</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">())):</span>
+        <span class="k">raise</span> <span class="n">ExtrasError</span><span class="p">(</span><span class="s2">"The series is constant, so it has no autocorrelation."</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="n">acf</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">autocorrelation_functions</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">)</span>
+    <span class="n">acf</span> <span class="o">=</span> <span class="n">acf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">acf</span> <span class="o">=</span> <span class="n">acf</span> <span class="o">/</span> <span class="n">acf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">zero</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">acf</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">acf</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="k">else</span> <span class="n">acf</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">trapezoid</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">np</span><span class="p">,</span> <span class="s2">"trapezoid"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span>  <span class="c1"># numpy &lt; 2</span>
+    <span class="n">tau</span> <span class="o">=</span> <span class="p">(</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">acf</span><span class="p">[:</span><span class="n">zero</span><span class="p">])</span> <span class="k">if</span> <span class="n">zero</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"acf"</span><span class="p">:</span> <span class="n">acf</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="s2">"stderr"</span><span class="p">:</span> <span class="n">acf_err</span><span class="p">(</span><span class="n">acf</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="s2">"tau"</span><span class="p">:</span> <span class="n">tau</span><span class="p">,</span>
+        <span class="s2">"dt"</span><span class="p">:</span> <span class="n">dt</span><span class="p">,</span>
+    <span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="green_kubo">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.extras.green_kubo">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">green_kubo</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">definition</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The Green–Kubo integral of a series: prefactor × ∫⟨δA(0) δA(t)⟩ dt.</span>
+
+<span class="sd">    ``values`` are in ``unit`` (empty for a dimensionless property), sampled every</span>
+<span class="sd">    ``dt``.</span>
+
+<span class="sd">    The running integral is fitted with</span>
+<span class="sd">    :func:`seamm_md_analysis.transport.fit_green_kubo_integral`. Its error is</span>
+<span class="sd">    the spread of the values fitted to four blocks of the series when they are</span>
+<span class="sd">    long enough to reach the plateau, else the fit's own (which treats</span>
+<span class="sd">    correlated points as independent, so is too small).</span>
+
+<span class="sd">    The fit smooths the running integral over 0.4 ps, as for the viscosity and</span>
+<span class="sd">    the thermal conductivity, so the correlations should last at least about a</span>
+<span class="sd">    picosecond.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        ``value`` and ``stderr`` (quantities), ``error_from`` ("blocks" or</span>
+<span class="sd">        "fit"), ``tau`` (the fit's time constants, ps), ``ts`` (ps),</span>
+<span class="sd">        ``integral`` and ``fit`` (lists, in the value's units) and ``units``.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_md_analysis.correlate</span><span class="w"> </span><span class="kn">import</span> <span class="n">autocorrelation_functions</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_md_analysis.transport</span><span class="w"> </span><span class="kn">import</span> <span class="n">fit_green_kubo_integral</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="n">factor</span> <span class="o">=</span> <span class="n">prefactor_value</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">temperature</span><span class="p">)</span>
+    <span class="n">factor</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">Q_</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">unit</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">dt</span>
+    <span class="n">units</span> <span class="o">=</span> <span class="n">result_units</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">integral_of</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">lags</span><span class="p">):</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">integral</span> <span class="o">=</span> <span class="n">autocorrelation_functions</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">m</span><span class="o">=</span><span class="n">lags</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">integral</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span>
+
+    <span class="n">integral</span> <span class="o">=</span> <span class="n">integral_of</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">"ps"</span><span class="p">)</span>
+    <span class="n">fit</span> <span class="o">=</span> <span class="n">fit_green_kubo_integral</span><span class="p">(</span><span class="n">integral</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+    <span class="n">stderr</span> <span class="o">=</span> <span class="n">fit</span><span class="o">.</span><span class="n">stderr</span>
+    <span class="n">error_from</span> <span class="o">=</span> <span class="s2">"fit"</span>
+    <span class="c1"># Blocks are used when each still reaches the plateau: 20 of the slowest</span>
+    <span class="c1"># time constants within a tenth of the block</span>
+    <span class="n">blocks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="n">m_block</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">)</span> <span class="o">//</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">m_block</span> <span class="o">*</span> <span class="n">dt</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">"ps"</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">20</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">tau</span><span class="p">):</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">fit_green_kubo_integral</span><span class="p">(</span>
+                        <span class="n">integral_of</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">m_block</span><span class="p">),</span> <span class="n">ts</span><span class="p">[:</span><span class="n">m_block</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">value</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">v</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">stderr</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)))</span>
+            <span class="n">error_from</span> <span class="o">=</span> <span class="s2">"blocks"</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"value"</span><span class="p">:</span> <span class="n">Q_</span><span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">units</span><span class="p">),</span>
+        <span class="s2">"stderr"</span><span class="p">:</span> <span class="n">Q_</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="n">units</span><span class="p">),</span>
+        <span class="s2">"error_from"</span><span class="p">:</span> <span class="n">error_from</span><span class="p">,</span>
+        <span class="s2">"tau"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">tau</span><span class="p">),</span>
+        <span class="s2">"ts"</span><span class="p">:</span> <span class="n">ts</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="s2">"integral"</span><span class="p">:</span> <span class="n">integral</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="s2">"fit_ts"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">xs</span><span class="p">),</span>
+        <span class="s2">"fit"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">ys</span><span class="p">),</span>
+        <span class="s2">"units"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">units</span><span class="si">:</span><span class="s2">~P</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+    <span class="p">}</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

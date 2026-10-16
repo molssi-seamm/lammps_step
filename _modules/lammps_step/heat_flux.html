@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.heat_flux &#8212; SEAMM LAMMPS Plug-in 2026.10.16 documentation</title>
+    <title>lammps_step.heat_flux &#8212; SEAMM LAMMPS Plug-in 2026.10.16.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=5aae1070"></script>
+    <script src="../../_static/documentation_options.js?v=136a9e07"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16" />
+  <meta name="docsearch:version" content="2026.10.16.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -726,6 +726,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="k">def</span><span class="w"> </span><span class="nf">git_revision</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""The git version of this module."""</span>
         <span class="k">return</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">__git_revision__</span>
+
+<div class="viewcode-block" id="HeatFlux.extra_definitions">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.heat_flux.HeatFlux.extra_definitions">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extra_definitions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The Heat Flux sub-step has no extra properties (yet)."""</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="HeatFlux.check_flowchart">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.heat_flux.HeatFlux.check_flowchart">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_flowchart</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preceding</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Nothing to check: the Heat Flux sub-step has no extra commands."""</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
 
 <div class="viewcode-block" id="HeatFlux.md_provides">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.heat_flux.HeatFlux.md_provides">[docs]</a>

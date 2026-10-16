@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.tk_nve &#8212; SEAMM LAMMPS Plug-in 2026.10.16 documentation</title>
+    <title>lammps_step.tk_nve &#8212; SEAMM LAMMPS Plug-in 2026.10.16.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=5aae1070"></script>
+    <script src="../../_static/documentation_options.js?v=136a9e07"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16" />
+  <meta name="docsearch:version" content="2026.10.16.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -492,9 +492,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">lammps_step</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">Pmw</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seamm_widgets</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sw</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tkinter</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tk</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tkinter.ttk</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ttk</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">lammps_step.extras</span><span class="w"> </span><span class="kn">import</span> <span class="n">DISPLAY_UNITS</span><span class="p">,</span> <span class="n">PREFACTORS</span><span class="p">,</span> <span class="n">TREATMENTS</span><span class="p">,</span> <span class="n">check</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -520,6 +523,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <span class="c1"># Metadata for the properties</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">property_metadata</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># The rows of the extra properties table: a dict of widgets per row</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_extra_rows</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">tk_flowchart</span><span class="o">=</span><span class="n">tk_flowchart</span><span class="p">,</span>
@@ -600,6 +605,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <span class="k">if</span> <span class="n">title</span> <span class="o">==</span> <span class="s2">"Heat Flux"</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">frame</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_extras_tab</span><span class="p">(</span><span class="n">notebook</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
 
         <span class="c1"># Frame to isolate widgets</span>
         <span class="n">c_frame</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"control_frame"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">LabelFrame</span><span class="p">(</span>
@@ -764,12 +771,163 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">frame</span><span class="o">.</span><span class="n">columnconfigure</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
 
+    <span class="c1"># The extra commands and properties (lammps_step.extras)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_extras_tab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notebook</span><span class="p">,</span> <span class="n">P</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The tab for the extra commands and the table of extra properties."""</span>
+        <span class="n">eframe</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="n">notebook</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">[</span><span class="s2">"extras frame"</span><span class="p">]</span> <span class="o">=</span> <span class="n">eframe</span>
+        <span class="n">notebook</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s2">"results frame"</span><span class="p">],</span> <span class="n">eframe</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">"Extras"</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">NSEW</span><span class="p">)</span>
+
+        <span class="n">ttk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span>
+            <span class="n">eframe</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">"Extra commands: LAMMPS compute, fix, variable and dump commands for "</span>
+                <span class="s2">"this sub-step only, removed when it ends."</span>
+            <span class="p">),</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"extra commands text"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Pmw</span><span class="o">.</span><span class="n">ScrolledText</span><span class="p">(</span>
+            <span class="n">eframe</span><span class="p">,</span>
+            <span class="n">labelpos</span><span class="o">=</span><span class="s2">"n"</span><span class="p">,</span>
+            <span class="n">text_wrap</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span>
+            <span class="n">text_height</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+            <span class="n">text_width</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">text</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="s2">"1.0"</span><span class="p">,</span> <span class="n">P</span><span class="p">[</span><span class="s2">"extra commands"</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span>
+        <span class="n">text</span><span class="o">.</span><span class="n">component</span><span class="p">(</span><span class="s2">"text"</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s2">"&lt;KeyRelease&gt;"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_extras</span><span class="p">)</span>
+        <span class="n">text</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">NSEW</span><span class="p">)</span>
+
+        <span class="n">ttk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span>
+            <span class="n">eframe</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">"Extra properties: LAMMPS expressions sampled and analysed with the "</span>
+                <span class="s2">"other properties."</span>
+            <span class="p">),</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"extra properties table"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="n">eframe</span><span class="p">)</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">NSEW</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">[</span><span class="s2">"extras message"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">eframe</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">foreground</span><span class="o">=</span><span class="s2">"red"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">[</span><span class="s2">"extras message"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
+        <span class="n">eframe</span><span class="o">.</span><span class="n">columnconfigure</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">eframe</span><span class="o">.</span><span class="n">rowconfigure</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">"extra properties"</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="ow">or</span> <span class="p">[]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_extra_row</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_layout_extra_properties</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_extra_row</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Add a row to the extra properties table."""</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"extra properties table"</span><span class="p">]</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Entry</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span>
+            <span class="s2">"expression"</span><span class="p">:</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Entry</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">24</span><span class="p">),</span>
+            <span class="s2">"units"</span><span class="p">:</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Combobox</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">DISPLAY_UNITS</span><span class="p">)),</span>
+            <span class="s2">"treatment"</span><span class="p">:</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Combobox</span><span class="p">(</span>
+                <span class="n">table</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">TREATMENTS</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s2">"readonly"</span>
+            <span class="p">),</span>
+            <span class="s2">"prefactor"</span><span class="p">:</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Combobox</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">PREFACTORS</span><span class="p">),</span>
+            <span class="s2">"store"</span><span class="p">:</span> <span class="n">tk</span><span class="o">.</span><span class="n">BooleanVar</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"store"</span><span class="p">,</span> <span class="kc">False</span><span class="p">))),</span>
+        <span class="p">}</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"store widget"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Checkbutton</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">"store"</span><span class="p">])</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"remove"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span>
+            <span class="n">table</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">"-"</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="o">=</span><span class="n">row</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remove_extra_row</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"expression"</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"expression"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"units"</span><span class="p">,</span> <span class="s2">"dimensionless"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"dimensionless"</span><span class="p">)</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"treatment"</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"treatment"</span><span class="p">,</span> <span class="s2">"average"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"average"</span><span class="p">)</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"prefactor"</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"prefactor"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"V/kT"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"name"</span><span class="p">,</span> <span class="s2">"expression"</span><span class="p">,</span> <span class="s2">"units"</span><span class="p">,</span> <span class="s2">"prefactor"</span><span class="p">):</span>
+            <span class="n">row</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s2">"&lt;KeyRelease&gt;"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_extras</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"units"</span><span class="p">,</span> <span class="s2">"treatment"</span><span class="p">,</span> <span class="s2">"prefactor"</span><span class="p">):</span>
+            <span class="n">row</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s2">"&lt;&lt;ComboboxSelected&gt;&gt;"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout_extra_properties</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_extra_rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">layout</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_layout_extra_properties</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_remove_extra_row</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Remove a row from the extra properties table."""</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">widget</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">widget</span><span class="p">,</span> <span class="n">tk</span><span class="o">.</span><span class="n">Widget</span><span class="p">):</span>
+                <span class="n">widget</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_extra_rows</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_layout_extra_properties</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_layout_extra_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Lay out the table: the prefactor only for a Green-Kubo integral."""</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"extra properties table"</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">slave</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">grid_slaves</span><span class="p">():</span>
+            <span class="n">slave</span><span class="o">.</span><span class="n">grid_forget</span><span class="p">()</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"Name"</span><span class="p">,</span> <span class="s2">"Expression"</span><span class="p">,</span> <span class="s2">"Units"</span><span class="p">,</span> <span class="s2">"Treatment"</span><span class="p">,</span> <span class="s2">"Prefactor"</span><span class="p">,</span> <span class="s2">"Store"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">column</span><span class="p">,</span> <span class="n">text</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">headers</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">"header "</span> <span class="o">+</span> <span class="n">text</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="bp">self</span><span class="p">[</span><span class="s2">"header "</span> <span class="o">+</span> <span class="n">text</span><span class="p">]</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">[</span><span class="s2">"header "</span> <span class="o">+</span> <span class="n">text</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">column</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_extra_rows</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">row</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">EW</span><span class="p">)</span>
+            <span class="n">row</span><span class="p">[</span><span class="s2">"expression"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">EW</span><span class="p">)</span>
+            <span class="n">row</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">EW</span><span class="p">)</span>
+            <span class="n">row</span><span class="p">[</span><span class="s2">"treatment"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">EW</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">"treatment"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"Green-Kubo integral"</span><span class="p">:</span>
+                <span class="n">row</span><span class="p">[</span><span class="s2">"prefactor"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">EW</span><span class="p">)</span>
+            <span class="n">row</span><span class="p">[</span><span class="s2">"store widget"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+            <span class="n">row</span><span class="p">[</span><span class="s2">"remove"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"add extra property"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">[</span><span class="s2">"add extra property"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span>
+                <span class="n">table</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_add_extra_row</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="p">[</span><span class="s2">"add extra property"</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span>
+            <span class="n">row</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_extra_rows</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span>
+        <span class="p">)</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">columnconfigure</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_extras</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_read_extras</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The extra commands and the rows of the table, as the parameters hold</span>
+<span class="sd">        them."""</span>
+        <span class="n">commands</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"extra commands text"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">tk</span><span class="o">.</span><span class="n">END</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extra_rows</span><span class="p">:</span>
+            <span class="n">treatment</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">"treatment"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">"name"</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+                    <span class="s2">"expression"</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">"expression"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+                    <span class="s2">"units"</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+                    <span class="s2">"treatment"</span><span class="p">:</span> <span class="n">treatment</span><span class="p">,</span>
+                    <span class="s2">"prefactor"</span><span class="p">:</span> <span class="p">(</span>
+                        <span class="n">row</span><span class="p">[</span><span class="s2">"prefactor"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="n">treatment</span> <span class="o">==</span> <span class="s2">"Green-Kubo integral"</span>
+                        <span class="k">else</span> <span class="s2">""</span>
+                    <span class="p">),</span>
+                    <span class="s2">"store"</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">"store"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()),</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">commands</span><span class="p">,</span> <span class="n">rows</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_extras</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Show any problems with the extra commands and properties."""</span>
+        <span class="k">if</span> <span class="s2">"extras message"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">""</span>
+        <span class="n">commands</span><span class="p">,</span> <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_extras</span><span class="p">()</span>
+        <span class="n">problems</span> <span class="o">=</span> <span class="n">check</span><span class="p">({</span><span class="s2">"extra commands"</span><span class="p">:</span> <span class="n">commands</span><span class="p">,</span> <span class="s2">"extra properties"</span><span class="p">:</span> <span class="n">rows</span><span class="p">})</span>
+        <span class="bp">self</span><span class="p">[</span><span class="s2">"extras message"</span><span class="p">]</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">problems</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">problems</span>
+
 <div class="viewcode-block" id="TkNVE.handle_dialog">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.tk_nve.TkNVE.handle_dialog">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle_dialog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="s2">"OK"</span><span class="p">:</span>
             <span class="c1"># Shortcut for parameters</span>
             <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">parameters</span>
+
+            <span class="k">if</span> <span class="s2">"extras frame"</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="n">commands</span><span class="p">,</span> <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_extras</span><span class="p">()</span>
+                <span class="n">P</span><span class="p">[</span><span class="s2">"extra commands"</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">commands</span>
+                <span class="n">P</span><span class="p">[</span><span class="s2">"extra properties"</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">""</span> <span class="ow">or</span> <span class="n">r</span><span class="p">[</span><span class="s2">"expression"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">""</span>
+                <span class="p">]</span>
 
             <span class="n">value</span><span class="p">,</span> <span class="n">units</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
             <span class="n">P</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>

@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.16 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.16.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=5aae1070"></script>
+    <script src="../../_static/documentation_options.js?v=136a9e07"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16" />
+  <meta name="docsearch:version" content="2026.10.16.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -3845,18 +3845,29 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">t_units</span> <span class="o">=</span> <span class="s2">"ps"</span>
         <span class="n">t_max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="n">t_units</span><span class="p">))</span>
 
+        <span class="c1"># The user's extra properties: their names, units, and whether the values</span>
+        <span class="c1"># are in LAMMPS's units (a quantity) or the user's own (explicit units)</span>
+        <span class="n">extra_meta</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"extra_definitions"</span><span class="p">):</span>
+            <span class="n">extra_meta</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">extras</span><span class="o">.</span><span class="n">column_metadata</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">extra_definitions</span><span class="p">())</span>
+
         <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">"Unnamed:"</span> <span class="ow">in</span> <span class="n">column</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="n">meta_column</span> <span class="o">=</span> <span class="n">column</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"0123456789"</span><span class="p">)</span>
+            <span class="n">convert</span> <span class="o">=</span> <span class="kc">True</span>
 
-            <span class="k">if</span> <span class="n">meta_column</span> <span class="ow">in</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_title</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">extra_meta</span><span class="p">:</span>
+                <span class="n">meta_title</span><span class="p">,</span> <span class="n">meta_units</span><span class="p">,</span> <span class="n">convert</span> <span class="o">=</span> <span class="n">extra_meta</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">meta_column</span> <span class="ow">in</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_title</span><span class="p">:</span>
                 <span class="n">meta_title</span> <span class="o">=</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_title</span><span class="p">[</span><span class="n">meta_column</span><span class="p">]</span>
             <span class="k">elif</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_title</span><span class="p">:</span>
                 <span class="n">meta_title</span> <span class="o">=</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_title</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">meta_title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"unknown: </span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">"</span>
-            <span class="k">if</span> <span class="n">meta_column</span> <span class="ow">in</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_units</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">extra_meta</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">elif</span> <span class="n">meta_column</span> <span class="ow">in</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_units</span><span class="p">:</span>
                 <span class="n">meta_units</span> <span class="o">=</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_units</span><span class="p">[</span><span class="n">meta_column</span><span class="p">]</span>
             <span class="k">elif</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_units</span><span class="p">:</span>
                 <span class="n">meta_units</span> <span class="o">=</span> <span class="n">LAMMPS</span><span class="o">.</span><span class="n">display_units</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
@@ -3871,7 +3882,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Analyzing </span><span class="si">{}</span><span class="s2">, nsamples = </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">yy</span><span class="p">)))</span>
 
             <span class="c1"># Change from the units LAMMPS is using to the ones that we want</span>
-            <span class="k">if</span> <span class="n">meta_units</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"???"</span><span class="p">,</span> <span class="s2">"º"</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">convert</span> <span class="ow">and</span> <span class="n">meta_units</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"???"</span><span class="p">,</span> <span class="s2">"º"</span><span class="p">,</span> <span class="s2">""</span><span class="p">):</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">factor</span> <span class="o">=</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">from_lammps_units</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">meta_units</span><span class="p">)</span>
                     <span class="c1"># Do not use inplace operator *= because yy might be int</span>
@@ -3902,7 +3913,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">inefficiency</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Neff_max</span><span class="p">):</span>
                 <span class="c1"># Apparently didn't converge!</span>
-                <span class="n">table</span><span class="p">[</span><span class="s2">"Property"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">column</span><span class="p">)</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">"Property"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">extra_meta</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">extra_meta</span> <span class="k">else</span> <span class="n">column</span>
+                <span class="p">)</span>
                 <span class="n">table</span><span class="p">[</span><span class="s2">"Value"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
                 <span class="n">table</span><span class="p">[</span><span class="s2">" "</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
                 <span class="n">table</span><span class="p">[</span><span class="s2">"StdErr"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
@@ -3983,6 +3996,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="k">if</span> <span class="n">column</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"Jx"</span><span class="p">,</span> <span class="s2">"Jy"</span><span class="p">,</span> <span class="s2">"Jz"</span><span class="p">):</span>
                     <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">"values"</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
 
+                <span class="c1"># The production part of an extra property, in its display</span>
+                <span class="c1"># units, for its treatment (lammps_step.extras)</span>
+                <span class="k">if</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">extra_meta</span><span class="p">:</span>
+                    <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">"units"</span><span class="p">]</span> <span class="o">=</span> <span class="n">meta_units</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"_extra_series"</span><span class="p">):</span>
+                        <span class="n">node</span><span class="o">.</span><span class="n">_extra_series</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="n">node</span><span class="o">.</span><span class="n">_extra_series</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_t_equil</span>
+
                 <span class="c1"># Work out units on convergence time</span>
                 <span class="n">conv_units</span> <span class="o">=</span> <span class="s2">"fs"</span>
                 <span class="n">t_conv</span> <span class="o">=</span> <span class="n">t0</span>
@@ -4017,7 +4038,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
                 <span class="n">results</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s2">"few_neff"</span><span class="p">]</span> <span class="o">=</span> <span class="n">have_warning</span>
 
-                <span class="n">table</span><span class="p">[</span><span class="s2">"Property"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">column</span><span class="si">}{</span><span class="n">warn</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="n">extra_meta</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">extra_meta</span> <span class="k">else</span> <span class="n">column</span>
+                <span class="n">table</span><span class="p">[</span><span class="s2">"Property"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}{</span><span class="n">warn</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="n">table</span><span class="p">[</span><span class="s2">"Value"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">mean</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="n">table</span><span class="p">[</span><span class="s2">" "</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"±"</span><span class="p">)</span>
                 <span class="n">table</span><span class="p">[</span><span class="s2">"StdErr"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">sem</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
