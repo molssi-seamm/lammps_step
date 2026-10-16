@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.16.3 documentation</title>
+    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.16.4 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=80ea9074"></script>
+    <script src="../_static/documentation_options.js?v=4b6300b9"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16.3" />
+  <meta name="docsearch:version" content="2026.10.16.4" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -615,7 +615,9 @@ volume and density of an NPT run, the heat flux, …), each on its own time axis
 and in the units LAMMPS produced;</p></li>
 <li><p>the atoms’ positions, velocities and forces, and the centres of mass of the
 molecules, as far as they were sampled, with the box of each frame;</p></li>
-<li><p>the run’s parameters and where it came from (the job, step, structure and model).</p></li>
+<li><p>the run’s parameters, including how the electrostatics were handled (the kspace
+style, e.g. <code class="docutils literal notranslate"><span class="pre">pppm</span> <span class="pre">1.0e-5</span></code>, or <code class="docutils literal notranslate"><span class="pre">none</span></code>), and where it came from (the job, step,
+structure and model).</p></li>
 </ul>
 <p>The file is <a class="reference external" href="https://www.nongnu.org/h5md/">H5MD</a>, an HDF5 format for molecular
 dynamics; its layout is described in the documentation of <code class="docutils literal notranslate"><span class="pre">seamm_md_analysis</span></code>
