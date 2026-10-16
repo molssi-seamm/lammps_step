@@ -585,7 +585,7 @@ fix_modify          J_filter virial yes
             lines.append(
                 f"fix                 {nfixes} all ave/time {nevery} 1 {nfreq} &\n"
                 f"                       {properties} &\n"
-                "                       off 2 &\n"
+                "                       off 1 &\n"
                 f"                       title1 '{title1}' &\n"
                 f"                       title2 '{title2}' &\n"
                 f"                       file {filename}"
@@ -610,9 +610,9 @@ fix_modify          J_filter virial yes
 
         filename = f"@{self._id[-1]}+heat_flux_summary.trj"
         lines.append(
-            f"fix                 summary all ave/time {nevery} 1 {nfreq} &\n"
+            f"fix                 summary all ave/time {nevery} {nrepeat} {nfreq} &\n"
             f"                       {properties} &\n"
-            "                       off 2 &\n"
+            "                       off 1 &\n"
             f"                       file {filename}"
         )
 

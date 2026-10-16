@@ -8,6 +8,9 @@ History
       gives the number of processes LAMMPS actually runs on, and when the job's
       allocation is what limits it, explains that MPI processes need tasks (e.g.
       --ntasks) rather than CPUs per task.
+    * The summary of an NVE, NVT, NPT or Heat Flux run (<ensemble>_summary.trj), ten
+      lines over the run, now gives on each line the average over that tenth of the
+      run, sampled every 10 steps, rather than the values at that one step.
 
 2026.10.16.1 -- Extra commands and extra properties in the MD sub-steps
     * The NVE, NVT and NPT sub-steps have an Extras tab. Extra commands are LAMMPS
