@@ -463,11 +463,30 @@ class MDH5MDConverter:
         for key, name in (("thermostat", "thermostat"), ("barostat", "barostat")):
             if key in self.P:
                 result[name] = str(self.P[key])
+        # The long-range electrostatics, for analyses whose formulas depend on it
+        # (the dielectric constant assumes Ewald or PPPM with conducting
+        # boundaries)
+        kspace = self._kspace_style()
+        if kspace is not None:
+            result["kspace_style"] = kspace
         step = {}
         for key, value in self.P.items():
             step[key] = f"{value:~P}" if hasattr(value, "magnitude") else str(value)
         result["step"] = step
         return result
+
+    def _kspace_style(self):
+        """The kspace_style of the run, from the LAMMPS input ("none" if it has
+        none), or None if the input cannot be found."""
+        for path in (self.directory / "input.dat", self.directory.parent / "input.dat"):
+            if path.exists():
+                style = "none"
+                for line in path.read_text().splitlines():
+                    words = line.split()
+                    if len(words) > 1 and words[0] == "kspace_style":
+                        style = " ".join(words[1:])
+                return style
+        return None
 
     def _provenance(self):
         node = self.node
