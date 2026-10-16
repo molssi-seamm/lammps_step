@@ -126,7 +126,9 @@ the run sampled into one file, ``md.h5md``, in the sub-step's directory:
   and in the units LAMMPS produced;
 * the atoms' positions, velocities and forces, and the centres of mass of the
   molecules, as far as they were sampled, with the box of each frame;
-* the run's parameters and where it came from (the job, step, structure and model).
+* the run's parameters, including how the electrostatics were handled (the kspace
+  style, e.g. ``pppm 1.0e-5``, or ``none``), and where it came from (the job, step,
+  structure and model).
 
 The file is `H5MD <https://www.nongnu.org/h5md/>`_, an HDF5 format for molecular
 dynamics; its layout is described in the documentation of ``seamm_md_analysis``

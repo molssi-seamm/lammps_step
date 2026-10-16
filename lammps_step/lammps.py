@@ -6,6 +6,7 @@ import configparser
 from contextlib import contextmanager
 import copy
 import importlib
+import inspect
 import json
 import logging
 from math import sqrt, exp, degrees, radians, cos, acos
@@ -47,6 +48,14 @@ from seamm_util.printing import FormattedText as __
 logger = logging.getLogger("lammps")
 job = printing.getPrinter()
 printer = printing.getPrinter("lammps")
+
+# statsmodels 0.15 warns that acf will return an object instead of a tuple; keep the
+# tuple where the option exists.
+_acf_options = (
+    {"result_object": False}
+    if "result_object" in inspect.signature(stattools.acf).parameters
+    else {}
+)
 
 # The header of the helper scripts, e.g. "#MolSSI lammps_step:mdi_bind 2.0".
 VERSION_PATTERN = re.compile(r"^#\s?MolSSI\s+(lammps_step:\S+)\s+([\d.]+)")
@@ -3428,6 +3437,7 @@ class LAMMPS(seamm.Node):
                             alpha=0.05,
                             fft=True,
                             adjusted=False,
+                            **_acf_options,
                         )
 
                 results[column] = {}

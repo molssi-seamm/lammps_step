@@ -5,6 +5,8 @@ History
     * md.h5md records the run's kspace style (e.g. 'pppm 1.0e-5', or 'none'), for
       analyses whose formulas depend on it: the dielectric constant assumes Ewald or
       PPPM with conducting boundaries.
+    * The output no longer fills with FutureWarnings from statsmodels about the
+      autocorrelation functions of the summary properties.
 
 2026.10.16.3 -- Bugfix: rigid water was not held rigid in MD
     * In 2026.10.16.1 and 2026.10.16.2, NVE, NVT and NPT dynamics dropped the SHAKE
