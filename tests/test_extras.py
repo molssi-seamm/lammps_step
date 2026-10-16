@@ -473,3 +473,20 @@ def test_summary_averages_each_tenth_of_the_run(md_step, ensemble):
     assert "off 1" in summary
     state = next(block for block in text.split("fix ") if "_state.trj" in block)
     assert "off 1" in state
+
+
+SHAKE = "fix                 {} all shake 1.0e-6 50 1000 b  1 a  1"
+
+
+@pytest.mark.parametrize("ensemble", ["NVE", "NVT", "NPT"])
+@pytest.mark.parametrize("extra", [True, False])
+def test_shake_is_kept(md_step, ensemble, extra):
+    """The step passes SHAKE in get_input's 'extras' argument. The extra commands
+    and properties once shadowed it, and rigid water ran flexible (lammps-step
+    2026.10.16.1 and .2)."""
+    step = md_step(getattr(lammps_step, ensemble), extra=extra)
+    lines = step.get_input(extras={"shake": SHAKE})["script"]
+    shake = [x for x in lines if " shake " in x]
+    assert len(shake) == 1 and "all shake 1.0e-6" in shake[0]
+    run = next(i for i, x in enumerate(lines) if x.startswith("run "))
+    assert lines.index(shake[0]) < run
