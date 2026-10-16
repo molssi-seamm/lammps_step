@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2026.10.16.2 documentation</title>
+    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2026.10.16.3 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=2492146d"></script>
+    <script src="../../_static/documentation_options.js?v=80ea9074"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16.2" />
+  <meta name="docsearch:version" content="2026.10.16.3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1116,10 +1116,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">properties</span> <span class="o">+=</span> <span class="s2">" v_N_hbond v_E_hbond"</span>
             <span class="n">title2</span> <span class="o">+=</span> <span class="s2">" N_hbond E_hbond"</span>
         <span class="c1"># The user's extra commands and properties for this sub-step</span>
-        <span class="n">extras</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_input</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">extras</span><span class="p">[</span><span class="s2">"properties"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">""</span><span class="p">:</span>
-            <span class="n">properties</span> <span class="o">+=</span> <span class="s2">" "</span> <span class="o">+</span> <span class="n">extras</span><span class="p">[</span><span class="s2">"properties"</span><span class="p">]</span>
-            <span class="n">title2</span> <span class="o">+=</span> <span class="s2">" "</span> <span class="o">+</span> <span class="n">extras</span><span class="p">[</span><span class="s2">"titles"</span><span class="p">]</span>
+        <span class="c1"># (not "extras": that is the argument carrying SHAKE and the steps)</span>
+        <span class="n">user_extras</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_input</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">user_extras</span><span class="p">[</span><span class="s2">"properties"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">""</span><span class="p">:</span>
+            <span class="n">properties</span> <span class="o">+=</span> <span class="s2">" "</span> <span class="o">+</span> <span class="n">user_extras</span><span class="p">[</span><span class="s2">"properties"</span><span class="p">]</span>
+            <span class="n">title2</span> <span class="o">+=</span> <span class="s2">" "</span> <span class="o">+</span> <span class="n">user_extras</span><span class="p">[</span><span class="s2">"titles"</span><span class="p">]</span>
 
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">nfixes</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1135,7 +1136,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"fix                 </span><span class="si">{}</span><span class="s2"> all nve"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfixes</span><span class="p">))</span>
 
-        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">extras</span><span class="p">[</span><span class="s2">"lines"</span><span class="p">])</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">user_extras</span><span class="p">[</span><span class="s2">"lines"</span><span class="p">])</span>
 
         <span class="c1"># For the heat flux, if requested, we need extra input</span>
         <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"heat flux"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"never"</span><span class="p">:</span>
@@ -1240,7 +1241,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unfix               </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"heat flux"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"never"</span><span class="p">:</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">heat_flux_cleanup</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">ff_form</span><span class="p">))</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">extras</span><span class="p">[</span><span class="s2">"cleanup"</span><span class="p">])</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">user_extras</span><span class="p">[</span><span class="s2">"cleanup"</span><span class="p">])</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
