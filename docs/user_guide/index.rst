@@ -50,6 +50,24 @@ LAMMPS uses the forcefield or model chemistry chosen before it in the flowchart:
 
 If a flowchart has both, the model chemistry is used.
 
+Rigid bonds and angles
+======================
+
+Some models are rigid, such as the SPC/E and TIP3P water models in the forcefields
+``oplsaa+-spc_e``, ``oplsaa+-tip3p`` and ``nacl_water``. The forcefield says which bonds
+and angles are rigid, and LAMMPS holds them at their values with SHAKE (``fix shake``)
+during dynamics, so a timestep of 2 fs can be used. LAMMPS cannot minimize with SHAKE,
+so a rigid bond or angle is also a stiff harmonic term, 1000 kcal/mol/Å\ :sup:`2` for a
+bond and 100 kcal/mol/radian\ :sup:`2` for an angle. It holds the geometry close to
+the rigid one in a minimization and is exactly zero when SHAKE holds it in dynamics.
+
+A forcefield that is not rigid, such as ``oplsaa+`` with its flexible SPC water, is
+used as it is. The Initialization sub-step's "Fix X-H bond lengths" holds bonds to
+hydrogen fixed with SHAKE in any forcefield.
+
+SHAKE is used rather than RATTLE: LAMMPS's RATTLE gave rigid SPC/E water a pressure
+about 850 atm too high and a center of mass that drifted.
+
 Settings that depend on each other
 ==================================
 

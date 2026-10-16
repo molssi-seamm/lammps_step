@@ -509,32 +509,25 @@ class Initialization(seamm.Node):
                         ].format(**P)
 
         if "n_bonds" in eex and eex["n_bonds"] > 0:
-            forms = set([v[0] for v in eex["bond parameters"]])
-            if len(forms) == 1:
-                bond_style = lammps_step.bond_style[[*forms][0]]
-                lines.append("bond_style          " + bond_style)
+            # Several forms may use the same style, e.g. rigid and quadratic bonds
+            styles = sorted(
+                set([lammps_step.bond_style[v[0]] for v in eex["bond parameters"]])
+            )
+            if len(styles) == 1:
+                lines.append("bond_style          " + styles[0])
             else:
-                line = "bond_style          hybrid"
-                for term in forms:
-                    line += " " + lammps_step.bond_style[term]
-                lines.append(line)
+                lines.append("bond_style          hybrid " + " ".join(styles))
         if "angle" in terms and eex["n_angles"] > 0:
-            forms = set([v[0] for v in eex["angle parameters"]])
-            if len(forms) == 1:
-                angle_style = lammps_step.angle_style[[*forms][0]]
-                if angle_style == "table":
-                    lines.append(f"angle_style         {angle_style} linear 901")
-                else:
-                    lines.append("angle_style         " + angle_style)
+            styles = sorted(
+                set([lammps_step.angle_style[v[0]] for v in eex["angle parameters"]])
+            )
+            styles = [
+                f"{style} linear 901" if style == "table" else style for style in styles
+            ]
+            if len(styles) == 1:
+                lines.append("angle_style         " + styles[0])
             else:
-                line = "angle_style         hybrid"
-                for term in forms:
-                    angle_style = lammps_step.angle_style[term]
-                    if angle_style == "table":
-                        line += f" {angle_style} linear 901"
-                    else:
-                        line += " " + angle_style
-                lines.append(line)
+                lines.append("angle_style         hybrid " + " ".join(styles))
         if "torsion" in terms and eex["n_torsions"] > 0:
             forms = set([v[0] for v in eex["torsion parameters"]])
             if len(forms) == 1:

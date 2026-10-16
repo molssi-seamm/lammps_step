@@ -37,6 +37,7 @@ script = """\
 
 import argparse
 import sys
+import traceback
 
 from lammps import lammps, LMP_STYLE_ATOM, LMP_TYPE_VECTOR, LMP_TYPE_ARRAY
 from mpi4py import MPI
@@ -92,7 +93,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--cmd-args", help="Command line arguments for LAMMPS")
 kwords = vars(parser.parse_args())
 
-run_thermal_conductivity(**kwords)
+# An error on one rank must stop all of them, or mpirun waits forever
+try:
+    run_thermal_conductivity(**kwords)
+except Exception:
+    traceback.print_exc()
+    sys.stderr.flush()
+    MPI.COMM_WORLD.Abort(1)
 """
 
 script2 = """\
@@ -100,6 +107,7 @@ script2 = """\
 
 import argparse
 import sys
+import traceback
 
 from lammps import lammps, LMP_STYLE_ATOM, LMP_TYPE_VECTOR, LMP_TYPE_ARRAY
 from mpi4py import MPI
@@ -142,7 +150,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--cmd-args", help="Command line arguments for LAMMPS")
 kwords = vars(parser.parse_args())
 
-run_thermal_conductivity(**kwords)
+# An error on one rank must stop all of them, or mpirun waits forever
+try:
+    run_thermal_conductivity(**kwords)
+except Exception:
+    traceback.print_exc()
+    sys.stderr.flush()
+    MPI.COMM_WORLD.Abort(1)
 """
 
 
@@ -327,12 +341,21 @@ class HeatFlux(NVE):
             factor = Q_("kcal/Å^2/fs/mol") / Q_("kcal/mol") * Q_("kcal/mol").to("kJ")
         factor = factor.m_as("W/m^2")
 
+        # Constraints (SHAKE) must be on from the start: the runs that settle the
+        # system and average the per-atom energies and stresses are part of the
+        # dynamics, and rigid water without them flies apart.
+        constraint = ""
+        if extras is not None and "shake" in extras:
+            constraint = extras["shake"].format("constraint")
+            fixes.append("constraint")
+
         if "cff" in ffname:
             # Centroid/stress/atom does not handle class2 ff ... cross-terms?
             lines.append(f"""
 #          Green-Kubo method
 
 fix                 dynamics all nve
+{constraint}
 
 compute             KE all ke/atom
 compute             PE all pe/atom
@@ -396,6 +419,7 @@ fix_modify          J_filter virial yes
 #          Green-Kubo method
 
 fix                 dynamics all nve
+{constraint}
 
 compute             KE all ke/atom
 compute             PE all pe/atom
@@ -567,9 +591,6 @@ fix_modify          J_filter virial yes
         )
         lines.extend(tmp)
 
-        if extras is not None and "shake" in extras:
-            lines.append(extras["shake"].format("constraint"))
-            fixes.append("constraint")
         lines.append("")
 
         filename = f"@{self._id[-1]}+heat_flux.dump"

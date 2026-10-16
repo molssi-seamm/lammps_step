@@ -1,6 +1,19 @@
 =======
 History
 =======
+2026.10.15.5 -- Rigid models from the forcefield, and Heat Flux fixed for rigid water
+    * Which bonds and angles are rigid now comes from the forcefield, e.g. the SPC/E
+      and TIP3P water in the new forcefields oplsaa+-spc_e and oplsaa+-tip3p, and
+      SHAKE holds exactly those. Before, any water was made rigid, whatever the
+      forcefield; a flexible water model such as oplsaa+'s SPC is now flexible.
+    * A rigid bond or angle is also a stiff harmonic term, so that minimizations,
+      which cannot use SHAKE, keep the geometry.
+    * Bugfix: the Heat Flux sub-step turned SHAKE on only after the runs that settle
+      the system and average each atom's energy and stress, so rigid water ran
+      unconstrained there and the run failed after a few femtoseconds.
+    * Bugfix: when LAMMPS stopped with an error in the Heat Flux sub-step, the job
+      hung instead of stopping.
+
 2026.10.15.4 -- Bugfix: rigid water gave the wrong pressure
     * Rigid water molecules, and fixed X-H bond lengths, were held with LAMMPS's
       RATTLE, which for rigid SPC/E water gave a pressure about 850 atm too high, an

@@ -187,17 +187,6 @@ class InitializationParameters(seamm.Parameters):
                 "cutoff distance to avoid energy jumps."
             ),
         },
-        "rigid_waters": {
-            "default": "yes",
-            "kind": "boolean",
-            "format_string": "s",
-            "enumeration": ("no", "yes"),
-            "description": ("Keep the internal geometry of water molecules " "fixed"),
-            "help_text": (
-                "Use shake or rattle, as appropriate, to keep "
-                "the water molecules rigid."
-            ),
-        },
         "fix_XH_bond_lengths": {
             "default": "none",
             "kind": "enumeration",
@@ -209,10 +198,24 @@ class InitializationParameters(seamm.Parameters):
         },
     }
 
+    #: Parameters no longer used. "rigid_waters" made waters rigid by finding them
+    #: in the structure; now the forcefield says which bonds and angles are rigid.
+    obsolete = ("rigid_waters",)
+
     def __init__(self, defaults={}, data=None):
         """Initialize the instance, by default from the default
         parameters given in the class"""
 
         super().__init__(
             defaults={**InitializationParameters.parameters, **defaults}, data=data
+        )
+
+    def update(self, data):
+        """Update the values, ignoring obsolete parameters from older flowcharts."""
+        super().update(
+            {
+                k: v
+                for k, v in data.items()
+                if k not in InitializationParameters.obsolete
+            }
         )
