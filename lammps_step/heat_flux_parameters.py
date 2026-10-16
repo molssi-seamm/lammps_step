@@ -73,7 +73,40 @@ class HeatFluxParameters(NVE_Parameters):
     HeatFlux, TkHeatFlux, HeatFlux HeatFluxParameters, Heat FluxStep
     """
 
-    parameters = {}
+    parameters = {
+        "filter": {
+            "default": "none",
+            "kind": "enum",
+            "default_units": None,
+            "enumeration": ("none", "per-atom averages"),
+            "format_string": "",
+            "description": "Filter the heat flux:",
+            "help_text": (
+                "Whether to remove the constant parts of the per-atom energies and "
+                "stresses from the heat flux. 'per-atom averages' subtracts each "
+                "atom's average energy and stress, from a preliminary 5 ps run "
+                "(Pereverzev & Sewell 2022). In a crystal, where each atom stays on "
+                "its site, that removes noise without changing the thermal "
+                "conductivity. In a liquid the atoms move, and it makes the thermal "
+                "conductivity too large (about 20% for water), so use 'none' for "
+                "liquids."
+            ),
+        },
+        # The centroid stress is for the unfiltered heat flux
+        "use centroid stress": {
+            "applies_when": {"heat flux": {"not": "never"}, "filter": "none"},
+            "default": "yes",
+            "kind": "boolean",
+            "default_units": None,
+            "enumeration": ("yes", "no"),
+            "format_string": "",
+            "description": "Use centroid/stress/atom:",
+            "help_text": (
+                "Whether to use the centroid form of the stress for the bonded "
+                "terms and the constraints (SHAKE), which is the correct one."
+            ),
+        },
+    }
 
     def __init__(self, defaults={}, data=None):
         """

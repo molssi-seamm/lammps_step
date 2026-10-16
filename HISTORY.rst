@@ -1,7 +1,7 @@
 =======
 History
 =======
-2026.10.15.5 -- Rigid models from the forcefield, and Heat Flux fixed for rigid water
+2026.10.15.5 -- Rigid models from the forcefield, and the heat flux of liquids corrected
     * Which bonds and angles are rigid now comes from the forcefield, e.g. the SPC/E
       and TIP3P water in the new forcefields oplsaa+-spc_e and oplsaa+-tip3p, and
       SHAKE holds exactly those. Before, any water was made rigid, whatever the
@@ -13,6 +13,16 @@ History
       unconstrained there and the run failed after a few femtoseconds.
     * Bugfix: when LAMMPS stopped with an error in the Heat Flux sub-step, the job
       hung instead of stopping.
+    * Bugfix: the Heat Flux sub-step subtracted each atom's average energy and stress
+      from the heat flux. That is right for a crystal, but in a liquid, where the
+      atoms move, it made the thermal conductivity too large, by about 20% for SPC/E
+      water. By default the heat flux is no longer filtered; the new "Filter the heat
+      flux" can still subtract the per-atom averages, for solids. Without the filter,
+      Heat Flux is a plain LAMMPS run with no preliminary runs.
+    * Bugfix: the heat flux of the NVE, NVT and NPT sub-steps left out the forces
+      holding rigid bonds and angles, and in NVT and NPT counted the convective term
+      twice. Both are corrected, and the computes they define are removed afterwards,
+      so a later sub-step can sample the heat flux again.
 
 2026.10.15.4 -- Bugfix: rigid water gave the wrong pressure
     * Rigid water molecules, and fixed X-H bond lengths, were held with LAMMPS's

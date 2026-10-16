@@ -116,8 +116,11 @@ class TkHeatFlux(lammps_step.TkNVE):
         P = self.node.parameters
 
         # Then create the widgets
-        for key in ("time", "timestep", "use centroid stress", "sampling"):
+        for key in ("time", "timestep", "filter", "use centroid stress", "sampling"):
             self[key] = P[key].widget(frame)
+
+        # The centroid option only applies without the filter
+        self["filter"].bind("<<ComboboxSelected>>", self.reset_dialog)
 
         # and lay them out
         self.reset_dialog()
@@ -162,7 +165,7 @@ class TkHeatFlux(lammps_step.TkNVE):
         # if e.g. rows are skipped to control such as "method" here
         row = 0
         widgets = []
-        for key in ("time", "timestep", "use centroid stress", "sampling"):
+        for key in ("time", "timestep", "filter", "use centroid stress", "sampling"):
             if P.applies(key, values):
                 self[key].grid(row=row, column=0, sticky=tk.EW)
                 widgets.append(self[key])
