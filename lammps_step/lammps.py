@@ -841,6 +841,19 @@ def timing_descriptors(control, log_text=None, configuration=None):
     return d
 
 
+def allocation_note(wanted, ntasks):
+    """Why LAMMPS runs on fewer processes than it could: the batch job allocated
+    fewer MPI tasks. CPUs per task do not count, since each MPI process is a
+    task."""
+    return (
+        f" However, this job was allocated only {ntasks} MPI "
+        f"task{'s' if ntasks != 1 else ''}, so LAMMPS runs on {ntasks} "
+        f"process{'es' if ntasks != 1 else ''}. Each MPI process needs a task: ask "
+        f"the batch system for {wanted} tasks (e.g. --ntasks={wanted}) rather than "
+        "CPUs per task."
+    )
+
+
 class LAMMPS(seamm.Node):
     display_units = {
         "T": "K",
@@ -2104,7 +2117,12 @@ class LAMMPS(seamm.Node):
                     )
                 )
             else:
-                printer.important(f"    LAMMPS using MPI with {np} processes.")
+                # The batch system's allocation may allow fewer MPI tasks than
+                # the step asked for: say how many LAMMPS actually gets
+                ntasks = int(ce.get("NTASKS", np))
+                printer.important(f"    LAMMPS using MPI with {ntasks} processes.")
+                if ntasks < np:
+                    np_text += allocation_note(np, ntasks)
                 if np_text != "":
                     printer.important("")
                     printer.important(__(np_text, indent=4 * " "))

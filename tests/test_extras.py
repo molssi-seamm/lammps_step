@@ -459,3 +459,17 @@ def test_md_provides_lists_the_extra_properties():
     )
     provides = md_provides(node)
     assert provides.data["user/msd"] == provides.data["temperature"]
+
+
+@pytest.mark.parametrize("ensemble", ["NVE", "NVT", "NPT"])
+def test_summary_averages_each_tenth_of_the_run(md_step, ensemble):
+    """Each of the 10 summary lines is the average over its tenth of the run (20000
+    steps: every 10 steps, 200 samples, written every 2000), with the time, the
+    first value, left as the time of the line."""
+    step = md_step(getattr(lammps_step, ensemble), extra=False)
+    text = "\n".join(step.get_input()["script"])
+    summary = next(block for block in text.split("fix ") if "_summary.trj" in block)
+    assert "ave/time 10 200 2000" in summary
+    assert "off 1" in summary
+    state = next(block for block in text.split("fix ") if "_state.trj" in block)
+    assert "off 1" in state

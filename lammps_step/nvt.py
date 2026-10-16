@@ -338,8 +338,9 @@ class NVT(lammps_step.NVE):
         if P["heat flux"] != "never":
             lines.append(self.heat_flux_input(P))
 
-        # summary output written 10 times during run so we can see progress
-        # (sampling every step of a run of fewer than 100)
+        # The summary: 10 lines over the run, each the average over its tenth of
+        # the run, sampled every 10 steps (every step of a run of fewer than 100).
+        # 'off 1' keeps the time the time of the line.
         nevery = max(1, min(10, nsteps // 10))
         nfreq = int(nsteps / 10)
         nrepeat = max(1, int(nfreq / nevery))
@@ -347,9 +348,9 @@ class NVT(lammps_step.NVE):
         nfixes += 1
         filename = f"@{self._id[-1]}+nvt_summary.trj"
         lines.append(
-            f"fix                 {nfixes} all ave/time {nevery} 1 {nfreq} &\n"
+            f"fix                 {nfixes} all ave/time {nevery} {nrepeat} {nfreq} &\n"
             f"                       {properties} &\n"
-            "                       off 2 &\n"
+            "                       off 1 &\n"
             f"                       file {filename}"
         )
         # instantaneous output written for averaging
@@ -401,7 +402,7 @@ class NVT(lammps_step.NVE):
             lines.append(
                 f"fix                 {nfixes} all ave/time {nevery} 1 {nfreq} &\n"
                 f"                       {properties} &\n"
-                "                       off 2 &\n"
+                "                       off 1 &\n"
                 f"                       title1 '{title1}' &\n"
                 f"                       title2 '{title2}' &\n"
                 f"                       file {filename}"
