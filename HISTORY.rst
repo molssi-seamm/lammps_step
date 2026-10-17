@@ -1,6 +1,28 @@
 =======
 History
 =======
+2026.10.17.1 -- Bugfix: what the step says it does, and smaller jobs
+    * The text of the Initialization sub-step said the van der Waals energies were
+      shifted to zero at the cutoff whether or not they were, and never mentioned the
+      tail correction; the input itself was right. Choosing a k-space method
+      explicitly stopped the job with "KeyError: 'method'".
+    * The description of a "normal", "accurate but slow" or "coarse but fast"
+      timestep read "a timestep of normal fs"; it now says how the timestep is chosen.
+      The Velocities sub-step's default no longer reads as if rotational momentum were
+      removed from a periodic system.
+    * The %CPU in the performance table was the first digit of LAMMPS's value (9 for
+      97.9%), and the advice on the timing of the parts of LAMMPS ran words together
+      and suggested balancing for uniform systems such as liquids, where uneven timing
+      usually means the processors were shared with other work.
+    * Citations: the Nosé–Hoover thermostat now cites Nosé, Hoover and Martyna, Klein
+      and Tuckerman's chains with the integrator, and NPT the barostat; the barostat
+      paper is no longer cited for NVT runs.
+    * The text files of the sampled positions and velocities are removed once they
+      are in md.h5md (option "Keep the sampled text files"): they were most of the
+      6.4 GB of a 3 ns run of 1000 water molecules.
+    * Ewald summation is chosen automatically only below 750 atoms (was 1000): for
+      water PPPM is 1.4 times faster at 1000 atoms and 1.8 times at 3000.
+
 2026.10.17 -- The sampling an analysis needs, offered as a fix
     * When an analysis step after the MD (Viscosity, Diffusivity, Liquid Structure,
       Dielectric Constant, Ionic Conductivity, ...) needs something the MD does not

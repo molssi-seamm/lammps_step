@@ -232,6 +232,19 @@ class NVE_Parameters(lammps_step.EnergyParameters):
                 "molecules"
             ),
         },
+        "keep sampled files": {
+            "default": "no",
+            "kind": "boolean",
+            "enumeration": ("no", "yes"),
+            "format_string": "s",
+            "description": "Keep the sampled text files:",
+            "help_text": (
+                "LAMMPS writes the sampled positions and velocities of the atoms "
+                "and molecules as text, which is then put in md.h5md, the file the "
+                "analysis steps read. By default the text files are removed once "
+                "md.h5md is written, since they are several times larger."
+            ),
+        },
         "com velocities number of samples": {
             "applies_when": {"com velocities": "by number of samples"},
             "default": 1000,

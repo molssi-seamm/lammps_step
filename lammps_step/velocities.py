@@ -70,8 +70,15 @@ class Velocities(seamm.Node):
                 "momentum will be determined at runtime by "
                 "'{remove_momentum}'"
             )
+        elif "default" in P["remove_momentum"]:
+            # "Molecular" here means a molecule or cluster, not a molecular liquid
+            text += (
+                " LAMMPS will remove any translational momentum, and for a "
+                "non-periodic system (a molecule or cluster) any rotational momentum "
+                "too."
+            )
         else:
-            text += " LAMMPS will {remove_momentum}"
+            text += " LAMMPS will {remove_momentum}."
 
         if P["method"] != "scaling current velocities":
             if P["seed"] == "random":

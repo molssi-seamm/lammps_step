@@ -139,7 +139,10 @@ class InitializationParameters(seamm.Parameters):
             ),
         },
         "ewald_atom_cutoff": {
-            "default": 1000,
+            # SPC/E water, accuracy 1e-5, 10 Å cutoff, 5 MPI processes: Ewald is
+            # faster at 648 atoms (145 against 122 ns/day), PPPM at 999 (123 against
+            # 86) and more so for larger systems (2026-10-17)
+            "default": 750,
             "kind": "integer",
             "default_units": "",
             "enumeration": tuple(),
@@ -147,7 +150,8 @@ class InitializationParameters(seamm.Parameters):
             "description": "Atom limit for using Ewald summations:",
             "help_text": (
                 "The upper limit of the number of atoms for using "
-                "Ewald summations by default."
+                "Ewald summations by default; PPPM is used for larger systems, for "
+                "which it is faster."
             ),
         },
         "msm_atom_cutoff": {

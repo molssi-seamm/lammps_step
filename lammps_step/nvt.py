@@ -19,7 +19,9 @@ printer = printing.getPrinter("lammps")
 thermostat_metadata = {
     "Nose-Hoover": {
         "documentation": "http://lammps.sandia.gov/doc/fix_nvt.html",
-        "references": ["Shinoda", "Tuckerman"],
+        # The thermostat, its chains, and the integrator LAMMPS uses; the barostat
+        # (Shinoda) is cited by NPT
+        "references": ["Nose", "Hoover", "Martyna1992", "Tuckerman"],
     },
     "Berendsen": {
         "documentation": "http://lammps.sandia.gov/doc/fix_temp_berendsen.html",
@@ -101,9 +103,9 @@ class NVT(lammps_step.NVE):
                 "{time} of canonical (NVT) dynamics starting "
                 " at {T0}, going to {T1}, "
             )
-        text += "using a timestep of {timestep} "
+        text += f"using {lammps_step.nve.timestep_text(P)} "
         if model is None:
-            text += ". The temperature will be controlled "
+            text = text.rstrip() + ". The temperature will be controlled "
         else:
             text += f"using the {model} forcefield. The temperature will be controlled "
         if P["thermostat"] == "Nose-Hoover":

@@ -104,6 +104,7 @@ class TkNVE(lammps_step.TkEnergy):
             "heat flux number of samples",
             "pressure tensor rate",
             "pressure tensor number of samples",
+            "keep sampled files",
         ):
             if title == "Heat Flux" and (key == "heat flux" or "centroid" in key):
                 continue
@@ -225,6 +226,7 @@ class TkNVE(lammps_step.TkEnergy):
                 (f"{what} rate", 1),
             )
         ),
+        ("keep sampled files", 0),
     )
 
     # Controls not in the trajectory tab, though in the layout above
