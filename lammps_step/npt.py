@@ -21,7 +21,8 @@ class NPT(lammps_step.NVT):
     methods = {
         "Nose-Hoover": {
             "documentation": "https://lammps.sandia.gov/doc/fix_nh.html#fix-npt-command",  # noqa: E501
-            "references": ["Shinoda", "Tuckerman"],
+            # The thermostat and its chains, the barostat, and the integrator
+            "references": ["Nose", "Hoover", "Martyna1992", "Shinoda", "Tuckerman"],
         },
         "Berendsen": {
             "documentation": "https://lammps.sandia.gov/doc/fix_press_berendsen.html",  # noqa: E501
@@ -68,9 +69,9 @@ class NPT(lammps_step.NVT):
                 "{time} of canonical (NPT) dynamics starting "
                 " at {T0}, going to {T1}, "
             )
-        text += "using a timestep of {timestep} "
+        text += f"using {lammps_step.nve.timestep_text(P)} "
         if model is None:
-            text += ". The temperature will be controlled "
+            text = text.rstrip() + ". The temperature will be controlled "
         else:
             text += f"using the {model} forcefield. The temperature will be controlled "
         if P["thermostat"] == "Nose-Hoover":

@@ -273,7 +273,7 @@ class HeatFlux(NVE):
 
         text = (
             "Calculate the heat flux using a microcanonical ensemble (NVE), "
-            "running for {time} with a timestep of {timestep}. The "
+            f"running for {{time}} with {lammps_step.nve.timestep_text(P)}. The "
             "heat flux will be sampled every two timesteps."
         )
         if P.get("filter", "none") == "per-atom averages":

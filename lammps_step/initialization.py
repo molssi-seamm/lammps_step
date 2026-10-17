@@ -12,6 +12,15 @@ import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
 
 logger = logging.getLogger("lammps")
+
+
+def _yes(value):
+    """A yes/no parameter's value -- a bool, or text such as "yes" -- as a bool."""
+    if isinstance(value, str):
+        return value.strip().lower() in ("yes", "true", "1")
+    return bool(value)
+
+
 job = printing.getPrinter()
 printer = printing.getPrinter("lammps")
 
@@ -167,11 +176,17 @@ class Initialization(seamm.Node):
             P = self.parameters.values_to_dict()
 
         text = "Initialize the calculation with a cutoff of {cutoff}"
-        if P["shift_nonbond"]:
+        if self.is_expr(P["shift_nonbond"]):
+            text += ", shifting the nonbond energies to 0 at the cutoff if "
+            text += "'{shift_nonbond}' is true"
+        elif _yes(P["shift_nonbond"]):
             text += ", shifting the nonbond energies to 0 at the cutoff"
+        elif _yes(P.get("tail_correction", "no")):
+            text += ", with a long-range (tail) correction of the van der Waals energy"
+            text += " and pressure if the system is periodic"
         text += ". If the system is periodic"
         if self.is_expr(P["kspace_method"]):
-            text += " use the variable '{method}' to determine whether "
+            text += " use the variable '{kspace_method}' to determine whether "
             text += "and how to accelerate the k-space summations."
         elif P["kspace_method"] == "none":
             text += " no k-space acceleration method will be used."
@@ -179,7 +194,7 @@ class Initialization(seamm.Node):
             text += " the best k-space acceleration method for the "
             text += " molecular system will be chosen."
         else:
-            text += " the {method} for k-space acceleration will be used."
+            text += " the {kspace_method} for k-space acceleration will be used."
 
         if P["kspace_method"] != "none":
             text += " The accuracy goal is {kspace_accuracy}."
@@ -279,7 +294,9 @@ class Initialization(seamm.Node):
         elif periodicity == 3:
             lines.append("boundary            p p p")
             tail_correction = (
-                "yes" if P["tail_correction"] and not P["shift_nonbond"] else "no"
+                "yes"
+                if _yes(P["tail_correction"]) and not _yes(P["shift_nonbond"])
+                else "no"
             )
             string = "Setup for a periodic (crystalline or fluid) system."
         else:
@@ -361,7 +378,7 @@ class Initialization(seamm.Node):
                     "Can't handle nonbond term {} yet!".format(nonbond_term)
                 )
 
-            shift = "yes" if P["shift_nonbond"] else "no"
+            shift = "yes" if _yes(P["shift_nonbond"]) else "no"
             if P["kspace_method"] == "automatic":
                 if periodicity == 3:
                     if n_charged_atoms == 0:
@@ -410,12 +427,12 @@ class Initialization(seamm.Node):
                             + mixing
                             + " tail {} shift {}".format(tail_correction, shift)
                         )
-                    if shift:
+                    if shift == "yes":
                         string += (
                             " The van der Waals terms will be shifted "
                             "to zero energy at the cutoff distance."
                         )
-                    if tail_correction:
+                    if tail_correction == "yes":
                         string += (
                             " A long-range correction for the "
                             "van der Waals terms will be added."
@@ -462,7 +479,7 @@ class Initialization(seamm.Node):
                             "The nonbonded interactions will be handled with "
                             " a simple cutoff of {cutoff} Å."
                         )
-                    if shift:
+                    if shift == "yes":
                         string += (
                             " The van der Waals terms will be shifted "
                             "to zero energy at the cutoff distance."

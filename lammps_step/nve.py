@@ -25,6 +25,54 @@ logger = logging.getLogger(__name__)
 job = printing.getPrinter()
 printer = printing.getPrinter("lammps")
 
+#: The text files of sampled positions and velocities, which md.h5md holds once
+#: it is written
+SAMPLED_FILES = (
+    "atomic_positions.dump_trj",
+    "atomic_velocities.dump_trj",
+    "com_positions.trj",
+    "com_velocities.trj",
+)
+
+
+def _yes(value):
+    """A yes/no parameter's value -- a bool, or text such as "yes" -- as a bool."""
+    if isinstance(value, str):
+        return value.strip().lower() in ("yes", "true", "1")
+    return bool(value)
+
+
+#: The timesteps chosen from the masses: the factor of 1, 2 or 4 fs (by the lightest
+#: atom: below 10, 50, or heavier) that each choice uses
+TIMESTEP_CHOICES = {
+    "normal": 1.0,
+    "accurate but slow": 0.5,
+    "coarse but fast": 2.0,
+}
+
+
+def timestep_text(P):
+    """The timestep for a description: its value, or how it will be chosen.
+
+    Parameters
+    ----------
+    P : dict
+        The parameters, from ``values_to_dict``; "timestep" is a value with units,
+        a variable, or one of the choices that depend on the masses.
+    """
+    value = str(P.get("timestep", "")).strip()
+    # The choices may arrive with the default units appended, e.g. "normal fs"
+    for choice in TIMESTEP_CHOICES:
+        if value.startswith(choice):
+            value = choice
+    if value in TIMESTEP_CHOICES:
+        f = TIMESTEP_CHOICES[value]
+        return (
+            f"a {value} timestep ({f:g}, {2 * f:g} or {4 * f:g} fs as the lightest "
+            "atom is lighter than 10 Da, than 50 Da, or heavier; half that for ReaxFF)"
+        )
+    return "a timestep of {timestep}"
+
 
 class NVE(lammps_step.Energy):
     # Molecular dynamics: the model-chemistry task for the provenance label.
@@ -247,13 +295,14 @@ class NVE(lammps_step.Energy):
                     )
                     data["rate timesteps/s"] = float(tmp[5])
                     if tmp[6].lower().startswith("k"):
-                        data["rate timestep/s"] *= 1000
+                        data["rate timesteps/s"] *= 1000
                     data["katom-steps/s"] = float(tmp[7])
                     if tmp[8].lower().startswith("m"):
                         data["katom-steps/s"] *= 1000
                     line = next(lines)
                     tmp = line.split()
-                    data["%cpu"] = float(line[0].rstrip("%"))
+                    # e.g. "97.9% CPU use with 5 MPI tasks x 1 OpenMP threads"
+                    data["%cpu"] = float(tmp[0].rstrip("%"))
 
                     table["Metric"].append("rate(per day)")
                     table["Value"].append(data["rate per day"])
@@ -355,15 +404,31 @@ class NVE(lammps_step.Energy):
 
                 printer.normal(__(text, indent=8 * " ", wrap=False, dedent=False))
 
-                if len(imbalance) > 0 or comms > 10:
+                cpu = None
+                try:
+                    cpu = float(str(data.get("%cpu", "")).strip().rstrip("%"))
+                except ValueError:
+                    pass
+                if len(imbalance) > 0 or comms > 10 or (cpu is not None and cpu < 50):
                     text = ""
+                    if cpu is not None and cpu < 50:
+                        text += (
+                            f"LAMMPS had only {cpu:g}% of the CPU: the processors "
+                            "were shared with other work, so the run took longer "
+                            "than it needed to."
+                        )
+                        text += "\n\n"
                     if len(imbalance) > 0:
                         tmp = ", ".join(imbalance)
-                        text += f"The variance of > 5% in the timing of {tmp}"
-                        text += "between processors suggests that LAMMPS is not "
-                        text += "partitioning the particles effectively. If possible "
-                        text += "turn on balancing either once before the run or "
-                        text += "at an interval during the run."
+                        text += (
+                            f"The timing of {tmp} varies by more than 5% between "
+                            "processors. In a uniform system such as a liquid this "
+                            "usually means the processors were shared with other "
+                            "work. In a non-uniform one -- a slab, a cluster, an "
+                            "interface -- the particles may be unevenly divided "
+                            "between the processors, and balancing them once before "
+                            "the run or during it may help."
+                        )
                         text += "\n\n"
                     if comms > 10:
                         text += f"The communication overhead of {comms}% suggests "
@@ -375,6 +440,8 @@ class NVE(lammps_step.Energy):
         text = write_md_h5md(
             self, P, initial_configuration, wall_time=data.get("loop time")
         )
+        if not text.startswith("Warning") and not _yes(P.get("keep sampled files")):
+            text += " " + self._remove_sampled_files()
         printer.normal(__(text, indent=self.indent + 4 * " "))
         printer.normal("")
 
@@ -393,6 +460,25 @@ class NVE(lammps_step.Energy):
         if configuration is not None:
             self.store_results(configuration=configuration, data=data, printer=printer)
 
+    def _remove_sampled_files(self):
+        """Remove the text files of sampled positions and velocities, which are in
+        md.h5md now. Returns text for the output."""
+        directory = Path(self.directory)
+        if not (directory / "md.h5md").exists():
+            return ""
+        removed = 0
+        for name in SAMPLED_FILES:
+            path = directory / name
+            if path.exists():
+                removed += path.stat().st_size
+                path.unlink()
+        if removed == 0:
+            return ""
+        return (
+            f"Removed the sampled text files ({removed / 1.0e6:.1f} MB), which are in "
+            "md.h5md."
+        )
+
     def description_text(self, P=None):
         """Return a short description of this step.
 
@@ -410,8 +496,8 @@ class NVE(lammps_step.Energy):
 
         model = self.model
 
-        text = "{time} of microcanonical (NVE) dynamics using a "
-        text += "timestep of {timestep}"
+        text = "{time} of microcanonical (NVE) dynamics using "
+        text += timestep_text(P)
         if model is None:
             text += "."
         else:
