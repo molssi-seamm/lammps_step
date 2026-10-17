@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.17.1 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.17.2 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=62bfd45e"></script>
+    <script src="../../_static/documentation_options.js?v=55475e34"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17.1" />
+  <meta name="docsearch:version" content="2026.10.17.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -2878,6 +2878,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">        e.g. an analysis needing a periodic system, raises an exception, so the job</span>
 <span class="sd">        stops before the MD rather than after it.</span>
 
+<span class="sd">        A check may also return warnings, e.g. that the system is small for the</span>
+<span class="sd">        analysis, which are printed before the MD runs.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        configuration : molsystem._Configuration</span>
@@ -2886,7 +2889,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">following_nodes</span><span class="p">():</span>
             <span class="n">check</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"check_configuration"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">check</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">check</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span></div>
+                <span class="n">warnings</span> <span class="o">=</span> <span class="n">check</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">warning</span> <span class="ow">in</span> <span class="n">warnings</span> <span class="ow">or</span> <span class="p">[]:</span>
+                    <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
+                        <span class="n">__</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Warning: </span><span class="si">{</span><span class="n">warning</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">)</span>
+                    <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="LAMMPS.check_for_lammps_error">

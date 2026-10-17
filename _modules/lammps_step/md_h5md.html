@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.md_h5md &#8212; SEAMM LAMMPS Plug-in 2026.10.17.1 documentation</title>
+    <title>lammps_step.md_h5md &#8212; SEAMM LAMMPS Plug-in 2026.10.17.2 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=62bfd45e"></script>
+    <script src="../../_static/documentation_options.js?v=55475e34"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17.1" />
+  <meta name="docsearch:version" content="2026.10.17.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -762,10 +762,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="c1"># Time series</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_read_trj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""A time series written by the run, without its step-0 sample.</span>
+
+<span class="sd">        LAMMPS samples the setup at step 0, before any dynamics. With constraints</span>
+<span class="sd">        (SHAKE) its virial is not valid there -- pressures and stresses of 1e307</span>
+<span class="sd">        have been seen -- so the series start at the first step of the dynamics.</span>
+<span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_md_analysis</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_trajectory</span>
 
         <span class="n">metadata</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="n">read_trajectory</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">steps</span> <span class="o">=</span> <span class="n">columns</span><span class="p">[</span><span class="s2">"tstep"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="n">steps</span> <span class="o">!=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">keep</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">key</span><span class="p">:</span> <span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">columns</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+            <span class="n">steps</span> <span class="o">=</span> <span class="n">steps</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
         <span class="k">if</span> <span class="s2">"t"</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
             <span class="n">times</span> <span class="o">=</span> <span class="n">columns</span><span class="p">[</span><span class="s2">"t"</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -948,6 +961,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">(</span><span class="s2">"T0"</span><span class="p">,</span> <span class="s2">"temperature"</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">"T1"</span><span class="p">,</span> <span class="s2">"final_temperature"</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">"Tdamp"</span><span class="p">,</span> <span class="s2">"thermostat_damping"</span><span class="p">),</span>
+            <span class="c1"># NPT's pressures are 'Pinitial' and 'Pfinal'</span>
+            <span class="p">(</span><span class="s2">"Pinitial"</span><span class="p">,</span> <span class="s2">"pressure"</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">"Pfinal"</span><span class="p">,</span> <span class="s2">"final_pressure"</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">"P0"</span><span class="p">,</span> <span class="s2">"pressure"</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">"P1"</span><span class="p">,</span> <span class="s2">"final_pressure"</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">"Pdamp"</span><span class="p">,</span> <span class="s2">"barostat_damping"</span><span class="p">),</span>
@@ -965,6 +981,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">kspace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kspace_style</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">kspace</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">result</span><span class="p">[</span><span class="s2">"kspace_style"</span><span class="p">]</span> <span class="o">=</span> <span class="n">kspace</span>
+        <span class="c1"># The styles of the fixes, for analyses that need to know whether anything</span>
+        <span class="c1"># directional (walls, fields, deformation, flow) acted on the system</span>
+        <span class="n">fixes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fix_styles</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">fixes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">"fixes"</span><span class="p">]</span> <span class="o">=</span> <span class="n">fixes</span>
         <span class="n">step</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">step</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">~P</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"magnitude"</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
@@ -982,6 +1003,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">words</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"kspace_style"</span><span class="p">:</span>
                         <span class="n">style</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
                 <span class="k">return</span> <span class="n">style</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fix_styles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The styles of the fixes in the LAMMPS input, e.g. ["nvt", "shake"], or</span>
+<span class="sd">        None if the input cannot be found. The input may hold several sub-steps, so</span>
+<span class="sd">        this is every fix in it: a cautious answer for whether one was directional."""</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">/</span> <span class="s2">"input.dat"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">"input.dat"</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">styles</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+                    <span class="n">words</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"#"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">words</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"fix"</span><span class="p">:</span>
+                        <span class="n">styles</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+                <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">styles</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
