@@ -266,10 +266,23 @@ class MDH5MDConverter:
     # Time series
 
     def _read_trj(self, path):
+        """A time series written by the run, without its step-0 sample.
+
+        LAMMPS samples the setup at step 0, before any dynamics. With constraints
+        (SHAKE) its virial is not valid there -- pressures and stresses of 1e307
+        have been seen -- so the series start at the first step of the dynamics.
+        """
         from seamm_md_analysis import read_trajectory
 
         metadata, columns = read_trajectory(path)
         steps = columns["tstep"].astype(int)
+        keep = steps != 0
+        if not keep.all():
+            columns = {
+                key: (value[keep] if len(value) == len(steps) else value)
+                for key, value in columns.items()
+            }
+            steps = steps[keep]
         if "t" in columns:
             times = columns["t"]
         else:
