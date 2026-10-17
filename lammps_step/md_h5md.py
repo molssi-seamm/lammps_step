@@ -452,6 +452,9 @@ class MDH5MDConverter:
             ("T0", "temperature"),
             ("T1", "final_temperature"),
             ("Tdamp", "thermostat_damping"),
+            # NPT's pressures are 'Pinitial' and 'Pfinal'
+            ("Pinitial", "pressure"),
+            ("Pfinal", "final_pressure"),
             ("P0", "pressure"),
             ("P1", "final_pressure"),
             ("Pdamp", "barostat_damping"),
