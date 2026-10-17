@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2026.10.16.4 documentation</title>
+    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2026.10.17 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=4b6300b9"></script>
+    <script src="../../_static/documentation_options.js?v=fed69469"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16.4" />
+  <meta name="docsearch:version" content="2026.10.17" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1662,6 +1662,24 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">            A description of the change, or None if it could not be made.</span>
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">md_provides</span><span class="o">.</span><span class="n">request_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">need</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NVE.sampling_edits">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nve.NVE.sampling_edits">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sampling_edits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">need</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The parameter changes that would sample what an analysis needs.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        need : seamm_md_analysis.Need</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ([(str, str, str or None)], str) or None</span>
+<span class="sd">            The parameters to set, as (name, value, units), and a description; or</span>
+<span class="sd">            None if this step cannot provide it.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">lammps_step</span><span class="o">.</span><span class="n">md_provides</span><span class="o">.</span><span class="n">sampling_edits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">need</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_drop_periodic_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">configuration</span><span class="p">):</span>

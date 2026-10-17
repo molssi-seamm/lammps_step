@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.10.16.4 documentation</title>
+    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.10.17 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=4b6300b9"></script>
+    <script src="../_static/documentation_options.js?v=fed69469"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16.4" />
+  <meta name="docsearch:version" content="2026.10.17" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -2242,6 +2242,28 @@ provide it (e.g. the interval is in steps and the timestep is not known).</p>
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="lammps_step.md_provides.sampling_edits">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.md_provides.</span></span><span class="sig-name descname"><span class="pre">sampling_edits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">need</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/md_provides.html#sampling_edits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.md_provides.sampling_edits" title="Link to this definition">#</a></dt>
+<dd><p>The changes to a sub-step’s parameters that sample what a need asks for.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> (<em>lammps_step.NVE</em>) – The sub-step.</p></li>
+<li><p><strong>need</strong> (<em>seamm_md_analysis.Need</em>) – What is needed; its first name that this step can sample is used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The parameters to set, each as (name, value, units), and a description of
+the change; or None if the step could not provide it (e.g. the interval is
+in steps and the timestep is not known).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>([(str, str, str or None)], str) or None</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py data">
 <dt class="sig sig-object py" id="lammps_step.md_provides.sampling_parameters">
 <span class="sig-prename descclassname"><span class="pre">lammps_step.md_provides.</span></span><span class="sig-name descname"><span class="pre">sampling_parameters</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'all/position':</span> <span class="pre">('atomic</span> <span class="pre">positions',</span> <span class="pre">'atomic</span> <span class="pre">positions</span> <span class="pre">rate',</span> <span class="pre">'atomic</span> <span class="pre">positions</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">samples'),</span> <span class="pre">'all/velocity':</span> <span class="pre">('atomic</span> <span class="pre">velocities',</span> <span class="pre">'atomic</span> <span class="pre">velocities</span> <span class="pre">rate',</span> <span class="pre">'atomic</span> <span class="pre">velocities</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">samples'),</span> <span class="pre">'heat_flux':</span> <span class="pre">('heat</span> <span class="pre">flux',</span> <span class="pre">'heat</span> <span class="pre">flux</span> <span class="pre">rate',</span> <span class="pre">'heat</span> <span class="pre">flux</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">samples'),</span> <span class="pre">'molecules/position':</span> <span class="pre">('com</span> <span class="pre">positions',</span> <span class="pre">'com</span> <span class="pre">positions</span> <span class="pre">rate',</span> <span class="pre">'com</span> <span class="pre">positions</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">samples'),</span> <span class="pre">'molecules/velocity':</span> <span class="pre">('com</span> <span class="pre">velocities',</span> <span class="pre">'com</span> <span class="pre">velocities</span> <span class="pre">rate',</span> <span class="pre">'com</span> <span class="pre">velocities</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">samples'),</span> <span class="pre">'pressure_tensor':</span> <span class="pre">('pressure</span> <span class="pre">tensor',</span> <span class="pre">'pressure</span> <span class="pre">tensor</span> <span class="pre">rate',</span> <span class="pre">'pressure</span> <span class="pre">tensor</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">samples')}</span></span><a class="headerlink" href="#lammps_step.md_provides.sampling_parameters" title="Link to this definition">#</a></dt>
@@ -2610,6 +2632,24 @@ the ordinary per-atom stress of all the terms.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.nve.NVE.sampling_edits">
+<span class="sig-name descname"><span class="pre">sampling_edits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">need</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve.html#NVE.sampling_edits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.nve.NVE.sampling_edits" title="Link to this definition">#</a></dt>
+<dd><p>The parameter changes that would sample what an analysis needs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>need</strong> (<em>seamm_md_analysis.Need</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The parameters to set, as (name, value, units), and a description; or
+None if this step cannot provide it.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>([(str, str, str or None)], str) or None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3873,6 +3913,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.md_provides">lammps_step.md_provides module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_provides.md_provides"><code class="docutils literal notranslate"><span class="pre">md_provides()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_provides.request_sampling"><code class="docutils literal notranslate"><span class="pre">request_sampling()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_provides.sampling_edits"><code class="docutils literal notranslate"><span class="pre">sampling_edits()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_provides.sampling_parameters"><code class="docutils literal notranslate"><span class="pre">sampling_parameters</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_provides.state_observables"><code class="docutils literal notranslate"><span class="pre">state_observables</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.md_provides.static_value"><code class="docutils literal notranslate"><span class="pre">static_value()</span></code></a></li>
@@ -3955,6 +3996,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.heat_flux_input"><code class="docutils literal notranslate"><span class="pre">NVE.heat_flux_input()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.md_provides"><code class="docutils literal notranslate"><span class="pre">NVE.md_provides()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.request_sampling"><code class="docutils literal notranslate"><span class="pre">NVE.request_sampling()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.sampling_edits"><code class="docutils literal notranslate"><span class="pre">NVE.sampling_edits()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.task"><code class="docutils literal notranslate"><span class="pre">NVE.task</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.timestep"><code class="docutils literal notranslate"><span class="pre">NVE.timestep()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.trajectory_input"><code class="docutils literal notranslate"><span class="pre">NVE.trajectory_input()</span></code></a></li>

@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.md_provides &#8212; SEAMM LAMMPS Plug-in 2026.10.16.4 documentation</title>
+    <title>lammps_step.md_provides &#8212; SEAMM LAMMPS Plug-in 2026.10.17 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=4b6300b9"></script>
+    <script src="../../_static/documentation_options.js?v=fed69469"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16.4" />
+  <meta name="docsearch:version" content="2026.10.17" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -640,6 +640,51 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 
 
+<div class="viewcode-block" id="sampling_edits">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.md_provides.sampling_edits">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sampling_edits</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">need</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The changes to a sub-step's parameters that sample what a need asks for.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    node : lammps_step.NVE</span>
+<span class="sd">        The sub-step.</span>
+<span class="sd">    need : seamm_md_analysis.Need</span>
+<span class="sd">        What is needed; its first name that this step can sample is used.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ([(str, str, str or None)], str) or None</span>
+<span class="sd">        The parameters to set, each as (name, value, units), and a description of</span>
+<span class="sd">        the change; or None if the step could not provide it (e.g. the interval is</span>
+<span class="sd">        in steps and the timestep is not known).</span>
+<span class="sd">    """</span>
+    <span class="n">timestep</span> <span class="o">=</span> <span class="n">static_value</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"timestep"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">timestep</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">timestep</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">need</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sampling_parameters</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">choice</span><span class="p">,</span> <span class="n">rate</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">sampling_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="n">interval</span> <span class="o">=</span> <span class="n">need</span><span class="o">.</span><span class="n">max_time</span> <span class="k">if</span> <span class="n">need</span><span class="o">.</span><span class="n">sample_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">need</span><span class="o">.</span><span class="n">sample_time</span>
+        <span class="k">if</span> <span class="n">need</span><span class="o">.</span><span class="n">max_steps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">timestep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">by_steps</span> <span class="o">=</span> <span class="n">need</span><span class="o">.</span><span class="n">max_steps</span> <span class="o">*</span> <span class="n">timestep</span>
+            <span class="k">if</span> <span class="n">interval</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">by_steps</span> <span class="o">&lt;</span> <span class="n">interval</span><span class="p">:</span>
+                <span class="n">interval</span> <span class="o">=</span> <span class="n">by_steps</span>
+        <span class="k">if</span> <span class="n">interval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">rate_fs</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">interval</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">'fs'</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">edits</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">choice</span><span class="p">,</span> <span class="s2">"by time interval"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">rate</span><span class="p">,</span> <span class="n">rate_fs</span><span class="p">,</span> <span class="s2">"fs"</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">edits</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"sampling of </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> every </span><span class="si">{</span><span class="n">rate_fs</span><span class="si">}</span><span class="s2"> fs in </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
 <div class="viewcode-block" id="request_sampling">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.md_provides.request_sampling">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">request_sampling</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">need</span><span class="p">):</span>
@@ -658,28 +703,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">        A description of the change for the output, or None if the step could not</span>
 <span class="sd">        provide it (e.g. the interval is in steps and the timestep is not known).</span>
 <span class="sd">    """</span>
-    <span class="n">timestep</span> <span class="o">=</span> <span class="n">static_value</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"timestep"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">timestep</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">timestep</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">need</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sampling_parameters</span><span class="p">:</span>
-            <span class="k">continue</span>
-        <span class="n">choice</span><span class="p">,</span> <span class="n">rate</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">sampling_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
-        <span class="n">interval</span> <span class="o">=</span> <span class="n">need</span><span class="o">.</span><span class="n">max_time</span> <span class="k">if</span> <span class="n">need</span><span class="o">.</span><span class="n">sample_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">need</span><span class="o">.</span><span class="n">sample_time</span>
-        <span class="k">if</span> <span class="n">need</span><span class="o">.</span><span class="n">max_steps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">timestep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">continue</span>
-            <span class="n">by_steps</span> <span class="o">=</span> <span class="n">need</span><span class="o">.</span><span class="n">max_steps</span> <span class="o">*</span> <span class="n">timestep</span>
-            <span class="k">if</span> <span class="n">interval</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">by_steps</span> <span class="o">&lt;</span> <span class="n">interval</span><span class="p">:</span>
-                <span class="n">interval</span> <span class="o">=</span> <span class="n">by_steps</span>
-        <span class="k">if</span> <span class="n">interval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">continue</span>
-        <span class="n">interval</span> <span class="o">=</span> <span class="n">interval</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"fs"</span><span class="p">)</span>
-        <span class="n">node</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">choice</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">"by time interval"</span>
-        <span class="n">node</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">rate</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">interval</span><span class="o">.</span><span class="n">magnitude</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">"</span>
-        <span class="n">node</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">rate</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">"fs"</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">"turned on sampling of </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> every </span><span class="si">{</span><span class="n">interval</span><span class="si">:</span><span class="s2">~P</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">"</span>
-    <span class="k">return</span> <span class="kc">None</span></div>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">sampling_edits</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">need</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">edits</span><span class="p">,</span> <span class="n">description</span> <span class="o">=</span> <span class="n">result</span>
+    <span class="k">for</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">units</span> <span class="ow">in</span> <span class="n">edits</span><span class="p">:</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">parameter</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">parameter</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">units</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"turned on </span><span class="si">{</span><span class="n">description</span><span class="si">}</span><span class="s2">"</span></div>
 
 </pre></div>
 
