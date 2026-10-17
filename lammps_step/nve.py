@@ -712,6 +712,10 @@ class NVE(lammps_step.Energy):
 
         lines = []
         nfixes = 0
+        # SHAKE first: LAMMPS needs it before any fix that changes the box
+        if extras is not None and "shake" in extras:
+            nfixes += 1
+            lines.append(extras["shake"].format(nfixes))
         ncomputes = 0
         ndumps = 0
         lines.append("")
@@ -800,10 +804,6 @@ class NVE(lammps_step.Energy):
             P, timestep, nsteps, ncomputes, ndumps, nfixes
         )
         lines.extend(tmp)
-
-        if extras is not None and "shake" in extras:
-            nfixes += 1
-            lines.append(extras["shake"].format(nfixes))
 
         lines.append("")
         lines.append("run                 {}".format(nsteps))

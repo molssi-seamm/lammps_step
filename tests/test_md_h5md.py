@@ -18,6 +18,12 @@ from lammps_step.md_h5md import MDH5MDConverter, h5md_units, write_md_h5md
 DATA = Path(__file__).parent / "data" / "md_h5md"
 
 
+def without_step0(columns):
+    """The native series without the step-0 sample, which md.h5md leaves out."""
+    keep = columns["tstep"].astype(int) != 0
+    return {k: v[keep] if len(v) == len(keep) else v for k, v in columns.items()}
+
+
 class NVT:
     """Just what the converter uses of an NVT sub-step."""
 
@@ -112,8 +118,9 @@ def test_periodic_water(tmp_path):
 
         # The pressure tensor sampled on its own replaces the one in the state
         _, columns = read_trajectory(tmp_path / "pressure_tensor.trj")
+        columns = without_step0(columns)
         PT = md.observable("pressure_tensor")
-        assert PT.values.shape == (401, 3, 3)
+        assert PT.values.shape == (400, 3, 3)
         assert PT.dt == Q_(5.0, "fs")
         assert PT.units == Q_(1, "atm").units
         assert np.allclose(PT.values[:, 0, 0], columns["Pxx"])
@@ -125,6 +132,7 @@ def test_periodic_water(tmp_path):
 
         J = md.observable("heat_flux")
         _, columns = read_trajectory(tmp_path / "heat_flux.trj")
+        columns = without_step0(columns)
         assert np.allclose(J.values[:, 2], columns["Jz"])
         assert J.units == Q_(1, "W/m^2").units
         assert J.dt == Q_(2.0, "fs")
@@ -161,6 +169,7 @@ def test_pressure_tensor_from_the_state(tmp_path):
     with open_md(tmp_path / "md.h5md") as md:
         # The pressure tensor is minus the stress, and its trace is the pressure
         _, columns = read_trajectory(tmp_path / "nvt_state.trj")
+        columns = without_step0(columns)
         PT = md.observable("pressure_tensor")
         assert np.allclose(PT.values[:, 0, 0], -columns["Sxx"])
         assert np.allclose(PT.values[:, 0, 1], -columns["Sxy"])
@@ -234,3 +243,25 @@ def test_the_kspace_style_is_recorded(tmp_path):
     write_md_h5md(node, P, config)
     with open_md(tmp_path / "md.h5md") as md:
         assert md.parameters["kspace_style"] == "none"
+
+
+def test_the_fix_styles_are_recorded(tmp_path):
+    """Whether a run can be treated as isotropic depends on its fixes."""
+    from seamm_md_analysis import isotropy
+
+    for path in (DATA / "water").iterdir():
+        shutil.copy(path, tmp_path)
+    (tmp_path / "input.dat").write_text(
+        "fix                 1 all shake 0.0001 20 0 b 1 a 1\n"
+        "fix                 2 all nvt temp 298.15 298.15 100.0  # thermostat\n"
+        "fix wall all wall/lj93 zlo EDGE 1.0 1.0 2.5\n"
+    )
+    node = NVT(tmp_path, [-0.82, 0.41, 0.41] * 64)
+    config = configuration(
+        64, ["O", "H", "H"], [8, 1, 1], [15.999, 1.008, 1.008], cell=[12.4172] * 3
+    )
+    config.cell.parameters = [12.417241581015336] * 3 + [90.0] * 3
+    write_md_h5md(node, P, config)
+    with open_md(tmp_path / "md.h5md") as md:
+        assert list(md.parameters["fixes"]) == ["nvt", "shake", "wall/lj93"]
+        assert isotropy(md) == (False, "the run used wall/lj93")

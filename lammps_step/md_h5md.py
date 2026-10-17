@@ -266,10 +266,23 @@ class MDH5MDConverter:
     # Time series
 
     def _read_trj(self, path):
+        """A time series written by the run, without its step-0 sample.
+
+        LAMMPS samples the setup at step 0, before any dynamics. With constraints
+        (SHAKE) its virial is not valid there -- pressures and stresses of 1e307
+        have been seen -- so the series start at the first step of the dynamics.
+        """
         from seamm_md_analysis import read_trajectory
 
         metadata, columns = read_trajectory(path)
         steps = columns["tstep"].astype(int)
+        keep = steps != 0
+        if not keep.all():
+            columns = {
+                key: (value[keep] if len(value) == len(steps) else value)
+                for key, value in columns.items()
+            }
+            steps = steps[keep]
         if "t" in columns:
             times = columns["t"]
         else:
@@ -452,6 +465,9 @@ class MDH5MDConverter:
             ("T0", "temperature"),
             ("T1", "final_temperature"),
             ("Tdamp", "thermostat_damping"),
+            # NPT's pressures are 'Pinitial' and 'Pfinal'
+            ("Pinitial", "pressure"),
+            ("Pfinal", "final_pressure"),
             ("P0", "pressure"),
             ("P1", "final_pressure"),
             ("Pdamp", "barostat_damping"),
@@ -469,6 +485,11 @@ class MDH5MDConverter:
         kspace = self._kspace_style()
         if kspace is not None:
             result["kspace_style"] = kspace
+        # The styles of the fixes, for analyses that need to know whether anything
+        # directional (walls, fields, deformation, flow) acted on the system
+        fixes = self._fix_styles()
+        if fixes is not None:
+            result["fixes"] = fixes
         step = {}
         for key, value in self.P.items():
             step[key] = f"{value:~P}" if hasattr(value, "magnitude") else str(value)
@@ -486,6 +507,20 @@ class MDH5MDConverter:
                     if len(words) > 1 and words[0] == "kspace_style":
                         style = " ".join(words[1:])
                 return style
+        return None
+
+    def _fix_styles(self):
+        """The styles of the fixes in the LAMMPS input, e.g. ["nvt", "shake"], or
+        None if the input cannot be found. The input may hold several sub-steps, so
+        this is every fix in it: a cautious answer for whether one was directional."""
+        for path in (self.directory / "input.dat", self.directory.parent / "input.dat"):
+            if path.exists():
+                styles = set()
+                for line in path.read_text().splitlines():
+                    words = line.split("#", 1)[0].split()
+                    if len(words) > 3 and words[0] == "fix":
+                        styles.add(words[3])
+                return sorted(styles)
         return None
 
     def _provenance(self):

@@ -1,6 +1,18 @@
 =======
 History
 =======
+2026.10.17.2 -- Bugfix: NPT of rigid models, and the first sample of every run
+    * NPT dynamics of a rigid model such as SPC/E water stopped at once with "Fix shake
+      must come before any box changing fix": the SHAKE constraints are now set before
+      the thermostat and barostat in NVE, NVT and NPT.
+    * Bugfix: the first sample of each run's time series is LAMMPS's setup, at step 0,
+      whose virial is not valid with constraints; pressures and stresses of up to 1e307
+      were written to md.h5md. The series now start at the first step of the dynamics.
+    * md.h5md records the pressure an NPT run aimed at (it was left out), and the styles
+      of the run's fixes, so that the analyses know whether a run is isotropic.
+    * Warnings from the analysis steps about the structure, e.g. that the system is
+      small for them, are printed before the MD runs.
+
 2026.10.17.1 -- Bugfix: what the step says it does, and smaller jobs
     * The text of the Initialization sub-step said the van der Waals energies were
       shifted to zero at the cutoff whether or not they were, and never mentioned the

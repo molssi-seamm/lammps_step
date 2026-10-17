@@ -43,6 +43,14 @@ PROPERTIES = [
 # ----------------------------------------------------------------------
 # The commands
 # ----------------------------------------------------------------------
+
+
+def without_step0(columns):
+    """The native series without the step-0 sample, which md.h5md leaves out."""
+    keep = columns["tstep"].astype(int) != 0
+    return {k: v[keep] if len(v) == len(keep) else v for k, v in columns.items()}
+
+
 def test_logical_lines():
     lines = extras.logical_lines(COMMANDS)
     assert lines == [
@@ -437,6 +445,8 @@ def test_extra_properties_in_the_h5md_file(tmp_path):
     assert "user/T2" in record["observables"]
 
     _, columns = read_trajectory(state)
+
+    columns = without_step0(columns)
     with open_md(tmp_path / "md.h5md") as md:
         assert "user/T2" in md.observables()
         T2 = md.observable("user/T2")
