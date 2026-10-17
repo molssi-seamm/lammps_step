@@ -469,6 +469,11 @@ class MDH5MDConverter:
         kspace = self._kspace_style()
         if kspace is not None:
             result["kspace_style"] = kspace
+        # The styles of the fixes, for analyses that need to know whether anything
+        # directional (walls, fields, deformation, flow) acted on the system
+        fixes = self._fix_styles()
+        if fixes is not None:
+            result["fixes"] = fixes
         step = {}
         for key, value in self.P.items():
             step[key] = f"{value:~P}" if hasattr(value, "magnitude") else str(value)
@@ -486,6 +491,20 @@ class MDH5MDConverter:
                     if len(words) > 1 and words[0] == "kspace_style":
                         style = " ".join(words[1:])
                 return style
+        return None
+
+    def _fix_styles(self):
+        """The styles of the fixes in the LAMMPS input, e.g. ["nvt", "shake"], or
+        None if the input cannot be found. The input may hold several sub-steps, so
+        this is every fix in it: a cautious answer for whether one was directional."""
+        for path in (self.directory / "input.dat", self.directory.parent / "input.dat"):
+            if path.exists():
+                styles = set()
+                for line in path.read_text().splitlines():
+                    words = line.split("#", 1)[0].split()
+                    if len(words) > 3 and words[0] == "fix":
+                        styles.add(words[3])
+                return sorted(styles)
         return None
 
     def _provenance(self):

@@ -234,3 +234,25 @@ def test_the_kspace_style_is_recorded(tmp_path):
     write_md_h5md(node, P, config)
     with open_md(tmp_path / "md.h5md") as md:
         assert md.parameters["kspace_style"] == "none"
+
+
+def test_the_fix_styles_are_recorded(tmp_path):
+    """Whether a run can be treated as isotropic depends on its fixes."""
+    from seamm_md_analysis import isotropy
+
+    for path in (DATA / "water").iterdir():
+        shutil.copy(path, tmp_path)
+    (tmp_path / "input.dat").write_text(
+        "fix                 1 all shake 0.0001 20 0 b 1 a 1\n"
+        "fix                 2 all nvt temp 298.15 298.15 100.0  # thermostat\n"
+        "fix wall all wall/lj93 zlo EDGE 1.0 1.0 2.5\n"
+    )
+    node = NVT(tmp_path, [-0.82, 0.41, 0.41] * 64)
+    config = configuration(
+        64, ["O", "H", "H"], [8, 1, 1], [15.999, 1.008, 1.008], cell=[12.4172] * 3
+    )
+    config.cell.parameters = [12.417241581015336] * 3 + [90.0] * 3
+    write_md_h5md(node, P, config)
+    with open_md(tmp_path / "md.h5md") as md:
+        assert list(md.parameters["fixes"]) == ["nvt", "shake", "wall/lj93"]
+        assert isotropy(md) == (False, "the run used wall/lj93")
