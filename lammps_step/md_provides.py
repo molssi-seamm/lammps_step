@@ -146,21 +146,22 @@ def md_provides(node):
     return Provides(data=data, timestep=timestep, step=step)
 
 
-def request_sampling(node, need):
-    """Turn on the sampling a need asks for, if possible.
+def sampling_edits(node, need):
+    """The changes to a sub-step's parameters that sample what a need asks for.
 
     Parameters
     ----------
     node : lammps_step.NVE
-        The sub-step to change.
+        The sub-step.
     need : seamm_md_analysis.Need
         What is needed; its first name that this step can sample is used.
 
     Returns
     -------
-    str or None
-        A description of the change for the output, or None if the step could not
-        provide it (e.g. the interval is in steps and the timestep is not known).
+    ([(str, str, str or None)], str) or None
+        The parameters to set, each as (name, value, units), and a description of
+        the change; or None if the step could not provide it (e.g. the interval is
+        in steps and the timestep is not known).
     """
     timestep = static_value(node, "timestep")
     if isinstance(timestep, str):
@@ -178,9 +179,37 @@ def request_sampling(node, need):
                 interval = by_steps
         if interval is None:
             continue
-        interval = interval.to("fs")
-        node.parameters[choice].value = "by time interval"
-        node.parameters[rate].value = f"{interval.magnitude:g}"
-        node.parameters[rate].units = "fs"
-        return f"turned on sampling of {name} every {interval:~P} in {node.title}"
+        rate_fs = f"{interval.to('fs').magnitude:g}"
+        edits = [
+            (choice, "by time interval", None),
+            (rate, rate_fs, "fs"),
+        ]
+        return edits, f"sampling of {name} every {rate_fs} fs in {node.title}"
     return None
+
+
+def request_sampling(node, need):
+    """Turn on the sampling a need asks for, if possible.
+
+    Parameters
+    ----------
+    node : lammps_step.NVE
+        The sub-step to change.
+    need : seamm_md_analysis.Need
+        What is needed; its first name that this step can sample is used.
+
+    Returns
+    -------
+    str or None
+        A description of the change for the output, or None if the step could not
+        provide it (e.g. the interval is in steps and the timestep is not known).
+    """
+    result = sampling_edits(node, need)
+    if result is None:
+        return None
+    edits, description = result
+    for parameter, value, units in edits:
+        node.parameters[parameter].value = value
+        if units is not None:
+            node.parameters[parameter].units = units
+    return f"turned on {description}"

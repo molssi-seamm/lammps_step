@@ -1,6 +1,12 @@
 =======
 History
 =======
+2026.10.17 -- The sampling an analysis needs, offered as a fix
+    * When an analysis step after the MD (Viscosity, Diffusivity, Liquid Structure,
+      Dielectric Constant, Ionic Conductivity, ...) needs something the MD does not
+      sample, the check before the job runs now offers to turn the sampling on in
+      the MD sub-step: a button in the editor, or ``seamm-flowchart validate --fix``.
+
 2026.10.16.4 -- The electrostatics method in the MD data
     * md.h5md records the run's kspace style (e.g. 'pppm 1.0e-5', or 'none'), for
       analyses whose formulas depend on it: the dielectric constant assumes Ewald or
