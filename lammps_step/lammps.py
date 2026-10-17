@@ -2326,6 +2326,9 @@ class LAMMPS(seamm.Node):
         e.g. an analysis needing a periodic system, raises an exception, so the job
         stops before the MD rather than after it.
 
+        A check may also return warnings, e.g. that the system is small for the
+        analysis, which are printed before the MD runs.
+
         Parameters
         ----------
         configuration : molsystem._Configuration
@@ -2334,7 +2337,11 @@ class LAMMPS(seamm.Node):
         for node in self.following_nodes():
             check = getattr(node, "check_configuration", None)
             if check is not None:
-                check(configuration)
+                warnings = check(configuration)
+                for warning in warnings or []:
+                    printer.important(
+                        __(f"Warning: {warning}", indent=self.indent + 4 * " ")
+                    )
 
     def check_for_lammps_error(self, result=None):
         """Raise an error, with a readable message, if LAMMPS failed."""
