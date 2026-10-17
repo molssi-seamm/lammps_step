@@ -1144,6 +1144,21 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol
         """
         return lammps_step.md_provides.request_sampling(self, need)
 
+    def sampling_edits(self, need):
+        """The parameter changes that would sample what an analysis needs.
+
+        Parameters
+        ----------
+        need : seamm_md_analysis.Need
+
+        Returns
+        -------
+        ([(str, str, str or None)], str) or None
+            The parameters to set, as (name, value, units), and a description; or
+            None if this step cannot provide it.
+        """
+        return lammps_step.md_provides.sampling_edits(self, need)
+
     def _drop_periodic_sampling(self, P, configuration):
         """Turn off sampling that needs a periodic cell, for a non-periodic system.
 

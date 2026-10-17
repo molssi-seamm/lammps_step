@@ -9,7 +9,7 @@ import pytest
 
 import lammps_step
 from seamm_md_analysis import Need
-from lammps_step.md_provides import md_provides, request_sampling
+from lammps_step.md_provides import md_provides, request_sampling, sampling_edits
 
 
 class NVT:
@@ -85,6 +85,24 @@ def test_request_sampling_by_time():
         node, Need(["molecules/position"], max_time="1 ps", sample_time="100 fs")
     )
     assert "molecules/position every 100 fs" in change
+    assert md_provides(node).data["molecules/position"].time.m_as("fs") == 100
+
+
+def test_sampling_edits_leave_the_step_unchanged():
+    """The changes as data, for a fix offered before the job runs."""
+    node = NVT()
+    need = Need(["molecules/position"], max_time="1 ps", sample_time="100 fs")
+    edits, description = sampling_edits(node, need)
+    assert edits == [
+        ("com positions", "by time interval", None),
+        ("com positions rate", "100", "fs"),
+    ]
+    assert description == "sampling of molecules/position every 100 fs in NVT dynamics"
+    assert "molecules/position" not in md_provides(node).data
+    for parameter, value, units in edits:
+        node.parameters[parameter].value = value
+        if units is not None:
+            node.parameters[parameter].units = units
     assert md_provides(node).data["molecules/position"].time.m_as("fs") == 100
 
 
