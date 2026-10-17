@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.velocities &#8212; SEAMM LAMMPS Plug-in 2026.10.17 documentation</title>
+    <title>lammps_step.velocities &#8212; SEAMM LAMMPS Plug-in 2026.10.17.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=fed69469"></script>
+    <script src="../../_static/documentation_options.js?v=62bfd45e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17" />
+  <meta name="docsearch:version" content="2026.10.17.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -562,8 +562,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="s2">"momentum will be determined at runtime by "</span>
                 <span class="s2">"'</span><span class="si">{remove_momentum}</span><span class="s2">'"</span>
             <span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">"default"</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">"remove_momentum"</span><span class="p">]:</span>
+            <span class="c1"># "Molecular" here means a molecule or cluster, not a molecular liquid</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="s2">" LAMMPS will remove any translational momentum, and for a "</span>
+                <span class="s2">"non-periodic system (a molecule or cluster) any rotational momentum "</span>
+                <span class="s2">"too."</span>
+            <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">" LAMMPS will </span><span class="si">{remove_momentum}</span><span class="s2">"</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">" LAMMPS will </span><span class="si">{remove_momentum}</span><span class="s2">."</span>
 
         <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"method"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"scaling current velocities"</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"seed"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"random"</span><span class="p">:</span>

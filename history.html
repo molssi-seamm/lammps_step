@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.17 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.17.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=fed69469"></script>
+    <script src="_static/documentation_options.js?v=62bfd45e"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17" />
+  <meta name="docsearch:version" content="2026.10.17.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,29 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.17.1 – Bugfix: what the step says it does, and smaller jobs</dt><dd><ul class="simple">
+<li><p>The text of the Initialization sub-step said the van der Waals energies were
+shifted to zero at the cutoff whether or not they were, and never mentioned the
+tail correction; the input itself was right. Choosing a k-space method
+explicitly stopped the job with “KeyError: ‘method’”.</p></li>
+<li><p>The description of a “normal”, “accurate but slow” or “coarse but fast”
+timestep read “a timestep of normal fs”; it now says how the timestep is chosen.
+The Velocities sub-step’s default no longer reads as if rotational momentum were
+removed from a periodic system.</p></li>
+<li><p>The %CPU in the performance table was the first digit of LAMMPS’s value (9 for
+97.9%), and the advice on the timing of the parts of LAMMPS ran words together
+and suggested balancing for uniform systems such as liquids, where uneven timing
+usually means the processors were shared with other work.</p></li>
+<li><p>Citations: the Nosé–Hoover thermostat now cites Nosé, Hoover and Martyna, Klein
+and Tuckerman’s chains with the integrator, and NPT the barostat; the barostat
+paper is no longer cited for NVT runs.</p></li>
+<li><p>The text files of the sampled positions and velocities are removed once they
+are in md.h5md (option “Keep the sampled text files”): they were most of the
+6.4 GB of a 3 ns run of 1000 water molecules.</p></li>
+<li><p>Ewald summation is chosen automatically only below 750 atoms (was 1000): for
+water PPPM is 1.4 times faster at 1000 atoms and 1.8 times at 3000.</p></li>
+</ul>
+</dd>
 <dt>2026.10.17 – The sampling an analysis needs, offered as a fix</dt><dd><ul class="simple">
 <li><p>When an analysis step after the MD (Viscosity, Diffusivity, Liquid Structure,
 Dielectric Constant, Ionic Conductivity, …) needs something the MD does not

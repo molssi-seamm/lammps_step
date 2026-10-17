@@ -134,8 +134,14 @@ The file is `H5MD <https://www.nongnu.org/h5md/>`_, an HDF5 format for molecular
 dynamics; its layout is described in the documentation of ``seamm_md_analysis``
 ("The H5MD file"). The analysis steps, such as Diffusivity and Thermal Conductivity,
 read it, and it can be read with h5py, ``seamm_md_analysis.open_md`` or MDAnalysis.
-LAMMPS still writes its usual files during the run, and they are kept, so a run can
-be followed as before and nothing is lost if it stops.
+LAMMPS still writes its usual files during the run, so a run can be followed as
+before and nothing is lost if it stops. Once ``md.h5md`` is written, the text files
+of the sampled positions and velocities of the atoms and molecules
+(``atomic_positions.dump_trj``, ``com_velocities.trj``, ...) are removed, since they
+are in ``md.h5md`` and are several times larger: 3 ns of 1000 atoms of water, with
+the velocities of the molecules every 10 fs, wrote 3.6 GB of them. "Keep the sampled
+text files" on the trajectory tab keeps them. The other files, such as the
+thermodynamic state and the trajectory, are kept.
 
 The full pressure tensor is always written with the thermodynamic state, at its
 sampling interval. For the viscosity it is needed much more often, every few

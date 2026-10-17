@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.initialization_parameters &#8212; SEAMM LAMMPS Plug-in 2026.10.17 documentation</title>
+    <title>lammps_step.initialization_parameters &#8212; SEAMM LAMMPS Plug-in 2026.10.17.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=fed69469"></script>
+    <script src="../../_static/documentation_options.js?v=62bfd45e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17" />
+  <meta name="docsearch:version" content="2026.10.17.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -629,7 +629,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"ewald_atom_cutoff"</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">"default"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+            <span class="c1"># SPC/E water, accuracy 1e-5, 10 Å cutoff, 5 MPI processes: Ewald is</span>
+            <span class="c1"># faster at 648 atoms (145 against 122 ns/day), PPPM at 999 (123 against</span>
+            <span class="c1"># 86) and more so for larger systems (2026-10-17)</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="mi">750</span><span class="p">,</span>
             <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
             <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
             <span class="s2">"enumeration"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(),</span>
@@ -637,7 +640,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Atom limit for using Ewald summations:"</span><span class="p">,</span>
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="p">(</span>
                 <span class="s2">"The upper limit of the number of atoms for using "</span>
-                <span class="s2">"Ewald summations by default."</span>
+                <span class="s2">"Ewald summations by default; PPPM is used for larger systems, for "</span>
+                <span class="s2">"which it is faster."</span>
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"msm_atom_cutoff"</span><span class="p">:</span> <span class="p">{</span>

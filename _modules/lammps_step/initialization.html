@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.initialization &#8212; SEAMM LAMMPS Plug-in 2026.10.17 documentation</title>
+    <title>lammps_step.initialization &#8212; SEAMM LAMMPS Plug-in 2026.10.17.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=fed69469"></script>
+    <script src="../../_static/documentation_options.js?v=62bfd45e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17" />
+  <meta name="docsearch:version" content="2026.10.17.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -500,6 +500,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util.printing</span><span class="w"> </span><span class="kn">import</span> <span class="n">FormattedText</span> <span class="k">as</span> <span class="n">__</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"lammps"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_yes</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A yes/no parameter's value -- a bool, or text such as "yes" -- as a bool."""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"yes"</span><span class="p">,</span> <span class="s2">"true"</span><span class="p">,</span> <span class="s2">"1"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+
 <span class="n">job</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">()</span>
 <span class="n">printer</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">(</span><span class="s2">"lammps"</span><span class="p">)</span>
 
@@ -662,11 +671,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values_to_dict</span><span class="p">()</span>
 
         <span class="n">text</span> <span class="o">=</span> <span class="s2">"Initialize the calculation with a cutoff of </span><span class="si">{cutoff}</span><span class="s2">"</span>
-        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"shift_nonbond"</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_expr</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"shift_nonbond"</span><span class="p">]):</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">", shifting the nonbond energies to 0 at the cutoff if "</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">"'</span><span class="si">{shift_nonbond}</span><span class="s2">' is true"</span>
+        <span class="k">elif</span> <span class="n">_yes</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"shift_nonbond"</span><span class="p">]):</span>
             <span class="n">text</span> <span class="o">+=</span> <span class="s2">", shifting the nonbond energies to 0 at the cutoff"</span>
+        <span class="k">elif</span> <span class="n">_yes</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tail_correction"</span><span class="p">,</span> <span class="s2">"no"</span><span class="p">)):</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">", with a long-range (tail) correction of the van der Waals energy"</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">" and pressure if the system is periodic"</span>
         <span class="n">text</span> <span class="o">+=</span> <span class="s2">". If the system is periodic"</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_expr</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"kspace_method"</span><span class="p">]):</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">" use the variable '</span><span class="si">{method}</span><span class="s2">' to determine whether "</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">" use the variable '</span><span class="si">{kspace_method}</span><span class="s2">' to determine whether "</span>
             <span class="n">text</span> <span class="o">+=</span> <span class="s2">"and how to accelerate the k-space summations."</span>
         <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"kspace_method"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"none"</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">+=</span> <span class="s2">" no k-space acceleration method will be used."</span>
@@ -674,7 +689,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">text</span> <span class="o">+=</span> <span class="s2">" the best k-space acceleration method for the "</span>
             <span class="n">text</span> <span class="o">+=</span> <span class="s2">" molecular system will be chosen."</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">" the </span><span class="si">{method}</span><span class="s2"> for k-space acceleration will be used."</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">" the </span><span class="si">{kspace_method}</span><span class="s2"> for k-space acceleration will be used."</span>
 
         <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"kspace_method"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"none"</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">+=</span> <span class="s2">" The accuracy goal is </span><span class="si">{kspace_accuracy}</span><span class="s2">."</span>
@@ -777,7 +792,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">elif</span> <span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"boundary            p p p"</span><span class="p">)</span>
             <span class="n">tail_correction</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="s2">"yes"</span> <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"tail_correction"</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">P</span><span class="p">[</span><span class="s2">"shift_nonbond"</span><span class="p">]</span> <span class="k">else</span> <span class="s2">"no"</span>
+                <span class="s2">"yes"</span>
+                <span class="k">if</span> <span class="n">_yes</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"tail_correction"</span><span class="p">])</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_yes</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"shift_nonbond"</span><span class="p">])</span>
+                <span class="k">else</span> <span class="s2">"no"</span>
             <span class="p">)</span>
             <span class="n">string</span> <span class="o">=</span> <span class="s2">"Setup for a periodic (crystalline or fluid) system."</span>
         <span class="k">else</span><span class="p">:</span>
@@ -859,7 +876,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="s2">"Can't handle nonbond term </span><span class="si">{}</span><span class="s2"> yet!"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nonbond_term</span><span class="p">)</span>
                 <span class="p">)</span>
 
-            <span class="n">shift</span> <span class="o">=</span> <span class="s2">"yes"</span> <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"shift_nonbond"</span><span class="p">]</span> <span class="k">else</span> <span class="s2">"no"</span>
+            <span class="n">shift</span> <span class="o">=</span> <span class="s2">"yes"</span> <span class="k">if</span> <span class="n">_yes</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"shift_nonbond"</span><span class="p">])</span> <span class="k">else</span> <span class="s2">"no"</span>
             <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"kspace_method"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"automatic"</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">n_charged_atoms</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -908,12 +925,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                             <span class="o">+</span> <span class="n">mixing</span>
                             <span class="o">+</span> <span class="s2">" tail </span><span class="si">{}</span><span class="s2"> shift </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tail_correction</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
                         <span class="p">)</span>
-                    <span class="k">if</span> <span class="n">shift</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">shift</span> <span class="o">==</span> <span class="s2">"yes"</span><span class="p">:</span>
                         <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
                             <span class="s2">" The van der Waals terms will be shifted "</span>
                             <span class="s2">"to zero energy at the cutoff distance."</span>
                         <span class="p">)</span>
-                    <span class="k">if</span> <span class="n">tail_correction</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">tail_correction</span> <span class="o">==</span> <span class="s2">"yes"</span><span class="p">:</span>
                         <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
                             <span class="s2">" A long-range correction for the "</span>
                             <span class="s2">"van der Waals terms will be added."</span>
@@ -960,7 +977,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                             <span class="s2">"The nonbonded interactions will be handled with "</span>
                             <span class="s2">" a simple cutoff of </span><span class="si">{cutoff}</span><span class="s2"> Å."</span>
                         <span class="p">)</span>
-                    <span class="k">if</span> <span class="n">shift</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">shift</span> <span class="o">==</span> <span class="s2">"yes"</span><span class="p">:</span>
                         <span class="n">string</span> <span class="o">+=</span> <span class="p">(</span>
                             <span class="s2">" The van der Waals terms will be shifted "</span>
                             <span class="s2">"to zero energy at the cutoff distance."</span>

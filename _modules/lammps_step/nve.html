@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2026.10.17 documentation</title>
+    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2026.10.17.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=fed69469"></script>
+    <script src="../../_static/documentation_options.js?v=62bfd45e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17" />
+  <meta name="docsearch:version" content="2026.10.17.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -513,6 +513,57 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="n">job</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">()</span>
 <span class="n">printer</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">(</span><span class="s2">"lammps"</span><span class="p">)</span>
 
+<span class="c1">#: The text files of sampled positions and velocities, which md.h5md holds once</span>
+<span class="c1">#: it is written</span>
+<span class="n">SAMPLED_FILES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"atomic_positions.dump_trj"</span><span class="p">,</span>
+    <span class="s2">"atomic_velocities.dump_trj"</span><span class="p">,</span>
+    <span class="s2">"com_positions.trj"</span><span class="p">,</span>
+    <span class="s2">"com_velocities.trj"</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_yes</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A yes/no parameter's value -- a bool, or text such as "yes" -- as a bool."""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"yes"</span><span class="p">,</span> <span class="s2">"true"</span><span class="p">,</span> <span class="s2">"1"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+
+<span class="c1">#: The timesteps chosen from the masses: the factor of 1, 2 or 4 fs (by the lightest</span>
+<span class="c1">#: atom: below 10, 50, or heavier) that each choice uses</span>
+<span class="n">TIMESTEP_CHOICES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"normal"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="s2">"accurate but slow"</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="s2">"coarse but fast"</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="timestep_text">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nve.timestep_text">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">timestep_text</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The timestep for a description: its value, or how it will be chosen.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    P : dict</span>
+<span class="sd">        The parameters, from ``values_to_dict``; "timestep" is a value with units,</span>
+<span class="sd">        a variable, or one of the choices that depend on the masses.</span>
+<span class="sd">    """</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"timestep"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="c1"># The choices may arrive with the default units appended, e.g. "normal fs"</span>
+    <span class="k">for</span> <span class="n">choice</span> <span class="ow">in</span> <span class="n">TIMESTEP_CHOICES</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">choice</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">choice</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">TIMESTEP_CHOICES</span><span class="p">:</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">TIMESTEP_CHOICES</span><span class="p">[</span><span class="n">value</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"a </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> timestep (</span><span class="si">{</span><span class="n">f</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">f</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> or </span><span class="si">{</span><span class="mi">4</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">f</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> fs as the lightest "</span>
+            <span class="s2">"atom is lighter than 10 Da, than 50 Da, or heavier; half that for ReaxFF)"</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="s2">"a timestep of </span><span class="si">{timestep}</span><span class="s2">"</span></div>
+
+
 
 <div class="viewcode-block" id="NVE">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nve.NVE">[docs]</a>
@@ -739,13 +790,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="p">)</span>
                     <span class="n">data</span><span class="p">[</span><span class="s2">"rate timesteps/s"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
                     <span class="k">if</span> <span class="n">tmp</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"k"</span><span class="p">):</span>
-                        <span class="n">data</span><span class="p">[</span><span class="s2">"rate timestep/s"</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">1000</span>
+                        <span class="n">data</span><span class="p">[</span><span class="s2">"rate timesteps/s"</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">1000</span>
                     <span class="n">data</span><span class="p">[</span><span class="s2">"katom-steps/s"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span>
                     <span class="k">if</span> <span class="n">tmp</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"m"</span><span class="p">):</span>
                         <span class="n">data</span><span class="p">[</span><span class="s2">"katom-steps/s"</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">1000</span>
                     <span class="n">line</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
                     <span class="n">tmp</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-                    <span class="n">data</span><span class="p">[</span><span class="s2">"</span><span class="si">%c</span><span class="s2">pu"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"%"</span><span class="p">))</span>
+                    <span class="c1"># e.g. "97.9% CPU use with 5 MPI tasks x 1 OpenMP threads"</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s2">"</span><span class="si">%c</span><span class="s2">pu"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"%"</span><span class="p">))</span>
 
                     <span class="n">table</span><span class="p">[</span><span class="s2">"Metric"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"rate(per day)"</span><span class="p">)</span>
                     <span class="n">table</span><span class="p">[</span><span class="s2">"Value"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">"rate per day"</span><span class="p">])</span>
@@ -847,15 +899,31 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
                 <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">8</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">,</span> <span class="n">wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dedent</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
 
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">imbalance</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">comms</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+                <span class="n">cpu</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">cpu</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"</span><span class="si">%c</span><span class="s2">pu"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"%"</span><span class="p">))</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">imbalance</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">comms</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="ow">or</span> <span class="p">(</span><span class="n">cpu</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cpu</span> <span class="o">&lt;</span> <span class="mi">50</span><span class="p">):</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s2">""</span>
+                    <span class="k">if</span> <span class="n">cpu</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cpu</span> <span class="o">&lt;</span> <span class="mi">50</span><span class="p">:</span>
+                        <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">"LAMMPS had only </span><span class="si">{</span><span class="n">cpu</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">% of the CPU: the processors "</span>
+                            <span class="s2">"were shared with other work, so the run took longer "</span>
+                            <span class="s2">"than it needed to."</span>
+                        <span class="p">)</span>
+                        <span class="n">text</span> <span class="o">+=</span> <span class="s2">"</span><span class="se">\n\n</span><span class="s2">"</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">imbalance</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="n">tmp</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">imbalance</span><span class="p">)</span>
-                        <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"The variance of &gt; 5% in the timing of </span><span class="si">{</span><span class="n">tmp</span><span class="si">}</span><span class="s2">"</span>
-                        <span class="n">text</span> <span class="o">+=</span> <span class="s2">"between processors suggests that LAMMPS is not "</span>
-                        <span class="n">text</span> <span class="o">+=</span> <span class="s2">"partitioning the particles effectively. If possible "</span>
-                        <span class="n">text</span> <span class="o">+=</span> <span class="s2">"turn on balancing either once before the run or "</span>
-                        <span class="n">text</span> <span class="o">+=</span> <span class="s2">"at an interval during the run."</span>
+                        <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">"The timing of </span><span class="si">{</span><span class="n">tmp</span><span class="si">}</span><span class="s2"> varies by more than 5% between "</span>
+                            <span class="s2">"processors. In a uniform system such as a liquid this "</span>
+                            <span class="s2">"usually means the processors were shared with other "</span>
+                            <span class="s2">"work. In a non-uniform one -- a slab, a cluster, an "</span>
+                            <span class="s2">"interface -- the particles may be unevenly divided "</span>
+                            <span class="s2">"between the processors, and balancing them once before "</span>
+                            <span class="s2">"the run or during it may help."</span>
+                        <span class="p">)</span>
                         <span class="n">text</span> <span class="o">+=</span> <span class="s2">"</span><span class="se">\n\n</span><span class="s2">"</span>
                     <span class="k">if</span> <span class="n">comms</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
                         <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"The communication overhead of </span><span class="si">{</span><span class="n">comms</span><span class="si">}</span><span class="s2">% suggests "</span>
@@ -867,6 +935,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">text</span> <span class="o">=</span> <span class="n">write_md_h5md</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">initial_configuration</span><span class="p">,</span> <span class="n">wall_time</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"loop time"</span><span class="p">)</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"Warning"</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_yes</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"keep sampled files"</span><span class="p">)):</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">" "</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remove_sampled_files</span><span class="p">()</span>
         <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">))</span>
         <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 
@@ -885,6 +955,25 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">if</span> <span class="n">configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">store_results</span><span class="p">(</span><span class="n">configuration</span><span class="o">=</span><span class="n">configuration</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">printer</span><span class="o">=</span><span class="n">printer</span><span class="p">)</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_remove_sampled_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Remove the text files of sampled positions and velocities, which are in</span>
+<span class="sd">        md.h5md now. Returns text for the output."""</span>
+        <span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">directory</span> <span class="o">/</span> <span class="s2">"md.h5md"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="s2">""</span>
+        <span class="n">removed</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">SAMPLED_FILES</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">/</span> <span class="n">name</span>
+            <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">removed</span> <span class="o">+=</span> <span class="n">path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span>
+                <span class="n">path</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">removed</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">""</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Removed the sampled text files (</span><span class="si">{</span><span class="n">removed</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1.0e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB), which are in "</span>
+            <span class="s2">"md.h5md."</span>
+        <span class="p">)</span>
 
 <div class="viewcode-block" id="NVE.description_text">
 <a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nve.NVE.description_text">[docs]</a>
@@ -905,8 +994,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
 
-        <span class="n">text</span> <span class="o">=</span> <span class="s2">"</span><span class="si">{time}</span><span class="s2"> of microcanonical (NVE) dynamics using a "</span>
-        <span class="n">text</span> <span class="o">+=</span> <span class="s2">"timestep of </span><span class="si">{timestep}</span><span class="s2">"</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">"</span><span class="si">{time}</span><span class="s2"> of microcanonical (NVE) dynamics using "</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="n">timestep_text</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">+=</span> <span class="s2">"."</span>
         <span class="k">else</span><span class="p">:</span>

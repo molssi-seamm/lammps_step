@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nvt &#8212; SEAMM LAMMPS Plug-in 2026.10.17 documentation</title>
+    <title>lammps_step.nvt &#8212; SEAMM LAMMPS Plug-in 2026.10.17.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=fed69469"></script>
+    <script src="../../_static/documentation_options.js?v=62bfd45e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17" />
+  <meta name="docsearch:version" content="2026.10.17.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -507,7 +507,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="n">thermostat_metadata</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">"Nose-Hoover"</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">"documentation"</span><span class="p">:</span> <span class="s2">"http://lammps.sandia.gov/doc/fix_nvt.html"</span><span class="p">,</span>
-        <span class="s2">"references"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"Shinoda"</span><span class="p">,</span> <span class="s2">"Tuckerman"</span><span class="p">],</span>
+        <span class="c1"># The thermostat, its chains, and the integrator LAMMPS uses; the barostat</span>
+        <span class="c1"># (Shinoda) is cited by NPT</span>
+        <span class="s2">"references"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"Nose"</span><span class="p">,</span> <span class="s2">"Hoover"</span><span class="p">,</span> <span class="s2">"Martyna1992"</span><span class="p">,</span> <span class="s2">"Tuckerman"</span><span class="p">],</span>
     <span class="p">},</span>
     <span class="s2">"Berendsen"</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">"documentation"</span><span class="p">:</span> <span class="s2">"http://lammps.sandia.gov/doc/fix_temp_berendsen.html"</span><span class="p">,</span>
@@ -593,9 +595,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="s2">"</span><span class="si">{time}</span><span class="s2"> of canonical (NVT) dynamics starting "</span>
                 <span class="s2">" at </span><span class="si">{T0}</span><span class="s2">, going to </span><span class="si">{T1}</span><span class="s2">, "</span>
             <span class="p">)</span>
-        <span class="n">text</span> <span class="o">+=</span> <span class="s2">"using a timestep of </span><span class="si">{timestep}</span><span class="s2"> "</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"using </span><span class="si">{</span><span class="n">lammps_step</span><span class="o">.</span><span class="n">nve</span><span class="o">.</span><span class="n">timestep_text</span><span class="p">(</span><span class="n">P</span><span class="p">)</span><span class="si">}</span><span class="s2"> "</span>
         <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">". The temperature will be controlled "</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span> <span class="o">+</span> <span class="s2">". The temperature will be controlled "</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"using the </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2"> forcefield. The temperature will be controlled "</span>
         <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"thermostat"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Nose-Hoover"</span><span class="p">:</span>

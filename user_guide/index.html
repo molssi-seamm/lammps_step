@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.17 documentation</title>
+    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.17.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=fed69469"></script>
+    <script src="../_static/documentation_options.js?v=62bfd45e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17" />
+  <meta name="docsearch:version" content="2026.10.17.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -623,8 +623,14 @@ structure and model).</p></li>
 dynamics; its layout is described in the documentation of <code class="docutils literal notranslate"><span class="pre">seamm_md_analysis</span></code>
 (“The H5MD file”). The analysis steps, such as Diffusivity and Thermal Conductivity,
 read it, and it can be read with h5py, <code class="docutils literal notranslate"><span class="pre">seamm_md_analysis.open_md</span></code> or MDAnalysis.
-LAMMPS still writes its usual files during the run, and they are kept, so a run can
-be followed as before and nothing is lost if it stops.</p>
+LAMMPS still writes its usual files during the run, so a run can be followed as
+before and nothing is lost if it stops. Once <code class="docutils literal notranslate"><span class="pre">md.h5md</span></code> is written, the text files
+of the sampled positions and velocities of the atoms and molecules
+(<code class="docutils literal notranslate"><span class="pre">atomic_positions.dump_trj</span></code>, <code class="docutils literal notranslate"><span class="pre">com_velocities.trj</span></code>, …) are removed, since they
+are in <code class="docutils literal notranslate"><span class="pre">md.h5md</span></code> and are several times larger: 3 ns of 1000 atoms of water, with
+the velocities of the molecules every 10 fs, wrote 3.6 GB of them. “Keep the sampled
+text files” on the trajectory tab keeps them. The other files, such as the
+thermodynamic state and the trajectory, are kept.</p>
 <p>The full pressure tensor is always written with the thermodynamic state, at its
 sampling interval. For the viscosity it is needed much more often, every few
 femtoseconds: the NVE, NVT and NPT sub-steps can sample it on its own (“Sample the
