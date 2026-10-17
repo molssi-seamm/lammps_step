@@ -256,6 +256,10 @@ class NVT(lammps_step.NVE):
         ncomputes = 0
         ndumps = 0
         nfixes = 0
+        # SHAKE first: LAMMPS needs it before any fix that changes the box
+        if extras is not None and "shake" in extras:
+            nfixes += 1
+            lines.append(extras["shake"].format(nfixes))
         if P["thermostat"] == "Nose-Hoover":
             Tchain = P["Tchain"]
             Tloop = P["Tloop"]
@@ -427,10 +431,6 @@ class NVT(lammps_step.NVE):
             P, timestep, nsteps, ncomputes, ndumps, nfixes
         )
         lines.extend(tmp)
-
-        if extras is not None and "shake" in extras:
-            nfixes += 1
-            lines.append(extras["shake"].format(nfixes))
 
         lines.append("")
         lines.append("run                 {}".format(nsteps))
