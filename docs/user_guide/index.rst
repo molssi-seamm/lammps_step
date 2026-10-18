@@ -48,9 +48,16 @@ LAMMPS uses the forcefield or model chemistry chosen before it in the flowchart:
   LAMMPS never started is stopped too, after ``SEAMM_ENGINE_GRACE`` seconds (120).
   On a GPU, the output says whether the engine has the fast paths of its code -- for
   xnn, the vesin-torch neighbour lists and cuEquivariance tensor products -- and warns
-  when it lacks them, since a large system then runs up to twice as slowly. On Linux, TCP is
-  currently slower than MPI: a message can wait up to about 40 ms, which for a fast
-  model added a third to the run time. A fix is proposed in the MDI library;
+  when it lacks them, since a large system then runs up to twice as slowly.
+
+  MDI does not yet set TCP_NODELAY on its TCP connections, so a message can wait up to
+  about 40 ms for the other side; for a fast model that can double the time of a step.
+  On Linux SEAMM therefore writes a small library, ``mdi_nodelay.c``, into the job's
+  directory, compiles it with the C compiler (``$CC``, else ``cc``) and preloads it
+  into LAMMPS and the engine, which makes TCP as fast as MPI. Without a compiler the
+  run goes on without it and says so in its standard error. ``tcp-nodelay = no`` in
+  ``lammps.ini`` turns it off. It does the same for quantum codes over MDI. On macOS
+  it is not available.
 * a **Model Chemistry** step with a quantum method, such as ``MOPAC:SQM@PM6-ORG``:
   LAMMPS runs the dynamics and the program computes the energy and forces over MDI;
 * or a **Forcefield** step, as before. A PyTorch model from the Forcefield step still

@@ -308,7 +308,12 @@ def test_launch_script_shape_and_port_threading():
         "--method",
         "PM6-ORG",
     ]
-    config = {"code": "mpirun -np {NTASKS} lmp", "installation": "conda"}
+    # The TCP_NODELAY preamble is tested in test_bind_scripts.py
+    config = {
+        "code": "mpirun -np {NTASKS} lmp",
+        "installation": "conda",
+        "tcp-nodelay": "no",
+    }
     ce = {"NTASKS": 4}
 
     script = _mdi_launch_script(engine_argv, port, config, ce)
@@ -606,7 +611,11 @@ def test_the_mlff_launch_over_tcp(tmp_path, monkeypatch):
         f"SEAMM_MDI_ROLE=driver {bind} lmp -mdi "
         f'"-role DRIVER -name LAMMPS -method TCP -port {port}" -in input.dat'
     ) in lines
-    assert "LD_PRELOAD" not in script
+    # LD_PRELOAD is only added to (the TCP_NODELAY shim), never replaced
+    assert [line for line in script.splitlines() if "LD_PRELOAD=" in line] == [
+        '        export LD_PRELOAD="${LD_PRELOAD:+$LD_PRELOAD:}'
+        '$NODELAY_DIR/mdi_nodelay.so"'
+    ]
 
 
 def test_the_mlff_launch_shared_environment_is_mpi(tmp_path, monkeypatch):
