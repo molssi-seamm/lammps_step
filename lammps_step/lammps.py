@@ -623,6 +623,7 @@ def _nodelay_preamble():
         f'        echo "Warning: could not compile {NODELAY_SOURCE}"\\\n'
         '            "(see mdi_nodelay.err), so MDI runs over TCP without"\\\n'
         '            "TCP_NODELAY and may be slower." >&2\n'
+        "    if [ -s mdi_nodelay.err ]; then sed 's/^/    /' mdi_nodelay.err >&2; fi\n"
         "    fi\n"
         "fi\n"
     )

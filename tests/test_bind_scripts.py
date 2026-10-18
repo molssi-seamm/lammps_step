@@ -592,6 +592,8 @@ def test_the_run_goes_on_without_a_compiler(tmp_path):
     assert result.returncode == 0
     assert preload == ""
     assert "Warning: could not compile mdi_nodelay.c" in result.stderr
+    # with the compiler's own message
+    assert "no-such-cc-xyz" in result.stderr
 
 
 @pytest.mark.skipif(LINUX, reason="checks the behaviour off Linux")
