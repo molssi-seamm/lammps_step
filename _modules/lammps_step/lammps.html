@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.18.2 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.18.3 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=e354f1b0"></script>
+    <script src="../../_static/documentation_options.js?v=472c75a9"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.18.2" />
+  <meta name="docsearch:version" content="2026.10.18.3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1187,9 +1187,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">    """</span>
     <span class="n">summary</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"data"</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="s2">"data"</span><span class="p">]</span>
-            <span class="n">entry</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"size"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)}</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">"data"</span> <span class="ow">in</span> <span class="n">value</span> <span class="ow">or</span> <span class="s2">"path"</span> <span class="ow">in</span> <span class="n">value</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">"path"</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s2">"path"</span><span class="p">])</span>
+                <span class="n">entry</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">"path"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span>
+                    <span class="s2">"size"</span><span class="p">:</span> <span class="n">path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span> <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># seamm-exec before 2026.10.18 read the files</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="s2">"data"</span><span class="p">]</span>
+                <span class="n">entry</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"size"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)}</span>
             <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"exception"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">entry</span><span class="p">[</span><span class="s2">"exception"</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="s2">"exception"</span><span class="p">]</span>
             <span class="n">summary</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span>
@@ -2579,11 +2586,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"success.dat"</span>
         <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"log.cite"</span>
-            <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-                <span class="n">result</span><span class="p">[</span><span class="s2">"log.cite"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="s2">"data"</span><span class="p">:</span> <span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">(),</span>
-                <span class="p">}</span>
             <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"stdout.txt"</span>
             <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
                 <span class="n">result</span><span class="p">[</span><span class="s2">"stdout"</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
@@ -2943,13 +2945,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="c1"># with open(f, mode="w") as fd:</span>
             <span class="c1">#     fd.write(result["stderr"])</span>
 
-        <span class="c1"># Add the citations, getting the version from stdout and any citations</span>
-        <span class="k">if</span> <span class="s2">"log.cite"</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_lammps_citations</span><span class="p">(</span>
-                <span class="n">result</span><span class="p">[</span><span class="s2">"stdout"</span><span class="p">],</span> <span class="n">cite</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s2">"log.cite"</span><span class="p">][</span><span class="s2">"data"</span><span class="p">]</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_lammps_citations</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">"stdout"</span><span class="p">])</span>
+        <span class="c1"># Add the citations, getting the version from stdout and any citations.</span>
+        <span class="c1"># The returned files are in the directory; the executor does not read them.</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"log.cite"</span>
+        <span class="n">cite</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span> <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_lammps_citations</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">"stdout"</span><span class="p">],</span> <span class="n">cite</span><span class="o">=</span><span class="n">cite</span><span class="p">)</span>
 
         <span class="n">initialization_header</span><span class="p">,</span> <span class="n">eex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_node_input</span><span class="p">(</span>
             <span class="n">node</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_initialization_node</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="p">{</span><span class="s2">"read_data"</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
