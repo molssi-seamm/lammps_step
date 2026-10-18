@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.18 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.18.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=16cc37ab"></script>
+    <script src="_static/documentation_options.js?v=d4ac7bda"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.18" />
+  <meta name="docsearch:version" content="2026.10.18.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.18.1 – Bugfix: runs in one allocation of several GPUs all used the first</dt><dd><ul class="simple">
+<li><p>Runs with a machine-learned forcefield started together in a Slurm allocation of
+several GPUs claimed different GPUs, as intended since 2026.10.17.3, but every
+engine still computed on the allocation’s first GPU, so they ran up to several
+times more slowly. The engine now sees only the GPU it claimed (mdi_bind.sh 2.4):
+its entry in the scheduler’s CUDA_VISIBLE_DEVICES, whether the scheduler counts
+the GPUs from 0 or uses the machine’s numbers. The new mdi_bind.sh replaces the
+old one in the installation’s <code class="docutils literal notranslate"><span class="pre">bin</span></code> at the first run, as before.</p></li>
+</ul>
+</dd>
 <dt>2026.10.18 – MDI over TCP as fast as MPI</dt><dd><ul class="simple">
 <li><p>MDI does not yet set TCP_NODELAY on its TCP connections, so each message could
 wait up to about 40 ms for the other side; for a fast machine-learned forcefield

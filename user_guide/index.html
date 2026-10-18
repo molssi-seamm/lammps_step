@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.18 documentation</title>
+    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.18.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=16cc37ab"></script>
+    <script src="../_static/documentation_options.js?v=d4ac7bda"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.18" />
+  <meta name="docsearch:version" content="2026.10.18.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -521,7 +521,8 @@ one if all are busy (<code class="docutils literal notranslate"><span class="pre
 started together on one machine – in one allocation, or by the task layer – each
 claim the GPU they use for the length of the run, so they spread over the idle GPUs
 rather than all taking the first; only when every idle GPU is claimed do runs share
-one. When the
+one. Each engine sees only the GPU it claimed – in an allocation, its entry in the
+scheduler’s <code class="docutils literal notranslate"><span class="pre">CUDA_VISIBLE_DEVICES</span></code>. When the
 job can never have a GPU – there is none on the machine, or the scheduler gave it
 none – it runs on the CPU at once, with the job’s cores less one for LAMMPS; on the
 CPU it is much slower except for small systems. Files the engine writes, such as a
