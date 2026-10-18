@@ -23,7 +23,11 @@ LAMMPS uses the forcefield or model chemistry chosen before it in the flowchart:
 * a **Model Chemistry** step with a machine-learned forcefield, ``xnn:MLFF@<model>``:
   its engine runs alongside LAMMPS, each through ``mdi_bind.sh``, with the Model
   Chemistry step's checkpoint and engine options. It runs on an idle GPU, waiting for
-  one if all are busy (``--gpu-wait-time`` in seconds, unlimited by default). When the
+  one if all are busy (``--gpu-wait-time`` in seconds, unlimited by default). Runs
+  started together on one machine -- in one allocation, or by the task layer -- each
+  claim the GPU they use for the length of the run, so they spread over the idle GPUs
+  rather than all taking the first; only when every idle GPU is claimed do runs share
+  one. When the
   job can never have a GPU -- there is none on the machine, or the scheduler gave it
   none -- it runs on the CPU at once, with the job's cores less one for LAMMPS; on the
   CPU it is much slower except for small systems. Files the engine writes, such as a
@@ -40,7 +44,11 @@ LAMMPS uses the forcefield or model chemistry chosen before it in the flowchart:
   ``mlff-transport`` in ``lammps.ini`` (``auto``, ``mpi`` or ``tcp``) overrides the
   choice, and ``mlff-code`` and ``mlff-tcp-code`` change the launch (see the comments
   in ``lammps.ini``). ``gpu-code`` is not used. If either side fails, ``mdi_bind.sh``
-  stops the other, so a failed run ends instead of waiting. On Linux, TCP is
+  stops the other, so a failed run ends instead of waiting; over TCP, an engine whose
+  LAMMPS never started is stopped too, after ``SEAMM_ENGINE_GRACE`` seconds (120).
+  On a GPU, the output says whether the engine has the fast paths of its code -- for
+  xnn, the vesin-torch neighbour lists and cuEquivariance tensor products -- and warns
+  when it lacks them, since a large system then runs up to twice as slowly. On Linux, TCP is
   currently slower than MPI: a message can wait up to about 40 ms, which for a fast
   model added a third to the run time. A fix is proposed in the MDI library;
 * a **Model Chemistry** step with a quantum method, such as ``MOPAC:SQM@PM6-ORG``:

@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.17.2 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.17.3 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=55475e34"></script>
+    <script src="../../_static/documentation_options.js?v=f13fda2d"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17.2" />
+  <meta name="docsearch:version" content="2026.10.17.3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -510,6 +510,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
@@ -933,6 +934,94 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
 
+<span class="c1">#: Where the runs on a machine claim the GPUs they use, so that runs started</span>
+<span class="c1">#: together -- in one allocation, or by the task layer -- spread over the idle GPUs</span>
+<span class="c1">#: rather than all taking the first one</span>
+<span class="n">GPU_CLAIM_DIR</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">())</span> <span class="o">/</span> <span class="s2">"seamm-gpu-claims"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_gpu_claim_name</span><span class="p">(</span><span class="n">logical</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The name of the claim on a GPU given in CUDA's numbering: the physical GPU,</span>
+<span class="sd">    which is the same for every process on the machine."""</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"CUDA_VISIBLE_DEVICES"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)]</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">raw</span> <span class="k">if</span> <span class="n">e</span> <span class="o">!=</span> <span class="s2">""</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s2">"CUDA_VISIBLE_DEVICES"</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span> <span class="ow">and</span> <span class="n">logical</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw</span><span class="p">):</span>
+        <span class="n">physical</span> <span class="o">=</span> <span class="n">raw</span><span class="p">[</span><span class="n">logical</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">physical</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">logical</span><span class="p">)</span>
+    <span class="n">physical</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[^A-Za-z0-9._-]"</span><span class="p">,</span> <span class="s2">"_"</span><span class="p">,</span> <span class="n">physical</span><span class="p">)</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span><span class="si">}</span><span class="s2">-gpu</span><span class="si">{</span><span class="n">physical</span><span class="si">}</span><span class="s2">.lock"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_claim_gpus</span><span class="p">(</span><span class="n">gpus</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Choose ``n`` of the idle GPUs, claiming each so other runs choose others.</span>
+
+<span class="sd">    A claim is a lock (``flock``) on a file per physical GPU, held until</span>
+<span class="sd">    :func:`_release_gpus`, i.e. for the run; the system drops it if the process</span>
+<span class="sd">    dies. Unclaimed GPUs are taken first, in order. If there are not ``n`` of</span>
+<span class="sd">    them, GPUs claimed by other runs make up the number, as before claims existed.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gpus : [int]</span>
+<span class="sd">        The idle GPUs, in CUDA's numbering, from :func:`_wait_for_gpus`.</span>
+<span class="sd">    n : int</span>
+<span class="sd">        How many to use.</span>
+<span class="sd">    directory : pathlib.Path, optional</span>
+<span class="sd">        Where the claims are kept, by default :data:`GPU_CLAIM_DIR`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ([int], [int])</span>
+<span class="sd">        The GPUs chosen, and the open files holding the claims, for</span>
+<span class="sd">        :func:`_release_gpus`.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">fcntl</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>  <span class="c1"># Windows: no claims</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">gpus</span><span class="p">[:</span><span class="n">n</span><span class="p">]),</span> <span class="p">[]</span>
+    <span class="n">directory</span> <span class="o">=</span> <span class="n">GPU_CLAIM_DIR</span> <span class="k">if</span> <span class="n">directory</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">directory</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">directory</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="mo">0o1777</span><span class="p">)</span>  <span class="c1"># shared by everyone on the machine</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="n">chosen</span><span class="p">,</span> <span class="n">claims</span><span class="p">,</span> <span class="n">taken</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">gpu</span> <span class="ow">in</span> <span class="n">gpus</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chosen</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span>
+                <span class="n">directory</span> <span class="o">/</span> <span class="n">_gpu_claim_name</span><span class="p">(</span><span class="n">gpu</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">O_RDWR</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">O_CREAT</span><span class="p">,</span> <span class="mo">0o666</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="n">taken</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gpu</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">fchmod</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="mo">0o666</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fcntl</span><span class="o">.</span><span class="n">flock</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">fcntl</span><span class="o">.</span><span class="n">LOCK_EX</span> <span class="o">|</span> <span class="n">fcntl</span><span class="o">.</span><span class="n">LOCK_NB</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+            <span class="n">taken</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gpu</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">chosen</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gpu</span><span class="p">)</span>
+        <span class="n">claims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+    <span class="n">chosen</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">taken</span><span class="p">[:</span> <span class="n">n</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">chosen</span><span class="p">)])</span>
+    <span class="k">return</span> <span class="n">chosen</span><span class="p">,</span> <span class="n">claims</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_release_gpus</span><span class="p">(</span><span class="n">claims</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Release the claims :func:`_claim_gpus` made."""</span>
+    <span class="k">for</span> <span class="n">fd</span> <span class="ow">in</span> <span class="n">claims</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_free_tcp_port</span><span class="p">(</span><span class="n">hostname</span><span class="o">=</span><span class="s2">"localhost"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Ask the OS for a free TCP port for the MDI rendezvous.</span>
 
@@ -991,6 +1080,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">    through ``env``, since mdi_bind.sh runs the command with ``exec``. The script</span>
 <span class="sd">    leaves the environment, such as LD_PRELOAD, as it finds it, and exits with</span>
 <span class="sd">    LAMMPS's status, else the engine's.</span>
+
+<span class="sd">    When LAMMPS fails, mdi_bind.sh normally stops the engine. If the driver never</span>
+<span class="sd">    got as far as mdi_bind.sh -- a wrapper in "mlff-tcp-code" that cannot start,</span>
+<span class="sd">    for instance -- the engine would wait for a connection for ever, so the script</span>
+<span class="sd">    stops the engine and everything under it once its grace period has passed.</span>
 <span class="sd">    """</span>
     <span class="n">assignments</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">argv</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">engine_argv</span><span class="p">)</span>
@@ -1010,6 +1104,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="s2">"ENGINE_PID=$!</span><span class="se">\n</span><span class="s2">"</span>
         <span class="sa">f</span><span class="s2">"SEAMM_MDI_ROLE=driver </span><span class="si">{</span><span class="n">bind</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">driver</span><span class="si">}</span><span class="s2"> -in input.dat</span><span class="se">\n</span><span class="s2">"</span>
         <span class="s2">"rc=$?</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"stop_tree() {</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"    local child</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s1">'    for child in $(pgrep -P "$1" 2&gt;/dev/null); do stop_tree "$child"; done</span><span class="se">\n</span><span class="s1">'</span>
+        <span class="s1">'    kill -TERM "$1" 2&gt;/dev/null</span><span class="se">\n</span><span class="s1">'</span>
+        <span class="s2">"}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s1">'if [ "$rc" -ne 0 ]; then</span><span class="se">\n</span><span class="s1">'</span>
+        <span class="s2">"    # An engine still running after the grace is waiting for a driver that</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"    # never came: stop it rather than waiting for ever.</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"    for (( i=0; i&lt;$</span><span class="si">{SEAMM_ENGINE_GRACE:-120}</span><span class="s2">; i++ )); do</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s1">'        kill -0 "$ENGINE_PID" 2&gt;/dev/null || break</span><span class="se">\n</span><span class="s1">'</span>
+        <span class="s2">"        sleep 1</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"    done</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s1">'    kill -0 "$ENGINE_PID" 2&gt;/dev/null &amp;&amp; stop_tree "$ENGINE_PID"</span><span class="se">\n</span><span class="s1">'</span>
+        <span class="s2">"fi</span><span class="se">\n</span><span class="s2">"</span>
         <span class="s2">"wait $ENGINE_PID</span><span class="se">\n</span><span class="s2">"</span>
         <span class="s2">"engine_rc=$?</span><span class="se">\n</span><span class="s2">"</span>
         <span class="s1">'[ "$rc" -eq 0 ] &amp;&amp; rc=$engine_rc</span><span class="se">\n</span><span class="s1">'</span>
@@ -1990,6 +2098,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="s2">"LAMMPS, so the two communicate over TCP"</span>
             <span class="p">)</span>
         <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">text</span> <span class="o">+</span> <span class="n">where</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="s2">"engine_notes"</span><span class="p">):</span>
+            <span class="c1"># e.g. whether the engine has the fast paths it needs on a GPU</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">notes</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">engine_notes</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">executor</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">global_options</span><span class="p">,</span>
+                    <span class="s2">"cuda:0"</span> <span class="k">if</span> <span class="n">gpus</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not get the engine's notes: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                <span class="n">notes</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">note</span><span class="p">,</span> <span class="n">warning</span> <span class="ow">in</span> <span class="n">notes</span><span class="p">:</span>
+                <span class="n">prefix</span> <span class="o">=</span> <span class="s2">"Warning: "</span> <span class="k">if</span> <span class="n">warning</span> <span class="k">else</span> <span class="s2">""</span>
+                <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">note</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">transport</span> <span class="o">==</span> <span class="s2">"MPI"</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">_mlff_pair_script</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">bin_dir</span> <span class="o">/</span> <span class="s2">"mdi_bind.sh"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">_mlff_tcp_script</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">bin_dir</span> <span class="o">/</span> <span class="s2">"mdi_bind.sh"</span><span class="p">)</span>
@@ -2149,6 +2271,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <span class="s2">" Because LAMMPS is using a PyTorch forcefield, the number "</span>
                         <span class="sa">f</span><span class="s2">"of GPUs must be the same as the number of cores = </span><span class="si">{</span><span class="n">ngpus</span><span class="si">}</span><span class="s2">."</span>
                     <span class="p">)</span>
+        <span class="n">all_gpus</span> <span class="o">=</span> <span class="n">gpus</span>
         <span class="k">if</span> <span class="n">ngpus</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">gpus</span> <span class="o">=</span> <span class="n">gpus</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">ngpus</span><span class="p">]</span>
 
@@ -2259,9 +2382,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="bp">self</span><span class="o">.</span><span class="n">_timing_control</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">control</span><span class="p">)</span>
         <span class="n">control</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_single_sim</span><span class="p">(</span>
-            <span class="n">files</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="n">np</span><span class="p">,</span> <span class="n">np_text</span><span class="o">=</span><span class="n">np_text</span><span class="p">,</span> <span class="n">ngpus</span><span class="o">=</span><span class="n">ngpus</span><span class="p">,</span> <span class="n">gpus</span><span class="o">=</span><span class="n">gpus</span>
-        <span class="p">)</span>
+        <span class="c1"># Claim the GPUs only now, for the run: other runs then choose others</span>
+        <span class="n">gpu_claims</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">ngpus</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">gpus</span><span class="p">,</span> <span class="n">gpu_claims</span> <span class="o">=</span> <span class="n">_claim_gpus</span><span class="p">(</span><span class="n">all_gpus</span><span class="p">,</span> <span class="n">ngpus</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_single_sim</span><span class="p">(</span>
+                <span class="n">files</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="n">np</span><span class="p">,</span> <span class="n">np_text</span><span class="o">=</span><span class="n">np_text</span><span class="p">,</span> <span class="n">ngpus</span><span class="o">=</span><span class="n">ngpus</span><span class="p">,</span> <span class="n">gpus</span><span class="o">=</span><span class="n">gpus</span>
+            <span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">_release_gpus</span><span class="p">(</span><span class="n">gpu_claims</span><span class="p">)</span>
 
         <span class="c1"># Analyze any GPU logs</span>
         <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
