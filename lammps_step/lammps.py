@@ -528,6 +528,21 @@ def _release_gpus(claims):
             pass
 
 
+def _gpu_environment(gpus):
+    """The environment variables for a run on the given GPUs.
+
+    One OpenMP thread is usually best when the GPU does the work. OMP_PROC_BIND and
+    OMP_PLACES are deliberately not set: with them the OpenMP runtime binds each
+    process's first thread to the first CPU it may use as torch or LAMMPS starts, and
+    the programs it starts inherit that, so every engine and driver in a job shared
+    one core. mdi_bind.sh and gpu_bind.sh bind the CPUs themselves where they can.
+    """
+    return {
+        "SEAMM_GPUS": ",".join(str(i) for i in gpus),
+        "OMP_NUM_THREADS": "1",
+    }
+
+
 def _free_tcp_port(hostname="localhost"):
     """Ask the OS for a free TCP port for the MDI rendezvous.
 
@@ -2161,10 +2176,7 @@ class LAMMPS(seamm.Node):
             # Environment variables
             env = {}
             if "NGPUS" in ce and len(gpus) != 0:
-                env["SEAMM_GPUS"] = ",".join([str(i) for i in gpus])
-                env["OMP_PROC_BIND"] = "spread"
-                env["OMP_PLACES"] = "threads"
-                env["OMP_NUM_THREADS"] = "1"  # usually best for GPU-dominant runs
+                env.update(_gpu_environment(gpus))
 
             # Keep the QM engine (MOPAC) and the LAMMPS driver single-threaded:
             # the engine is a small serial SQM calc and oversubscribing cores
