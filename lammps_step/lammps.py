@@ -1557,6 +1557,20 @@ class LAMMPS(seamm.Node):
                 "LAMMPS, so the two communicate over TCP"
             )
         printer.important(__(text + where, indent=4 * " "))
+        if hasattr(step, "engine_notes"):
+            # e.g. whether the engine has the fast paths it needs on a GPU
+            try:
+                notes = step.engine_notes(
+                    self.flowchart.executor,
+                    self.global_options,
+                    "cuda:0" if gpus else None,
+                )
+            except Exception as e:
+                self.logger.debug(f"Could not get the engine's notes: {e}")
+                notes = []
+            for note, warning in notes:
+                prefix = "Warning: " if warning else ""
+                printer.important(__(prefix + note, indent=4 * " "))
         if transport == "MPI":
             return _mlff_pair_script(engine, config, bin_dir / "mdi_bind.sh")
         return _mlff_tcp_script(engine, port, config, bin_dir / "mdi_bind.sh")
