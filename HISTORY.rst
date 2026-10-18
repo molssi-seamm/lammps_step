@@ -1,6 +1,19 @@
 =======
 History
 =======
+2026.10.17.3 -- Bugfix: runs started together use different GPUs
+    * Several LAMMPS runs with a machine-learned forcefield started at the same time on
+      one machine -- in one allocation of several GPUs, or by the task layer -- all ran on
+      the first idle GPU while the others sat idle. Each run now claims the GPU it uses
+      for the length of the run, so the runs spread over the idle GPUs; only when every
+      idle GPU is claimed do runs share one.
+    * Over TCP, an engine whose LAMMPS never started -- a wrapper in ``mlff-tcp-code``
+      that fails, for instance -- waited for its connection for ever. It is now stopped
+      after ``SEAMM_ENGINE_GRACE`` seconds (120 by default), and the run ends.
+    * The output says whether the engine of a machine-learned forcefield has the fast
+      paths it needs on a GPU, and warns when it lacks them (with xnn-step 2026.10.17.1
+      or later): without them a large system runs up to twice as slowly.
+
 2026.10.17.2 -- Bugfix: NPT of rigid models, and the first sample of every run
     * NPT dynamics of a rigid model such as SPC/E water stopped at once with "Fix shake
       must come before any box changing fix": the SHAKE constraints are now set before

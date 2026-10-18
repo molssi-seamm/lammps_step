@@ -419,6 +419,38 @@ def test_tcp_pair_driver_failure_stops_the_engine_and_its_children(tmp_path):
     assert leftover.stdout == b""
 
 
+def test_tcp_pair_driver_that_never_starts_stops_the_engine(tmp_path):
+    """If the driver fails before mdi_bind.sh runs (a broken wrapper, say), nothing
+    stops an engine waiting for its connection but the launch script itself."""
+    from lammps_step.lammps import _mlff_tcp_script
+
+    marker = "318.5"  # an unusual sleep, to find any leftover
+    bind = DATA / "mdi_bind.sh"
+    script = _mlff_tcp_script(
+        ["sh", "-c", f"sleep {marker} & wait"], 1, {"mlff-tcp-code": "x"}, bind
+    )
+    lines = script.splitlines()
+    i = next(n for n, line in enumerate(lines) if "SEAMM_MDI_ROLE=driver" in line)
+    lines[i] = "no-such-wrapper-xyz"  # the driver fails to start: rc 127
+    (tmp_path / "launch.sh").write_text("\n".join(lines) + "\n")
+    environ = {k: v for k, v in os.environ.items() if k not in SCHEDULER}
+    environ.update(SEAMM_BIND="none", SEAMM_ENGINE_GRACE="2")
+    t0 = time.monotonic()
+    result = subprocess.run(
+        ["bash", "launch.sh"],
+        cwd=tmp_path,
+        env=environ,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    assert time.monotonic() - t0 < 30
+    assert result.returncode == 127
+    time.sleep(1)
+    leftover = subprocess.run(["pgrep", "-f", f"sleep {marker}"], capture_output=True)
+    assert leftover.stdout == b""
+
+
 def test_tcp_pair_success(tmp_path):
     result = _tcp_pair(tmp_path, ["sh", "-c", "sleep 1"], "sh -c 'sleep 2' x")
     assert result.returncode == 0, result.stderr

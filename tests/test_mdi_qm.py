@@ -471,6 +471,36 @@ def test_the_mlff_launch(tmp_path, monkeypatch):
         LAMMPS._mlff_launch(me, {}, tmp_path / "bin", gpus=[0])
 
 
+def test_the_engine_notes_are_printed(tmp_path, monkeypatch):
+    """The step offering the model chemistry may say more about its engine, e.g.
+    that it lacks the fast paths it needs on a GPU."""
+    import lammps_step.lammps as lammps_module
+
+    printed = []
+    monkeypatch.setattr(lammps_module, "_allocated_mpi_slots", lambda: 2)
+    monkeypatch.setattr(
+        lammps_module,
+        "printer",
+        types.SimpleNamespace(important=lambda text: printed.append(str(text))),
+    )
+    xnn = _FakeXnn()
+    devices = []
+
+    def engine_notes(executor, options, device):
+        devices.append(device)
+        return [("lacks the fast paths", True)]
+
+    xnn.engine_notes = engine_notes
+    me = _fake_self(mc=_mlff_mc(), step=xnn)
+    configuration = types.SimpleNamespace(
+        periodicity=3, charge=0, spin_multiplicity=1, n_atoms=1554
+    )
+    me.get_system_configuration = lambda: (None, configuration)
+    LAMMPS._mlff_launch(me, {}, tmp_path / "bin", gpus=[1])
+    assert devices == ["cuda:0"]
+    assert any("Warning: lacks the fast paths" in line for line in printed)
+
+
 def test_the_mlff_pair_template_from_lammps_ini():
     from lammps_step.lammps import _mlff_pair_script
 

@@ -122,3 +122,48 @@ def test_an_allocation_without_gpus_runs_on_the_cpu_at_once(monkeypatch):
 def test_busy_gpus_are_waited_for_as_long_as_asked(monkeypatch):
     """A finite wait ends (it once compared the time elapsed with the epoch)."""
     assert _wait(monkeypatch, idle=[], every=[0, 1], wait=5) == ([], 5)
+
+
+# ---------------------------------------------------------------------------
+# Claims: runs started together spread over the idle GPUs
+# ---------------------------------------------------------------------------
+def test_runs_started_together_take_different_gpus(tmp_path, monkeypatch):
+    from lammps_step.lammps import _claim_gpus, _release_gpus
+
+    monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+    runs = [_claim_gpus([0, 1, 2, 3], 1, directory=tmp_path) for _ in range(4)]
+    assert [gpus for gpus, _ in runs] == [[0], [1], [2], [3]]
+
+    # A fifth run shares a GPU, as before there were claims
+    fifth, claims = _claim_gpus([0, 1, 2, 3], 1, directory=tmp_path)
+    assert fifth == [0] and claims == []
+
+    # A finished run frees its GPU for the next
+    _release_gpus(runs[2][1])
+    assert _claim_gpus([0, 1, 2, 3], 1, directory=tmp_path)[0] == [2]
+    for _, claims in runs:
+        _release_gpus(claims)
+
+
+def test_several_gpus_for_one_run(tmp_path, monkeypatch):
+    from lammps_step.lammps import _claim_gpus, _release_gpus
+
+    monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+    first, a = _claim_gpus([0, 1, 2, 3], 2, directory=tmp_path)
+    second, b = _claim_gpus([0, 1, 2, 3], 2, directory=tmp_path)
+    assert first == [0, 1] and second == [2, 3]
+    _release_gpus(a + b)
+
+
+def test_claims_are_on_the_physical_gpu(tmp_path, monkeypatch):
+    """Two allocations numbering their GPUs from 0 do not block each other."""
+    from lammps_step.lammps import _claim_gpus, _gpu_claim_name, _release_gpus
+
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "2,3")
+    assert _gpu_claim_name(0).endswith("-gpu2.lock")
+    held, claims = _claim_gpus([0], 1, directory=tmp_path)
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "3")
+    other, more = _claim_gpus([0], 1, directory=tmp_path)
+    assert other == [0] and len(more) == 1  # physical 3 is free
+    assert (tmp_path / _gpu_claim_name(0)).exists()
+    _release_gpus(claims + more)
