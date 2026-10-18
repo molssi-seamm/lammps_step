@@ -27,7 +27,8 @@ LAMMPS uses the forcefield or model chemistry chosen before it in the flowchart:
   started together on one machine -- in one allocation, or by the task layer -- each
   claim the GPU they use for the length of the run, so they spread over the idle GPUs
   rather than all taking the first; only when every idle GPU is claimed do runs share
-  one. When the
+  one. Each engine sees only the GPU it claimed -- in an allocation, its entry in the
+  scheduler's ``CUDA_VISIBLE_DEVICES``. When the
   job can never have a GPU -- there is none on the machine, or the scheduler gave it
   none -- it runs on the CPU at once, with the job's cores less one for LAMMPS; on the
   CPU it is much slower except for small systems. Files the engine writes, such as a

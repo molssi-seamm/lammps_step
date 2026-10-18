@@ -1,6 +1,15 @@
 =======
 History
 =======
+2026.10.18.1 -- Bugfix: runs in one allocation of several GPUs all used the first
+    * Runs with a machine-learned forcefield started together in a Slurm allocation of
+      several GPUs claimed different GPUs, as intended since 2026.10.17.3, but every
+      engine still computed on the allocation's first GPU, so they ran up to several
+      times more slowly. The engine now sees only the GPU it claimed (mdi_bind.sh 2.4):
+      its entry in the scheduler's CUDA_VISIBLE_DEVICES, whether the scheduler counts
+      the GPUs from 0 or uses the machine's numbers. The new mdi_bind.sh replaces the
+      old one in the installation's ``bin`` at the first run, as before.
+
 2026.10.18 -- MDI over TCP as fast as MPI
     * MDI does not yet set TCP_NODELAY on its TCP connections, so each message could
       wait up to about 40 ms for the other side; for a fast machine-learned forcefield

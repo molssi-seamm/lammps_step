@@ -1,5 +1,5 @@
 #!/bin/bash
-#MolSSI lammps_step:mdi_bind 2.3
+#MolSSI lammps_step:mdi_bind 2.4
 # mdi_bind.sh — Resource binding for an MDI engine (e.g. an ML potential) + LAMMPS
 #
 # Runs one rank of an MPMD pair: the engine (rank 0) on the selected GPU, and the
@@ -295,14 +295,22 @@ if [ "$LOCAL_RANK" -eq 0 ]; then
     # ---- Engine process ----
     CPU_BIND="$(choose_cpus engine)"
 
-    # Leave an allocation the scheduler already made alone.  CUDA_VISIBLE_DEVICES
-    # is not composable: setting it again is interpreted against the machine's
-    # full set of devices, not against the allocation we were given, so
-    # re-exporting an index here is how a job ends up on a GPU it does not hold.
-    # When SLURM (or another scheduler) has set it, SEAMM_GPUS already counts
-    # within that allocation and there is nothing to add.
+    # The engine sees only its GPU, so that its device (cuda:0) is that GPU.
+    # SEAMM_GPUS counts within the GPUs the job can see.  When a scheduler has set
+    # CUDA_VISIBLE_DEVICES, the GPU is that list's entry, not the bare index: the
+    # values are read against the devices the job can see, so the entry is right
+    # whether the scheduler numbers them 0..n-1 or with the machine's own ids, and
+    # the index alone could name a GPU the job does not hold.  Leaving a list of
+    # several alone put every engine of the allocation on its first GPU.
     if [ -z "${CUDA_VISIBLE_DEVICES+set}" ]; then
         export CUDA_VISIBLE_DEVICES="$GPU_ID"
+    elif [ -n "$CUDA_VISIBLE_DEVICES" ]; then
+        ENTRY=$(echo "$CUDA_VISIBLE_DEVICES" | cut -d, -f$((GPU_ID + 1)))
+        if [ -n "$ENTRY" ]; then
+            export CUDA_VISIBLE_DEVICES="$ENTRY"
+        else
+            echo "mdi_bind.sh: GPU $GPU_ID is not in CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES; leaving it as it is" >&2
+        fi
     fi
     MONITOR_GPU="$PHYSICAL_GPU"   # nvidia-smi indexes physically
 
