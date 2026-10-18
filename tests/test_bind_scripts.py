@@ -481,3 +481,122 @@ def test_install_helper_script(tmp_path):
         assert _install_helper_script(dest, v2) is None
         assert dest.read_text() == text
     assert not list(tmp_path.glob(".*.tmp"))
+
+
+# ----------------------------------------------------------------------
+# TCP_NODELAY on MDI's TCP connections
+# ----------------------------------------------------------------------
+CC = shutil.which(os.environ.get("CC", "cc").split()[0])
+NEEDS_CC = pytest.mark.skipif(
+    not (LINUX and CC), reason="the shim needs Linux and a C compiler"
+)
+
+
+def test_tcp_scripts_carry_the_nodelay_preamble_unless_turned_off():
+    from lammps_step.lammps import (
+        NODELAY_SOURCE,
+        _mdi_launch_script,
+        _mlff_pair_script,
+        _mlff_tcp_script,
+    )
+
+    qm = {"code": "lmp", "installation": "conda"}
+    for config in ({}, {"tcp-nodelay": "yes"}):
+        script = _mlff_tcp_script(["xnn"], 5555, config, "b")
+        assert NODELAY_SOURCE in script
+        # before either side starts
+        assert script.index(NODELAY_SOURCE) < script.index("SEAMM_MDI_ROLE=engine")
+        script = _mdi_launch_script(["mopac"], 5555, {**qm, **config}, {})
+        assert script.index(NODELAY_SOURCE) < script.index("mopac &")
+    for value in ("no", "No", "false", "off", "0"):
+        config = {"tcp-nodelay": value}
+        assert NODELAY_SOURCE not in _mlff_tcp_script(["xnn"], 5555, config, "b")
+        assert NODELAY_SOURCE not in _mdi_launch_script(
+            ["mopac"], 5555, {**qm, **config}, {}
+        )
+    # An MPI pair has no TCP connection
+    assert NODELAY_SOURCE not in _mlff_pair_script(["xnn"], {}, "b")
+
+
+def test_the_nodelay_source_is_packaged():
+    from lammps_step.lammps import _nodelay_source
+
+    text = _nodelay_source()
+    for name in ("TCP_NODELAY", "int connect(", "int accept(", "int accept4("):
+        assert name in text
+
+
+SOCKET_PAIR = """
+import socket
+server = socket.socket()
+server.bind(("127.0.0.1", 0))
+server.listen(1)
+client = socket.create_connection(server.getsockname())
+accepted, _ = server.accept()
+option = (socket.IPPROTO_TCP, socket.TCP_NODELAY)
+print(client.getsockopt(*option) != 0, accepted.getsockopt(*option) != 0)
+"""
+
+
+@NEEDS_CC
+def test_the_shim_sets_tcp_nodelay_on_both_ends(tmp_path):
+    from lammps_step.lammps import _nodelay_source
+
+    (tmp_path / "mdi_nodelay.c").write_text(_nodelay_source())
+    library = tmp_path / "mdi_nodelay.so"
+    subprocess.run(
+        [CC, "-shared", "-fPIC", "-O2", "-o", str(library), "mdi_nodelay.c", "-ldl"],
+        cwd=tmp_path,
+        check=True,
+    )
+
+    def sockets(**env):
+        environ = {k: v for k, v in os.environ.items() if k != "LD_PRELOAD"}
+        environ.update(env)
+        result = subprocess.run(
+            [sys.executable, "-c", SOCKET_PAIR],
+            env=environ,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return result.stdout.split()
+
+    assert sockets() == ["False", "False"]
+    assert sockets(LD_PRELOAD=str(library)) == ["True", "True"]
+
+
+def _preload_seen(tmp_path, **env):
+    """Run the TCP launch script with an engine that records its LD_PRELOAD."""
+    from lammps_step.lammps import NODELAY_SOURCE, _nodelay_source
+
+    (tmp_path / NODELAY_SOURCE).write_text(_nodelay_source())
+    engine = ["sh", "-c", 'echo "$LD_PRELOAD" > preload.txt']
+    result = _tcp_pair(tmp_path, engine, "true", **env)
+    return result, (tmp_path / "preload.txt").read_text().strip()
+
+
+@NEEDS_CC
+def test_the_tcp_script_preloads_the_shim(tmp_path):
+    result, preload = _preload_seen(tmp_path, LD_PRELOAD="")
+    assert result.returncode == 0, result.stderr
+    assert preload.endswith("/mdi_nodelay.so")
+    assert not (tmp_path / "mdi_nodelay.err").exists()
+    # the compiled library is removed when the script ends
+    assert not Path(preload).exists()
+
+
+@pytest.mark.skipif(not LINUX, reason="the shim is only used on Linux")
+def test_the_run_goes_on_without_a_compiler(tmp_path):
+    result, preload = _preload_seen(tmp_path, LD_PRELOAD="", CC="no-such-cc-xyz")
+    assert result.returncode == 0
+    assert preload == ""
+    assert "Warning: could not compile mdi_nodelay.c" in result.stderr
+
+
+@pytest.mark.skipif(LINUX, reason="checks the behaviour off Linux")
+def test_nothing_is_preloaded_off_linux(tmp_path):
+    result, preload = _preload_seen(tmp_path, LD_PRELOAD="")
+    assert result.returncode == 0
+    assert preload == ""
+    assert "Warning" not in result.stderr

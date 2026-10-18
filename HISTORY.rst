@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.10.18 -- MDI over TCP as fast as MPI
+    * MDI does not yet set TCP_NODELAY on its TCP connections, so each message could
+      wait up to about 40 ms for the other side; for a fast machine-learned forcefield
+      in an environment of its own, such as the default ``seamm-xnn``, that could double
+      the time of a step. On Linux, LAMMPS and the engine now preload a small library
+      that sets it, compiled in the job's directory with the machine's C compiler, which
+      makes TCP as fast as MPI. The same applies to quantum codes over MDI. Without a C
+      compiler the run goes on as before, with a warning; ``tcp-nodelay = no`` in
+      ``lammps.ini`` turns it off.
+
 2026.10.17.3 -- Bugfix: runs started together use different GPUs
     * Several LAMMPS runs with a machine-learned forcefield started at the same time on
       one machine -- in one allocation of several GPUs, or by the task layer -- all ran on

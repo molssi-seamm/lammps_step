@@ -579,13 +579,63 @@ def _mlff_pair_script(engine_argv, config, bind):
 MLFF_TCP_DRIVER = 'lmp -mdi "-role DRIVER -name LAMMPS -method TCP -port {port}"'
 
 
+#: The shim that sets TCP_NODELAY on MDI's TCP connections (data/mdi_nodelay.c). It
+#: is written into the job's directory, and the launch script compiles and preloads it.
+NODELAY_SOURCE = "mdi_nodelay.c"
+
+
+def _tcp_nodelay(config):
+    """Whether to set TCP_NODELAY on MDI's TCP connections: lammps.ini's
+    "tcp-nodelay", yes by default."""
+    value = str(config.get("tcp-nodelay", "yes")).strip().lower()
+    return value not in ("no", "false", "off", "0")
+
+
+def _nodelay_source():
+    """The text of the TCP_NODELAY shim."""
+    path = importlib.resources.files("lammps_step") / "data" / NODELAY_SOURCE
+    return path.read_text()
+
+
+def _nodelay_preamble():
+    """Bash that compiles mdi_nodelay.c and preloads it into what follows.
+
+    MDI sets no TCP_NODELAY, so each message can wait up to ~40 ms for the other
+    side's delayed acknowledgement. The shim is compiled where the job runs, so it
+    matches that machine; it needs a C compiler ($CC, else cc) and Linux, where
+    LD_PRELOAD works. Without them, the run goes on without it, with a warning.
+    """
+    return (
+        "# MDI sets no TCP_NODELAY, so a message can wait ~40 ms for the other side\n"
+        f"# to acknowledge the last. On Linux, compile and preload {NODELAY_SOURCE},\n"
+        "# which sets it.\n"
+        f'if [ "$(uname -s)" = Linux ] && [ -f {NODELAY_SOURCE} ]; then\n'
+        "    NODELAY_DIR=$(mktemp -d 2>/dev/null || true)\n"
+        '    if [ -n "$NODELAY_DIR" ] && ${CC:-cc} -shared -fPIC -O2 \\\n'
+        f'            -o "$NODELAY_DIR/mdi_nodelay.so" {NODELAY_SOURCE} -ldl \\\n'
+        "            2> mdi_nodelay.err; then\n"
+        "        trap 'rm -rf \"$NODELAY_DIR\"' EXIT\n"
+        '        export LD_PRELOAD="${LD_PRELOAD:+$LD_PRELOAD:}'
+        '$NODELAY_DIR/mdi_nodelay.so"\n'
+        "        rm -f mdi_nodelay.err\n"
+        "    else\n"
+        '        [ -n "$NODELAY_DIR" ] && rm -rf "$NODELAY_DIR"\n'
+        f'        echo "Warning: could not compile {NODELAY_SOURCE}"\\\n'
+        '            "(see mdi_nodelay.err), so MDI runs over TCP without"\\\n'
+        '            "TCP_NODELAY and may be slower." >&2\n'
+        "    fi\n"
+        "fi\n"
+    )
+
+
 def _mlff_tcp_script(engine_argv, port, config, bind):
     """The bash script launching an MLFF engine and LAMMPS as a pair over TCP.
 
     Leading ``NAME=value`` items of the engine's argv (thread counts) are passed
     through ``env``, since mdi_bind.sh runs the command with ``exec``. The script
-    leaves the environment, such as LD_PRELOAD, as it finds it, and exits with
-    LAMMPS's status, else the engine's.
+    keeps the environment, such as LD_PRELOAD, adding only the TCP_NODELAY shim
+    (unless lammps.ini's "tcp-nodelay" is "no"; see :func:`_nodelay_preamble`), and
+    exits with LAMMPS's status, else the engine's.
 
     When LAMMPS fails, mdi_bind.sh normally stops the engine. If the driver never
     got as far as mdi_bind.sh -- a wrapper in "mlff-tcp-code" that cannot start,
@@ -606,7 +656,8 @@ def _mlff_tcp_script(engine_argv, port, config, bind):
         "#!/bin/bash\n"
         "# The engine is in another environment than LAMMPS, so they meet over TCP.\n"
         f"export SEAMM_MDI_PAIR=tcp{port}\n"
-        f"SEAMM_MDI_ROLE=engine {bind} {engine} &\n"
+        + (_nodelay_preamble() if _tcp_nodelay(config) else "")
+        + f"SEAMM_MDI_ROLE=engine {bind} {engine} &\n"
         "ENGINE_PID=$!\n"
         f"SEAMM_MDI_ROLE=driver {bind} {driver} -in input.dat\n"
         "rc=$?\n"
@@ -712,7 +763,8 @@ def _mdi_launch_script(engine_argv, port, config, ce, hostname="localhost"):
     return (
         "#!/bin/bash\n"
         "set -e\n"
-        f"{shlex.join(engine_argv)} &\n"
+        + (_nodelay_preamble() if _tcp_nodelay(config) else "")
+        + f"{shlex.join(engine_argv)} &\n"
         "ENGINE_PID=$!\n"
         f"{driver}\n"
         "wait $ENGINE_PID\n"
@@ -1557,6 +1609,15 @@ class LAMMPS(seamm.Node):
                 "LAMMPS, so the two communicate over TCP"
             )
         printer.important(__(text + where, indent=4 * " "))
+        if transport != "MPI" and _tcp_nodelay(config):
+            printer.important(
+                __(
+                    "MDI does not yet set TCP_NODELAY on the connection, without "
+                    "which each step can wait up to about 40 ms, so on Linux SEAMM "
+                    "compiles and preloads a small library that sets it.",
+                    indent=4 * " ",
+                )
+            )
         if hasattr(step, "engine_notes"):
             # e.g. whether the engine has the fast paths it needs on a GPU
             try:
@@ -2158,11 +2219,15 @@ class LAMMPS(seamm.Node):
                     engine_argv, port, config, ce
                 )
                 cmd = ["bash", "mdi_launch.sh"]
+                if NODELAY_SOURCE in files["mdi_launch.sh"]:
+                    files[NODELAY_SOURCE] = _nodelay_source()
             elif self.mlff_model_chemistry() is not None:
                 # An MLFF from the Model Chemistry step: its engine and LAMMPS run
                 # as an MPI pair, launched as lammps.ini's gpu-code used to.
                 files["mdi_launch.sh"] = self._mlff_launch(config, bin_dir, gpus)
                 cmd = ["bash", "mdi_launch.sh"]
+                if NODELAY_SOURCE in files["mdi_launch.sh"]:
+                    files[NODELAY_SOURCE] = _nodelay_source()
             elif "run_lammps" in files:
                 cmd = ["{python}", "run_lammps"]
                 if (
