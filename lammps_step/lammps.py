@@ -683,6 +683,29 @@ def _mlff_tcp_script(engine_argv, port, config, bind):
     )
 
 
+def _summarize_run_result(result, max_text=2000):
+    """The executor's result for the log, without the contents of the files.
+
+    The result holds every returned file -- trajectories of gigabytes among them --
+    and formatting it whole took about nine times the size of the files, enough to
+    exhaust a machine running several MD runs at once. Files are given by their
+    size, and other long text is shortened.
+    """
+    summary = {}
+    for key, value in result.items():
+        if isinstance(value, dict) and "data" in value:
+            data = value["data"]
+            entry = {"size": None if data is None else len(data)}
+            if value.get("exception") is not None:
+                entry["exception"] = value["exception"]
+            summary[key] = entry
+        elif isinstance(value, (str, bytes)) and len(value) > max_text:
+            summary[key] = value[:max_text] + f"... ({len(value)} characters)"
+        else:
+            summary[key] = value
+    return summary
+
+
 def _conda_environment(config):
     """The conda environment an ini section names, as a path if it gives one."""
     environment = config.get("conda-environment", "").strip()
@@ -2359,7 +2382,8 @@ class LAMMPS(seamm.Node):
                 self.logger.error("There was an error running LAMMPS")
                 return None
 
-            self.logger.debug("\n" + pprint.pformat(result))
+            if self.logger.isEnabledFor(logging.DEBUG):
+                self.logger.debug("\n" + pprint.pformat(_summarize_run_result(result)))
 
             # Did LAMMPS fail? Say why here, rather than failing later on missing
             # output. (No success.dat is written, so a rerun runs LAMMPS again.)
