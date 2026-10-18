@@ -354,6 +354,49 @@ def test_two_pairs_in_one_directory_keep_apart(tmp_path):
     assert codes == [0, 0]  # not stopped by the other pair
 
 
+@pytest.mark.parametrize(
+    "visible, gpus, expected",
+    [
+        (None, "2", "2"),  # no scheduler: the index
+        ("0,1,2,3", "2", "2"),  # a scheduler numbering within the allocation
+        ("4,5,6,7", "2", "6"),  # ... or with the machine's ids
+        ("GPU-a,GPU-b", "1", "GPU-b"),  # ... or by UUID
+        ("3", "0", "3"),  # one GPU: kept
+        ("", "0", ""),  # no GPU: kept
+    ],
+)
+def test_mdi_bind_engine_sees_only_its_gpu(tmp_path, visible, gpus, expected):
+    """Every engine opens cuda:0, so the engine must see only its claimed GPU.
+    Leaving a scheduler's list of several put all of an allocation's engines on
+    its first GPU."""
+    env = {"SEAMM_BIND": "none", "SEAMM_MDI_ROLE": "engine", "SEAMM_GPUS": gpus}
+    if visible is not None:
+        env["CUDA_VISIBLE_DEVICES"] = visible
+    result = run(
+        "mdi_bind.sh",
+        ["sh", "-c", 'echo "[$CUDA_VISIBLE_DEVICES]"'],
+        tmp_path,
+        SLURM_JOB_ID="123",
+        **env,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == f"[{expected}]"
+
+
+def test_mdi_bind_engine_gpu_outside_the_list(tmp_path):
+    result = run(
+        "mdi_bind.sh",
+        ["sh", "-c", 'echo "[$CUDA_VISIBLE_DEVICES]"'],
+        tmp_path,
+        SEAMM_BIND="none",
+        SEAMM_MDI_ROLE="engine",
+        SEAMM_GPUS="5",
+        CUDA_VISIBLE_DEVICES="0,1",
+    )
+    assert result.stdout.strip() == "[0,1]"
+    assert "GPU 5 is not in CUDA_VISIBLE_DEVICES=0,1" in result.stderr
+
+
 def test_mdi_bind_role_without_mpirun(tmp_path):
     """A pair over TCP has no MPI rank, so it names its roles."""
     result = run(
