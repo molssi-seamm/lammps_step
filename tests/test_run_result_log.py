@@ -36,3 +36,17 @@ def test_files_are_summarized_by_size():
     # The result itself is untouched
     assert len(result["com_velocities.trj"]["data"]) > 1_000_000
     assert len(pprint.pformat(summary)) < 5000
+
+
+def test_files_given_by_path_are_summarized(tmp_path):
+    path = tmp_path / "com_velocities.trj"
+    path.write_text("1 0.1 0.2 0.3\n" * 1000)
+    result = {
+        "files": ["com_velocities.trj"],
+        "com_velocities.trj": {"path": path, "exception": None},
+    }
+    summary = _summarize_run_result(result)
+    assert summary["com_velocities.trj"] == {
+        "path": str(path),
+        "size": path.stat().st_size,
+    }
