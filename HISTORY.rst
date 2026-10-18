@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.10.18.2 -- Bugfix: MD runs could use many times the memory of their output
+    * After LAMMPS finished, the step formatted everything the run returned -- the
+      text of each sampled file -- for a debugging message, whether or not it was
+      logged. That took about nine times the size of the files: four runs at once of
+      1000 argon atoms, each writing 2 GB of centre-of-mass velocities, used about 10 GB
+      each and brought down a 16 GB machine. Only the names and sizes of the files are
+      logged now, and only when debugging.
+
 2026.10.18.1 -- Bugfix: runs in one allocation of several GPUs all used the first
     * Runs with a machine-learned forcefield started together in a Slurm allocation of
       several GPUs claimed different GPUs, as intended since 2026.10.17.3, but every
