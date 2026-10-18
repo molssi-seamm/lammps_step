@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.18.3 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.18.4 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=472c75a9"></script>
+    <script src="../../_static/documentation_options.js?v=8ca5e564"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.18.3" />
+  <meta name="docsearch:version" content="2026.10.18.4" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1020,6 +1020,21 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
             <span class="k">pass</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_gpu_environment</span><span class="p">(</span><span class="n">gpus</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The environment variables for a run on the given GPUs.</span>
+
+<span class="sd">    One OpenMP thread is usually best when the GPU does the work. OMP_PROC_BIND and</span>
+<span class="sd">    OMP_PLACES are deliberately not set: with them the OpenMP runtime binds each</span>
+<span class="sd">    process's first thread to the first CPU it may use as torch or LAMMPS starts, and</span>
+<span class="sd">    the programs it starts inherit that, so every engine and driver in a job shared</span>
+<span class="sd">    one core. mdi_bind.sh and gpu_bind.sh bind the CPUs themselves where they can.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"SEAMM_GPUS"</span><span class="p">:</span> <span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">gpus</span><span class="p">),</span>
+        <span class="s2">"OMP_NUM_THREADS"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+    <span class="p">}</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_free_tcp_port</span><span class="p">(</span><span class="n">hostname</span><span class="o">=</span><span class="s2">"localhost"</span><span class="p">):</span>
@@ -2708,10 +2723,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="c1"># Environment variables</span>
             <span class="n">env</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">if</span> <span class="s2">"NGPUS"</span> <span class="ow">in</span> <span class="n">ce</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">gpus</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">env</span><span class="p">[</span><span class="s2">"SEAMM_GPUS"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">gpus</span><span class="p">])</span>
-                <span class="n">env</span><span class="p">[</span><span class="s2">"OMP_PROC_BIND"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"spread"</span>
-                <span class="n">env</span><span class="p">[</span><span class="s2">"OMP_PLACES"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"threads"</span>
-                <span class="n">env</span><span class="p">[</span><span class="s2">"OMP_NUM_THREADS"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"1"</span>  <span class="c1"># usually best for GPU-dominant runs</span>
+                <span class="n">env</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_gpu_environment</span><span class="p">(</span><span class="n">gpus</span><span class="p">))</span>
 
             <span class="c1"># Keep the QM engine (MOPAC) and the LAMMPS driver single-threaded:</span>
             <span class="c1"># the engine is a small serial SQM calc and oversubscribing cores</span>
