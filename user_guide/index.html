@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.17.3 documentation</title>
+    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.18 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=f13fda2d"></script>
+    <script src="../_static/documentation_options.js?v=16cc37ab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17.3" />
+  <meta name="docsearch:version" content="2026.10.18" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -542,9 +542,15 @@ stops the other, so a failed run ends instead of waiting; over TCP, an engine wh
 LAMMPS never started is stopped too, after <code class="docutils literal notranslate"><span class="pre">SEAMM_ENGINE_GRACE</span></code> seconds (120).
 On a GPU, the output says whether the engine has the fast paths of its code – for
 xnn, the vesin-torch neighbour lists and cuEquivariance tensor products – and warns
-when it lacks them, since a large system then runs up to twice as slowly. On Linux, TCP is
-currently slower than MPI: a message can wait up to about 40 ms, which for a fast
-model added a third to the run time. A fix is proposed in the MDI library;</p>
+when it lacks them, since a large system then runs up to twice as slowly.</p>
+<p>MDI does not yet set TCP_NODELAY on its TCP connections, so a message can wait up to
+about 40 ms for the other side; for a fast model that can double the time of a step.
+On Linux SEAMM therefore writes a small library, <code class="docutils literal notranslate"><span class="pre">mdi_nodelay.c</span></code>, into the job’s
+directory, compiles it with the C compiler (<code class="docutils literal notranslate"><span class="pre">$CC</span></code>, else <code class="docutils literal notranslate"><span class="pre">cc</span></code>) and preloads it
+into LAMMPS and the engine, which makes TCP as fast as MPI. Without a compiler the
+run goes on without it and says so in its standard error. <code class="docutils literal notranslate"><span class="pre">tcp-nodelay</span> <span class="pre">=</span> <span class="pre">no</span></code> in
+<code class="docutils literal notranslate"><span class="pre">lammps.ini</span></code> turns it off. It does the same for quantum codes over MDI. On macOS
+it is not available.</p>
 </li>
 <li><p>a <strong>Model Chemistry</strong> step with a quantum method, such as <code class="docutils literal notranslate"><span class="pre">MOPAC:SQM&#64;PM6-ORG</span></code>:
 LAMMPS runs the dynamics and the program computes the energy and forces over MDI;</p></li>

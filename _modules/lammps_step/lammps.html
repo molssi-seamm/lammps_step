@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.17.3 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.18 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=f13fda2d"></script>
+    <script src="../../_static/documentation_options.js?v=16cc37ab"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17.3" />
+  <meta name="docsearch:version" content="2026.10.18" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1073,13 +1073,64 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="n">MLFF_TCP_DRIVER</span> <span class="o">=</span> <span class="s1">'lmp -mdi "-role DRIVER -name LAMMPS -method TCP -port </span><span class="si">{port}</span><span class="s1">"'</span>
 
 
+<span class="c1">#: The shim that sets TCP_NODELAY on MDI's TCP connections (data/mdi_nodelay.c). It</span>
+<span class="c1">#: is written into the job's directory, and the launch script compiles and preloads it.</span>
+<span class="n">NODELAY_SOURCE</span> <span class="o">=</span> <span class="s2">"mdi_nodelay.c"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_tcp_nodelay</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Whether to set TCP_NODELAY on MDI's TCP connections: lammps.ini's</span>
+<span class="sd">    "tcp-nodelay", yes by default."""</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tcp-nodelay"</span><span class="p">,</span> <span class="s2">"yes"</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"no"</span><span class="p">,</span> <span class="s2">"false"</span><span class="p">,</span> <span class="s2">"off"</span><span class="p">,</span> <span class="s2">"0"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_nodelay_source</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""The text of the TCP_NODELAY shim."""</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="s2">"lammps_step"</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"data"</span> <span class="o">/</span> <span class="n">NODELAY_SOURCE</span>
+    <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_nodelay_preamble</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Bash that compiles mdi_nodelay.c and preloads it into what follows.</span>
+
+<span class="sd">    MDI sets no TCP_NODELAY, so each message can wait up to ~40 ms for the other</span>
+<span class="sd">    side's delayed acknowledgement. The shim is compiled where the job runs, so it</span>
+<span class="sd">    matches that machine; it needs a C compiler ($CC, else cc) and Linux, where</span>
+<span class="sd">    LD_PRELOAD works. Without them, the run goes on without it, with a warning.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="s2">"# MDI sets no TCP_NODELAY, so a message can wait ~40 ms for the other side</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="sa">f</span><span class="s2">"# to acknowledge the last. On Linux, compile and preload </span><span class="si">{</span><span class="n">NODELAY_SOURCE</span><span class="si">}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"# which sets it.</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="sa">f</span><span class="s1">'if [ "$(uname -s)" = Linux ] &amp;&amp; [ -f </span><span class="si">{</span><span class="n">NODELAY_SOURCE</span><span class="si">}</span><span class="s1"> ]; then</span><span class="se">\n</span><span class="s1">'</span>
+        <span class="s2">"    NODELAY_DIR=$(mktemp -d 2&gt;/dev/null || true)</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s1">'    if [ -n "$NODELAY_DIR" ] &amp;&amp; ${CC:-cc} -shared -fPIC -O2 </span><span class="se">\\\n</span><span class="s1">'</span>
+        <span class="sa">f</span><span class="s1">'            -o "$NODELAY_DIR/mdi_nodelay.so" </span><span class="si">{</span><span class="n">NODELAY_SOURCE</span><span class="si">}</span><span class="s1"> -ldl </span><span class="se">\\\n</span><span class="s1">'</span>
+        <span class="s2">"            2&gt; mdi_nodelay.err; then</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"        trap 'rm -rf </span><span class="se">\"</span><span class="s2">$NODELAY_DIR</span><span class="se">\"</span><span class="s2">' EXIT</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s1">'        export LD_PRELOAD="${LD_PRELOAD:+$LD_PRELOAD:}'</span>
+        <span class="s1">'$NODELAY_DIR/mdi_nodelay.so"</span><span class="se">\n</span><span class="s1">'</span>
+        <span class="s2">"        rm -f mdi_nodelay.err</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"    else</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s1">'        [ -n "$NODELAY_DIR" ] &amp;&amp; rm -rf "$NODELAY_DIR"</span><span class="se">\n</span><span class="s1">'</span>
+        <span class="sa">f</span><span class="s1">'        echo "Warning: could not compile </span><span class="si">{</span><span class="n">NODELAY_SOURCE</span><span class="si">}</span><span class="s1">"</span><span class="se">\\\n</span><span class="s1">'</span>
+        <span class="s1">'            "(see mdi_nodelay.err), so MDI runs over TCP without"</span><span class="se">\\\n</span><span class="s1">'</span>
+        <span class="s1">'            "TCP_NODELAY and may be slower." &gt;&amp;2</span><span class="se">\n</span><span class="s1">'</span>
+        <span class="s2">"    if [ -s mdi_nodelay.err ]; then sed 's/^/    /' mdi_nodelay.err &gt;&amp;2; fi</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"    fi</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"fi</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_mlff_tcp_script</span><span class="p">(</span><span class="n">engine_argv</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">bind</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The bash script launching an MLFF engine and LAMMPS as a pair over TCP.</span>
 
 <span class="sd">    Leading ``NAME=value`` items of the engine's argv (thread counts) are passed</span>
 <span class="sd">    through ``env``, since mdi_bind.sh runs the command with ``exec``. The script</span>
-<span class="sd">    leaves the environment, such as LD_PRELOAD, as it finds it, and exits with</span>
-<span class="sd">    LAMMPS's status, else the engine's.</span>
+<span class="sd">    keeps the environment, such as LD_PRELOAD, adding only the TCP_NODELAY shim</span>
+<span class="sd">    (unless lammps.ini's "tcp-nodelay" is "no"; see :func:`_nodelay_preamble`), and</span>
+<span class="sd">    exits with LAMMPS's status, else the engine's.</span>
 
 <span class="sd">    When LAMMPS fails, mdi_bind.sh normally stops the engine. If the driver never</span>
 <span class="sd">    got as far as mdi_bind.sh -- a wrapper in "mlff-tcp-code" that cannot start,</span>
@@ -1100,7 +1151,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="s2">"#!/bin/bash</span><span class="se">\n</span><span class="s2">"</span>
         <span class="s2">"# The engine is in another environment than LAMMPS, so they meet over TCP.</span><span class="se">\n</span><span class="s2">"</span>
         <span class="sa">f</span><span class="s2">"export SEAMM_MDI_PAIR=tcp</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
-        <span class="sa">f</span><span class="s2">"SEAMM_MDI_ROLE=engine </span><span class="si">{</span><span class="n">bind</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">engine</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="o">+</span> <span class="p">(</span><span class="n">_nodelay_preamble</span><span class="p">()</span> <span class="k">if</span> <span class="n">_tcp_nodelay</span><span class="p">(</span><span class="n">config</span><span class="p">)</span> <span class="k">else</span> <span class="s2">""</span><span class="p">)</span>
+        <span class="o">+</span> <span class="sa">f</span><span class="s2">"SEAMM_MDI_ROLE=engine </span><span class="si">{</span><span class="n">bind</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">engine</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">"</span>
         <span class="s2">"ENGINE_PID=$!</span><span class="se">\n</span><span class="s2">"</span>
         <span class="sa">f</span><span class="s2">"SEAMM_MDI_ROLE=driver </span><span class="si">{</span><span class="n">bind</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">driver</span><span class="si">}</span><span class="s2"> -in input.dat</span><span class="se">\n</span><span class="s2">"</span>
         <span class="s2">"rc=$?</span><span class="se">\n</span><span class="s2">"</span>
@@ -1206,7 +1258,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="k">return</span> <span class="p">(</span>
         <span class="s2">"#!/bin/bash</span><span class="se">\n</span><span class="s2">"</span>
         <span class="s2">"set -e</span><span class="se">\n</span><span class="s2">"</span>
-        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">engine_argv</span><span class="p">)</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="o">+</span> <span class="p">(</span><span class="n">_nodelay_preamble</span><span class="p">()</span> <span class="k">if</span> <span class="n">_tcp_nodelay</span><span class="p">(</span><span class="n">config</span><span class="p">)</span> <span class="k">else</span> <span class="s2">""</span><span class="p">)</span>
+        <span class="o">+</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">engine_argv</span><span class="p">)</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">"</span>
         <span class="s2">"ENGINE_PID=$!</span><span class="se">\n</span><span class="s2">"</span>
         <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">driver</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="s2">"wait $ENGINE_PID</span><span class="se">\n</span><span class="s2">"</span>
@@ -2098,6 +2151,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="s2">"LAMMPS, so the two communicate over TCP"</span>
             <span class="p">)</span>
         <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">text</span> <span class="o">+</span> <span class="n">where</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">transport</span> <span class="o">!=</span> <span class="s2">"MPI"</span> <span class="ow">and</span> <span class="n">_tcp_nodelay</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
+                <span class="n">__</span><span class="p">(</span>
+                    <span class="s2">"MDI does not yet set TCP_NODELAY on the connection, without "</span>
+                    <span class="s2">"which each step can wait up to about 40 ms, so on Linux SEAMM "</span>
+                    <span class="s2">"compiles and preloads a small library that sets it."</span><span class="p">,</span>
+                    <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="s2">"engine_notes"</span><span class="p">):</span>
             <span class="c1"># e.g. whether the engine has the fast paths it needs on a GPU</span>
             <span class="k">try</span><span class="p">:</span>
@@ -2705,11 +2767,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="n">engine_argv</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">ce</span>
                 <span class="p">)</span>
                 <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"bash"</span><span class="p">,</span> <span class="s2">"mdi_launch.sh"</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">NODELAY_SOURCE</span> <span class="ow">in</span> <span class="n">files</span><span class="p">[</span><span class="s2">"mdi_launch.sh"</span><span class="p">]:</span>
+                    <span class="n">files</span><span class="p">[</span><span class="n">NODELAY_SOURCE</span><span class="p">]</span> <span class="o">=</span> <span class="n">_nodelay_source</span><span class="p">()</span>
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlff_model_chemistry</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="c1"># An MLFF from the Model Chemistry step: its engine and LAMMPS run</span>
                 <span class="c1"># as an MPI pair, launched as lammps.ini's gpu-code used to.</span>
                 <span class="n">files</span><span class="p">[</span><span class="s2">"mdi_launch.sh"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mlff_launch</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">bin_dir</span><span class="p">,</span> <span class="n">gpus</span><span class="p">)</span>
                 <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"bash"</span><span class="p">,</span> <span class="s2">"mdi_launch.sh"</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">NODELAY_SOURCE</span> <span class="ow">in</span> <span class="n">files</span><span class="p">[</span><span class="s2">"mdi_launch.sh"</span><span class="p">]:</span>
+                    <span class="n">files</span><span class="p">[</span><span class="n">NODELAY_SOURCE</span><span class="p">]</span> <span class="o">=</span> <span class="n">_nodelay_source</span><span class="p">()</span>
             <span class="k">elif</span> <span class="s2">"run_lammps"</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
                 <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"</span><span class="si">{python}</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"run_lammps"</span><span class="p">]</span>
                 <span class="k">if</span> <span class="p">(</span>
