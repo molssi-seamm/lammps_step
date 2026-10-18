@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.10.18.4 -- Bugfix: runs on GPUs shared one CPU core
+    * For runs on a GPU the step set OMP_PROC_BIND and OMP_PLACES, which made the
+      OpenMP runtime bind each engine to the first CPU of the job as it started. The
+      engines in a job then shared one core, so runs with a machine-learned forcefield
+      were 2.5 to 3 times slower than they should be, and slower still with several runs
+      at once, even on separate GPUs. The step no longer sets them; runs still use one OpenMP
+      thread, and mdi_bind.sh and gpu_bind.sh bind CPUs where they can.
+
 2026.10.18.3 -- Internal: read the output files from disk
     * seamm-exec 2026.10.18 no longer reads the files a calculation returns into memory,
       since they can be gigabytes. The LAMMPS step now reads the ones it needs from the
