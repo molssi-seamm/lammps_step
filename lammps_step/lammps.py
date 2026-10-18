@@ -22,6 +22,7 @@ import socket
 import subprocess
 import string
 import sys
+import tempfile
 import textwrap
 import time
 import traceback
@@ -439,6 +440,94 @@ def _wait_for_gpus(maxload, wait=None, sleep=time.sleep, clock=time.time):
         sleep(1)
 
 
+#: Where the runs on a machine claim the GPUs they use, so that runs started
+#: together -- in one allocation, or by the task layer -- spread over the idle GPUs
+#: rather than all taking the first one
+GPU_CLAIM_DIR = Path(tempfile.gettempdir()) / "seamm-gpu-claims"
+
+
+def _gpu_claim_name(logical):
+    """The name of the claim on a GPU given in CUDA's numbering: the physical GPU,
+    which is the same for every process on the machine."""
+    raw = [e.strip() for e in os.environ.get("CUDA_VISIBLE_DEVICES", "").split(",")]
+    raw = [e for e in raw if e != ""]
+    if "CUDA_VISIBLE_DEVICES" in os.environ and logical < len(raw):
+        physical = raw[logical]
+    else:
+        physical = str(logical)
+    physical = re.sub(r"[^A-Za-z0-9._-]", "_", physical)
+    return f"{socket.gethostname()}-gpu{physical}.lock"
+
+
+def _claim_gpus(gpus, n, directory=None):
+    """Choose ``n`` of the idle GPUs, claiming each so other runs choose others.
+
+    A claim is a lock (``flock``) on a file per physical GPU, held until
+    :func:`_release_gpus`, i.e. for the run; the system drops it if the process
+    dies. Unclaimed GPUs are taken first, in order. If there are not ``n`` of
+    them, GPUs claimed by other runs make up the number, as before claims existed.
+
+    Parameters
+    ----------
+    gpus : [int]
+        The idle GPUs, in CUDA's numbering, from :func:`_wait_for_gpus`.
+    n : int
+        How many to use.
+    directory : pathlib.Path, optional
+        Where the claims are kept, by default :data:`GPU_CLAIM_DIR`.
+
+    Returns
+    -------
+    ([int], [int])
+        The GPUs chosen, and the open files holding the claims, for
+        :func:`_release_gpus`.
+    """
+    try:
+        import fcntl
+    except ImportError:  # Windows: no claims
+        return list(gpus[:n]), []
+    directory = GPU_CLAIM_DIR if directory is None else Path(directory)
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+        directory.chmod(0o1777)  # shared by everyone on the machine
+    except OSError:
+        pass
+    chosen, claims, taken = [], [], []
+    for gpu in gpus:
+        if len(chosen) >= n:
+            break
+        try:
+            fd = os.open(
+                directory / _gpu_claim_name(gpu), os.O_RDWR | os.O_CREAT, 0o666
+            )
+        except OSError:
+            taken.append(gpu)
+            continue
+        try:
+            os.fchmod(fd, 0o666)
+        except OSError:
+            pass
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            os.close(fd)
+            taken.append(gpu)
+            continue
+        chosen.append(gpu)
+        claims.append(fd)
+    chosen.extend(taken[: n - len(chosen)])
+    return chosen, claims
+
+
+def _release_gpus(claims):
+    """Release the claims :func:`_claim_gpus` made."""
+    for fd in claims:
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+
+
 def _free_tcp_port(hostname="localhost"):
     """Ask the OS for a free TCP port for the MDI rendezvous.
 
@@ -497,6 +586,11 @@ def _mlff_tcp_script(engine_argv, port, config, bind):
     through ``env``, since mdi_bind.sh runs the command with ``exec``. The script
     leaves the environment, such as LD_PRELOAD, as it finds it, and exits with
     LAMMPS's status, else the engine's.
+
+    When LAMMPS fails, mdi_bind.sh normally stops the engine. If the driver never
+    got as far as mdi_bind.sh -- a wrapper in "mlff-tcp-code" that cannot start,
+    for instance -- the engine would wait for a connection for ever, so the script
+    stops the engine and everything under it once its grace period has passed.
     """
     assignments = []
     argv = list(engine_argv)
@@ -516,6 +610,20 @@ def _mlff_tcp_script(engine_argv, port, config, bind):
         "ENGINE_PID=$!\n"
         f"SEAMM_MDI_ROLE=driver {bind} {driver} -in input.dat\n"
         "rc=$?\n"
+        "stop_tree() {\n"
+        "    local child\n"
+        '    for child in $(pgrep -P "$1" 2>/dev/null); do stop_tree "$child"; done\n'
+        '    kill -TERM "$1" 2>/dev/null\n'
+        "}\n"
+        'if [ "$rc" -ne 0 ]; then\n'
+        "    # An engine still running after the grace is waiting for a driver that\n"
+        "    # never came: stop it rather than waiting for ever.\n"
+        "    for (( i=0; i<${SEAMM_ENGINE_GRACE:-120}; i++ )); do\n"
+        '        kill -0 "$ENGINE_PID" 2>/dev/null || break\n'
+        "        sleep 1\n"
+        "    done\n"
+        '    kill -0 "$ENGINE_PID" 2>/dev/null && stop_tree "$ENGINE_PID"\n'
+        "fi\n"
         "wait $ENGINE_PID\n"
         "engine_rc=$?\n"
         '[ "$rc" -eq 0 ] && rc=$engine_rc\n'
@@ -1603,6 +1711,7 @@ class LAMMPS(seamm.Node):
                         " Because LAMMPS is using a PyTorch forcefield, the number "
                         f"of GPUs must be the same as the number of cores = {ngpus}."
                     )
+        all_gpus = gpus
         if ngpus > 0:
             gpus = gpus[0:ngpus]
 
@@ -1713,9 +1822,16 @@ class LAMMPS(seamm.Node):
         self._timing_control = list(control)
         control = []
 
-        files = self._execute_single_sim(
-            files, np=np, np_text=np_text, ngpus=ngpus, gpus=gpus
-        )
+        # Claim the GPUs only now, for the run: other runs then choose others
+        gpu_claims = []
+        if ngpus > 0:
+            gpus, gpu_claims = _claim_gpus(all_gpus, ngpus)
+        try:
+            files = self._execute_single_sim(
+                files, np=np, np_text=np_text, ngpus=ngpus, gpus=gpus
+            )
+        finally:
+            _release_gpus(gpu_claims)
 
         # Analyze any GPU logs
         values = {}
