@@ -693,9 +693,16 @@ def _summarize_run_result(result, max_text=2000):
     """
     summary = {}
     for key, value in result.items():
-        if isinstance(value, dict) and "data" in value:
-            data = value["data"]
-            entry = {"size": None if data is None else len(data)}
+        if isinstance(value, dict) and ("data" in value or "path" in value):
+            if "path" in value:
+                path = Path(value["path"])
+                entry = {
+                    "path": str(path),
+                    "size": path.stat().st_size if path.exists() else None,
+                }
+            else:  # seamm-exec before 2026.10.18 read the files
+                data = value["data"]
+                entry = {"size": None if data is None else len(data)}
             if value.get("exception") is not None:
                 entry["exception"] = value["exception"]
             summary[key] = entry
@@ -2032,11 +2039,6 @@ class LAMMPS(seamm.Node):
         path = Path(self.directory) / "success.dat"
         if path.exists():
             result = {}
-            path = Path(self.directory) / "log.cite"
-            if path.exists():
-                result["log.cite"] = {
-                    "data": path.read_text(),
-                }
             path = Path(self.directory) / "stdout.txt"
             if path.exists():
                 result["stdout"] = path.read_text()
@@ -2396,13 +2398,11 @@ class LAMMPS(seamm.Node):
             # with open(f, mode="w") as fd:
             #     fd.write(result["stderr"])
 
-        # Add the citations, getting the version from stdout and any citations
-        if "log.cite" in result:
-            self._add_lammps_citations(
-                result["stdout"], cite=result["log.cite"]["data"]
-            )
-        else:
-            self._add_lammps_citations(result["stdout"])
+        # Add the citations, getting the version from stdout and any citations.
+        # The returned files are in the directory; the executor does not read them.
+        path = Path(self.directory) / "log.cite"
+        cite = path.read_text() if path.exists() else None
+        self._add_lammps_citations(result["stdout"], cite=cite)
 
         initialization_header, eex = self._get_node_input(
             node=self._initialization_node, extras={"read_data": False}

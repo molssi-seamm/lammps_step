@@ -1,6 +1,11 @@
 =======
 History
 =======
+2026.10.18.3 -- Internal: read the output files from disk
+    * seamm-exec 2026.10.18 no longer reads the files a calculation returns into memory,
+      since they can be gigabytes. The LAMMPS step now reads the ones it needs from the
+      step's directory, which works with earlier versions of seamm-exec too.
+
 2026.10.18.2 -- Bugfix: MD runs could use many times the memory of their output
     * After LAMMPS finished, the step formatted everything the run returned -- the
       text of each sampled file -- for a debugging message, whether or not it was
