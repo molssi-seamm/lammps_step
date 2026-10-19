@@ -5,6 +5,8 @@
 import logging
 import pprint
 
+import numpy as np
+
 import lammps_step
 import seamm
 import seamm_util
@@ -199,7 +201,73 @@ class Initialization(seamm.Node):
         if P["kspace_method"] != "none":
             text += " The accuracy goal is {kspace_accuracy}."
 
+        scale = P.get("scale ion charges", 1.0)
+        if P["atomic charges"] == "default for forcefield":
+            if self.is_expr(scale):
+                text += " The charges of the ions will be scaled by the value of "
+                text += f"'{scale}'."
+            elif float(scale) != 1.0:
+                text += f" The charges of the ions will be scaled by {float(scale):g}."
+
         return self.header + "\n" + __(text, **P, indent=4 * " ").__str__()
+
+    def scale_ion_charges(self, configuration, eex, scale):
+        """Scale the charges of the atoms of each ion in the energy expression.
+
+        An ion is a molecule whose charges add up to a net charge of at least half
+        an electron. Every atom of it is scaled, so its charge distribution keeps
+        its shape. The charges stored with the structure are not changed.
+
+        Parameters
+        ----------
+        configuration : molsystem._Configuration
+            The system, with its atoms in the order of the energy expression.
+        eex : dict
+            The energy expression, whose "charges" are scaled.
+        scale : float
+            The factor, greater than zero.
+
+        Returns
+        -------
+        [str]
+            What was done, for the output.
+        """
+        if not scale > 0:
+            raise RuntimeError(
+                f"The charges of ions can only be scaled by a positive factor, not "
+                f"{scale}."
+            )
+        if "charges" not in eex:
+            raise RuntimeError(
+                "The charges of the ions cannot be scaled: the forcefield gives no "
+                "charges."
+            )
+        charges = np.array(eex["charges"], dtype=float)
+        molecules = configuration.find_molecules(as_indices=True)
+        names = configuration.get_molecule_smiles()
+        ions = {}
+        for atoms, name in zip(molecules, names):
+            q = float(charges[atoms].sum())
+            if abs(q) >= 0.5:
+                charges[atoms] *= scale
+                key = (name, round(q, 3))
+                ions[key] = ions.get(key, 0) + 1
+        if len(ions) == 0:
+            return [
+                f"Warning: the charges of the ions were to be scaled by {scale:g}, but "
+                "there are no ions -- no molecule has a net charge -- so the charges "
+                "are unchanged."
+            ]
+        eex["charges"] = charges.tolist()
+        self.parent._ion_charge_scale = scale
+        species = ", ".join(
+            f"{n} {name} ({q:+.3g} -> {q * scale:+.3g})"
+            for (name, q), n in sorted(ions.items(), key=lambda item: -item[1])
+        )
+        return [
+            f"The charges of the ions are scaled by {scale:g}: {species}. The total "
+            f"charge of the system is now {sum(charges):.3g}."
+        ]
 
     def get_input(self, extras=None):
         """Get the input for the initialization of LAMMPS"""
@@ -265,6 +333,21 @@ class Initialization(seamm.Node):
 
         eex = ff.energy_expression(configuration, style=style)
         logger.debug("energy expression:\n" + pprint.pformat(eex))
+
+        # Scale the charges of the ions, for the scaled-charge models of electrolytes
+        self.parent._ion_charge_scale = 1.0
+        if P["atomic charges"] == "default for forcefield":
+            scale = float(P["scale ion charges"])
+            if scale != 1.0:
+                if ff_form == "reaxff":
+                    raise RuntimeError(
+                        "The charges of a ReaxFF forcefield are equilibrated as it "
+                        "runs, so they cannot be scaled. Set 'Scale the charges of "
+                        "ions by' to 1."
+                    )
+                for line in self.scale_ion_charges(configuration, eex, scale):
+                    printer.important(__(line, indent=self.indent + 4 * " "))
+                printer.important("")
 
         # Determine if we have any charges, and if so, if they are sparse
         key = f"charges_{ffname}"

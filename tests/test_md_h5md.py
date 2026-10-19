@@ -114,6 +114,7 @@ def test_periodic_water(tmp_path):
     with open_md(tmp_path / "md.h5md") as md:
         assert md.periodic
         assert md.parameters["temperature"] == 300.0
+        assert md.parameters["ion_charge_scale"] == 1.0
         assert md.provenance["segments"]["wall_time"] == [12.5]
 
         # The pressure tensor sampled on its own replaces the one in the state
@@ -301,3 +302,17 @@ def test_species_mass_flux(tmp_path):
         assert np.allclose(S.values[:, 1, 2], flux[1:, 5], rtol=1e-5)
         assert np.allclose(S.values[:, 0, 0], flux[1:, 0], rtol=1e-5)
         assert len(S) == len(md.observable("heat_flux"))
+
+
+def test_the_ion_charge_scale_is_recorded(tmp_path):
+    for path in (DATA / "water").iterdir():
+        shutil.copy(path, tmp_path)
+    node = NVT(tmp_path, [-0.82, 0.41, 0.41] * 64)
+    node.parent._ion_charge_scale = 0.8
+    config = configuration(
+        64, ["O", "H", "H"], [8, 1, 1], [15.999, 1.008, 1.008], cell=[12.4172] * 3
+    )
+    config.cell.parameters = [12.417241581015336] * 3 + [90.0] * 3
+    write_md_h5md(node, P, config)
+    with open_md(tmp_path / "md.h5md") as md:
+        assert md.parameters["ion_charge_scale"] == pytest.approx(0.8)

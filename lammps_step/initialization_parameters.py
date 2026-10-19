@@ -101,6 +101,23 @@ class InitializationParameters(seamm.Parameters):
             "description": "Atomic charge handling:",
             "help_text": "The method for handling atomic charges.",
         },
+        "scale ion charges": {
+            "applies_when": {"atomic charges": "default for forcefield"},
+            "default": 1.0,
+            "kind": "float",
+            "default_units": "",
+            "enumeration": tuple(),
+            "format_string": ".3f",
+            "description": "Scale the charges of ions by:",
+            "help_text": (
+                "Multiply the charges of every atom of each ion -- each molecule "
+                "with a net charge, such as Li+ or BF4- -- by this factor, e.g. 0.8 "
+                "for the scaled-charge models of electrolytes, which account for "
+                "electronic polarization. A neutral salt stays neutral, and neutral "
+                "molecules are not changed. 1 uses the forcefield's charges as they "
+                "are. Not for forcefields that equilibrate their charges."
+            ),
+        },
         "qeq convergence": {
             "applies_when": {"atomic charges": qeq_default_charge_methods},
             "default": 1.0e-06,

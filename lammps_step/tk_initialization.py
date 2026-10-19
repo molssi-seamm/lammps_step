@@ -79,6 +79,7 @@ class TkInitialization(seamm.TkNode):
             "cutoff",
             "shift_nonbond",
             "atomic charges",
+            "scale ion charges",
             "qeq convergence",
             "qeq iterations",
         ):
@@ -143,8 +144,8 @@ class TkInitialization(seamm.TkNode):
             widgets.append(self[key])
             row += 1
 
-        # The controls for charge equilibration, indented
-        for key in ("qeq convergence", "qeq iterations"):
+        # The controls for the charges, indented
+        for key in ("scale ion charges", "qeq convergence", "qeq iterations"):
             if P.applies(key, values):
                 self[key].grid(row=row, column=1, sticky=tk.EW)
                 widgets2.append(self[key])
