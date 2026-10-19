@@ -1,6 +1,13 @@
 =======
 History
 =======
+2026.10.19.1 -- Engine options for MLFF MD from lammps.ini
+    * An installation can give the MLFF engine options for every MD run with a model
+      chemistry, e.g. 'xnn-engine-options = --eeq-reuse' in lammps.ini, which reuses
+      the D4 charge solve between steps and roughly halves the time per step for
+      periodic boxes. The run's own engine options from the Model Chemistry step
+      follow. Until now only a hand-written gpu-code line could pass them.
+
 2026.10.19 -- Scale the charges of ions; LAMMPS in a parallel Loop was oversubscribed
     * The Initialization sub-step has a new option, 'Scale the charges of ions by', for
       the scaled-charge models of electrolytes (e.g. 0.8 for Li+ and BF4-): it

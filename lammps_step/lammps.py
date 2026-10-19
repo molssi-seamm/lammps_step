@@ -1653,6 +1653,11 @@ class LAMMPS(seamm.Node):
             port = None
         else:
             port = _free_tcp_port()
+        # The installation's options for this engine in MD, from lammps.ini's
+        # '<step>-engine-options' (e.g. 'xnn-engine-options = --eeq-reuse'), then
+        # the run's own
+        engine_args = shlex.split(config.get(f"{mc['step']}-engine-options", "") or "")
+        engine_args += options.get("engine_args") or []
         engine = step.get_mdi_engine_command(
             self.flowchart.executor,
             self.global_options,
@@ -1665,7 +1670,7 @@ class LAMMPS(seamm.Node):
             mdi_method=transport,
             checkpoint=options.get("path"),
             device="cuda:0" if gpus else None,
-            extra_args=options.get("engine_args") or None,
+            extra_args=engine_args or None,
         )
         if not gpus and not (engine and _ASSIGNMENT.match(engine[0])):
             # mdi_bind.sh keeps an engine beside a GPU on one thread; on the CPU
