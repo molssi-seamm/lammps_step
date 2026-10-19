@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.10.18.5 -- Sample the mass fluxes of the species of a mixture with the heat flux
+    * When the heat flux is sampled in a periodic system with more than one kind of
+      molecule (by canonical SMILES, counting ions; up to 16), the momentum of each
+      species is sampled with it, in species_flux.trj and in md.h5md as
+      species_mass_flux. The Thermal Conductivity step needs them to remove the energy
+      carried by the interdiffusion of the species, which made the thermal conductivity
+      of mixtures too large. Nothing needs to be set.
+
 2026.10.18.4 -- Bugfix: runs on GPUs shared one CPU core
     * For runs on a GPU the step set OMP_PROC_BIND and OMP_PLACES, which made the
       OpenMP runtime bind each engine to the first CPU of the job as it started. The

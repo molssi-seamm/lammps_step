@@ -95,6 +95,14 @@ constraint forces of rigid bonds and angles use the centroid form of the stress,
 is the correct one for them (Surblys et al., J. Appl. Phys. 2021), unless "Use
 centroid/stress/atom" is turned off; class2 forcefields always use the ordinary form.
 
+In a mixture -- a periodic system with more than one kind of molecule, by canonical
+SMILES, counting ions as molecules -- the total momentum of each species is sampled
+with the heat flux, in ``species_flux.trj`` and ``md.h5md`` (``species_mass_flux``),
+the species with the most atoms first. The Thermal Conductivity step uses these mass
+fluxes to remove the energy carried by the interdiffusion of the species, which is not
+conduction of heat. Nothing needs to be set. Up to 16 species are sampled, since each
+needs a LAMMPS group.
+
 The Heat Flux sub-step can also filter the heat flux ("Filter the heat flux"):
 
 ``none``

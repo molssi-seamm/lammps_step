@@ -34,6 +34,10 @@ SAMPLED_FILES = (
     "com_velocities.trj",
 )
 
+#: The most molecular species whose mass fluxes are sampled for the thermal
+#: conductivity of a mixture: each needs a LAMMPS group, and there can be only 32
+MAX_FLUX_SPECIES = 16
+
 
 def _yes(value):
     """A yes/no parameter's value -- a bool, or text such as "yes" -- as a bool."""
@@ -1205,6 +1209,145 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol
         lines.append("variable            Jx delete")
         lines.append("variable            Jy delete")
         lines.append("variable            Jz delete")
+        lines.extend(self.species_flux_cleanup())
+        return lines
+
+    @staticmethod
+    def molecular_species(configuration):
+        """The atoms of each molecular species, the one with the most atoms first.
+
+        Parameters
+        ----------
+        configuration : molsystem._Configuration
+            The system.
+
+        Returns
+        -------
+        [(str, [int])]
+            The canonical SMILES of each species and the indices of its atoms.
+        """
+        molecules = configuration.find_molecules(as_indices=True)
+        species = {}
+        for molecule, smiles in zip(molecules, configuration.get_molecule_smiles()):
+            species.setdefault(smiles, []).extend(molecule)
+        result = [(smiles, sorted(atoms)) for smiles, atoms in species.items()]
+        # sorted is stable, so species with as many atoms keep their order
+        return sorted(result, key=lambda item: -len(item[1]))
+
+    def species_flux_input(self, P, n, nsteps, ncomputes, nfixes):
+        """Sample the momentum of each species of a mixture with the heat flux.
+
+        In a mixture the heat flux is correlated with the interdiffusion of the
+        species, which the thermal conductivity must not include. The analysis
+        removes it using the mass fluxes of the species, so they are written to
+        species_flux.trj at the same steps as the heat flux, in the units of mass
+        times velocity, the species with the most atoms first. Nothing is written
+        for a pure substance.
+
+        Parameters
+        ----------
+        P : dict
+            The parameters of the sub-step.
+        n : int
+            The interval between samples of the heat flux, in steps.
+        nsteps : int
+            The number of steps in the run.
+        ncomputes, nfixes : int
+            The counters for the computes and fixes.
+
+        Returns
+        -------
+        [str]
+            The input lines.
+        int
+            The counter for the computes.
+        int
+            The counter for the fixes.
+        """
+        self._species_flux_cleanup = []
+        _, configuration = self.get_system_configuration()
+        if configuration.periodicity != 3:
+            return [], ncomputes, nfixes
+        species = self.molecular_species(configuration)
+        if len(species) < 2:
+            return [], ncomputes, nfixes
+        if len(species) > MAX_FLUX_SPECIES:
+            self.description.append(
+                __(
+                    f"The system has {len(species)} molecular species, more than the "
+                    f"{MAX_FLUX_SPECIES} whose mass fluxes can be sampled, so the "
+                    "thermal conductivity cannot be corrected for their "
+                    "interdiffusion.",
+                    indent=7 * " ",
+                )
+            )
+            return [], ncomputes, nfixes
+
+        lines = [
+            "",
+            "#          The momenta of the species, for the thermal conductivity of a "
+            "mixture",
+            "",
+            "variable            sflux_px atom mass*vx",
+            "variable            sflux_py atom mass*vy",
+            "variable            sflux_pz atom mass*vz",
+        ]
+        cleanup = []
+        columns = []
+        names = []
+        for i, (smiles, atoms) in enumerate(species, start=1):
+            group = f"sflux{i}"
+            # Contiguous ranges of atom ids, a few to a line
+            atoms = np.asarray(atoms) + 1
+            breaks = np.nonzero(np.diff(atoms) != 1)[0] + 1
+            ranges = [
+                f"{block[0]}:{block[-1]}" if len(block) > 1 else f"{block[0]}"
+                for block in np.split(atoms, breaks)
+            ]
+            for start in range(0, len(ranges), 10):
+                ids = " ".join(ranges[start : start + 10])
+                lines.append(f"group               {group} id {ids}")
+            ncomputes += 1
+            lines.append(
+                f"compute             {ncomputes} {group} reduce sum "
+                "v_sflux_px v_sflux_py v_sflux_pz"
+            )
+            columns.extend(f"c_{ncomputes}[{j}]" for j in (1, 2, 3))
+            names.extend(f"s{i}{xyz}" for xyz in "xyz")
+            cleanup.append(f"group               {group} delete")
+        cleanup.extend(f"variable            sflux_p{xyz} delete" for xyz in "xyz")
+        self._species_flux_cleanup = cleanup
+
+        nfixes += 1
+        dt = (n * P["timestep"]).to_compact()
+        text = json.dumps(
+            {
+                "code": "LAMMPS",
+                "type": "species mass flux",
+                "dt": dt.magnitude,
+                "tunits": str(dt.u),
+                "nsteps": nsteps // n,
+                "species": [smiles for smiles, _ in species],
+            },
+            separators=(",", ":"),
+        )
+        title1 = "!MolSSI trajectory 2.0 " + text
+        title2 = " ".join(names)
+        filename = f"@{self._id[-1]}+species_flux.trj"
+        lines.append(
+            f"fix                 {nfixes} all ave/time {n} 1 {n} &\n"
+            f"                        {' '.join(columns)} &\n"
+            f"                        title1 '{title1}' &\n"
+            f"                        title2 '{title2}' &\n"
+            f"                        file {filename}"
+        )
+        return lines, ncomputes, nfixes
+
+    def species_flux_cleanup(self):
+        """The lines removing what :meth:`species_flux_input` defined, after its
+        computes and fix are gone."""
+        lines = getattr(self, "_species_flux_cleanup", [])
+        self._species_flux_cleanup = []
         return lines
 
     def md_provides(self):
@@ -1576,6 +1719,10 @@ variable            Jz equal v_factor*(c_flux_p[3]+c_flux_b[3]-c_flux_b[6])/vol
                 f"                        title2 '{title2}' &\n"
                 f"                        file {filename}"
             )
+            tmp, ncomputes, nfixes = self.species_flux_input(
+                P, n, nsteps, ncomputes, nfixes
+            )
+            lines.extend(tmp)
         sampling = P["pressure tensor"]
         if sampling != "never":
             if "interval" in sampling:

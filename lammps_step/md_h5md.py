@@ -9,6 +9,7 @@ file"), and add a record of the run to the workspace variable ``_md_runs``. The
 native files are kept.
 """
 
+import json
 import logging
 from pathlib import Path
 import platform
@@ -37,7 +38,14 @@ state_observables = {
 }
 
 #: The observables that need the volume of a periodic cell
-periodic_only = ("pressure", "pressure_tensor", "volume", "density", "heat_flux")
+periodic_only = (
+    "pressure",
+    "pressure_tensor",
+    "volume",
+    "density",
+    "heat_flux",
+    "species_mass_flux",
+)
 
 
 def h5md_units(unit_system=None):
@@ -423,6 +431,32 @@ class MDH5MDConverter:
             flux = np.column_stack([columns["Jx"], columns["Jy"], columns["Jz"]])
             # Converted to W/m^2 in the LAMMPS input
             self._observable(writer, "heat_flux", steps, times, flux, "W m-2")
+
+        # The momenta of the species of a mixture, sampled with the heat flux
+        path = self.directory / "species_flux.trj"
+        if path.exists():
+            # The species are in the JSON metadata on the first line
+            with open(path) as fd:
+                header = fd.readline()
+            species = json.loads(header[header.index("{") :]).get("species", [])
+            steps, times, columns = self._read_trj(path)
+            flux = np.stack(
+                [
+                    np.column_stack([columns[f"s{i}{xyz}"] for xyz in "xyz"])
+                    for i in range(1, len(species) + 1)
+                ],
+                axis=1,
+            )
+            unit = f"{self.units['mass']} {self.units['velocity']}"
+            self._observable(
+                writer,
+                "species_mass_flux",
+                steps,
+                times,
+                flux,
+                unit,
+                attrs={"species": species},
+            )
 
         path = self.directory / "pressure_tensor.trj"
         if path.exists():
