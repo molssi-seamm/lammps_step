@@ -528,6 +528,32 @@ def _release_gpus(claims):
             pass
 
 
+def _launch_environment(gpus):
+    """The environment variables for launching LAMMPS.
+
+    LAMMPS runs in parallel with MPI ranks, one per core, so each rank must be
+    single-threaded. The environment may say otherwise: an iteration of a parallel
+    Loop sets OMP_NUM_THREADS to all of its cores for the codes it runs, and every
+    rank then started that many threads (56 ranks x 14 threads on 56 cores, with no
+    progress). It applies to the whole launch script, so a QM engine over MDI (MOPAC,
+    a small serial calculation) is single-threaded too; an MLFF engine on the CPU is
+    given its own number of threads on its command line.
+
+    Parameters
+    ----------
+    gpus : [int]
+        The GPUs of the run, if any.
+
+    Returns
+    -------
+    {str: str}
+    """
+    env = {"OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"}
+    if len(gpus) != 0:
+        env.update(_gpu_environment(gpus))
+    return env
+
+
 def _gpu_environment(gpus):
     """The environment variables for a run on the given GPUs.
 
@@ -2174,16 +2200,7 @@ class LAMMPS(seamm.Node):
             config = dict(full_config.items(executor_type))
 
             # Environment variables
-            env = {}
-            if "NGPUS" in ce and len(gpus) != 0:
-                env.update(_gpu_environment(gpus))
-
-            # Keep the QM engine (MOPAC) and the LAMMPS driver single-threaded:
-            # the engine is a small serial SQM calc and oversubscribing cores
-            # only hurts. Applies to the whole launch script, so both inherit it.
-            if ff_form == "MDI/QM":
-                env["OMP_NUM_THREADS"] = "1"
-                env["MKL_NUM_THREADS"] = "1"
+            env = _launch_environment(gpus if "NGPUS" in ce else [])
 
             # The forcefield file for PyTorch/MDI runs (keyed off the forcefield
             # form, not the model label, which is now a grammar string).
