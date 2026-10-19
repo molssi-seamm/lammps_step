@@ -265,3 +265,39 @@ def test_the_fix_styles_are_recorded(tmp_path):
     with open_md(tmp_path / "md.h5md") as md:
         assert list(md.parameters["fixes"]) == ["nvt", "shake", "wall/lj93"]
         assert isotropy(md) == (False, "the run used wall/lj93")
+
+
+def test_species_mass_flux(tmp_path):
+    """The momenta of the species of a mixture, sampled with the heat flux."""
+    for path in (DATA / "water").iterdir():
+        shutil.copy(path, tmp_path)
+    _, columns = read_trajectory(tmp_path / "heat_flux.trj")
+    steps = columns["tstep"].astype(int)
+    rng = np.random.default_rng(3)
+    flux = rng.normal(size=(len(steps), 6))
+    with open(tmp_path / "species_flux.trj", "w") as fd:
+        fd.write(
+            '!MolSSI trajectory 2.0 {"code":"LAMMPS","type":"species mass flux",'
+            '"dt":2.0,"tunits":"fs","nsteps":1000,"species":["O","[Na+]"]}\n'
+        )
+        fd.write("s1x s1y s1z s2x s2y s2z\n")
+        for step, row in zip(steps, flux):
+            fd.write(f"{step} " + " ".join(f"{v:.6e}" for v in row) + "\n")
+
+    node = NVT(tmp_path, [-0.82, 0.41, 0.41] * 64)
+    config = configuration(
+        64, ["O", "H", "H"], [8, 1, 1], [15.999, 1.008, 1.008], cell=[12.4172] * 3
+    )
+    config.cell.parameters = [12.417241581015336] * 3 + [90.0] * 3
+    write_md_h5md(node, P, config)
+
+    (record,) = node.variables["_md_runs"]
+    assert record["observables"]["species_mass_flux"] == "2 fs"
+    with open_md(tmp_path / "md.h5md") as md:
+        S = md.observable("species_mass_flux")
+        assert S.values.shape == (len(steps) - 1, 2, 3)
+        assert S.attrs["species"] == ["O", "[Na+]"]
+        assert S.units == Q_(1, "g/mol*Å/fs").units
+        assert np.allclose(S.values[:, 1, 2], flux[1:, 5], rtol=1e-5)
+        assert np.allclose(S.values[:, 0, 0], flux[1:, 0], rtol=1e-5)
+        assert len(S) == len(md.observable("heat_flux"))

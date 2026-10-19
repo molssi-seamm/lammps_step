@@ -689,6 +689,7 @@ unfix               PE_ave
             post_lines.append("uncompute           S_p")
             post_lines.append("uncompute           PE")
             post_lines.append("uncompute           KE")
+            post_lines.extend(self.species_flux_cleanup())
 
         if not filtered:
             # A plain LAMMPS run: input_post.dat is only read by the Python script
