@@ -115,6 +115,21 @@ The Heat Flux sub-step can also filter the heat flux ("Filter the heat flux"):
     for SPC/E water by about 0.15-0.2 W/m/K, or 20%, which longer runs do not remove.
     Use it only for solids. How much it helps there has not been measured yet.
 
+Scaled ion charges
+==================
+
+Fixed-charge forcefields overestimate the interactions of ions in liquids, because
+they leave out electronic polarization; a common remedy for electrolytes is to scale
+the charges of the ions, often by 0.8 (Leontyev and Stuchebrukhov, 2011). **Scale the
+charges of ions by**, in the Initialization sub-step, multiplies the charge of every
+atom of each ion -- each molecule whose charges add up to a net charge, such as Li⁺ or
+BF₄⁻ -- by the factor given. A neutral salt stays neutral, and neutral molecules are
+not changed. The step lists the ions and their charges before and after in its output.
+It applies only to the forcefield's own charges, not to forcefields that equilibrate
+their charges such as ReaxFF. The charges stored with the structure are not changed;
+the factor is recorded in ``md.h5md`` (``ion_charge_scale``), so that the analysis
+steps still recognize the ions and their formal charges.
+
 Settings that depend on each other
 ==================================
 

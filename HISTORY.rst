@@ -1,6 +1,19 @@
 =======
 History
 =======
+2026.10.19 -- Scale the charges of ions; LAMMPS in a parallel Loop was oversubscribed
+    * The Initialization sub-step has a new option, 'Scale the charges of ions by', for
+      the scaled-charge models of electrolytes (e.g. 0.8 for Li+ and BF4-): it
+      multiplies the charge of every atom of each ion -- each molecule with a net
+      charge -- by the factor. Neutral molecules are not changed, and a neutral salt
+      stays neutral. The output lists the ions and their charges before and after, and
+      md.h5md records the factor so that the analysis steps still find the ions.
+    * Bugfix: in a parallel Loop each MPI rank of LAMMPS started as many OpenMP threads
+      as the iteration had cores, since the Loop sets OMP_NUM_THREADS for the codes it
+      runs: 4 iterations of 14 ranks on 56 cores ran 56 x 14 threads and made no
+      progress. Every LAMMPS run now has one thread per rank (OMP_NUM_THREADS and
+      MKL_NUM_THREADS = 1), as runs on GPUs and with QM engines already did.
+
 2026.10.18.5 -- Sample the mass fluxes of the species of a mixture with the heat flux
     * When the heat flux is sampled in a periodic system with more than one kind of
       molecule (by canonical SMILES, counting ions; up to 16), the momentum of each

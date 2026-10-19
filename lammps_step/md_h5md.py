@@ -524,6 +524,11 @@ class MDH5MDConverter:
         fixes = self._fix_styles()
         if fixes is not None:
             result["fixes"] = fixes
+        # The factor the charges of the ions were scaled by, so that analyses still
+        # recognize the ions and know their formal charges
+        result["ion_charge_scale"] = float(
+            getattr(self.node.parent, "_ion_charge_scale", 1.0) or 1.0
+        )
         step = {}
         for key, value in self.P.items():
             step[key] = f"{value:~P}" if hasattr(value, "magnitude") else str(value)
