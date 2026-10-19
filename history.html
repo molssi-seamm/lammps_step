@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.18.4 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.18.5 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=8ca5e564"></script>
+    <script src="_static/documentation_options.js?v=28dd617d"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.18.4" />
+  <meta name="docsearch:version" content="2026.10.18.5" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.18.5 – Sample the mass fluxes of the species of a mixture with the heat flux</dt><dd><ul class="simple">
+<li><p>When the heat flux is sampled in a periodic system with more than one kind of
+molecule (by canonical SMILES, counting ions; up to 16), the momentum of each
+species is sampled with it, in species_flux.trj and in md.h5md as
+species_mass_flux. The Thermal Conductivity step needs them to remove the energy
+carried by the interdiffusion of the species, which made the thermal conductivity
+of mixtures too large. Nothing needs to be set.</p></li>
+</ul>
+</dd>
 <dt>2026.10.18.4 – Bugfix: runs on GPUs shared one CPU core</dt><dd><ul class="simple">
 <li><p>For runs on a GPU the step set OMP_PROC_BIND and OMP_PLACES, which made the
 OpenMP runtime bind each engine to the first CPU of the job as it started. The

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.10.18.4 documentation</title>
+    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.10.18.5 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=8ca5e564"></script>
+    <script src="../_static/documentation_options.js?v=28dd617d"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.18.4" />
+  <meta name="docsearch:version" content="2026.10.18.5" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -2181,7 +2181,7 @@ native files are kept.</p>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="lammps_step.md_h5md.periodic_only">
-<span class="sig-prename descclassname"><span class="pre">lammps_step.md_h5md.</span></span><span class="sig-name descname"><span class="pre">periodic_only</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('pressure',</span> <span class="pre">'pressure_tensor',</span> <span class="pre">'volume',</span> <span class="pre">'density',</span> <span class="pre">'heat_flux')</span></span><a class="headerlink" href="#lammps_step.md_h5md.periodic_only" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">lammps_step.md_h5md.</span></span><span class="sig-name descname"><span class="pre">periodic_only</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('pressure',</span> <span class="pre">'pressure_tensor',</span> <span class="pre">'volume',</span> <span class="pre">'density',</span> <span class="pre">'heat_flux',</span> <span class="pre">'species_mass_flux')</span></span><a class="headerlink" href="#lammps_step.md_h5md.periodic_only" title="Link to this definition">#</a></dt>
 <dd><p>The observables that need the volume of a periodic cell</p>
 </dd></dl>
 
@@ -2538,6 +2538,13 @@ rather than a general stress is applied.</p>
 <section id="module-lammps_step.nve">
 <span id="lammps-step-nve-module"></span><h2>lammps_step.nve module<a class="headerlink" href="#module-lammps_step.nve" title="Link to this heading">#</a></h2>
 <p>NVE (microcanonical) dynamics in LAMMPS</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="lammps_step.nve.MAX_FLUX_SPECIES">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.nve.</span></span><span class="sig-name descname"><span class="pre">MAX_FLUX_SPECIES</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">16</span></span><a class="headerlink" href="#lammps_step.nve.MAX_FLUX_SPECIES" title="Link to this definition">#</a></dt>
+<dd><p>The most molecular species whose mass fluxes are sampled for the thermal
+conductivity of a mixture: each needs a LAMMPS group, and there can be only 32</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="lammps_step.nve.NVE">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">lammps_step.nve.</span></span><span class="sig-name descname"><span class="pre">NVE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flowchart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NVE</span> <span class="pre">dynamics'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;Logger</span> <span class="pre">lammps_step.nve</span> <span class="pre">(WARNING)&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve.html#NVE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.nve.NVE" title="Link to this definition">#</a></dt>
@@ -2637,6 +2644,23 @@ the ordinary per-atom stress of all the terms.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.nve.NVE.molecular_species">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">molecular_species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve.html#NVE.molecular_species"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.nve.NVE.molecular_species" title="Link to this definition">#</a></dt>
+<dd><p>The atoms of each molecular species, the one with the most atoms first.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>configuration</strong> (<em>molsystem._Configuration</em>) – The system.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The canonical SMILES of each species and the indices of its atoms.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>[(str, [int])]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="lammps_step.nve.NVE.request_sampling">
 <span class="sig-name descname"><span class="pre">request_sampling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">need</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve.html#NVE.request_sampling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.nve.NVE.request_sampling" title="Link to this definition">#</a></dt>
 <dd><p>Turn on the sampling an analysis needs, if possible.</p>
@@ -2667,6 +2691,44 @@ None if this step cannot provide it.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>([(str, str, str or None)], str) or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.nve.NVE.species_flux_cleanup">
+<span class="sig-name descname"><span class="pre">species_flux_cleanup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve.html#NVE.species_flux_cleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.nve.NVE.species_flux_cleanup" title="Link to this definition">#</a></dt>
+<dd><p>The lines removing what <a class="reference internal" href="#lammps_step.nve.NVE.species_flux_input" title="lammps_step.nve.NVE.species_flux_input"><code class="xref py py-meth docutils literal notranslate"><span class="pre">species_flux_input()</span></code></a> defined, after its
+computes and fix are gone.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lammps_step.nve.NVE.species_flux_input">
+<span class="sig-name descname"><span class="pre">species_flux_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncomputes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nfixes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/nve.html#NVE.species_flux_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.nve.NVE.species_flux_input" title="Link to this definition">#</a></dt>
+<dd><p>Sample the momentum of each species of a mixture with the heat flux.</p>
+<p>In a mixture the heat flux is correlated with the interdiffusion of the
+species, which the thermal conductivity must not include. The analysis
+removes it using the mass fluxes of the species, so they are written to
+species_flux.trj at the same steps as the heat flux, in the units of mass
+times velocity, the species with the most atoms first. Nothing is written
+for a pure substance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>P</strong> (<em>dict</em>) – The parameters of the sub-step.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – The interval between samples of the heat flux, in steps.</p></li>
+<li><p><strong>nsteps</strong> (<em>int</em>) – The number of steps in the run.</p></li>
+<li><p><strong>ncomputes</strong> (<em>int</em>) – The counters for the computes and fixes.</p></li>
+<li><p><strong>nfixes</strong> (<em>int</em>) – The counters for the computes and fixes.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>[str]</em> – The input lines.</p></li>
+<li><p><em>int</em> – The counter for the computes.</p></li>
+<li><p><em>int</em> – The counter for the fixes.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -4035,6 +4097,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.nve">lammps_step.nve module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.MAX_FLUX_SPECIES"><code class="docutils literal notranslate"><span class="pre">MAX_FLUX_SPECIES</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE"><code class="docutils literal notranslate"><span class="pre">NVE</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.analyze"><code class="docutils literal notranslate"><span class="pre">NVE.analyze()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.check_flowchart"><code class="docutils literal notranslate"><span class="pre">NVE.check_flowchart()</span></code></a></li>
@@ -4045,8 +4108,11 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.heat_flux_cleanup"><code class="docutils literal notranslate"><span class="pre">NVE.heat_flux_cleanup()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.heat_flux_input"><code class="docutils literal notranslate"><span class="pre">NVE.heat_flux_input()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.md_provides"><code class="docutils literal notranslate"><span class="pre">NVE.md_provides()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.molecular_species"><code class="docutils literal notranslate"><span class="pre">NVE.molecular_species()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.request_sampling"><code class="docutils literal notranslate"><span class="pre">NVE.request_sampling()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.sampling_edits"><code class="docutils literal notranslate"><span class="pre">NVE.sampling_edits()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.species_flux_cleanup"><code class="docutils literal notranslate"><span class="pre">NVE.species_flux_cleanup()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.species_flux_input"><code class="docutils literal notranslate"><span class="pre">NVE.species_flux_input()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.task"><code class="docutils literal notranslate"><span class="pre">NVE.task</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.timestep"><code class="docutils literal notranslate"><span class="pre">NVE.timestep()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.nve.NVE.trajectory_input"><code class="docutils literal notranslate"><span class="pre">NVE.trajectory_input()</span></code></a></li>

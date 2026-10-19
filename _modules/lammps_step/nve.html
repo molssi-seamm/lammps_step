@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2026.10.18.4 documentation</title>
+    <title>lammps_step.nve &#8212; SEAMM LAMMPS Plug-in 2026.10.18.5 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=8ca5e564"></script>
+    <script src="../../_static/documentation_options.js?v=28dd617d"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.18.4" />
+  <meta name="docsearch:version" content="2026.10.18.5" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -521,6 +521,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <span class="s2">"com_positions.trj"</span><span class="p">,</span>
     <span class="s2">"com_velocities.trj"</span><span class="p">,</span>
 <span class="p">)</span>
+
+<span class="c1">#: The most molecular species whose mass fluxes are sampled for the thermal</span>
+<span class="c1">#: conductivity of a mixture: each needs a LAMMPS group, and there can be only 32</span>
+<span class="n">MAX_FLUX_SPECIES</span> <span class="o">=</span> <span class="mi">16</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_yes</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
@@ -1721,6 +1725,154 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"variable            Jx delete"</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"variable            Jy delete"</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"variable            Jz delete"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">species_flux_cleanup</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">lines</span></div>
+
+
+<div class="viewcode-block" id="NVE.molecular_species">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nve.NVE.molecular_species">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">molecular_species</span><span class="p">(</span><span class="n">configuration</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The atoms of each molecular species, the one with the most atoms first.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        configuration : molsystem._Configuration</span>
+<span class="sd">            The system.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        [(str, [int])]</span>
+<span class="sd">            The canonical SMILES of each species and the indices of its atoms.</span>
+<span class="sd">        """</span>
+        <span class="n">molecules</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">find_molecules</span><span class="p">(</span><span class="n">as_indices</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">molecule</span><span class="p">,</span> <span class="n">smiles</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">molecules</span><span class="p">,</span> <span class="n">configuration</span><span class="o">.</span><span class="n">get_molecule_smiles</span><span class="p">()):</span>
+            <span class="n">species</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">smiles</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[(</span><span class="n">smiles</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">atoms</span><span class="p">))</span> <span class="k">for</span> <span class="n">smiles</span><span class="p">,</span> <span class="n">atoms</span> <span class="ow">in</span> <span class="n">species</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+        <span class="c1"># sorted is stable, so species with as many atoms keep their order</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="NVE.species_flux_input">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nve.NVE.species_flux_input">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">species_flux_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">ncomputes</span><span class="p">,</span> <span class="n">nfixes</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Sample the momentum of each species of a mixture with the heat flux.</span>
+
+<span class="sd">        In a mixture the heat flux is correlated with the interdiffusion of the</span>
+<span class="sd">        species, which the thermal conductivity must not include. The analysis</span>
+<span class="sd">        removes it using the mass fluxes of the species, so they are written to</span>
+<span class="sd">        species_flux.trj at the same steps as the heat flux, in the units of mass</span>
+<span class="sd">        times velocity, the species with the most atoms first. Nothing is written</span>
+<span class="sd">        for a pure substance.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        P : dict</span>
+<span class="sd">            The parameters of the sub-step.</span>
+<span class="sd">        n : int</span>
+<span class="sd">            The interval between samples of the heat flux, in steps.</span>
+<span class="sd">        nsteps : int</span>
+<span class="sd">            The number of steps in the run.</span>
+<span class="sd">        ncomputes, nfixes : int</span>
+<span class="sd">            The counters for the computes and fixes.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        [str]</span>
+<span class="sd">            The input lines.</span>
+<span class="sd">        int</span>
+<span class="sd">            The counter for the computes.</span>
+<span class="sd">        int</span>
+<span class="sd">            The counter for the fixes.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_species_flux_cleanup</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_configuration</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[],</span> <span class="n">ncomputes</span><span class="p">,</span> <span class="n">nfixes</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_species</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[],</span> <span class="n">ncomputes</span><span class="p">,</span> <span class="n">nfixes</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">MAX_FLUX_SPECIES</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">__</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"The system has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="p">)</span><span class="si">}</span><span class="s2"> molecular species, more than the "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">MAX_FLUX_SPECIES</span><span class="si">}</span><span class="s2"> whose mass fluxes can be sampled, so the "</span>
+                    <span class="s2">"thermal conductivity cannot be corrected for their "</span>
+                    <span class="s2">"interdiffusion."</span><span class="p">,</span>
+                    <span class="n">indent</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="p">[],</span> <span class="n">ncomputes</span><span class="p">,</span> <span class="n">nfixes</span>
+
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"#          The momenta of the species, for the thermal conductivity of a "</span>
+            <span class="s2">"mixture"</span><span class="p">,</span>
+            <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"variable            sflux_px atom mass*vx"</span><span class="p">,</span>
+            <span class="s2">"variable            sflux_py atom mass*vy"</span><span class="p">,</span>
+            <span class="s2">"variable            sflux_pz atom mass*vz"</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="n">cleanup</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">smiles</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">species</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">group</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"sflux</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span>
+            <span class="c1"># Contiguous ranges of atom ids, a few to a line</span>
+            <span class="n">atoms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">breaks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">ranges</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">block</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">block</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">block</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">block</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+                <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">breaks</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="k">for</span> <span class="n">start</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ranges</span><span class="p">),</span> <span class="mi">10</span><span class="p">):</span>
+                <span class="n">ids</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ranges</span><span class="p">[</span><span class="n">start</span> <span class="p">:</span> <span class="n">start</span> <span class="o">+</span> <span class="mi">10</span><span class="p">])</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"group               </span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2"> id </span><span class="si">{</span><span class="n">ids</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">ncomputes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"compute             </span><span class="si">{</span><span class="n">ncomputes</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2"> reduce sum "</span>
+                <span class="s2">"v_sflux_px v_sflux_py v_sflux_pz"</span>
+            <span class="p">)</span>
+            <span class="n">columns</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="sa">f</span><span class="s2">"c_</span><span class="si">{</span><span class="n">ncomputes</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">]"</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+            <span class="n">names</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="sa">f</span><span class="s2">"s</span><span class="si">{</span><span class="n">i</span><span class="si">}{</span><span class="n">xyz</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">xyz</span> <span class="ow">in</span> <span class="s2">"xyz"</span><span class="p">)</span>
+            <span class="n">cleanup</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"group               </span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2"> delete"</span><span class="p">)</span>
+        <span class="n">cleanup</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="sa">f</span><span class="s2">"variable            sflux_p</span><span class="si">{</span><span class="n">xyz</span><span class="si">}</span><span class="s2"> delete"</span> <span class="k">for</span> <span class="n">xyz</span> <span class="ow">in</span> <span class="s2">"xyz"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_species_flux_cleanup</span> <span class="o">=</span> <span class="n">cleanup</span>
+
+        <span class="n">nfixes</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">P</span><span class="p">[</span><span class="s2">"timestep"</span><span class="p">])</span><span class="o">.</span><span class="n">to_compact</span><span class="p">()</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">"code"</span><span class="p">:</span> <span class="s2">"LAMMPS"</span><span class="p">,</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"species mass flux"</span><span class="p">,</span>
+                <span class="s2">"dt"</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span>
+                <span class="s2">"tunits"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">u</span><span class="p">),</span>
+                <span class="s2">"nsteps"</span><span class="p">:</span> <span class="n">nsteps</span> <span class="o">//</span> <span class="n">n</span><span class="p">,</span>
+                <span class="s2">"species"</span><span class="p">:</span> <span class="p">[</span><span class="n">smiles</span> <span class="k">for</span> <span class="n">smiles</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">species</span><span class="p">],</span>
+            <span class="p">},</span>
+            <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">","</span><span class="p">,</span> <span class="s2">":"</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">title1</span> <span class="o">=</span> <span class="s2">"!MolSSI trajectory 2.0 "</span> <span class="o">+</span> <span class="n">text</span>
+        <span class="n">title2</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">+species_flux.trj"</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"fix                 </span><span class="si">{</span><span class="n">nfixes</span><span class="si">}</span><span class="s2"> all ave/time </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> 1 </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="sa">f</span><span class="s2">"                        </span><span class="si">{</span><span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span><span class="si">}</span><span class="s2"> &amp;</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="sa">f</span><span class="s2">"                        title1 '</span><span class="si">{</span><span class="n">title1</span><span class="si">}</span><span class="s2">' &amp;</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="sa">f</span><span class="s2">"                        title2 '</span><span class="si">{</span><span class="n">title2</span><span class="si">}</span><span class="s2">' &amp;</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="sa">f</span><span class="s2">"                        file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">lines</span><span class="p">,</span> <span class="n">ncomputes</span><span class="p">,</span> <span class="n">nfixes</span></div>
+
+
+<div class="viewcode-block" id="NVE.species_flux_cleanup">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.nve.NVE.species_flux_cleanup">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">species_flux_cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The lines removing what :meth:`species_flux_input` defined, after its</span>
+<span class="sd">        computes and fix are gone."""</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_species_flux_cleanup"</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_species_flux_cleanup</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">return</span> <span class="n">lines</span></div>
 
 
@@ -2107,6 +2259,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="sa">f</span><span class="s2">"                        title2 '</span><span class="si">{</span><span class="n">title2</span><span class="si">}</span><span class="s2">' &amp;</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="sa">f</span><span class="s2">"                        file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
+            <span class="n">tmp</span><span class="p">,</span> <span class="n">ncomputes</span><span class="p">,</span> <span class="n">nfixes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">species_flux_input</span><span class="p">(</span>
+                <span class="n">P</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">ncomputes</span><span class="p">,</span> <span class="n">nfixes</span>
+            <span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
         <span class="n">sampling</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"pressure tensor"</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">sampling</span> <span class="o">!=</span> <span class="s2">"never"</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">"interval"</span> <span class="ow">in</span> <span class="n">sampling</span><span class="p">:</span>

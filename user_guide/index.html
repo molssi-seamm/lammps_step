@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.18.4 documentation</title>
+    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.18.5 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=8ca5e564"></script>
+    <script src="../_static/documentation_options.js?v=28dd617d"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.18.4" />
+  <meta name="docsearch:version" content="2026.10.18.5" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -584,6 +584,13 @@ each atom’s energy e<sub>i</sub> and stress S<sub>i</sub>. The bonded terms an
 constraint forces of rigid bonds and angles use the centroid form of the stress, which
 is the correct one for them (Surblys et al., J. Appl. Phys. 2021), unless “Use
 centroid/stress/atom” is turned off; class2 forcefields always use the ordinary form.</p>
+<p>In a mixture – a periodic system with more than one kind of molecule, by canonical
+SMILES, counting ions as molecules – the total momentum of each species is sampled
+with the heat flux, in <code class="docutils literal notranslate"><span class="pre">species_flux.trj</span></code> and <code class="docutils literal notranslate"><span class="pre">md.h5md</span></code> (<code class="docutils literal notranslate"><span class="pre">species_mass_flux</span></code>),
+the species with the most atoms first. The Thermal Conductivity step uses these mass
+fluxes to remove the energy carried by the interdiffusion of the species, which is not
+conduction of heat. Nothing needs to be set. Up to 16 species are sampled, since each
+needs a LAMMPS group.</p>
 <p>The Heat Flux sub-step can also filter the heat flux (“Filter the heat flux”):</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">none</span></code></dt><dd><p>The default, and the choice for liquids.</p>

@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.md_h5md &#8212; SEAMM LAMMPS Plug-in 2026.10.18.4 documentation</title>
+    <title>lammps_step.md_h5md &#8212; SEAMM LAMMPS Plug-in 2026.10.18.5 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=8ca5e564"></script>
+    <script src="../../_static/documentation_options.js?v=28dd617d"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.18.4" />
+  <meta name="docsearch:version" content="2026.10.18.5" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -497,6 +497,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">native files are kept.</span>
 <span class="sd">"""</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">platform</span>
@@ -525,7 +526,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="p">}</span>
 
 <span class="c1">#: The observables that need the volume of a periodic cell</span>
-<span class="n">periodic_only</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"pressure"</span><span class="p">,</span> <span class="s2">"pressure_tensor"</span><span class="p">,</span> <span class="s2">"volume"</span><span class="p">,</span> <span class="s2">"density"</span><span class="p">,</span> <span class="s2">"heat_flux"</span><span class="p">)</span>
+<span class="n">periodic_only</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"pressure"</span><span class="p">,</span>
+    <span class="s2">"pressure_tensor"</span><span class="p">,</span>
+    <span class="s2">"volume"</span><span class="p">,</span>
+    <span class="s2">"density"</span><span class="p">,</span>
+    <span class="s2">"heat_flux"</span><span class="p">,</span>
+    <span class="s2">"species_mass_flux"</span><span class="p">,</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="h5md_units">
@@ -919,6 +927,32 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">columns</span><span class="p">[</span><span class="s2">"Jx"</span><span class="p">],</span> <span class="n">columns</span><span class="p">[</span><span class="s2">"Jy"</span><span class="p">],</span> <span class="n">columns</span><span class="p">[</span><span class="s2">"Jz"</span><span class="p">]])</span>
             <span class="c1"># Converted to W/m^2 in the LAMMPS input</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_observable</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="s2">"heat_flux"</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">flux</span><span class="p">,</span> <span class="s2">"W m-2"</span><span class="p">)</span>
+
+        <span class="c1"># The momenta of the species of a mixture, sampled with the heat flux</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">/</span> <span class="s2">"species_flux.trj"</span>
+        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="c1"># The species are in the JSON metadata on the first line</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+                <span class="n">header</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="n">species</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="n">header</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">"{"</span><span class="p">)</span> <span class="p">:])</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"species"</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="n">steps</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_trj</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="n">flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">columns</span><span class="p">[</span><span class="sa">f</span><span class="s2">"s</span><span class="si">{</span><span class="n">i</span><span class="si">}{</span><span class="n">xyz</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="k">for</span> <span class="n">xyz</span> <span class="ow">in</span> <span class="s2">"xyz"</span><span class="p">])</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="p">],</span>
+                <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">unit</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">[</span><span class="s1">'mass'</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">[</span><span class="s1">'velocity'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_observable</span><span class="p">(</span>
+                <span class="n">writer</span><span class="p">,</span>
+                <span class="s2">"species_mass_flux"</span><span class="p">,</span>
+                <span class="n">steps</span><span class="p">,</span>
+                <span class="n">times</span><span class="p">,</span>
+                <span class="n">flux</span><span class="p">,</span>
+                <span class="n">unit</span><span class="p">,</span>
+                <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">"species"</span><span class="p">:</span> <span class="n">species</span><span class="p">},</span>
+            <span class="p">)</span>
 
         <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">/</span> <span class="s2">"pressure_tensor.trj"</span>
         <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
