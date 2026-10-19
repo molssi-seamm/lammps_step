@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.initialization_parameters &#8212; SEAMM LAMMPS Plug-in 2026.10.18.5 documentation</title>
+    <title>lammps_step.initialization_parameters &#8212; SEAMM LAMMPS Plug-in 2026.10.19 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=28dd617d"></script>
+    <script src="../../_static/documentation_options.js?v=b2b4b3b2"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.18.5" />
+  <meta name="docsearch:version" content="2026.10.19" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -590,6 +590,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
             <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Atomic charge handling:"</span><span class="p">,</span>
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The method for handling atomic charges."</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">"scale ion charges"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"atomic charges"</span><span class="p">:</span> <span class="s2">"default for forcefield"</span><span class="p">},</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+            <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
+            <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"enumeration"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(),</span>
+            <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">".3f"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Scale the charges of ions by:"</span><span class="p">,</span>
+            <span class="s2">"help_text"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">"Multiply the charges of every atom of each ion -- each molecule "</span>
+                <span class="s2">"with a net charge, such as Li+ or BF4- -- by this factor, e.g. 0.8 "</span>
+                <span class="s2">"for the scaled-charge models of electrolytes, which account for "</span>
+                <span class="s2">"electronic polarization. A neutral salt stays neutral, and neutral "</span>
+                <span class="s2">"molecules are not changed. 1 uses the forcefield's charges as they "</span>
+                <span class="s2">"are. Not for forcefields that equilibrate their charges."</span>
+            <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"qeq convergence"</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">"applies_when"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"atomic charges"</span><span class="p">:</span> <span class="n">qeq_default_charge_methods</span><span class="p">},</span>

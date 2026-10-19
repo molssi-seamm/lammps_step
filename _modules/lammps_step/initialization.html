@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.initialization &#8212; SEAMM LAMMPS Plug-in 2026.10.18.5 documentation</title>
+    <title>lammps_step.initialization &#8212; SEAMM LAMMPS Plug-in 2026.10.19 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=28dd617d"></script>
+    <script src="../../_static/documentation_options.js?v=b2b4b3b2"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.18.5" />
+  <meta name="docsearch:version" content="2026.10.19" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -493,6 +493,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pprint</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">lammps_step</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seamm</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seamm_util</span>
@@ -694,7 +696,76 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"kspace_method"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"none"</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">+=</span> <span class="s2">" The accuracy goal is </span><span class="si">{kspace_accuracy}</span><span class="s2">."</span>
 
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"scale ion charges"</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"atomic charges"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"default for forcefield"</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_expr</span><span class="p">(</span><span class="n">scale</span><span class="p">):</span>
+                <span class="n">text</span> <span class="o">+=</span> <span class="s2">" The charges of the ions will be scaled by the value of "</span>
+                <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">scale</span><span class="si">}</span><span class="s2">'."</span>
+            <span class="k">elif</span> <span class="nb">float</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">" The charges of the ions will be scaled by </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">."</span>
+
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="n">__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">P</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Initialization.scale_ion_charges">
+<a class="viewcode-back" href="../../api/lammps_step.html#lammps_step.initialization.Initialization.scale_ion_charges">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scale_ion_charges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">eex</span><span class="p">,</span> <span class="n">scale</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Scale the charges of the atoms of each ion in the energy expression.</span>
+
+<span class="sd">        An ion is a molecule whose charges add up to a net charge of at least half</span>
+<span class="sd">        an electron. Every atom of it is scaled, so its charge distribution keeps</span>
+<span class="sd">        its shape. The charges stored with the structure are not changed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        configuration : molsystem._Configuration</span>
+<span class="sd">            The system, with its atoms in the order of the energy expression.</span>
+<span class="sd">        eex : dict</span>
+<span class="sd">            The energy expression, whose "charges" are scaled.</span>
+<span class="sd">        scale : float</span>
+<span class="sd">            The factor, greater than zero.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        [str]</span>
+<span class="sd">            What was done, for the output.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">scale</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The charges of ions can only be scaled by a positive factor, not "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">scale</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"charges"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">eex</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">"The charges of the ions cannot be scaled: the forcefield gives no "</span>
+                <span class="s2">"charges."</span>
+            <span class="p">)</span>
+        <span class="n">charges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">eex</span><span class="p">[</span><span class="s2">"charges"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">molecules</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">find_molecules</span><span class="p">(</span><span class="n">as_indices</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">get_molecule_smiles</span><span class="p">()</span>
+        <span class="n">ions</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">molecules</span><span class="p">,</span> <span class="n">names</span><span class="p">):</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">charges</span><span class="p">[</span><span class="n">atoms</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">:</span>
+                <span class="n">charges</span><span class="p">[</span><span class="n">atoms</span><span class="p">]</span> <span class="o">*=</span> <span class="n">scale</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+                <span class="n">ions</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">ions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="sa">f</span><span class="s2">"Warning: the charges of the ions were to be scaled by </span><span class="si">{</span><span class="n">scale</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">, but "</span>
+                <span class="s2">"there are no ions -- no molecule has a net charge -- so the charges "</span>
+                <span class="s2">"are unchanged."</span>
+            <span class="p">]</span>
+        <span class="n">eex</span><span class="p">[</span><span class="s2">"charges"</span><span class="p">]</span> <span class="o">=</span> <span class="n">charges</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">_ion_charge_scale</span> <span class="o">=</span> <span class="n">scale</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">q</span><span class="si">:</span><span class="s2">+.3g</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">q</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">scale</span><span class="si">:</span><span class="s2">+.3g</span><span class="si">}</span><span class="s2">)"</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">q</span><span class="p">),</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ions</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="o">-</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">"The charges of the ions are scaled by </span><span class="si">{</span><span class="n">scale</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">species</span><span class="si">}</span><span class="s2">. The total "</span>
+            <span class="sa">f</span><span class="s2">"charge of the system is now </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">charges</span><span class="p">)</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">."</span>
+        <span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="Initialization.get_input">
@@ -763,6 +834,21 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <span class="n">eex</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">energy_expression</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"energy expression:</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">eex</span><span class="p">))</span>
+
+        <span class="c1"># Scale the charges of the ions, for the scaled-charge models of electrolytes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">_ion_charge_scale</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"atomic charges"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"default for forcefield"</span><span class="p">:</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"scale ion charges"</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">scale</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">"reaxff"</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                        <span class="s2">"The charges of a ReaxFF forcefield are equilibrated as it "</span>
+                        <span class="s2">"runs, so they cannot be scaled. Set 'Scale the charges of "</span>
+                        <span class="s2">"ions by' to 1."</span>
+                    <span class="p">)</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_ion_charges</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">eex</span><span class="p">,</span> <span class="n">scale</span><span class="p">):</span>
+                    <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">))</span>
+                <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 
         <span class="c1"># Determine if we have any charges, and if so, if they are sparse</span>
         <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"charges_</span><span class="si">{</span><span class="n">ffname</span><span class="si">}</span><span class="s2">"</span>

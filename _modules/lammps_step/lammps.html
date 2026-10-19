@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.18.5 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.19 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=28dd617d"></script>
+    <script src="../../_static/documentation_options.js?v=b2b4b3b2"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.18.5" />
+  <meta name="docsearch:version" content="2026.10.19" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1020,6 +1020,32 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
             <span class="k">pass</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_launch_environment</span><span class="p">(</span><span class="n">gpus</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The environment variables for launching LAMMPS.</span>
+
+<span class="sd">    LAMMPS runs in parallel with MPI ranks, one per core, so each rank must be</span>
+<span class="sd">    single-threaded. The environment may say otherwise: an iteration of a parallel</span>
+<span class="sd">    Loop sets OMP_NUM_THREADS to all of its cores for the codes it runs, and every</span>
+<span class="sd">    rank then started that many threads (56 ranks x 14 threads on 56 cores, with no</span>
+<span class="sd">    progress). It applies to the whole launch script, so a QM engine over MDI (MOPAC,</span>
+<span class="sd">    a small serial calculation) is single-threaded too; an MLFF engine on the CPU is</span>
+<span class="sd">    given its own number of threads on its command line.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gpus : [int]</span>
+<span class="sd">        The GPUs of the run, if any.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    {str: str}</span>
+<span class="sd">    """</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"OMP_NUM_THREADS"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span> <span class="s2">"MKL_NUM_THREADS"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">}</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gpus</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_gpu_environment</span><span class="p">(</span><span class="n">gpus</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">env</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_gpu_environment</span><span class="p">(</span><span class="n">gpus</span><span class="p">):</span>
@@ -2721,16 +2747,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">config</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">full_config</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="n">executor_type</span><span class="p">))</span>
 
             <span class="c1"># Environment variables</span>
-            <span class="n">env</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="k">if</span> <span class="s2">"NGPUS"</span> <span class="ow">in</span> <span class="n">ce</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">gpus</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">env</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_gpu_environment</span><span class="p">(</span><span class="n">gpus</span><span class="p">))</span>
-
-            <span class="c1"># Keep the QM engine (MOPAC) and the LAMMPS driver single-threaded:</span>
-            <span class="c1"># the engine is a small serial SQM calc and oversubscribing cores</span>
-            <span class="c1"># only hurts. Applies to the whole launch script, so both inherit it.</span>
-            <span class="k">if</span> <span class="n">ff_form</span> <span class="o">==</span> <span class="s2">"MDI/QM"</span><span class="p">:</span>
-                <span class="n">env</span><span class="p">[</span><span class="s2">"OMP_NUM_THREADS"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"1"</span>
-                <span class="n">env</span><span class="p">[</span><span class="s2">"MKL_NUM_THREADS"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"1"</span>
+            <span class="n">env</span> <span class="o">=</span> <span class="n">_launch_environment</span><span class="p">(</span><span class="n">gpus</span> <span class="k">if</span> <span class="s2">"NGPUS"</span> <span class="ow">in</span> <span class="n">ce</span> <span class="k">else</span> <span class="p">[])</span>
 
             <span class="c1"># The forcefield file for PyTorch/MDI runs (keyed off the forcefield</span>
             <span class="c1"># form, not the model label, which is now a grammar string).</span>

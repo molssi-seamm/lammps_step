@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.18.5 documentation</title>
+    <title>User Guide &#8212; SEAMM LAMMPS Plug-in 2026.10.19 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=28dd617d"></script>
+    <script src="../_static/documentation_options.js?v=b2b4b3b2"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.18.5" />
+  <meta name="docsearch:version" content="2026.10.19" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -604,6 +604,20 @@ Use it only for solids. How much it helps there has not been measured yet.</p>
 </dd>
 </dl>
 </section>
+<section id="scaled-ion-charges">
+<h2>Scaled ion charges<a class="headerlink" href="#scaled-ion-charges" title="Link to this heading">#</a></h2>
+<p>Fixed-charge forcefields overestimate the interactions of ions in liquids, because
+they leave out electronic polarization; a common remedy for electrolytes is to scale
+the charges of the ions, often by 0.8 (Leontyev and Stuchebrukhov, 2011). <strong>Scale the
+charges of ions by</strong>, in the Initialization sub-step, multiplies the charge of every
+atom of each ion – each molecule whose charges add up to a net charge, such as Li⁺ or
+BF₄⁻ – by the factor given. A neutral salt stays neutral, and neutral molecules are
+not changed. The step lists the ions and their charges before and after in its output.
+It applies only to the forcefield’s own charges, not to forcefields that equilibrate
+their charges such as ReaxFF. The charges stored with the structure are not changed;
+the factor is recorded in <code class="docutils literal notranslate"><span class="pre">md.h5md</span></code> (<code class="docutils literal notranslate"><span class="pre">ion_charge_scale</span></code>), so that the analysis
+steps still recognize the ions and their formal charges.</p>
+</section>
 <section id="settings-that-depend-on-each-other">
 <h2>Settings that depend on each other<a class="headerlink" href="#settings-that-depend-on-each-other" title="Link to this heading">#</a></h2>
 <p>Which settings apply depends on others: the k-space settings only with a k-space method,
@@ -805,6 +819,7 @@ warning in the output, and they are not sampled;</p></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-forcefield">The forcefield</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rigid-bonds-and-angles">Rigid bonds and angles</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-heat-flux">The heat flux</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scaled-ion-charges">Scaled ion charges</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#settings-that-depend-on-each-other">Settings that depend on each other</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-md-data-for-analysis-md-h5md">The MD data for analysis: <code class="docutils literal notranslate"><span class="pre">md.h5md</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#extra-commands-and-extra-properties">Extra commands and extra properties</a></li>
