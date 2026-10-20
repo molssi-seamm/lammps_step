@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.19 documentation</title>
+    <title>lammps_step.lammps &#8212; SEAMM LAMMPS Plug-in 2026.10.19.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=b2b4b3b2"></script>
+    <script src="../../_static/documentation_options.js?v=a5793183"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.19" />
+  <meta name="docsearch:version" content="2026.10.19.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -2194,6 +2194,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">port</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">port</span> <span class="o">=</span> <span class="n">_free_tcp_port</span><span class="p">()</span>
+        <span class="c1"># The installation's options for this engine in MD, from lammps.ini's</span>
+        <span class="c1"># '&lt;step&gt;-engine-options' (e.g. 'xnn-engine-options = --eeq-reuse'), then</span>
+        <span class="c1"># the run's own</span>
+        <span class="n">engine_args</span> <span class="o">=</span> <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">mc</span><span class="p">[</span><span class="s1">'step'</span><span class="p">]</span><span class="si">}</span><span class="s2">-engine-options"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span>
+        <span class="n">engine_args</span> <span class="o">+=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"engine_args"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
         <span class="n">engine</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">get_mdi_engine_command</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">executor</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">global_options</span><span class="p">,</span>
@@ -2206,7 +2211,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">mdi_method</span><span class="o">=</span><span class="n">transport</span><span class="p">,</span>
             <span class="n">checkpoint</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"path"</span><span class="p">),</span>
             <span class="n">device</span><span class="o">=</span><span class="s2">"cuda:0"</span> <span class="k">if</span> <span class="n">gpus</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">extra_args</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"engine_args"</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">extra_args</span><span class="o">=</span><span class="n">engine_args</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">gpus</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">engine</span> <span class="ow">and</span> <span class="n">_ASSIGNMENT</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">engine</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
             <span class="c1"># mdi_bind.sh keeps an engine beside a GPU on one thread; on the CPU</span>
