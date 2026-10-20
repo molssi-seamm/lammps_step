@@ -476,6 +476,33 @@ def test_the_mlff_launch(tmp_path, monkeypatch):
         LAMMPS._mlff_launch(me, {}, tmp_path / "bin", gpus=[0])
 
 
+def test_engine_options_from_lammps_ini(tmp_path, monkeypatch):
+    """lammps.ini's '<step>-engine-options' come first, then the run's own: an
+    installation can give every MD run --eeq-reuse, which the hand-written
+    gpu-code line of the combined environments passed (ChemAI, 2026-10-19)."""
+    import lammps_step.lammps as lammps_module
+
+    monkeypatch.setattr(lammps_module, "_allocated_mpi_slots", lambda: 2)
+    configuration = types.SimpleNamespace(
+        periodicity=3, charge=0, spin_multiplicity=1, n_atoms=1554
+    )
+    for run_args, ini, expected in (
+        (None, {"xnn-engine-options": "--eeq-reuse"}, ["--eeq-reuse"]),
+        (
+            ["--dtype", "float32"],
+            {"xnn-engine-options": "--eeq-reuse"},
+            ["--eeq-reuse", "--dtype", "float32"],
+        ),
+        (["--dtype", "float32"], {}, ["--dtype", "float32"]),
+        (None, {"other-engine-options": "--eeq-reuse"}, None),
+    ):
+        xnn = _FakeXnn()
+        me = _fake_self(mc=_mlff_mc(run_args), step=xnn)
+        me.get_system_configuration = lambda: (None, configuration)
+        LAMMPS._mlff_launch(me, ini, tmp_path / "bin", gpus=[0])
+        assert xnn.kwargs["extra_args"] == expected
+
+
 def test_the_engine_notes_are_printed(tmp_path, monkeypatch):
     """The step offering the model chemistry may say more about its engine, e.g.
     that it lacks the fast paths it needs on a GPU."""
