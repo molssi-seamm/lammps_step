@@ -1,6 +1,13 @@
 =======
 History
 =======
+2026.10.21 -- Bugfix: a clear error when the forcefield's engine cannot start
+    * When the engine of a machine-learned forcefield stopped before LAMMPS ran -- for
+      example because its environment lacked a package the model needs -- the step
+      carried on and failed with a KeyError on the missing output. It now stops with
+      a message giving the exit code and the engine's error, e.g. "No module named
+      'mace'", and where to look.
+
 2026.10.19.1 -- Engine options for MLFF MD from lammps.ini
     * An installation can give the MLFF engine options for every MD run with a model
       chemistry, e.g. 'xnn-engine-options = --eeq-reuse' in lammps.ini, which reuses
