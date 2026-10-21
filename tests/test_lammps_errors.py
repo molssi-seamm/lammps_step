@@ -76,6 +76,38 @@ def test_check_raises_and_writes_no_success(tmp_path, monkeypatch):
     assert not (tmp_path / "success.dat").exists()
 
 
+def test_an_engine_that_did_not_start_is_reported(tmp_path, monkeypatch):
+    """An MDI engine missing a package stopped the run before LAMMPS said anything,
+    and the step then failed with KeyError: 'Step 5.2: Minimization' (ChemAI job
+    5355, 2026-10-21)."""
+    monkeypatch.setattr(
+        lammps_step.LAMMPS, "directory", property(lambda self: str(tmp_path))
+    )
+    lammps = lammps_step.LAMMPS()
+    lammps._id = ("5",)
+    (tmp_path / "log.lammps").write_text("LAMMPS (29 Aug 2024)\n")
+    (tmp_path / "stderr.txt").write_text(
+        "Traceback (most recent call last):\n"
+        '  File "xnn/mdi.py", line 3, in load\n'
+        "ModuleNotFoundError: No module named 'mace'\n"
+        "Driver finished.\nEngine finished.\n"
+    )
+    with pytest.raises(RuntimeError) as e:
+        lammps.check_for_lammps_error({"stdout": "", "stderr": "", "returncode": 1})
+    message = str(e.value)
+    assert message.startswith("LAMMPS did not finish (exit code 1)")
+    assert "'ModuleNotFoundError: No module named 'mace''" in message
+    assert "missing a package the model needs" in message
+    assert not (tmp_path / "success.dat").exists()
+
+    # A run that finished is not an error, whatever the exit code
+    (tmp_path / "log.lammps").write_text("run 10\nTotal wall time: 0:00:01\n")
+    lammps.check_for_lammps_error({"stdout": "", "stderr": "", "returncode": 1})
+    # nor is one without an exit code
+    (tmp_path / "log.lammps").write_text("LAMMPS (29 Aug 2024)\n")
+    lammps.check_for_lammps_error({"stdout": "", "stderr": ""})
+
+
 def test_a_smaller_allocation_is_reported():
     """A Slurm job with one task and 8 CPUs per task gave LAMMPS one MPI process,
     but the step said 8 (ChemAI job 12273, 2026-10-16)."""

@@ -160,6 +160,41 @@ def lammps_error_message(error, directory=None):
     return text
 
 
+#: A Python exception as the last line of a traceback, e.g. from an MDI engine
+_exception_re = re.compile(r"^(?:[\w.]+\.)?\w*(?:Error|Exception)\b.*$")
+
+
+def unfinished_run_message(returncode, stderr="", directory=None):
+    """A readable message for a run that stopped without LAMMPS reporting an error:
+    for example an MDI engine that could not start, so LAMMPS never ran.
+
+    Parameters
+    ----------
+    returncode : int
+        The exit code of the command.
+    stderr : str
+        Its standard error, which has the engine's traceback, if any.
+    directory : str or pathlib.Path, optional
+        Where it ran, for the message.
+    """
+    cause = ""
+    for line in reversed(stderr.splitlines()):
+        if _exception_re.match(line.strip()):
+            cause = line.strip()
+            break
+    text = f"LAMMPS did not finish (exit code {returncode}), and its log has no error."
+    if cause != "":
+        text += f" The last error on stderr was '{cause}'."
+        if "No module named" in cause:
+            text += (
+                " The environment that runs the forcefield's engine is missing a "
+                "package the model needs."
+            )
+    if directory is not None:
+        text += f" See stderr.txt and log.lammps in {directory} for details."
+    return text
+
+
 def _get_script_version(text):
     """Extract file type and version from a MolSSI header line.
 
@@ -2610,9 +2645,23 @@ class LAMMPS(seamm.Node):
             if path.exists():
                 screen = path.read_text(errors="replace")
         error = lammps_error(log, screen)
-        if error is None:
-            return
-        text = lammps_error_message(error, directory)
+        if error is not None:
+            text = lammps_error_message(error, directory)
+        else:
+            # No error from LAMMPS, but did it finish? An MDI engine that could not
+            # start (e.g. a missing package) stops the run before LAMMPS reports
+            # anything; carrying on fails later on the missing output (2026-10-21:
+            # KeyError 'Step 5.2: Minimization').
+            returncode = result.get("returncode") if result is not None else None
+            if not returncode or "Total wall time" in log:
+                return
+            stderr = ""
+            if isinstance(result.get("stderr"), str):
+                stderr = result["stderr"]
+            path = directory / "stderr.txt"
+            if path.exists():
+                stderr += "\n" + path.read_text(errors="replace")
+            text = unfinished_run_message(returncode, stderr, directory)
         # FormattedText formats the text, so protect any braces in it
         safe = text.replace("{", "{{").replace("}", "}}")
         printer.important(__(safe, indent=self.indent + 4 * " ", wrap=True))
