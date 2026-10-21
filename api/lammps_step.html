@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.10.19.1 documentation</title>
+    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.10.21 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=a5793183"></script>
+    <script src="../_static/documentation_options.js?v=3c77f071"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.19.1" />
+  <meta name="docsearch:version" content="2026.10.21" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -2059,6 +2059,22 @@ MD steps, atoms, processes and LAMMPS’s own time summed over the runs –
 whose product of steps and atoms is the unit of cost.</p>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="lammps_step.lammps.unfinished_run_message">
+<span class="sig-prename descclassname"><span class="pre">lammps_step.lammps.</span></span><span class="sig-name descname"><span class="pre">unfinished_run_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">returncode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stderr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lammps_step/lammps.html#unfinished_run_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammps_step.lammps.unfinished_run_message" title="Link to this definition">#</a></dt>
+<dd><p>A readable message for a run that stopped without LAMMPS reporting an error:
+for example an MDI engine that could not start, so LAMMPS never ran.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>returncode</strong> (<em>int</em>) – The exit code of the command.</p></li>
+<li><p><strong>stderr</strong> (<em>str</em>) – Its standard error, which has the engine’s traceback, if any.</p></li>
+<li><p><strong>directory</strong> (<em>str</em><em> or </em><em>pathlib.Path</em><em>, </em><em>optional</em>) – Where it ran, for the message.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-lammps_step.lammps_step">
 <span id="lammps-step-lammps-step-module"></span><h2>lammps_step.lammps_step module<a class="headerlink" href="#module-lammps_step.lammps_step" title="Link to this heading">#</a></h2>
@@ -4013,6 +4029,7 @@ A step for running molecular dynamics using LAMMPS.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.pline"><code class="docutils literal notranslate"><span class="pre">pline()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.pvalue"><code class="docutils literal notranslate"><span class="pre">pvalue()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.timing_descriptors"><code class="docutils literal notranslate"><span class="pre">timing_descriptors()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lammps_step.lammps.unfinished_run_message"><code class="docutils literal notranslate"><span class="pre">unfinished_run_message()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-lammps_step.lammps_step">lammps_step.lammps_step module</a><ul class="pst-show_toc_level nav section-nav flex-column">

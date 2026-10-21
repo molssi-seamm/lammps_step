@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.19.1 documentation</title>
+    <title>History &#8212; SEAMM LAMMPS Plug-in 2026.10.21 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=a5793183"></script>
+    <script src="_static/documentation_options.js?v=3c77f071"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.19.1" />
+  <meta name="docsearch:version" content="2026.10.21" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.21 – Bugfix: a clear error when the forcefield’s engine cannot start</dt><dd><ul class="simple">
+<li><p>When the engine of a machine-learned forcefield stopped before LAMMPS ran – for
+example because its environment lacked a package the model needs – the step
+carried on and failed with a KeyError on the missing output. It now stops with
+a message giving the exit code and the engine’s error, e.g. “No module named
+‘mace’”, and where to look.</p></li>
+</ul>
+</dd>
 <dt>2026.10.19.1 – Engine options for MLFF MD from lammps.ini</dt><dd><ul class="simple">
 <li><p>An installation can give the MLFF engine options for every MD run with a model
 chemistry, e.g. ‘xnn-engine-options = –eeq-reuse’ in lammps.ini, which reuses
