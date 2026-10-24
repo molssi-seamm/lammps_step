@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.10.24 -- The simulated structure keeps its name
+    * The structures that MD runs and minimizations write are now named '{current
+      name} simulated with {model}' by default, keeping the name the structure had,
+      such as a title read from an SDF file: 'DMC_cc simulated with OPLS-AA'. Before,
+      every structure was named 'simulated with <model>', so the titles of several
+      molecules were lost. Flowcharts already saved keep their setting, and the
+      previous choice remains in the list. Needs seamm 2026.10.24.
+
 2026.10.21 -- Bugfix: a clear error when the forcefield's engine cannot start
     * When the engine of a machine-learned forcefield stopped before LAMMPS ran -- for
       example because its environment lacked a package the model needs -- the step

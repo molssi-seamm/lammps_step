@@ -103,5 +103,9 @@ class EnergyParameters(seamm.Parameters):
         tmp.default = "keep current name"
 
         tmp = self["configuration name"]
-        tmp._data["enumeration"] = ["simulated with {model}", *tmp.enumeration]
-        tmp.default = "simulated with {model}"
+        tmp._data["enumeration"] = [
+            "{current name} simulated with {model}",
+            "simulated with {model}",
+            *tmp.enumeration,
+        ]
+        tmp.default = "{current name} simulated with {model}"
