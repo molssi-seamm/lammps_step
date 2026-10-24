@@ -5,7 +5,7 @@ Pmw
 py-cpuinfo
 scipy
 pymbar>=4.0
-seamm>=2026.10.5
+seamm>=2026.10.24
 seamm-exec>=2026.10.6
 seamm-ff-util>=2026.10.16
 statsmodels
