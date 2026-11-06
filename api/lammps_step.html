@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.10.24 documentation</title>
+    <title>lammps_step package &#8212; SEAMM LAMMPS Plug-in 2026.11.6 documentation</title>
   
   
   
@@ -26,8 +26,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -35,10 +35,10 @@
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=c224919a" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=647e6ecf"></script>
+    <script src="../_static/documentation_options.js?v=df937776"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.24" />
+  <meta name="docsearch:version" content="2026.11.6" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -112,7 +112,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -242,14 +242,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
   <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
-    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
   </ul>
 </div></div>
       
@@ -295,7 +295,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   
 
   
-    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
       <span class="fa-solid fa-outdent"></span>
     </button>
   
@@ -309,7 +309,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       
       
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
@@ -394,14 +394,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
   <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
-    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
   </ul>
 </div></div>
         
@@ -490,7 +490,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     
     <li class="breadcrumb-item breadcrumb-home">
       <a href="../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
+        <i class="fa-solid fa-house"></i>
       </a>
     </li>
     
@@ -571,7 +571,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <p>The control parameters for Custom dynamics in LAMMPS</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lammps_step.custom_parameters.CustomParameters.parameters">
-<span class="sig-name descname"><span class="pre">parameters</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'script':</span> <span class="pre">{'default':</span> <span class="pre">{},</span> <span class="pre">'default_units':</span> <span class="pre">None,</span> <span class="pre">'description':</span> <span class="pre">'Script:',</span> <span class="pre">'enumeration':</span> <span class="pre">(),</span> <span class="pre">'format_string':</span> <span class="pre">'',</span> <span class="pre">'help_text':</span> <span class="pre">'The</span> <span class="pre">custom</span> <span class="pre">script.',</span> <span class="pre">'kind':</span> <span class="pre">'string'}}</span></span><a class="headerlink" href="#lammps_step.custom_parameters.CustomParameters.parameters" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">parameters</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'script':</span> <span class="pre">{'default':</span> <span class="pre">{},</span> <span class="pre">'default_units':</span> <span class="pre">None,</span> <span class="pre">'description':</span> <span class="pre">'Script:',</span> <span class="pre">'enumeration':</span> <span class="pre">(),</span> <span class="pre">'expand':</span> <span class="pre">False,</span> <span class="pre">'format_string':</span> <span class="pre">'',</span> <span class="pre">'help_text':</span> <span class="pre">'The</span> <span class="pre">custom</span> <span class="pre">script.',</span> <span class="pre">'kind':</span> <span class="pre">'string'}}</span></span><a class="headerlink" href="#lammps_step.custom_parameters.CustomParameters.parameters" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2869,7 +2869,7 @@ a variable, or one of the choices that depend on the masses.</p>
 <p>The control parameters for NVE dynamics in LAMMPS</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lammps_step.nve_parameters.NVE_Parameters.extras">
-<span class="sig-name descname"><span class="pre">extras</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'extra</span> <span class="pre">commands':</span> <span class="pre">{'default':</span> <span class="pre">'',</span> <span class="pre">'default_units':</span> <span class="pre">None,</span> <span class="pre">'description':</span> <span class="pre">'Extra</span> <span class="pre">commands:',</span> <span class="pre">'enumeration':</span> <span class="pre">(),</span> <span class="pre">'format_string':</span> <span class="pre">'',</span> <span class="pre">'help_text':</span> <span class="pre">'LAMMPS</span> <span class="pre">compute,</span> <span class="pre">fix,</span> <span class="pre">variable</span> <span class="pre">and</span> <span class="pre">dump</span> <span class="pre">commands</span> <span class="pre">for</span> <span class="pre">this</span> <span class="pre">sub-step</span> <span class="pre">only.</span> <span class="pre">SEAMM</span> <span class="pre">removes</span> <span class="pre">what</span> <span class="pre">they</span> <span class="pre">define</span> <span class="pre">when</span> <span class="pre">the</span> <span class="pre">sub-step</span> <span class="pre">ends.',</span> <span class="pre">'kind':</span> <span class="pre">'string'},</span> <span class="pre">'extra</span> <span class="pre">properties':</span> <span class="pre">{'default':</span> <span class="pre">[],</span> <span class="pre">'default_units':</span> <span class="pre">None,</span> <span class="pre">'description':</span> <span class="pre">'Extra</span> <span class="pre">properties:',</span> <span class="pre">'enumeration':</span> <span class="pre">(),</span> <span class="pre">'format_string':</span> <span class="pre">'',</span> <span class="pre">'help_text':</span> <span class="pre">'Properties</span> <span class="pre">to</span> <span class="pre">sample,</span> <span class="pre">each</span> <span class="pre">a</span> <span class="pre">name,</span> <span class="pre">a</span> <span class="pre">LAMMPS</span> <span class="pre">expression,</span> <span class="pre">its</span> <span class="pre">units,</span> <span class="pre">and</span> <span class="pre">its</span> <span class="pre">treatment:</span> <span class="pre">an</span> <span class="pre">average,</span> <span class="pre">an</span> <span class="pre">autocorrelation</span> <span class="pre">or</span> <span class="pre">a</span> <span class="pre">Green-Kubo</span> <span class="pre">integral.',</span> <span class="pre">'kind':</span> <span class="pre">'list'}}</span></span><a class="headerlink" href="#lammps_step.nve_parameters.NVE_Parameters.extras" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">extras</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'extra</span> <span class="pre">commands':</span> <span class="pre">{'default':</span> <span class="pre">'',</span> <span class="pre">'default_units':</span> <span class="pre">None,</span> <span class="pre">'description':</span> <span class="pre">'Extra</span> <span class="pre">commands:',</span> <span class="pre">'enumeration':</span> <span class="pre">(),</span> <span class="pre">'expand':</span> <span class="pre">False,</span> <span class="pre">'format_string':</span> <span class="pre">'',</span> <span class="pre">'help_text':</span> <span class="pre">'LAMMPS</span> <span class="pre">compute,</span> <span class="pre">fix,</span> <span class="pre">variable</span> <span class="pre">and</span> <span class="pre">dump</span> <span class="pre">commands</span> <span class="pre">for</span> <span class="pre">this</span> <span class="pre">sub-step</span> <span class="pre">only.</span> <span class="pre">SEAMM</span> <span class="pre">removes</span> <span class="pre">what</span> <span class="pre">they</span> <span class="pre">define</span> <span class="pre">when</span> <span class="pre">the</span> <span class="pre">sub-step</span> <span class="pre">ends.',</span> <span class="pre">'kind':</span> <span class="pre">'string'},</span> <span class="pre">'extra</span> <span class="pre">properties':</span> <span class="pre">{'default':</span> <span class="pre">[],</span> <span class="pre">'default_units':</span> <span class="pre">None,</span> <span class="pre">'description':</span> <span class="pre">'Extra</span> <span class="pre">properties:',</span> <span class="pre">'enumeration':</span> <span class="pre">(),</span> <span class="pre">'format_string':</span> <span class="pre">'',</span> <span class="pre">'help_text':</span> <span class="pre">'Properties</span> <span class="pre">to</span> <span class="pre">sample,</span> <span class="pre">each</span> <span class="pre">a</span> <span class="pre">name,</span> <span class="pre">a</span> <span class="pre">LAMMPS</span> <span class="pre">expression,</span> <span class="pre">its</span> <span class="pre">units,</span> <span class="pre">and</span> <span class="pre">its</span> <span class="pre">treatment:</span> <span class="pre">an</span> <span class="pre">average,</span> <span class="pre">an</span> <span class="pre">autocorrelation</span> <span class="pre">or</span> <span class="pre">a</span> <span class="pre">Green-Kubo</span> <span class="pre">integral.',</span> <span class="pre">'kind':</span> <span class="pre">'list'}}</span></span><a class="headerlink" href="#lammps_step.nve_parameters.NVE_Parameters.extras" title="Link to this definition">#</a></dt>
 <dd><p>The extra commands and extra properties of the sub-step (see
 lammps_step.extras)</p>
 </dd></dl>
@@ -3791,7 +3791,7 @@ A step for running molecular dynamics using LAMMPS.</p>
             
             
               
-                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
                 <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
@@ -4382,8 +4382,8 @@ A step for running molecular dynamics using LAMMPS.</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -4395,7 +4395,7 @@ A step for running molecular dynamics using LAMMPS.</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
 </p></div>
       
     </div>
