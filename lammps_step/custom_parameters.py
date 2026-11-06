@@ -14,6 +14,8 @@ class CustomParameters(seamm.Parameters):
         "script": {
             "default": {},
             "kind": "string",
+            # Its own variables are written ${name}: not flowchart variables
+            "expand": False,
             "default_units": None,
             "enumeration": tuple(),
             "format_string": "",

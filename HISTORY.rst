@@ -1,6 +1,12 @@
 =======
 History
 =======
+2026.11.6 -- LAMMPS scripts keep their own ${name} variables
+    * SEAMM 2026.11.6 replaces ``${...}`` in text parameters by flowchart variables.
+      The Custom sub-step's script and each sub-step's extra commands are LAMMPS input,
+      whose own variables are written ``${name}``, so they are passed to LAMMPS as
+      written. Requires seamm 2026.11.6 or later.
+
 2026.10.24 -- The simulated structure keeps its name
     * The structures that MD runs and minimizations write are now named '{current
       name} simulated with {model}' by default, keeping the name the structure had,
